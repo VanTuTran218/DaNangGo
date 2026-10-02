@@ -1,4 +1,9 @@
-node_modules
-.next
-.env*
-*.tsbuildinfo
+frontend/node_modules
+frontend/.next
+frontend/.env*
+frontend/*.tsbuildinfo
+backend/node_modules
+backend/uploads/*
+!backend/uploads/.gitkeep
+database/**/*.sqlite
+.DS_Store

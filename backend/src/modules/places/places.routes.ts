@@ -17,7 +17,7 @@ router.get('/', async (req: Request, res: Response) => {
 // GET /api/places/:id - Lấy 1 địa điểm theo ID
 router.get('/:id', async (req: Request, res: Response) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id));
     if (isNaN(id)) {
       return res.status(400).json({ success: false, message: 'ID không hợp lệ' });
     }

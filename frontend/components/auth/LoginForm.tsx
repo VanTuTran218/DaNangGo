@@ -6,6 +6,8 @@ import { motion } from 'framer-motion';
 import PasswordField from './PasswordField';
 import SocialButtons from './SocialButtons';
 import { login } from '@/lib/api/auth';
+import { useAuth } from '@/contexts/AuthContext';
+import Link from 'next/link';
 
 interface LoginFormProps {
   onSwitchToRegister: () => void;
@@ -14,6 +16,7 @@ interface LoginFormProps {
 
 export default function LoginForm({ onSwitchToRegister, redirectTo }: LoginFormProps) {
   const router = useRouter();
+  const { login: setAuthUser } = useAuth();
   const searchParams = useSearchParams();
   const intent = searchParams.get('intent');
   
@@ -32,7 +35,7 @@ export default function LoginForm({ onSwitchToRegister, redirectTo }: LoginFormP
       newErrors.identifier = 'Vui lòng nhập email hoặc số điện thoại';
     } else {
       const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier);
-      const isPhone = /(84|0[3|5|7|8|9])+([0-9]{8})\b/.test(identifier);
+      const isPhone = /^(0\d{9}|\+?84\d{9})$/.test(identifier.replace(/[\s().-]/g, ''));
       if (!isEmail && !isPhone) {
         newErrors.identifier = 'Email hoặc số điện thoại không hợp lệ';
       }
@@ -59,9 +62,12 @@ export default function LoginForm({ onSwitchToRegister, redirectTo }: LoginFormP
     try {
       const res = await login({ identifier, password, rememberMe });
       if (res.success) {
+        if (res.user) setAuthUser(res.user);
         setIsSuccess(true);
         setTimeout(() => {
-          if (intent === 'vip') {
+          if (res.user?.role === 'PARTNER') {
+            router.push('/partner');
+          } else if (intent === 'vip') {
             router.push('/vip?action=register-vip');
           } else {
             router.push(redirectTo || '/');
@@ -156,9 +162,9 @@ export default function LoginForm({ onSwitchToRegister, redirectTo }: LoginFormP
           </div>
           <span className="text-sm text-gray-600 select-none">Ghi nhớ đăng nhập</span>
         </label>
-        <a href="#" className="text-sm text-teal-600 hover:text-teal-700 font-medium">
+        <Link href="/quen-mat-khau" className="text-sm text-teal-600 hover:text-teal-700 font-medium">
           Quên mật khẩu?
-        </a>
+        </Link>
       </div>
 
       {errors.general && (

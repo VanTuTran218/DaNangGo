@@ -1,7 +1,13 @@
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
+import helmet from 'helmet';
 import { connectDB, closeDB } from './config/db';
+import authRouter, { adminRouter } from './modules/auth/auth.routes';
+import placesRouter from './modules/places/places.routes';
+import { csrfProtection } from './middleware/csrf.middleware';
+import { errorHandler } from './middleware/error-handler';
 
 // Load biến môi trường từ .env
 dotenv.config();
@@ -10,20 +16,25 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // ==================== MIDDLEWARE ====================
-app.use(cors());                          // Cho phép frontend gọi API
-app.use(express.json());                  // Parse JSON body
-app.use(express.urlencoded({ extended: true })); // Parse URL-encoded body
+const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+app.use(helmet());
+app.use(cors({ origin: frontendUrl, credentials: true }));
+app.use(cookieParser());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(csrfProtection);
 
 // ==================== ROUTES ====================
-// TODO: Import và đăng ký các router theo từng module
-// import authRouter from './modules/auth/auth.routes';
-// import usersRouter from './modules/users/users.routes';
-// import placesRouter from './modules/places/places.routes';
+app.use('/api/auth', authRouter);
+app.use('/api/admin/auth', adminRouter);
+app.use('/api/places', placesRouter);
 
 // Kiểm tra server đang chạy
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'DaNangGo API đang chạy 🚀' });
 });
+
+app.use(errorHandler);
 
 // ==================== KHỞI ĐỘNG SERVER ====================
 async function startServer() {

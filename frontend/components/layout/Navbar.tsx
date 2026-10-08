@@ -75,7 +75,7 @@ export default function Navbar() {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  if (pathname?.startsWith('/dang-nhap')) {
+  if (pathname?.startsWith('/dang-nhap') || pathname?.startsWith('/quen-mat-khau') || pathname?.startsWith('/admin') || pathname?.startsWith('/partner')) {
     return null;
   }
 
@@ -366,6 +366,9 @@ export default function Navbar() {
                           </div>
 
                           <div className="py-1">
+                            {user.role === 'PARTNER' && (
+                              <Link href="/partner" className="block px-4 py-2 text-sm font-semibold text-teal-600 bg-teal-50/60 hover:bg-teal-100/60 transition-colors" onClick={() => setAvatarDropdownOpen(false)}>Quản lý cơ sở</Link>
+                            )}
                             <Link href="/ca-nhan" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-teal-600 transition-colors" onClick={() => setAvatarDropdownOpen(false)}>Trang cá nhân</Link>
                             <Link href="/ca-nhan?tab=offers" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-teal-600 transition-colors" onClick={() => setAvatarDropdownOpen(false)}>Ưu đãi thành viên VIP</Link>
                             <Link href="/lich-trinh" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-teal-600 transition-colors" onClick={() => setAvatarDropdownOpen(false)}>Lịch trình của tôi</Link>
@@ -388,7 +391,9 @@ export default function Navbar() {
                             <div>
                               <p className="font-semibold text-sm">{user.name}</p>
                               <p className="text-xs text-gray-500">{user.email}</p>
-                              <span className="inline-block mt-1 px-2 py-0.5 bg-gray-100 text-gray-600 text-[10px] rounded-full font-medium">Thành viên thường</span>
+                              <span className="inline-block mt-1 px-2 py-0.5 bg-gray-100 text-gray-600 text-[10px] rounded-full font-medium">
+                                {user.role === 'PARTNER' ? 'Đối tác dịch vụ' : 'Thành viên thường'}
+                              </span>
                             </div>
                           </div>
                           
@@ -417,6 +422,9 @@ export default function Navbar() {
                           </div>
 
                           <div className="py-1">
+                            {user.role === 'PARTNER' && (
+                              <Link href="/partner" className="block px-4 py-2 text-sm font-semibold text-teal-600 bg-teal-50/60 hover:bg-teal-100/60 transition-colors" onClick={() => setAvatarDropdownOpen(false)}>Quản lý cơ sở</Link>
+                            )}
                             <Link href="/ca-nhan" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-teal-600 transition-colors" onClick={() => setAvatarDropdownOpen(false)}>Trang cá nhân</Link>
                             <Link href="/lich-trinh" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-teal-600 transition-colors" onClick={() => setAvatarDropdownOpen(false)}>Lịch trình của tôi</Link>
                             <Link href="/ca-nhan?tab=reviews" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-teal-600 transition-colors" onClick={() => setAvatarDropdownOpen(false)}>Lịch sử đánh giá</Link>
@@ -514,6 +522,15 @@ export default function Navbar() {
                 </Link>
               ) : (
                 <>
+                  {user.role === 'PARTNER' && (
+                    <Link
+                      href="/partner"
+                      className="flex items-center justify-center gap-2 bg-teal-50 border border-teal-200 text-teal-700 hover:bg-teal-100 py-3 rounded-full text-sm font-semibold transition-all mb-1"
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      Quản lý cơ sở (Partner)
+                    </Link>
+                  )}
                   <Link
                     href="/ca-nhan"
                     className="flex items-center justify-center gap-2 border border-gray-300 text-[#0f2942] hover:bg-gray-50 py-3 rounded-full text-sm font-medium transition-all"

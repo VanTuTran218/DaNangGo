@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { connectDB, closeDB } from './config/db';
+import bookingsRouter from './modules/bookings/bookings.routes';
 
 // Load biến môi trường từ .env
 dotenv.config();
@@ -24,6 +25,7 @@ app.use(express.urlencoded({ extended: true })); // Parse URL-encoded body
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'DaNangGo API đang chạy 🚀' });
 });
+app.use('/api/bookings', bookingsRouter);
 
 // ==================== KHỞI ĐỘNG SERVER ====================
 async function startServer() {

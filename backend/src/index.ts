@@ -15,6 +15,10 @@ app.use(express.json());                  // Parse JSON body
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded body
 
 // ==================== ROUTES ====================
+import restaurantRouter from './modules/restaurants/restaurants.routes';
+
+app.use('/api/restaurants', restaurantRouter);
+
 // TODO: Import và đăng ký các router theo từng module
 // import authRouter from './modules/auth/auth.routes';
 // import usersRouter from './modules/users/users.routes';

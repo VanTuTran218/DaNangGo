@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { changePassword } from "@/lib/api/auth";
 
 export default function ChangePasswordForm() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState("");
 
   const calculateStrength = (password: string) => {
     let strength = 0;
@@ -45,12 +47,14 @@ export default function ChangePasswordForm() {
       return;
     }
     setIsSaving(true);
-    await new Promise(resolve => setTimeout(resolve, 800));
+    setError("");
+    const result = await changePassword(currentPassword, newPassword, confirmPassword);
     setIsSaving(false);
+    if (!result.success) { setError(result.error || "Không thể đổi mật khẩu."); return; }
     setCurrentPassword("");
     setNewPassword("");
     setConfirmPassword("");
-    alert("Đổi mật khẩu thành công!");
+    alert(result.message || "Đổi mật khẩu thành công!");
   };
 
   return (
@@ -58,6 +62,7 @@ export default function ChangePasswordForm() {
       <h3 className="font-bold text-gray-800 text-lg mb-6">Đổi mật khẩu</h3>
       
       <form onSubmit={handleSubmit} className="space-y-5 max-w-md">
+        {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
         <div className="space-y-1.5">
           <label className="text-sm font-medium text-gray-700">Mật khẩu hiện tại</label>
           <input 

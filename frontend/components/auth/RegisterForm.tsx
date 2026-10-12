@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import PasswordField from './PasswordField';
 import PasswordStrength from './PasswordStrength';
 import { register } from '@/lib/api/auth';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface RegisterFormProps {
   onSwitchToLogin: () => void;
@@ -14,11 +15,16 @@ interface RegisterFormProps {
 
 export default function RegisterForm({ onSwitchToLogin, redirectTo }: RegisterFormProps) {
   const router = useRouter();
+  const { login: setAuthUser } = useAuth();
   const searchParams = useSearchParams();
   const intent = searchParams.get('intent');
   
   const [name, setName] = useState('');
-  const [identifier, setIdentifier] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [role, setRole] = useState<'USER' | 'PARTNER'>('USER');
+  const [businessName, setBusinessName] = useState('');
+  const [serviceType, setServiceType] = useState<'STAY' | 'TABLE' | 'TICKET'>('STAY');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [agreedToTerms, setAgreedToTerms] = useState(false);
@@ -33,15 +39,10 @@ export default function RegisterForm({ onSwitchToLogin, redirectTo }: RegisterFo
     const newErrors: typeof errors = {};
     if (!name.trim()) newErrors.name = 'Vui lòng nhập họ tên';
     
-    if (!identifier) {
-      newErrors.identifier = 'Vui lòng nhập email hoặc số điện thoại';
-    } else {
-      const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier);
-      const isPhone = /(84|0[3|5|7|8|9])+([0-9]{8})\b/.test(identifier);
-      if (!isEmail && !isPhone) {
-        newErrors.identifier = 'Email hoặc số điện thoại không hợp lệ';
-      }
-    }
+    if (!email.trim()) newErrors.email = 'Vui lòng nhập email';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) newErrors.email = 'Email không hợp lệ';
+    if (phone.trim() && !/^(0\d{9}|\+?84\d{9})$/.test(phone.trim().replace(/[\s().-]/g, ''))) newErrors.phone = 'Số điện thoại không hợp lệ';
+    if (role === 'PARTNER' && businessName.trim().length < 2) newErrors.businessName = 'Vui lòng nhập tên doanh nghiệp/cơ sở';
     
     if (!password) {
       newErrors.password = 'Vui lòng nhập mật khẩu';
@@ -63,11 +64,11 @@ export default function RegisterForm({ onSwitchToLogin, redirectTo }: RegisterFo
     return Object.keys(newErrors).length === 0;
   };
 
-  const isFormValid = name && identifier && password.length >= 8 && confirmPassword === password && agreedToTerms;
+  const isFormValid = name && email && password.length >= 8 && confirmPassword === password && agreedToTerms && (role !== 'PARTNER' || businessName.trim().length >= 2);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setTouched({ name: true, identifier: true, password: true, confirmPassword: true, agreedToTerms: true });
+    setTouched({ name: true, email: true, phone: true, businessName: true, password: true, confirmPassword: true, agreedToTerms: true });
     
     if (!validate()) {
       setShakeKey(prev => prev + 1);
@@ -78,8 +79,13 @@ export default function RegisterForm({ onSwitchToLogin, redirectTo }: RegisterFo
     setErrors({});
     
     try {
-      const res = await register({ name, identifier, password, confirmPassword, agreedToTerms });
+      const res = await register({
+        name, email: email.trim(), ...(phone.trim() ? { phone: phone.trim() } : {}), role,
+        password, confirmPassword, agreedToTerms,
+        ...(role === 'PARTNER' ? { partner: { businessName: businessName.trim(), serviceType } } : {}),
+      });
       if (res.success) {
+        if (res.user) setAuthUser(res.user);
         setIsSuccess(true);
         setTimeout(() => {
           if (intent === 'vip') {
@@ -146,8 +152,8 @@ export default function RegisterForm({ onSwitchToLogin, redirectTo }: RegisterFo
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="reg-identifier" className="text-sm font-medium text-gray-700">
-          Email hoặc Số điện thoại <span className="text-red-500">*</span>
+        <label htmlFor="reg-email" className="text-sm font-medium text-gray-700">
+          Email <span className="text-red-500">*</span>
         </label>
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -156,19 +162,44 @@ export default function RegisterForm({ onSwitchToLogin, redirectTo }: RegisterFo
             </svg>
           </div>
           <input
-            id="reg-identifier"
-            type="text"
-            value={identifier}
-            onChange={(e) => setIdentifier(e.target.value)}
-            onBlur={() => handleBlur('identifier')}
-            placeholder="nhap@email.com hoặc 09xxxx"
+            id="reg-email"
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            onBlur={() => handleBlur('email')}
+            placeholder="nhap@email.com"
             className={`block w-full pl-10 pr-4 py-2.5 bg-white border ${
-              touched.identifier && errors.identifier ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'
+              touched.email && errors.email ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'
             } rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-shadow duration-200`}
           />
         </div>
-        {touched.identifier && errors.identifier && <p className="text-sm text-red-500 mt-1">{errors.identifier}</p>}
+        {touched.email && errors.email && <p className="text-sm text-red-500 mt-1">{errors.email}</p>}
       </div>
+
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="reg-phone" className="text-sm font-medium text-gray-700">Số điện thoại <span className="text-gray-400">(không bắt buộc)</span></label>
+        <input id="reg-phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} onBlur={() => handleBlur('phone')} placeholder="09xxxxxxxx" className={`block w-full px-4 py-2.5 bg-white border ${touched.phone && errors.phone ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'} rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-shadow duration-200`} />
+        {touched.phone && errors.phone && <p className="text-sm text-red-500 mt-1">{errors.phone}</p>}
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="reg-role" className="text-sm font-medium text-gray-700">Loại tài khoản <span className="text-red-500">*</span></label>
+        <select id="reg-role" value={role} onChange={(e) => setRole(e.target.value as 'USER' | 'PARTNER')} className="block w-full px-4 py-2.5 bg-white border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-shadow duration-200">
+          <option value="USER">Khách du lịch</option><option value="PARTNER">Đối tác</option>
+        </select>
+      </div>
+      {role === 'PARTNER' && <>
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="partner-business" className="text-sm font-medium text-gray-700">Tên doanh nghiệp/cơ sở <span className="text-red-500">*</span></label>
+          <input id="partner-business" value={businessName} onChange={(e) => setBusinessName(e.target.value)} onBlur={() => handleBlur('businessName')} className={`block w-full px-4 py-2.5 bg-white border ${touched.businessName && errors.businessName ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'} rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-shadow duration-200`} />
+          {touched.businessName && errors.businessName && <p className="text-sm text-red-500 mt-1">{errors.businessName}</p>}
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="partner-service" className="text-sm font-medium text-gray-700">Loại dịch vụ <span className="text-red-500">*</span></label>
+          <select id="partner-service" value={serviceType} onChange={(e) => setServiceType(e.target.value as 'STAY' | 'TABLE' | 'TICKET')} className="block w-full px-4 py-2.5 bg-white border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-shadow duration-200"><option value="STAY">Lưu trú</option><option value="TABLE">Ẩm thực</option><option value="TICKET">Vé tham quan</option></select>
+        </div>
+      </>}
 
       <div className="flex flex-col">
         <PasswordField

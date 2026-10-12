@@ -1,9 +1,11 @@
 export type Tier = 'Silver' | 'Gold' | 'Diamond' | 'None';
+export type UserRole = 'USER' | 'PARTNER' | 'ADMIN';
 
 export interface User {
   id: string;
   name: string;
   email: string;
+  role: UserRole;
   phone?: string;
   birthday?: string;
   avatarUrl?: string;
@@ -24,11 +26,19 @@ export interface LoginPayload {
 }
 
 export interface RegisterPayload {
+  role: 'USER' | 'PARTNER';
   name: string;
-  identifier: string;
+  email: string;
+  phone?: string;
   password: string;
   confirmPassword: string;
   agreedToTerms: boolean;
+  partner?: {
+    businessName: string;
+    serviceType: 'STAY' | 'TABLE' | 'TICKET';
+    taxCode?: string;
+    address?: string;
+  };
 }
 
 export interface AuthResponse {

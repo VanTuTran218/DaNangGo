@@ -13,6 +13,7 @@ export interface TimelineItem {
   type: "attraction" | "food" | "hotel" | "transport";
   imageUrl?: string;
   location?: string;
+  estimatedCost?: number;
 }
 
 interface ItineraryTimelineProps {
@@ -71,6 +72,12 @@ const TimelineNode = ({ item, index }: { item: TimelineItem; index: number }) =>
           </div>
           
           <p className="text-gray-600 mb-4 text-sm leading-relaxed">{item.description}</p>
+
+          {item.estimatedCost !== undefined && (
+            <p className="text-sm font-semibold text-teal-700 mb-3">
+              Ước tính cho đoàn: {item.estimatedCost.toLocaleString("vi-VN")}đ
+            </p>
+          )}
           
           {item.location && (
             <div className="flex items-center text-gray-500 text-sm mb-4">

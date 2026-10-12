@@ -1,8 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Plus, Check } from "lucide-react";
-import { useState } from "react";
+import { Plus, X } from "lucide-react";
 import Image from "next/image";
 
 export interface RecommendationItem {
@@ -15,7 +14,9 @@ export interface RecommendationItem {
 
 interface RecommendationBlockProps {
   items: RecommendationItem[];
-  onAdd: (item: RecommendationItem) => void;
+  selectedIds: string[];
+  guestCount: number;
+  onToggle: (item: RecommendationItem) => void;
 }
 
 const containerVariants = {
@@ -31,21 +32,7 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 }
 };
 
-export default function RecommendationBlock({ items, onAdd }: RecommendationBlockProps) {
-  const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
-
-  const handleAdd = (item: RecommendationItem) => {
-    if (addedIds.has(item.id)) return;
-    
-    setAddedIds(prev => {
-      const next = new Set(prev);
-      next.add(item.id);
-      return next;
-    });
-    
-    onAdd(item);
-  };
-
+export default function RecommendationBlock({ items, selectedIds, guestCount, onToggle }: RecommendationBlockProps) {
   return (
     <motion.div 
       variants={containerVariants}
@@ -55,7 +42,7 @@ export default function RecommendationBlock({ items, onAdd }: RecommendationBloc
       className="grid grid-cols-1 md:grid-cols-2 gap-4"
     >
       {items.map((item) => {
-        const isAdded = addedIds.has(item.id);
+        const isAdded = selectedIds.includes(item.id);
         
         return (
           <motion.div
@@ -76,20 +63,21 @@ export default function RecommendationBlock({ items, onAdd }: RecommendationBloc
               
               <div className="flex items-center justify-between mt-2">
                 <span className="text-sm font-semibold text-gray-700">
-                  {item.price.toLocaleString("vi-VN")}đ
+                  {(item.price * guestCount).toLocaleString("vi-VN")}đ / đoàn
                 </span>
                 
                 <motion.button
                   whileTap={{ scale: 0.9, opacity: 0.7 }}
-                  onClick={() => handleAdd(item)}
-                  disabled={isAdded}
+                  onClick={() => onToggle(item)}
+                  title={isAdded ? "Bỏ khỏi bản xem trước" : "Thêm vào bản xem trước, không đặt chỗ"}
+                  aria-label={isAdded ? `Bỏ ${item.title} khỏi bản xem trước` : `Thêm ${item.title} vào bản xem trước`}
                   className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
                     isAdded 
-                      ? "bg-green-100 text-green-600 cursor-default" 
+                      ? "bg-green-100 text-green-600 hover:bg-red-100 hover:text-red-600"
                       : "bg-gray-100 text-gray-600 hover:bg-orange-100 hover:text-orange-500"
                   }`}
                 >
-                  {isAdded ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                  {isAdded ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                 </motion.button>
               </div>
             </div>

@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { connectDB, closeDB } from './config/db';
+import itinerariesRouter from './modules/itineraries/itineraries.routes';
 
 // Load biến môi trường từ .env
 dotenv.config();
@@ -15,10 +16,7 @@ app.use(express.json());                  // Parse JSON body
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded body
 
 // ==================== ROUTES ====================
-// TODO: Import và đăng ký các router theo từng module
-// import authRouter from './modules/auth/auth.routes';
-// import usersRouter from './modules/users/users.routes';
-// import placesRouter from './modules/places/places.routes';
+app.use('/api/itineraries', itinerariesRouter);
 
 // Kiểm tra server đang chạy
 app.get('/api/health', (req, res) => {

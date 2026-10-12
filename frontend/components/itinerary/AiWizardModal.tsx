@@ -7,6 +7,9 @@ import { useState, useEffect } from "react";
 export interface ItineraryForm {
   budget: number;
   days: number;
+  guestCount: number;
+  startDate: string;
+  needs: Array<"accommodation" | "food" | "attractions">;
   accType: string;
   stars: number;
   prefs: string[];
@@ -17,7 +20,7 @@ interface Props {
   initialStep: number;
   formData: ItineraryForm;
   onChange: (data: Partial<ItineraryForm>) => void;
-  onComplete: () => void;
+  onComplete: () => Promise<void>;
   onClose: () => void;
 }
 
@@ -32,32 +35,43 @@ const PREF_OPTIONS = [
 export default function AiWizardModal({ isOpen, initialStep, formData, onChange, onComplete, onClose }: Props) {
   const [step, setStep] = useState(initialStep);
   const [isCalculating, setIsCalculating] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   // Reset step to initial when opened (if it was triggered from header)
   useEffect(() => {
     if (isOpen) {
       setStep(initialStep);
       setIsCalculating(false);
+      setErrorMessage("");
     }
   }, [isOpen, initialStep]);
 
   if (!isOpen) return null;
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (step < 2) setStep(step + 1);
     else {
       setIsCalculating(true);
-      setTimeout(() => {
+      setErrorMessage("");
+      try {
+        await onComplete();
+      } catch (error) {
+        setErrorMessage(error instanceof Error ? error.message : "Không thể tạo lịch trình.");
+      } finally {
         setIsCalculating(false);
-        onComplete();
-      }, 1500);
+      }
     }
   };
 
   const isStepValid = () => {
-    if (step === 0) return formData.budget > 0 && formData.days > 0;
-    if (step === 1) return formData.accType !== "";
-    if (step === 2) return formData.prefs.length > 0;
+    if (step === 0) {
+      return formData.budget > 0
+        && Number.isInteger(formData.days) && formData.days >= 1 && formData.days <= 3
+        && Number.isInteger(formData.guestCount) && formData.guestCount > 0
+        && /^\d{4}-\d{2}-\d{2}$/.test(formData.startDate);
+    }
+    if (step === 1) return formData.needs.length > 0;
+    if (step === 2) return true;
     return false;
   };
 
@@ -84,7 +98,7 @@ export default function AiWizardModal({ isOpen, initialStep, formData, onChange,
               <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-500">
                 <Sparkles size={16} />
               </div>
-              <h2 className="font-bold text-gray-900 text-lg">Thiết kế lịch trình AI</h2>
+              <h2 className="font-bold text-gray-900 text-lg">Thiết kế lịch trình theo ngân sách</h2>
             </div>
             <button onClick={onClose} className="p-2 hover:bg-gray-200 rounded-full text-gray-500 transition-colors">
               <X size={20} />
@@ -108,13 +122,18 @@ export default function AiWizardModal({ isOpen, initialStep, formData, onChange,
             </div>
             <div className="flex justify-between mt-2 text-xs font-semibold text-gray-500">
               <span className={step >= 0 ? "text-teal-600" : ""}>Ngân sách</span>
-              <span className={step >= 1 ? "text-teal-600" : ""}>Lưu trú</span>
+              <span className={step >= 1 ? "text-teal-600" : ""}>Nhu cầu</span>
               <span className={step >= 2 ? "text-teal-600" : ""}>Sở thích</span>
             </div>
           </div>
 
           {/* Content Area */}
           <div className="p-8 flex-1 overflow-y-auto overflow-x-hidden relative min-h-[300px]">
+            {errorMessage && (
+              <p role="alert" className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+                {errorMessage}
+              </p>
+            )}
             <AnimatePresence mode="wait">
               
               {/* STEP 1: NGÂN SÁCH & THỜI GIAN */}
@@ -126,7 +145,7 @@ export default function AiWizardModal({ isOpen, initialStep, formData, onChange,
                 >
                   <div>
                     <h3 className="text-xl font-bold text-gray-900 mb-2">Ngân sách dự kiến của bạn?</h3>
-                    <p className="text-gray-500 text-sm mb-4">Cho 1 người trong toàn bộ chuyến đi.</p>
+                    <p className="text-gray-500 text-sm mb-4">Ngân sách tổng cho toàn bộ đoàn.</p>
                     
                     <div className="relative">
                       <input 
@@ -149,52 +168,96 @@ export default function AiWizardModal({ isOpen, initialStep, formData, onChange,
                   </div>
 
                   <div>
-                    <h3 className="text-lg font-bold text-gray-900 mb-3">Thời gian lưu trú</h3>
+                    <h3 className="text-lg font-bold text-gray-900 mb-3">Số ngày</h3>
                     <div className="grid grid-cols-3 gap-3">
-                      {[2, 3, 4, 5].map(days => (
+                      {[1, 2, 3].map(days => (
                         <button 
                           key={days} 
                           onClick={() => onChange({ days })}
                           className={`py-3 rounded-xl border-2 font-bold text-sm transition-all ${formData.days === days ? "border-teal-500 bg-teal-50 text-teal-700" : "border-gray-200 text-gray-600 hover:border-gray-300"}`}
                         >
-                          {days} Ngày {days - 1} Đêm
+                          {days} ngày
                         </button>
                       ))}
                     </div>
                   </div>
+
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <label className="block">
+                      <span className="block text-sm font-bold text-gray-900 mb-2">Số người</span>
+                      <input
+                        type="number"
+                        min={1}
+                        step={1}
+                        value={formData.guestCount}
+                        onChange={(event) => onChange({ guestCount: Number(event.target.value) })}
+                        className="w-full border-2 border-gray-200 focus:border-teal-500 rounded-xl px-4 py-3 outline-none"
+                      />
+                    </label>
+                    <label className="block">
+                      <span className="block text-sm font-bold text-gray-900 mb-2">Ngày bắt đầu</span>
+                      <input
+                        type="date"
+                        value={formData.startDate}
+                        onChange={(event) => onChange({ startDate: event.target.value })}
+                        className="w-full border-2 border-gray-200 focus:border-teal-500 rounded-xl px-4 py-3 outline-none"
+                      />
+                    </label>
+                  </div>
                 </motion.div>
               )}
 
-              {/* STEP 2: LƯU TRÚ */}
+              {/* STEP 2: NHU CẦU VÀ LƯU TRÚ */}
               {step === 1 && (
                 <motion.div 
                   key="step1"
                   initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }} transition={{ duration: 0.3 }}
                   className="space-y-6"
                 >
-                  <h3 className="text-xl font-bold text-gray-900 mb-4">Bạn thích ở đâu?</h3>
-                  <div className="grid grid-cols-2 gap-4">
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">Bạn cần gợi ý những hạng mục nào?</h3>
+                  <p className="text-gray-500 text-sm mb-4">Chọn ít nhất một nhu cầu. Đây chỉ là các phần muốn đưa vào lịch tham khảo.</p>
+                  <div className="grid grid-cols-3 gap-3">
                     {[
-                      { id: "Khách sạn", icon: Hotel },
-                      { id: "Resort", icon: Palmtree },
-                      { id: "Homestay", icon: Home },
-                      { id: "Cắm trại", icon: Tent },
+                      { id: "accommodation" as const, label: "Lưu trú", icon: Hotel },
+                      { id: "food" as const, label: "Ăn uống", icon: UtensilsCrossed },
+                      { id: "attractions" as const, label: "Tham quan", icon: Mountain },
                     ].map(type => (
                       <button 
                         key={type.id} 
-                        onClick={() => onChange({ accType: type.id })}
-                        className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-2 transition-all ${formData.accType === type.id ? "border-teal-500 bg-teal-50 text-teal-700 shadow-sm" : "border-gray-200 text-gray-600 hover:bg-gray-50"}`}
+                        onClick={() => onChange({
+                          needs: formData.needs.includes(type.id)
+                            ? formData.needs.filter((need) => need !== type.id)
+                            : [...formData.needs, type.id],
+                        })}
+                        className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-2 transition-all ${formData.needs.includes(type.id) ? "border-teal-500 bg-teal-50 text-teal-700 shadow-sm" : "border-gray-200 text-gray-600 hover:bg-gray-50"}`}
                       >
-                        <type.icon size={24} className={formData.accType === type.id ? "text-teal-500" : "text-gray-400"} />
-                        <span className="font-bold">{type.id}</span>
+                        <type.icon size={24} className={formData.needs.includes(type.id) ? "text-teal-500" : "text-gray-400"} />
+                        <span className="font-bold">{type.label}</span>
                       </button>
                     ))}
                   </div>
 
-                  <div className="pt-4">
-                    <h4 className="font-bold text-gray-900 mb-3">Tiêu chuẩn</h4>
-                    <div className="flex gap-2">
-                      {[3, 4, 5].map(star => (
+                  {formData.needs.includes("accommodation") && (
+                    <div className="pt-2">
+                      <h4 className="font-bold text-gray-900 mb-3">Loại lưu trú và tiêu chuẩn (không bắt buộc)</h4>
+                      <div className="grid grid-cols-2 gap-3">
+                        {[
+                          { id: "Khách sạn", icon: Hotel },
+                          { id: "Resort", icon: Palmtree },
+                          { id: "Homestay", icon: Home },
+                          { id: "Cắm trại", icon: Tent },
+                        ].map(type => (
+                          <button
+                            key={type.id}
+                            onClick={() => onChange({ accType: type.id })}
+                            className={`p-3 rounded-xl border-2 flex items-center justify-center gap-2 font-semibold transition-all ${formData.accType === type.id ? "border-teal-500 bg-teal-50 text-teal-700" : "border-gray-200 text-gray-600"}`}
+                          >
+                            <type.icon size={18} />{type.id}
+                          </button>
+                        ))}
+                      </div>
+                      <div className="flex gap-2 mt-3">
+                        {[3, 4, 5].map(star => (
                         <button 
                           key={star} 
                           onClick={() => onChange({ stars: star })}
@@ -202,9 +265,10 @@ export default function AiWizardModal({ isOpen, initialStep, formData, onChange,
                         >
                           {star} <Sparkles size={14} className={formData.stars === star ? "fill-amber-400 text-amber-400" : ""} />
                         </button>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </motion.div>
               )}
 
@@ -215,7 +279,7 @@ export default function AiWizardModal({ isOpen, initialStep, formData, onChange,
                   initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }} transition={{ duration: 0.3 }}
                 >
                   <h3 className="text-xl font-bold text-gray-900 mb-2">Gu trải nghiệm của bạn?</h3>
-                  <p className="text-gray-500 text-sm mb-6">Chọn các hoạt động bạn hứng thú nhất (chọn nhiều).</p>
+                  <p className="text-gray-500 text-sm mb-6">Chọn nếu muốn ưu tiên sở thích; bạn có thể bỏ qua bước này.</p>
                   
                   <div className="flex flex-wrap gap-3">
                     {PREF_OPTIONS.map(pref => {
@@ -262,7 +326,7 @@ export default function AiWizardModal({ isOpen, initialStep, formData, onChange,
                 </>
               ) : (
                 <>
-                  {step === 2 ? "Tạo lịch trình AI" : "Tiếp tục"}
+                  {step === 2 ? "Tạo lịch trình" : "Tiếp tục"}
                   {step < 2 && <ArrowRight size={18} />}
                 </>
               )}

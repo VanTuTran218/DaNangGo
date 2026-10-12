@@ -28,6 +28,14 @@ app.use(csrfProtection);
 app.use('/api/auth', authRouter);
 app.use('/api/admin/auth', adminRouter);
 app.use('/api/places', placesRouter);
+import restaurantRouter from './modules/restaurants/restaurants.routes';
+
+app.use('/api/restaurants', restaurantRouter);
+
+// TODO: Import và đăng ký các router theo từng module
+// import authRouter from './modules/auth/auth.routes';
+// import usersRouter from './modules/users/users.routes';
+// import placesRouter from './modules/places/places.routes';
 
 // Kiểm tra server đang chạy
 app.get('/api/health', (req, res) => {

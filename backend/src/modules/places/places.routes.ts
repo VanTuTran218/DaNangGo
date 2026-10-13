@@ -1,8 +1,11 @@
 import { Router, Request, Response } from 'express';
 import { getAllPlaces, getPlaceById, createPlace } from './places.service';
 import { requireAuth, requireRole } from '../../middleware/auth.middleware';
+import reviewsRouter from '../reviews/reviews.routes';
 
 const router = Router();
+
+router.use('/:id/reviews', reviewsRouter);
 
 // GET /api/places - Lấy tất cả địa điểm
 router.get('/', async (req: Request, res: Response) => {
@@ -23,8 +26,8 @@ router.get('/:id', async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, message: 'ID không hợp lệ' });
     }
 
-    const id = parseInt(rawId, 10);
-    if (isNaN(id)) {
+    const id = Number(rawId);
+    if (!Number.isSafeInteger(id) || id < 1) {
       return res.status(400).json({ success: false, message: 'ID không hợp lệ' });
     }
 

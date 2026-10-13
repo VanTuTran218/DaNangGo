@@ -10,6 +10,7 @@ import { TIER_CONFIG } from "@/lib/constants/tiers";
 
 const NAV_LINKS = [
   { href: "/", label: "Trang chủ" },
+  { href: "/places", label: "Địa điểm" },
   { href: "/luutru", label: "Lưu trú" },
   { href: "/amthuc", label: "Ẩm thực" },
   { href: "/diemdulich", label: "Điểm du lịch" },

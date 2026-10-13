@@ -10,9 +10,9 @@ interface AuthHeroPanelProps {
 }
 
 const IMAGES = [
-  'https://images.unsplash.com/photo-1559493442-0eaaba8bb6ce?q=80&w=1600',
-  'https://images.unsplash.com/photo-1582650949186-c5dc3bba5b7c?q=80&w=1600',
-  'https://images.unsplash.com/photo-1528360983277-13d401cdc186?q=80&w=1600'
+  'https://images.unsplash.com/photo-1723142282970-1fd415eec1ad?auto=format&fit=crop&w=1600&q=80',
+  'https://images.unsplash.com/photo-1677125058484-86b1e964eb31?auto=format&fit=crop&w=1600&q=80',
+  'https://images.unsplash.com/photo-1560964645-f9c3a3857831?auto=format&fit=crop&w=1600&q=80'
 ];
 
 export default function AuthHeroPanel({ activeTab }: AuthHeroPanelProps) {
@@ -71,6 +71,7 @@ export default function AuthHeroPanel({ activeTab }: AuthHeroPanelProps) {
               fill
               className="object-cover"
               priority
+              sizes="(max-width: 1024px) 100vw, 50vw"
             />
           </motion.div>
         </motion.div>

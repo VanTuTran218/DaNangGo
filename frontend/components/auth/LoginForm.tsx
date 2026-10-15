@@ -2,25 +2,28 @@
 
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import PasswordField from './PasswordField';
 import SocialButtons from './SocialButtons';
 import { login } from '@/lib/api/auth';
 import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
+import VerifyEmailStep from './VerifyEmailStep';
 
 interface LoginFormProps {
   onSwitchToRegister: () => void;
   redirectTo: string;
+  initialIdentifier?: string;
+  successMessage?: string;
 }
 
-export default function LoginForm({ onSwitchToRegister, redirectTo }: LoginFormProps) {
+export default function LoginForm({ onSwitchToRegister, redirectTo, initialIdentifier, successMessage }: LoginFormProps) {
   const router = useRouter();
   const { login: setAuthUser } = useAuth();
   const searchParams = useSearchParams();
   const intent = searchParams.get('intent');
   
-  const [identifier, setIdentifier] = useState('');
+  const [identifier, setIdentifier] = useState(initialIdentifier || '');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState<{ identifier?: string; password?: string; general?: string }>({});
@@ -28,6 +31,9 @@ export default function LoginForm({ onSwitchToRegister, redirectTo }: LoginFormP
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [shakeKey, setShakeKey] = useState(0);
+  const [notice, setNotice] = useState(successMessage || '');
+  // Khi đăng nhập mà email chưa xác thực → chuyển sang bước OTP
+  const [verifyData, setVerifyData] = useState<{ email: string; maskedEmail: string } | null>(null);
 
   const validate = () => {
     const newErrors: typeof errors = {};
@@ -70,12 +76,20 @@ export default function LoginForm({ onSwitchToRegister, redirectTo }: LoginFormP
           } else if (intent === 'vip') {
             router.push('/vip?action=register-vip');
           } else {
-            router.push(redirectTo || '/');
+            const safeRedirect = redirectTo && redirectTo.startsWith('/') && !redirectTo.startsWith('//') && !redirectTo.startsWith('/\\')
+              ? redirectTo
+              : '/';
+            router.push(safeRedirect);
           }
         }, 800);
       } else {
-        setErrors({ general: res.error });
-        setShakeKey(prev => prev + 1);
+        // Nếu email chưa xác thực → chuyển sang bước OTP
+        if (res.code === 'EMAIL_NOT_VERIFIED' && res.maskedEmail) {
+          setVerifyData({ email: identifier.trim().toLowerCase(), maskedEmail: res.maskedEmail });
+        } else {
+          setErrors({ general: res.error });
+          setShakeKey(prev => prev + 1);
+        }
       }
     } catch (err) {
       setErrors({ general: 'Đã có lỗi xảy ra. Vui lòng thử lại.' });
@@ -85,6 +99,29 @@ export default function LoginForm({ onSwitchToRegister, redirectTo }: LoginFormP
     }
   };
 
+  // Khi xác thực OTP thành công từ màn đăng nhập → reload lại form đăng nhập (user tự đăng nhập lại)
+  const handleVerifySuccess = (verifiedEmail: string) => {
+    setVerifyData(null);
+    setNotice('Xác thực email thành công! Vui lòng đăng nhập.');
+    setIdentifier(verifiedEmail);
+    setPassword('');
+  };
+
+  // Nếu đang ở bước xác thực OTP
+  if (verifyData) {
+    return (
+      <AnimatePresence mode="wait">
+        <VerifyEmailStep
+          key="login-verify"
+          email={verifyData.email}
+          maskedEmail={verifyData.maskedEmail}
+          onSuccess={handleVerifySuccess}
+          onBack={() => setVerifyData(null)}
+        />
+      </AnimatePresence>
+    );
+  }
+
   return (
     <motion.form 
       onSubmit={handleSubmit}
@@ -92,6 +129,15 @@ export default function LoginForm({ onSwitchToRegister, redirectTo }: LoginFormP
       transition={{ duration: 0.4 }}
       className="flex flex-col gap-5 w-full max-w-md mx-auto"
     >
+      {notice && (
+        <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-2.5 text-emerald-850 text-sm font-medium shadow-xs">
+          <svg className="w-5 h-5 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span className="text-emerald-800">{notice}</span>
+        </div>
+      )}
+
       <div className="flex flex-col gap-1.5">
         <label htmlFor="identifier" className="text-sm font-medium text-gray-700">
           Email hoặc Số điện thoại <span className="text-red-500">*</span>
@@ -105,6 +151,8 @@ export default function LoginForm({ onSwitchToRegister, redirectTo }: LoginFormP
           <input
             id="identifier"
             type="text"
+            autoComplete="username"
+            aria-label="Email hoặc số điện thoại"
             value={identifier}
             onChange={(e) => setIdentifier(e.target.value)}
             onBlur={() => {
@@ -118,7 +166,7 @@ export default function LoginForm({ onSwitchToRegister, redirectTo }: LoginFormP
           />
         </div>
         {touched.identifier && errors.identifier && (
-          <p className="text-sm text-red-500 mt-1">{errors.identifier}</p>
+          <p role="alert" className="text-sm text-red-500 mt-1">{errors.identifier}</p>
         )}
       </div>
 
@@ -126,6 +174,7 @@ export default function LoginForm({ onSwitchToRegister, redirectTo }: LoginFormP
         id="password"
         name="password"
         label="Mật khẩu"
+        autoComplete="current-password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         onBlur={() => {
@@ -168,7 +217,7 @@ export default function LoginForm({ onSwitchToRegister, redirectTo }: LoginFormP
       </div>
 
       {errors.general && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+        <div role="alert" className="p-3 bg-red-50 border border-red-200 rounded-lg">
           <p className="text-sm text-red-600 text-center">{errors.general}</p>
         </div>
       )}

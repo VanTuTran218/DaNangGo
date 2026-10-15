@@ -36,9 +36,10 @@ export const getOne = async (req: Request, res: Response) => {
 // ─── POST /api/restaurants ────────────────────────────────────────────────────
 export const create = async (req: Request, res: Response) => {
   try {
+    if (!req.user) return forbidden(res, 'Vui lòng đăng nhập để tiếp tục');
     const data = await service.createRestaurant(
       req.body as Record<string, unknown>,
-      req.user ?? { partner_id: 1 }
+      req.user
     );
     return created(res, data);
   } catch (err) {
@@ -51,10 +52,11 @@ export const update = async (req: Request, res: Response) => {
   try {
     const id = parseInt(String(req.params['id'] ?? ''));
     if (isNaN(id)) return badRequest(res, 'ID không hợp lệ');
+    if (!req.user) return forbidden(res, 'Vui lòng đăng nhập để tiếp tục');
     const data = await service.updateRestaurant(
       id,
       req.body as Record<string, unknown>,
-      req.user ?? { partner_id: 1, user_id: 1, role: 'PARTNER' as const }
+      req.user
     );
     return ok(res, data);
   } catch (err) {
@@ -67,9 +69,10 @@ export const remove = async (req: Request, res: Response) => {
   try {
     const id = parseInt(String(req.params['id'] ?? ''));
     if (isNaN(id)) return badRequest(res, 'ID không hợp lệ');
+    if (!req.user) return forbidden(res, 'Vui lòng đăng nhập để tiếp tục');
     const data = await service.deleteRestaurant(
       id,
-      req.user ?? { partner_id: 1, user_id: 1, role: 'PARTNER' as const }
+      req.user
     );
     return ok(res, data);
   } catch (err) {

@@ -15,6 +15,18 @@ const IMAGES = [
   'https://images.unsplash.com/photo-1528360983277-13d401cdc186?q=80&w=1600'
 ];
 
+// Giá trị cố định cho các hạt sáng — tránh SSR/client hydration mismatch
+const PARTICLES = [
+  { size: 6,   left: 12,  driftX:  30, duration: 18, delay: 0   },
+  { size: 5,   left: 27,  driftX: -40, duration: 22, delay: 1.5 },
+  { size: 7,   left: 45,  driftX:  20, duration: 16, delay: 3   },
+  { size: 4,   left: 60,  driftX: -25, duration: 20, delay: 0.8 },
+  { size: 6,   left: 73,  driftX:  45, duration: 24, delay: 2.2 },
+  { size: 5,   left: 85,  driftX: -15, duration: 19, delay: 4   },
+  { size: 7,   left: 33,  driftX:  35, duration: 21, delay: 1   },
+  { size: 4,   left: 92,  driftX: -30, duration: 17, delay: 3.5 },
+];
+
 export default function AuthHeroPanel({ activeTab }: AuthHeroPanelProps) {
   const [currentImage, setCurrentImage] = useState(0);
   const shouldReduceMotion = useReducedMotion();
@@ -80,29 +92,29 @@ export default function AuthHeroPanel({ activeTab }: AuthHeroPanelProps) {
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
       <div className="absolute inset-x-0 top-0 h-[30%] bg-gradient-to-b from-black/50 to-transparent" />
 
-      {/* Particles */}
+      {/* Particles — giá trị cố định để tránh SSR hydration mismatch */}
       {!shouldReduceMotion && (
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {[...Array(8)].map((_, i) => (
+          {PARTICLES.map((p, i) => (
             <motion.div
               key={i}
               className="absolute bg-white rounded-full opacity-20"
               style={{
-                width: Math.random() * 4 + 4 + 'px',
-                height: Math.random() * 4 + 4 + 'px',
-                left: Math.random() * 100 + '%',
+                width: p.size + 'px',
+                height: p.size + 'px',
+                left: p.left + '%',
                 bottom: '-5%'
               }}
               animate={{
                 y: [0, -1000],
-                x: [0, (Math.random() - 0.5) * 100],
+                x: [0, p.driftX],
                 opacity: [0.15, 0.3, 0]
               }}
               transition={{
-                duration: Math.random() * 10 + 10,
+                duration: p.duration,
                 repeat: Infinity,
                 ease: 'linear',
-                delay: Math.random() * 5
+                delay: p.delay
               }}
             />
           ))}
@@ -153,19 +165,19 @@ export default function AuthHeroPanel({ activeTab }: AuthHeroPanelProps) {
             transition={{ delay: 0.3 }}
             className="grid grid-cols-3 gap-4 mt-4"
           >
-            <div className="flex flex-col gap-1 p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20">
+            <div className="stat-card stat-card-stagger-1 flex flex-col gap-1 p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20">
               <span className="stat-number text-2xl font-bold">
                 <AnimatedCounter to={120} />K+
               </span>
               <span className="text-sm text-white/70">Members</span>
             </div>
-            <div className="flex flex-col gap-1 p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20">
+            <div className="stat-card stat-card-stagger-2 flex flex-col gap-1 p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20">
               <span className="text-2xl font-bold">
                 <AnimatedCounter to={4.9} decimals={1} />
               </span>
               <span className="text-sm text-white/70">Đánh giá</span>
             </div>
-            <div className="flex flex-col gap-1 p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20">
+            <div className="stat-card stat-card-stagger-3 flex flex-col gap-1 p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20">
               <span className="text-2xl font-bold">
                 <AnimatedCounter to={25} />%
               </span>

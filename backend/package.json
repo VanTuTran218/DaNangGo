@@ -11,7 +11,7 @@
     "start": "node dist/index.js",
     "build": "tsc",
     "seed:admin": "npm run build && node dist/scripts/seed-admin.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npx tsx tests/auth.test.ts"
   },
   "keywords": [],
   "author": "",

@@ -1,4 +1,4 @@
-import { createHash, createHmac, randomBytes } from 'node:crypto';
+import { createHash, createHmac, randomBytes, randomInt } from 'node:crypto';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import nodemailer from 'nodemailer';
@@ -24,12 +24,82 @@ import {
   type AccountRole,
   type AuthAccountRecord,
 } from './auth.repository';
+import {
+  deleteVerification,
+  findUserIdByEmail,
+  findVerificationByUserId,
+  incrementAttempts,
+  markEmailVerified,
+  upsertVerification,
+} from './email-verification.repository';
 import { AuthError } from './auth.errors';
 import { generatePublicId } from '../../utils/id';
+import { buildOtpEmail, buildResetPasswordEmail, maskEmail } from '../../utils/emailTemplates';
+import type { OtpPurpose } from './email-verification.repository';
 
 const REFRESH_SHORT_DAYS = 7;
 const REFRESH_LONG_DAYS = 30;
 const DUMMY_HASH = bcrypt.hash('dummy-password-for-timing', 12);
+const OTP_EXPIRY_MINUTES = 10;
+const OTP_MAX_ATTEMPTS = 5;
+const OTP_RESEND_COOLDOWN_SECONDS = 60;
+const OTP_MAX_SENDS_PER_HOUR = 5;
+
+/** Tạo nodemailer transporter từ biến môi trường (Gmail App Password) */
+function createMailTransporter(): ReturnType<typeof nodemailer.createTransport> {
+  const user = process.env.MAIL_USER;
+  const pass = process.env.MAIL_APP_PASSWORD;
+  if (!user || !pass) {
+    throw new AuthError(500, 'Máy chủ chưa được cấu hình dịch vụ email.');
+  }
+  return nodemailer.createTransport({
+    service: 'gmail',
+    auth: { user, pass },
+  });
+}
+
+/** Tạo OTP 6 số và lưu hash vào DB, gửi email */
+async function issueOtp(
+  userId: number,
+  email: string,
+  userName: string,
+  purpose: OtpPurpose = 'verify_email',
+): Promise<void> {
+  // crypto.randomInt: không dùng Math.random — đảm bảo cryptographically secure
+  const code = randomInt(100000, 1000000).toString();
+  const codeHash = await bcrypt.hash(code, 10); // rounds=10 để hash nhanh hơn (OTP ngắn hạn)
+  const expiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000);
+  const now = new Date();
+
+  await upsertVerification({ userId, codeHash, expiresAt, now, purpose });
+
+  // Gửi email (nếu development và chưa có MAIL_USER → in ra console)
+  if (!process.env.MAIL_USER && process.env.NODE_ENV !== 'production') {
+    console.info(`[DEV OTP:${purpose}] ${email} → ${code} (hết hạn: ${expiresAt.toISOString()})`);
+    return;
+  }
+
+  try {
+    const fromName = process.env.MAIL_FROM_NAME ?? 'DaNangGo';
+    const fromUser = process.env.MAIL_USER!;
+    const transporter = createMailTransporter();
+
+    const { subject, html, text } = purpose === 'reset_password'
+      ? buildResetPasswordEmail({ userName, otpCode: code, expiryMinutes: OTP_EXPIRY_MINUTES })
+      : buildOtpEmail({ userName, email, otpCode: code, expiryMinutes: OTP_EXPIRY_MINUTES });
+
+    await transporter.sendMail({ from: `"${fromName}" <${fromUser}>`, to: email, subject, html, text });
+  } catch (err) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('[OTP Mail Error]', err);
+    } else {
+      console.error('[OTP Mail Error] Failed to send OTP email.');
+    }
+    throw new AuthError(500, 'Không thể gửi email. Vui lòng thử lại sau.');
+  }
+}
+
+
 
 export interface PublicUser {
   id: string;
@@ -166,7 +236,7 @@ export async function register(input: {
     address?: string | undefined;
   } | undefined;
   rememberMe?: boolean | undefined;
-}, metadata: ClientMetadata): Promise<IssuedSession> {
+}, _metadata: ClientMetadata): Promise<{ email: string; maskedEmail: string }> {
   if (input.role === 'ADMIN') throw new AuthError(403, 'Không thể đăng ký tài khoản quản trị.');
   if (input.role !== 'USER' && input.role !== 'PARTNER') throw new AuthError(400, 'Vai trò tài khoản không hợp lệ.');
   if (input.role === 'PARTNER' && !input.partner) throw new AuthError(400, 'Vui lòng nhập thông tin nhà cung cấp.');
@@ -206,15 +276,28 @@ export async function register(input: {
         },
       } : {}),
     });
-    return issueSession(account, input.rememberMe ?? false, 'USER', metadata);
+
+    // Gửi OTP xác thực email (email_verified = 0 lúc này)
+    await issueOtp(account.user_id, account.email, account.full_name);
+
+    return { email: account.email, maskedEmail: maskEmail(account.email) };
   } catch (error) {
     const dbError = error as { number?: number };
     if (dbError.number === 2601 || dbError.number === 2627) {
-      throw new AuthError(409, 'Email hoặc số điện thoại đã được sử dụng.');
+      // Email/phone đã tồn tại — kiểm tra xem đã xác thực chưa
+      const existingUser = await findUserIdByEmail(email);
+      if (existingUser && !existingUser.email_verified) {
+        // Chưa xác thực → gửi lại OTP, cho phép tiếp tục luồng xác thực
+        await issueOtp(existingUser.user_id, email, existingUser.full_name);
+        return { email, maskedEmail: maskEmail(email) };
+      }
+      // Đã xác thực → báo lỗi với gợi ý đăng nhập
+      throw new AuthError(409, 'Email này đã được đăng ký. Bạn muốn đăng nhập?', 'EMAIL_ALREADY_EXISTS');
     }
     throw error;
   }
 }
+
 
 async function authenticate(
   identifier: string,
@@ -246,8 +329,27 @@ async function authenticate(
     if (failedCount >= 5) throw new AuthError(423, 'Tài khoản đã bị khóa 15 phút do đăng nhập sai quá nhiều lần.');
     throw new AuthError(401, 'Sai thông tin đăng nhập.');
   }
+  if (account.status === 'PENDING_APPROVAL') {
+    throw new AuthError(403, 'Tài khoản đối tác của bạn đang chờ quản trị viên duyệt. Vui lòng đợi email thông báo kết quả.');
+  }
   if (account.status !== 'ACTIVE' && account.status !== 'LOCKED') {
     throw new AuthError(401, 'Tài khoản hiện không thể đăng nhập.');
+  }
+
+  // Kiểm tra xác thực email (chỉ áp dụng với USER/PARTNER, không áp dụng ADMIN)
+  if (sessionType === 'USER' && !account.email_verified) {
+    // Gửi lại OTP tự động để người dùng có thể xác thực ngay
+    // (không throw nếu gửi mail thất bại — FE sẽ cho bấm "Gửi lại mã")
+    try {
+      await issueOtp(account.user_id, account.email, account.full_name);
+    } catch {
+      // Bỏ qua lỗi gửi mail ở đây — FE vẫn sẽ hiện màn xác thực
+    }
+    const err = new AuthError(403, 'Email chưa được xác thực. Vui lòng kiểm tra hộp thư và nhập mã OTP.');
+    // Thêm extra data để FE nhận biết và chuyển sang bước OTP
+    (err as AuthError & { code?: string; maskedEmail?: string }).code = 'EMAIL_NOT_VERIFIED';
+    (err as AuthError & { code?: string; maskedEmail?: string }).maskedEmail = maskEmail(account.email);
+    throw err;
   }
 
   await resetLoginStateAndRecordSuccess(account.user_id);
@@ -310,46 +412,73 @@ export function logoutAll(userId: number): Promise<void> {
   return revokeAllRefreshTokens(userId);
 }
 
+/**
+ * Giai đoạn 1: Gửi OTP đặt lại mật khẩu.
+ * Luôn trả void dù email có tồn tại hay không (không lộ thông tin).
+ */
 export async function forgotPassword(emailInput: string): Promise<void> {
   const email = emailInput.trim().toLowerCase();
   const account = await findResetAccountByEmail(email);
+  // Trả về bình thường dù email không tồn tại — không lộ thông tin
   if (!account || !['USER', 'PARTNER'].includes(account.role_name.toUpperCase())) return;
-
-  const rawToken = randomBytes(32).toString('base64url');
-  const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
-  await createPasswordResetToken(account.user_id, sha256(rawToken), expiresAt);
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-  const resetLink = `${frontendUrl}/quen-mat-khau/dat-lai?token=${encodeURIComponent(rawToken)}`;
-  const smtpHost = process.env.SMTP_HOST;
-  const smtpUser = process.env.SMTP_USER;
-  const smtpPass = process.env.SMTP_PASS;
-
-  if (!smtpHost && process.env.NODE_ENV === 'development') {
-    console.info(`Liên kết đặt lại mật khẩu (15 phút): ${resetLink}`);
-    return;
-  }
-  if (!smtpHost || !process.env.MAIL_FROM) {
-    console.error('Không gửi được email đặt lại mật khẩu: thiếu cấu hình SMTP.');
-    return;
-  }
-
+  // Bỏ qua lỗi gửi mail (đã xử lý bên trong issueOtp) — FE có thể bấm "Gửi lại"
   try {
-    const port = Number(process.env.SMTP_PORT || '587');
-    const transporter = nodemailer.createTransport({
-      host: smtpHost,
-      port,
-      secure: port === 465,
-      ...(smtpUser && smtpPass ? { auth: { user: smtpUser, pass: smtpPass } } : {}),
-    });
-    await transporter.sendMail({
-      from: process.env.MAIL_FROM,
-      to: account.email,
-      subject: 'Đặt lại mật khẩu DaNangGo',
-      text: `Xin chào ${account.full_name},\n\nMở liên kết sau để đặt lại mật khẩu (hết hạn sau 15 phút):\n${resetLink}`,
-    });
-  } catch (error) {
-    console.error('Gửi email đặt lại mật khẩu thất bại:', error);
+    await issueOtp(account.user_id, account.email, account.full_name, 'reset_password');
+  } catch {
+    // Silent fail — phản hồi luôn chung chung
   }
+}
+
+/**
+ * Giai đoạn 2: Xác thực OTP đặt lại mật khẩu.
+ * Trả về userId nếu thành công (để dùng trong bước đặt mật khẩu mới).
+ */
+export async function verifyResetOtp(emailInput: string, code: string): Promise<number> {
+  const email = emailInput.trim().toLowerCase();
+  const user = await findUserIdByEmail(email);
+  if (!user) throw new AuthError(400, 'Mã xác nhận không hợp lệ hoặc đã hết hạn.');
+
+  const record = await findVerificationByUserId(user.user_id, 'reset_password');
+  if (!record) throw new AuthError(400, 'Mã xác nhận không hợp lệ hoặc đã hết hạn.');
+
+  if (record.expires_at.getTime() < Date.now()) {
+    await deleteVerification(user.user_id, 'reset_password');
+    throw new AuthError(400, 'Mã xác nhận đã hết hạn. Vui lòng yêu cầu gửi lại mã.');
+  }
+
+  if (record.attempts >= OTP_MAX_ATTEMPTS) {
+    await deleteVerification(user.user_id, 'reset_password');
+    throw new AuthError(429, 'Bạn đã nhập sai quá nhiều lần. Vui lòng yêu cầu gửi lại mã mới.');
+  }
+
+  const isMatch = await bcrypt.compare(code.trim(), record.code_hash);
+  if (!isMatch) {
+    const attempts = await incrementAttempts(user.user_id, 'reset_password');
+    const remaining = OTP_MAX_ATTEMPTS - attempts;
+    if (remaining <= 0) {
+      await deleteVerification(user.user_id, 'reset_password');
+      throw new AuthError(429, 'Mã xác nhận không đúng. Bạn đã nhập sai quá nhiều lần. Vui lòng gửi lại mã mới.');
+    }
+    throw new AuthError(400, `Mã xác nhận không đúng. Còn ${remaining} lần thử.`);
+  }
+
+  return user.user_id;
+}
+
+/**
+ * Giai đoạn 3: Đặt mật khẩu mới sau khi đã xác thực OTP.
+ * Xóa bản ghi OTP và thu hồi tất cả refresh token cũ.
+ */
+export async function resetPasswordWithOtp(
+  emailInput: string,
+  code: string,
+  newPassword: string,
+): Promise<void> {
+  // Xác thực OTP lần nữa (tránh bỏ qua bước verify)
+  const userId = await verifyResetOtp(emailInput, code);
+  const passwordHash = await bcrypt.hash(newPassword, 12);
+  await changePasswordRecord(userId, passwordHash, null); // null = thu hồi TẤT CẢ refresh tokens
+  await deleteVerification(userId, 'reset_password');
 }
 
 export async function resetPassword(input: { token: string; newPassword: string }): Promise<void> {
@@ -360,6 +489,7 @@ export async function resetPassword(input: { token: string; newPassword: string 
   const reset = await resetPasswordByTokenHash(tokenHash, passwordHash);
   if (!reset) throw new AuthError(400, 'Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.');
 }
+
 
 export async function updatePassword(
   userId: number,
@@ -398,3 +528,96 @@ export function getAccountRole(userId: number): Promise<AccountRole | null> {
   return findAccountByUserId(userId).then((account) => account ? mapRoleName(account.role_name) : null);
 }
 
+export async function getAccountAuthDetails(userId: number): Promise<{
+  role: AccountRole;
+  partnerId?: number | null;
+  approvalStatus?: string | null;
+} | null> {
+  const account = await findAccountByUserId(userId);
+  if (!account) return null;
+  return {
+    role: mapRoleName(account.role_name),
+    partnerId: account.partner_id,
+    approvalStatus: account.approval_status,
+  };
+}
+
+
+/**
+ * Xác thực email bằng mã OTP 6 số.
+ * - Kiểm tra hết hạn, giới hạn 5 lần sai
+ * - Đúng mã: set is_verified = 1, xóa bản ghi OTP
+ * - Sai mã: tăng attempts, khóa khi >= OTP_MAX_ATTEMPTS
+ */
+export async function verifyEmail(email: string, code: string): Promise<void> {
+  const normalizedEmail = email.trim().toLowerCase();
+  const user = await findUserIdByEmail(normalizedEmail);
+
+  // Trả lỗi chung chung để không lộ thông tin
+  if (!user) throw new AuthError(400, 'Mã xác nhận không hợp lệ hoặc đã hết hạn.');
+  if (user.email_verified) throw new AuthError(400, 'Email này đã được xác thực.');
+
+  const record = await findVerificationByUserId(user.user_id);
+  if (!record) throw new AuthError(400, 'Mã xác nhận không hợp lệ hoặc đã hết hạn.');
+
+  // Kiểm tra hết hạn
+  if (record.expires_at.getTime() < Date.now()) {
+    await deleteVerification(user.user_id);
+    throw new AuthError(400, 'Mã xác nhận đã hết hạn. Vui lòng yêu cầu gửi lại mã.');
+  }
+
+  // Kiểm tra số lần sai
+  if (record.attempts >= OTP_MAX_ATTEMPTS) {
+    await deleteVerification(user.user_id);
+    throw new AuthError(429, 'Bạn đã nhập sai quá nhiều lần. Vui lòng yêu cầu gửi lại mã mới.');
+  }
+
+  // So sánh mã
+  const isMatch = await bcrypt.compare(code.trim(), record.code_hash);
+  if (!isMatch) {
+    const attempts = await incrementAttempts(user.user_id);
+    const remaining = OTP_MAX_ATTEMPTS - attempts;
+    if (remaining <= 0) {
+      await deleteVerification(user.user_id);
+      throw new AuthError(429, 'Mã xác nhận không đúng. Bạn đã nhập sai quá nhiều lần. Vui lòng gửi lại mã mới.');
+    }
+    throw new AuthError(400, `Mã xác nhận không đúng. Còn ${remaining} lần thử.`);
+  }
+
+  // Đúng mã → xác thực thành công
+  await markEmailVerified(user.user_id);
+}
+
+/**
+ * Gửi lại mã OTP:
+ * - Rate limit 60 giây giữa các lần gửi
+ * - Tối đa 5 lần/giờ
+ * - Luôn trả response chung để không lộ email tồn tại
+ */
+export async function resendCode(email: string): Promise<void> {
+  const normalizedEmail = email.trim().toLowerCase();
+  const user = await findUserIdByEmail(normalizedEmail);
+
+  // Không lộ thông tin — trả về bình thường dù email không tồn tại
+  if (!user || user.email_verified) return;
+
+  const record = await findVerificationByUserId(user.user_id);
+  const now = new Date();
+
+  // Kiểm tra cooldown 60 giây
+  if (record) {
+    const secondsSinceLastSent = (now.getTime() - record.last_sent_at.getTime()) / 1000;
+    if (secondsSinceLastSent < OTP_RESEND_COOLDOWN_SECONDS) {
+      const waitSecs = Math.ceil(OTP_RESEND_COOLDOWN_SECONDS - secondsSinceLastSent);
+      throw new AuthError(429, `Vui lòng chờ ${waitSecs} giây trước khi gửi lại mã.`);
+    }
+
+    // Kiểm tra giới hạn 5 lần/giờ (window_start reset sau 60 phút)
+    const minutesSinceWindowStart = (now.getTime() - record.window_start.getTime()) / (60 * 1000);
+    if (minutesSinceWindowStart < 60 && record.sent_count >= OTP_MAX_SENDS_PER_HOUR) {
+      throw new AuthError(429, 'Bạn đã yêu cầu gửi lại mã quá nhiều lần. Vui lòng thử lại sau 1 giờ.');
+    }
+  }
+
+  await issueOtp(user.user_id, normalizedEmail, user.full_name);
+}

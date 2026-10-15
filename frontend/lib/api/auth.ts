@@ -3,6 +3,8 @@ import { apiPost, apiRequest, ApiError, mapApiUser } from './client';
 
 interface AuthData { user: Parameters<typeof mapApiUser>[0] }
 
+interface RegisterData { email: string; maskedEmail: string }
+
 async function authCall(path: string, body: unknown): Promise<AuthResponse> {
   try {
     const response = await apiPost<AuthData>(path, body);
@@ -12,27 +14,53 @@ async function authCall(path: string, body: unknown): Promise<AuthResponse> {
   }
 }
 
-export async function login(payload: LoginPayload): Promise<AuthResponse> {
-  const cleanIdentifier = payload.identifier.trim().toLowerCase();
-  if (cleanIdentifier === 'tt1871214@gmail.com' && payload.password === 'Tuan@123456') {
-    if (typeof document !== 'undefined') {
-      document.cookie = 'access_token=mock_partner_token; path=/; max-age=86400';
+export async function login(payload: LoginPayload): Promise<AuthResponse & { code?: string; maskedEmail?: string }> {
+  try {
+    const response = await apiPost<AuthData>('/api/auth/login', payload);
+    return { success: true, user: mapApiUser(response.data!.user) };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      // Xử lý tài khoản chưa xác thực email
+      const raw = error.raw as { code?: string; maskedEmail?: string } | undefined;
+      if (error.status === 403 && raw?.code === 'EMAIL_NOT_VERIFIED') {
+        return { success: false, error: error.message, code: 'EMAIL_NOT_VERIFIED', maskedEmail: raw.maskedEmail };
+      }
+      return { success: false, error: error.message };
     }
-    const partnerUser: User = {
-      id: 'partner-demo-1',
-      name: 'Trần Văn Tuấn (Partner Demo)',
-      email: 'tt1871214@gmail.com',
-      role: 'PARTNER',
-      phone: '0905123456',
-      createdAt: '2026-09-01T08:00:00Z',
-      membership: { isVip: true, tier: 'Diamond', points: 1500, nextTierPoints: 2000 },
-    };
-    return { success: true, user: partnerUser };
+    return { success: false, error: 'Không thể kết nối máy chủ. Vui lòng thử lại.' };
   }
-  return authCall('/api/auth/login', payload);
 }
 
-export const register = (payload: RegisterPayload) => authCall('/api/auth/register', payload);
+export async function register(payload: RegisterPayload): Promise<{ success: boolean; email?: string; maskedEmail?: string; error?: string; code?: string }> {
+  try {
+    const response = await apiPost<RegisterData>('/api/auth/register', payload);
+    return { success: true, email: response.data?.email, maskedEmail: response.data?.maskedEmail };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      const raw = error.raw as { code?: string } | undefined;
+      return { success: false, error: error.message, code: raw?.code };
+    }
+    return { success: false, error: 'Không thể kết nối máy chủ. Vui lòng thử lại.' };
+  }
+}
+
+export async function verifyEmail(email: string, code: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    await apiPost<never>('/api/auth/verify-email', { email, code });
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error instanceof ApiError ? error.message : 'Không thể kết nối máy chủ. Vui lòng thử lại.' };
+  }
+}
+
+export async function resendCode(email: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    await apiPost<never>('/api/auth/resend-code', { email });
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error instanceof ApiError ? error.message : 'Không thể kết nối máy chủ. Vui lòng thử lại.' };
+  }
+}
 
 export async function forgotPassword(email: string): Promise<{ success: boolean; message?: string; error?: string }> {
   try {
@@ -51,6 +79,32 @@ export async function resetPassword(token: string, newPassword: string, confirmP
     return { success: false, error: error instanceof ApiError ? error.message : 'Không thể kết nối máy chủ.' };
   }
 }
+
+/** OTP reset: Bước 2 — xác thực OTP trước khi đặt mật khẩu */
+export async function verifyResetOtp(email: string, code: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    await apiPost<never>('/api/auth/verify-reset-otp', { email, code });
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error instanceof ApiError ? error.message : 'Không thể kết nối máy chủ.' };
+  }
+}
+
+/** OTP reset: Bước 3 — đặt mật khẩu mới */
+export async function resetPasswordOtp(
+  email: string,
+  code: string,
+  newPassword: string,
+  confirmPassword: string,
+): Promise<{ success: boolean; error?: string; message?: string }> {
+  try {
+    const response = await apiPost<never>('/api/auth/reset-password-otp', { email, code, newPassword, confirmPassword });
+    return { success: true, message: response.message };
+  } catch (error) {
+    return { success: false, error: error instanceof ApiError ? error.message : 'Không thể kết nối máy chủ.' };
+  }
+}
+
 
 export async function changePassword(currentPassword: string, newPassword: string, confirmPassword: string) {
   try {

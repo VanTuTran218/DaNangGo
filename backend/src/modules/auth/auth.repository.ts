@@ -16,6 +16,7 @@ export interface AuthAccountRecord {
   failed_login_count: number;
   locked_until: Date | null;
   created_at: Date;
+  partner_id?: number | null;
   approval_status: string | null;
 }
 
@@ -36,7 +37,7 @@ const accountSelect = `
   SELECT u.user_id, u.public_id, u.role_id, r.role_name, u.full_name,
     u.email, u.phone, u.password_hash, u.status, u.email_verified,
     u.failed_login_count, u.locked_until, u.created_at,
-    pp.approval_status
+    pp.partner_id, pp.approval_status
   FROM dbo.users AS u
   INNER JOIN dbo.roles AS r ON r.role_id = u.role_id
   LEFT JOIN dbo.partner_profiles AS pp ON pp.user_id = u.user_id
@@ -120,6 +121,7 @@ export async function createAccount(input: {
     const inserted = await new sql.Request(transaction)
       .input('publicId', sql.NVarChar(20), input.publicId)
       .input('roleId', sql.Int, input.roleId)
+      .input('role', sql.VarChar(10), input.role)
       .input('name', sql.NVarChar(50), input.name)
       .input('email', sql.VarChar(150), input.email)
       .input('phone', sql.VarChar(20), input.phone)
@@ -128,7 +130,9 @@ export async function createAccount(input: {
         INSERT INTO dbo.users
           (public_id, role_id, full_name, email, phone, password_hash, status, email_verified, failed_login_count)
         OUTPUT INSERTED.user_id
-        VALUES (@publicId, @roleId, @name, @email, @phone, @passwordHash, 'ACTIVE', 0, 0)
+        VALUES (@publicId, @roleId, @name, @email, @phone, @passwordHash,
+                CASE WHEN @role = 'PARTNER' THEN 'PENDING_APPROVAL' ELSE 'ACTIVE' END,
+                0, 0)
       `);
     const userId = inserted.recordset[0]?.user_id;
     if (!userId) throw new Error('Không nhận được user_id vừa tạo.');
@@ -243,6 +247,20 @@ export async function rotateRefreshToken(input: {
       `);
     const session = selected.recordset[0];
     if (!session) {
+      // Kiểm tra xem token này có phải là token đã bị thu hồi trước đó không (Token reuse attack)
+      const reused = await new sql.Request(transaction)
+        .input('tokenHash', sql.Char(64), input.oldTokenHash)
+        .query<{ user_id: number }>(`
+          SELECT TOP (1) user_id FROM dbo.refresh_tokens WHERE token_hash = @tokenHash AND revoked_at IS NOT NULL
+        `);
+      if (reused.recordset[0]) {
+        // Phát hiện tái sử dụng token: Thu hồi toàn bộ family phiên của user này ngay lập tức
+        await new sql.Request(transaction)
+          .input('userId', sql.Int, reused.recordset[0].user_id)
+          .query(`UPDATE dbo.refresh_tokens SET revoked_at = SYSUTCDATETIME() WHERE user_id = @userId AND revoked_at IS NULL`);
+        await transaction.commit();
+        return null;
+      }
       await transaction.rollback();
       return null;
     }

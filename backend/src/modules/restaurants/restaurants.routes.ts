@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { verifyToken, requireRole } from '../../middleware/auth';
+import { requireAuth, requireRole } from '../../middleware/auth.middleware';
 import * as controller from './restaurants.controller';
 
 const router = Router();
@@ -21,18 +21,18 @@ router.get('/:id', controller.getOne);
  * POST /api/restaurants
  * Tạo nhà hàng mới — chỉ Partner hoặc Admin
  */
-router.post('/', verifyToken, requireRole('PARTNER', 'ADMIN'), controller.create);
+router.post('/', requireAuth('USER'), requireRole('PARTNER', 'ADMIN'), controller.create);
 
 /**
  * PUT /api/restaurants/:id
  * Cập nhật nhà hàng — chỉ Partner sở hữu hoặc Admin
  */
-router.put('/:id', verifyToken, requireRole('PARTNER', 'ADMIN'), controller.update);
+router.put('/:id', requireAuth('USER'), requireRole('PARTNER', 'ADMIN'), controller.update);
 
 /**
  * DELETE /api/restaurants/:id
  * Xóa mềm (status = HIDDEN) — chỉ Partner sở hữu hoặc Admin
  */
-router.delete('/:id', verifyToken, requireRole('PARTNER', 'ADMIN'), controller.remove);
+router.delete('/:id', requireAuth('USER'), requireRole('PARTNER', 'ADMIN'), controller.remove);
 
 export default router;

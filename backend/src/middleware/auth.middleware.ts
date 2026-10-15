@@ -1,6 +1,6 @@
 import type { RequestHandler } from 'express';
 import { AuthError } from '../modules/auth/auth.errors';
-import { getAccountRole, verifyAccessToken } from '../modules/auth/auth.service';
+import { getAccountAuthDetails, verifyAccessToken } from '../modules/auth/auth.service';
 import type { AccountRole } from '../modules/auth/auth.repository';
 
 declare global {
@@ -8,6 +8,14 @@ declare global {
     interface Locals {
       authUserId?: number;
       authRole?: AccountRole;
+      authPartnerId?: number;
+    }
+    interface Request {
+      user?: {
+        user_id: number;
+        role: AccountRole;
+        partner_id?: number;
+      };
     }
   }
 }
@@ -35,10 +43,18 @@ export function requireAuth(sessionType: 'USER' | 'ADMIN' = 'USER'): RequestHand
     }
     try {
       const userId = await verifyAccessToken(token, sessionType);
-      const role = await getAccountRole(userId);
-      if (!role) throw new AuthError(401, 'Phiên đăng nhập không còn hiệu lực.');
+      const authDetails = await getAccountAuthDetails(userId);
+      if (!authDetails) throw new AuthError(401, 'Phiên đăng nhập không còn hiệu lực.');
       res.locals.authUserId = userId;
-      res.locals.authRole = role;
+      res.locals.authRole = authDetails.role;
+      if (authDetails.partnerId) {
+        res.locals.authPartnerId = authDetails.partnerId;
+      }
+      req.user = {
+        user_id: userId,
+        role: authDetails.role,
+        ...(authDetails.partnerId ? { partner_id: authDetails.partnerId } : {}),
+      };
       next();
     } catch (error) {
       next(error);

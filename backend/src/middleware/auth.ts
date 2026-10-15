@@ -14,27 +14,7 @@ declare global {
 }
 
 /**
- * MOCK — Giả lập user đã đăng nhập (Partner).
- * ⚠️ Thay bằng JWT thật khi module auth hoàn thành.
+ * Authentication Middleware
+ * Sử dụng auth.middleware thật từ hệ thống JWT/Cookie
  */
-export const verifyToken = (req: Request, _res: Response, next: NextFunction) => {
-  req.user = {
-    user_id: 1,
-    role: 'PARTNER',
-    partner_id: 1,
-  };
-  next();
-};
-
-/**
- * Kiểm tra role của user.
- * Truyền vào danh sách các role được phép.
- */
-export const requireRole = (...roles: Array<'USER' | 'PARTNER' | 'ADMIN'>) =>
-  (req: Request, res: Response, next: NextFunction) => {
-    if (!req.user || !roles.includes(req.user.role)) {
-      res.status(403).json({ success: false, message: 'Không có quyền thực hiện' });
-      return;
-    }
-    next();
-  };
+export { requireAuth, requireRole } from './auth.middleware';

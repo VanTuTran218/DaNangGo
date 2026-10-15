@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import AuthHeroPanel from './AuthHeroPanel';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
+import AuthCardFrame from './AuthCardFrame';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface AuthCardProps {
   initialTab: 'login' | 'register';
@@ -24,14 +26,30 @@ function AuthCardContent({ initialTab, redirectTo }: AuthCardProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const intent = searchParams.get('intent');
-  
+  const { user, loading } = useAuth();
+
   const [activeTab, setActiveTab] = useState<'login' | 'register'>(initialTab);
   const [direction, setDirection] = useState(-1);
+  const [prefilledIdentifier, setPrefilledIdentifier] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
-  const handleTabChange = (newTab: 'login' | 'register') => {
-    if (newTab === activeTab) return;
+  // Nếu đã đăng nhập → redirect về trang cần đến (hoặc trang chủ)
+  useEffect(() => {
+    if (!loading && user) {
+      const safe = redirectTo && redirectTo.startsWith('/') && !redirectTo.startsWith('//')
+        ? redirectTo : '/';
+      router.replace(safe);
+    }
+  }, [user, loading, redirectTo, router]);
+
+  const handleTabChange = (newTab: 'login' | 'register', registeredEmail?: string) => {
+    if (newTab === activeTab && !registeredEmail) return;
     setDirection(newTab === 'register' ? 1 : -1);
     setActiveTab(newTab);
+    if (registeredEmail) {
+      setPrefilledIdentifier(registeredEmail);
+      setSuccessMessage('Đăng ký tài khoản thành công! Vui lòng đăng nhập.');
+    }
     
     const params = new URLSearchParams();
     if (newTab === 'register') params.set('tab', 'dang-ky');
@@ -60,22 +78,17 @@ function AuthCardContent({ initialTab, redirectTo }: AuthCardProps) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden py-8 px-4 bg-gradient-to-br from-slate-50 via-white to-cyan-50/30">
-      {/* Background decorative blobs */}
-      <div className="absolute top-0 left-0 w-96 h-96 bg-teal-400/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 right-0 w-80 h-80 bg-orange-400/8 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute top-1/2 left-1/3 w-64 h-64 bg-cyan-400/6 rounded-full blur-2xl pointer-events-none" />
-
-      {/* Back to home link */}
-      <a 
+    <AuthCardFrame>
+      {/* Back to home link — giữ vị trí fixed trên nền */}
+      <a
         href="/"
-        className="absolute top-6 left-6 flex items-center gap-2 text-gray-600 hover:text-gray-900 font-medium z-10 group"
+        className="absolute top-6 left-6 flex items-center gap-2 text-gray-600 hover:text-gray-900 font-medium z-30 group"
       >
         <motion.span whileHover={{ x: -4 }}>←</motion.span>
         Về trang chủ
       </a>
 
-      <div className="w-full max-w-[1200px] bg-white rounded-3xl shadow-2xl overflow-hidden grid lg:grid-cols-2 relative z-10 border border-gray-100 min-h-[700px]">
+      <div className="w-full bg-white rounded-[1.75rem] overflow-hidden grid lg:grid-cols-2 min-h-[700px] relative">
         {/* Left: AuthHeroPanel */}
         <AuthHeroPanel activeTab={activeTab} />
 
@@ -139,13 +152,15 @@ function AuthCardContent({ initialTab, redirectTo }: AuthCardProps) {
                   className="w-full"
                 >
                   {activeTab === 'login' ? (
-                    <LoginForm 
-                      onSwitchToRegister={() => handleTabChange('register')} 
+                    <LoginForm
+                      onSwitchToRegister={() => handleTabChange('register')}
                       redirectTo={redirectTo}
+                      initialIdentifier={prefilledIdentifier}
+                      successMessage={successMessage}
                     />
                   ) : (
-                    <RegisterForm 
-                      onSwitchToLogin={() => handleTabChange('login')} 
+                    <RegisterForm
+                      onSwitchToLogin={(email) => handleTabChange('login', email)}
                       redirectTo={redirectTo}
                     />
                   )}
@@ -155,6 +170,6 @@ function AuthCardContent({ initialTab, redirectTo }: AuthCardProps) {
           </div>
         </div>
       </div>
-    </div>
+    </AuthCardFrame>
   );
 }

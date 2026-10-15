@@ -6,7 +6,10 @@ import AuthCard from '@/components/auth/AuthCard';
 function AuthContent() {
   const params = useSearchParams();
   const tab = params.get('tab') === 'dang-ky' ? 'register' : 'login';
-  const redirectTo = params.get('redirect') || '/';
+  const rawRedirect = params.get('redirect');
+  const redirectTo = rawRedirect && rawRedirect.startsWith('/') && !rawRedirect.startsWith('//') && !rawRedirect.startsWith('/\\')
+    ? rawRedirect
+    : '/';
   return <AuthCard initialTab={tab} redirectTo={redirectTo} />;
 }
 

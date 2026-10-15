@@ -1,6 +1,6 @@
 import type { User, UserRole } from '@/types/user';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 export interface ApiEnvelope<T> {
   success: boolean;
@@ -9,7 +9,11 @@ export interface ApiEnvelope<T> {
 }
 
 export class ApiError extends Error {
-  constructor(message: string, public readonly status: number) {
+  constructor(
+    message: string,
+    public readonly status: number,
+    public readonly raw?: Record<string, unknown>,
+  ) {
     super(message);
     this.name = 'ApiError';
   }
@@ -86,7 +90,11 @@ export async function apiRequest<T>(
   }
 
   if (!response.ok || !envelope.success) {
-    throw new ApiError(envelope.message || 'Không thể kết nối máy chủ. Vui lòng thử lại.', response.status);
+    throw new ApiError(
+      envelope.message || 'Không thể kết nối máy chủ. Vui lòng thử lại.',
+      response.status,
+      envelope as unknown as Record<string, unknown>,
+    );
   }
   return envelope;
 }

@@ -7,18 +7,18 @@ import type { AdminReviewItem } from '@/types/admin';
 import DataTable, { Column } from '@/components/ui/DataTable';
 import StatusBadge from '@/components/ui/StatusBadge';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
-import { Eye, EyeOff, Trash2, AlertTriangle, Star, X } from 'lucide-react';
+import { Check, Eye, EyeOff, Trash2, Star, X, XCircle } from 'lucide-react';
 
 export default function AdminReviewsPage() {
   const [starFilter, setStarFilter] = useState<number | 'ALL'>('ALL');
-  const [reportedOnly, setReportedOnly] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'PENDING' | 'APPROVED' | 'HIDDEN'>('PENDING');
   const [deletingReview, setDeletingReview] = useState<AdminReviewItem | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   const { data: reviews, loading, error, reload } = useAsyncData(
-    () => getAdminReviews({ rating: starFilter, isReportedOnly: reportedOnly }),
-    [starFilter, reportedOnly]
+    () => getAdminReviews({ rating: starFilter, status: statusFilter }),
+    [starFilter, statusFilter]
   );
 
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
@@ -26,11 +26,10 @@ export default function AdminReviewsPage() {
     setTimeout(() => setToast(null), 3000);
   };
 
-  const handleToggleStatus = async (review: AdminReviewItem) => {
+  const handleSetStatus = async (review: AdminReviewItem, status: 'APPROVED' | 'HIDDEN') => {
     setActionLoading(true);
     try {
-      const nextStatus = review.status === 'ACTIVE' ? 'HIDDEN' : 'ACTIVE';
-      const res = await updateAdminReviewStatus(review.id, nextStatus);
+      const res = await updateAdminReviewStatus(review.id, status);
       showToast(res.message);
       reload();
     } catch (err: any) {
@@ -38,6 +37,10 @@ export default function AdminReviewsPage() {
     } finally {
       setActionLoading(false);
     }
+  };
+
+  const handleToggleStatus = (review: AdminReviewItem) => {
+    void handleSetStatus(review, review.status === 'APPROVED' ? 'HIDDEN' : 'APPROVED');
   };
 
   const handleDeleteConfirm = async () => {
@@ -85,12 +88,6 @@ export default function AdminReviewsPage() {
       render: (r) => (
         <div>
           <p className="text-xs text-gray-800 line-clamp-2">{r.comment}</p>
-          {r.isReported && (
-            <div className="mt-1 flex items-center gap-1 text-[11px] font-bold text-red-600 bg-red-50 p-1 rounded-md">
-              <AlertTriangle className="w-3 h-3 flex-shrink-0" />
-              <span>Báo cáo: {r.reportReason || 'Nội dung vi phạm'}</span>
-            </div>
-          )}
         </div>
       ),
     },
@@ -106,16 +103,26 @@ export default function AdminReviewsPage() {
       header: 'Thao tác',
       render: (r) => (
         <div className="flex items-center gap-1.5">
-          <button
-            onClick={() => handleToggleStatus(r)}
-            disabled={actionLoading}
-            title={r.status === 'ACTIVE' ? 'Ẩn đánh giá' : 'Hiện đánh giá'}
-            className={`p-1.5 rounded-lg transition-colors ${
-              r.status === 'ACTIVE' ? 'text-amber-600 hover:bg-amber-50' : 'text-teal-600 hover:bg-teal-50'
-            }`}
-          >
-            {r.status === 'ACTIVE' ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-          </button>
+          {r.status === 'PENDING' ? (
+            <>
+              <button onClick={() => handleToggleStatus(r)} disabled={actionLoading} title="Duyệt đánh giá" aria-label="Duyệt đánh giá" className="p-1.5 rounded-lg text-teal-700 hover:bg-teal-50 disabled:opacity-50">
+                <Check className="w-4 h-4" />
+              </button>
+              <button onClick={() => void handleSetStatus(r, 'HIDDEN')} disabled={actionLoading} title="Từ chối đánh giá" aria-label="Từ chối đánh giá" className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 disabled:opacity-50">
+                <XCircle className="w-4 h-4" />
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => handleToggleStatus(r)}
+              disabled={actionLoading}
+              title={r.status === 'APPROVED' ? 'Ẩn đánh giá' : 'Duyệt lại đánh giá'}
+              aria-label={r.status === 'APPROVED' ? 'Ẩn đánh giá' : 'Duyệt lại đánh giá'}
+              className={`p-1.5 rounded-lg transition-colors ${r.status === 'APPROVED' ? 'text-amber-600 hover:bg-amber-50' : 'text-teal-600 hover:bg-teal-50'}`}
+            >
+              {r.status === 'APPROVED' ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
+          )}
           <button
             onClick={() => setDeletingReview(r)}
             title="Xóa vĩnh viễn"
@@ -132,7 +139,7 @@ export default function AdminReviewsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Kiểm duyệt đánh giá</h1>
-        <p className="text-sm text-gray-500">Quản lý nhận xét và phản hồi các báo cáo vi phạm nội dung.</p>
+        <p className="text-sm text-gray-500">Duyệt đánh giá của người dùng trước khi hiển thị trên trang chi tiết địa điểm.</p>
       </div>
 
       {toast && (
@@ -179,15 +186,12 @@ export default function AdminReviewsPage() {
                 <option value="1">1 sao</option>
               </select>
 
-              <label className="flex items-center gap-2 cursor-pointer bg-gray-50 px-3 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700">
-                <input
-                  type="checkbox"
-                  checked={reportedOnly}
-                  onChange={(e) => setReportedOnly(e.target.checked)}
-                  className="w-4 h-4 text-teal-600 rounded-md focus:ring-teal-500"
-                />
-                <span>Chỉ hiện bị báo cáo</span>
-              </label>
+              <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as typeof statusFilter)} className="px-3 py-2 text-xs font-semibold bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500">
+                <option value="PENDING">Chờ duyệt</option>
+                <option value="ALL">Tất cả trạng thái</option>
+                <option value="APPROVED">Đã duyệt</option>
+                <option value="HIDDEN">Đã từ chối / ẩn</option>
+              </select>
             </>
           }
         />

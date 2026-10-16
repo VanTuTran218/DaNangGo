@@ -1,7 +1,7 @@
 import { Router, type CookieOptions, type Request, type Response } from 'express';
 import { z } from 'zod';
 import { AuthError } from './auth.errors';
-import { forgotPasswordRateLimit, loginRateLimit } from './auth.rate-limit';
+import { forgotPasswordRateLimit, loginRateLimit, registerRateLimit, resetPasswordRateLimit, verifyEmailRateLimit, resendCodeRateLimit } from './auth.rate-limit';
 import {
   adminLogin,
   forgotPassword,
@@ -12,7 +12,11 @@ import {
   refreshSession,
   register,
   resetPassword,
+  resetPasswordWithOtp,
+  verifyResetOtp,
   updatePassword,
+  verifyEmail,
+  resendCode,
   type IssuedSession,
 } from './auth.service';
 import { requireAuth, requireRole } from '../../middleware/auth.middleware';
@@ -63,6 +67,18 @@ const resetSchema = z.object({ token: z.string().min(20), newPassword: passwordR
   .refine((input) => input.newPassword === input.confirmPassword, {
     path: ['confirmPassword'], message: 'Mật khẩu xác nhận không khớp.',
   });
+const verifyResetOtpSchema = z.object({
+  email: z.string().trim().email('Email không hợp lệ.').max(150),
+  code: z.string().trim().length(6, 'Mã xác nhận phải có đúng 6 chữ số.').regex(/^\d{6}$/, 'Mã xác nhận chỉ gồm chữ số.'),
+});
+const resetPasswordOtpSchema = z.object({
+  email: z.string().trim().email('Email không hợp lệ.').max(150),
+  code: z.string().trim().length(6, 'Mã xác nhận phải có đúng 6 chữ số.').regex(/^\d{6}$/, 'Mã chỉ gồm chữ số.'),
+  newPassword: passwordRule,
+  confirmPassword: z.string(),
+}).refine((input) => input.newPassword === input.confirmPassword, {
+  path: ['confirmPassword'], message: 'Mật khẩu xác nhận không khớp.',
+});
 const changePasswordSchema = z.object({
   currentPassword: z.string().min(1, 'Vui lòng nhập mật khẩu hiện tại.'),
   newPassword: passwordRule,
@@ -98,21 +114,79 @@ function clearSessionCookies(response: Response, admin: boolean): void {
   response.clearCookie(names.refresh, cookieOptions());
 }
 
-router.post('/register', async (req, res) => {
-  if (req.body && typeof req.body === 'object' && req.body.role === 'ADMIN') {
-    throw new AuthError(403, 'Không thể đăng ký tài khoản quản trị.');
+const verifyEmailSchema = z.object({
+  email: z.string().trim().email('Email không hợp lệ.').max(150),
+  code: z.string().trim().length(6, 'Mã xác nhận phải có đúng 6 chữ số.').regex(/^\d{6}$/, 'Mã xác nhận chỉ gồm chữ số.'),
+});
+
+const resendCodeSchema = z.object({
+  email: z.string().trim().email('Email không hợp lệ.').max(150),
+});
+
+router.post('/register', registerRateLimit, async (req, res) => {
+  // Strip role ADMIN — không cho phép bất kỳ client nào tự đăng ký admin
+  if (req.body && typeof req.body === 'object') {
+    const body = req.body as Record<string, unknown>;
+    if (body.role === 'ADMIN') body.role = 'USER';
   }
   const input = registerSchema.parse(req.body);
-  const session = await register(input, clientMetadata(req));
-  setSessionCookies(res, session, false);
-  res.status(201).json({ success: true, data: { user: session.user }, message: 'Đăng ký thành công.' });
+  try {
+    const result = await register(input, clientMetadata(req));
+    res.status(201).json({
+      success: true,
+      data: { email: result.email, maskedEmail: result.maskedEmail },
+      message: 'Đăng ký thành công. Vui lòng kiểm tra email để nhập mã xác nhận.',
+    });
+  } catch (err) {
+    // Trả code đặc biệt để FE hiển thị thông báo thân thiện
+    const authErr = err as AuthError;
+    if (authErr instanceof AuthError && authErr.code === 'EMAIL_ALREADY_EXISTS') {
+      res.status(409).json({ success: false, code: 'EMAIL_ALREADY_EXISTS', message: authErr.message });
+      return;
+    }
+    throw err;
+  }
 });
 
 router.post('/login', loginRateLimit, async (req, res) => {
   const input = loginSchema.parse(req.body);
-  const session = await login(input, clientMetadata(req));
-  setSessionCookies(res, session, false);
-  res.json({ success: true, data: { user: session.user }, message: 'Đăng nhập thành công.' });
+  try {
+    const session = await login(input, clientMetadata(req));
+    setSessionCookies(res, session, false);
+    res.json({ success: true, data: { user: session.user }, message: 'Đăng nhập thành công.' });
+  } catch (err) {
+    // Nếu tài khoản chưa xác thực email → trả 403 với code đặc biệt
+    const authErr = err as AuthError & { code?: string; maskedEmail?: string };
+    if (authErr instanceof AuthError && authErr.code === 'EMAIL_NOT_VERIFIED') {
+      res.status(403).json({
+        success: false,
+        code: 'EMAIL_NOT_VERIFIED',
+        maskedEmail: authErr.maskedEmail,
+        message: authErr.message,
+      });
+      return;
+    }
+    throw err;
+  }
+});
+
+router.post('/verify-email', verifyEmailRateLimit, async (req, res) => {
+  const { email, code } = verifyEmailSchema.parse(req.body);
+  await verifyEmail(email, code);
+  res.json({
+    success: true,
+    message: 'Xác thực email thành công! Vui lòng đăng nhập để tiếp tục.',
+  });
+});
+
+router.post('/resend-code', resendCodeRateLimit, async (req, res) => {
+  const { email } = resendCodeSchema.parse(req.body);
+  await resendCode(email);
+  // Luôn trả về 200 để không lộ email nào tồn tại
+  res.json({
+    success: true,
+    message: 'Nếu email tồn tại và chưa xác thực, mã mới đã được gửi.',
+  });
 });
 
 router.post('/refresh', async (req, res) => {
@@ -146,10 +220,24 @@ router.get('/me', requireAuth('USER'), requireRole('USER', 'PARTNER'), async (_r
 router.post('/forgot-password', forgotPasswordRateLimit, async (req, res) => {
   const { email } = forgotSchema.parse(req.body);
   await forgotPassword(email);
-  res.json({ success: true, message: 'Nếu email tồn tại, hướng dẫn đặt lại mật khẩu sẽ được gửi.' });
+  res.json({ success: true, message: 'Nếu email tồn tại, mã xác nhận sẽ được gửi.' });
 });
 
-router.post('/reset-password', async (req, res) => {
+/** Bước 2: Xác thực OTP đặt lại mật khẩu (chỉ verify, chưa đặt mật khẩu) */
+router.post('/verify-reset-otp', resetPasswordRateLimit, async (req, res) => {
+  const { email, code } = verifyResetOtpSchema.parse(req.body);
+  await verifyResetOtp(email, code);
+  res.json({ success: true, message: 'Mã xác nhận hợp lệ.' });
+});
+
+/** Bước 3: Đặt mật khẩu mới (xác thực OTP + set password trong 1 request) */
+router.post('/reset-password-otp', resetPasswordRateLimit, async (req, res) => {
+  const { email, code, newPassword } = resetPasswordOtpSchema.parse(req.body);
+  await resetPasswordWithOtp(email, code, newPassword);
+  res.json({ success: true, message: 'Đặt lại mật khẩu thành công. Vui lòng đăng nhập lại.' });
+});
+
+router.post('/reset-password', resetPasswordRateLimit, async (req, res) => {
   const input = resetSchema.parse(req.body);
   await resetPassword({ token: input.token, newPassword: input.newPassword });
   res.json({ success: true, message: 'Đặt lại mật khẩu thành công. Vui lòng đăng nhập lại.' });

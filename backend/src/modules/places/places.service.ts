@@ -6,6 +6,7 @@ export interface Place {
   name: string;
   description?: string;
   address?: string;
+  cover_image?: string | null;
   category?: string;
   rating?: number;
   created_at?: Date;
@@ -16,7 +17,14 @@ export interface Place {
  */
 export async function getAllPlaces(): Promise<Place[]> {
   const pool = getPool();
-  const result = await pool.request().query('SELECT * FROM Places');
+  const result = await pool.request().query(`
+    SELECT p.*,
+      (SELECT TOP 1 image_url
+       FROM place_images
+       WHERE place_id = p.place_id
+       ORDER BY is_cover DESC, image_id ASC) AS cover_image
+    FROM places p
+  `);
   return result.recordset;
 }
 
@@ -28,7 +36,15 @@ export async function getPlaceById(id: number): Promise<Place | null> {
   const result = await pool
     .request()
     .input('id', sql.Int, id)
-    .query('SELECT * FROM Places WHERE place_id = @id');
+    .query(`
+      SELECT p.*,
+        (SELECT TOP 1 image_url
+         FROM place_images
+         WHERE place_id = p.place_id
+         ORDER BY is_cover DESC, image_id ASC) AS cover_image
+      FROM places p
+      WHERE p.place_id = @id
+    `);
 
   return result.recordset[0] || null;
 }

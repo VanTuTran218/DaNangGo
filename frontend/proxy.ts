@@ -2,19 +2,24 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
+  const adminAccess = request.cookies.get('admin_access')?.value;
+  const accessToken = request.cookies.get('access_token')?.value;
+  const hasValidAdminToken = !!adminAccess && adminAccess !== 'mock_token';
+  const hasValidUserToken = !!accessToken && accessToken !== 'mock_partner_token';
+
   if (pathname.startsWith('/admin')) {
     if (pathname === '/admin/login') {
-      if (request.cookies.has('admin_access')) return NextResponse.redirect(new URL('/admin', request.url));
+      if (hasValidAdminToken) return NextResponse.redirect(new URL('/admin', request.url));
       return NextResponse.next();
     }
-    if (!request.cookies.has('admin_access')) return NextResponse.redirect(new URL('/admin/login', request.url));
+    if (!hasValidAdminToken) return NextResponse.redirect(new URL('/admin/login', request.url));
   }
   if (
     (pathname.startsWith('/ca-nhan') ||
       pathname.startsWith('/partner') ||
       pathname.startsWith('/lich-trinh') ||
       pathname.startsWith('/vip')) &&
-    !request.cookies.has('access_token')
+    !hasValidUserToken
   ) {
     const target = new URL('/dang-nhap', request.url);
     target.searchParams.set('redirect', `${pathname}${search}`);

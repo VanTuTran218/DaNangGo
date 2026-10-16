@@ -61,12 +61,181 @@
   100% { background-position: 200% center; }
 }
 
+/* ====== AUTH CARD FRAME ANIMATIONS ====== */
+
+/* Nền trang: gradient dịch chuyển chậm */
+@keyframes auth-bg-shift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Blob trôi lơ lửng — 3 variants */
+@keyframes blob-float-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%       { transform: translate(30px, -40px) scale(1.05); }
+  66%       { transform: translate(-20px, 20px) scale(0.96); }
+}
+@keyframes blob-float-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  40%       { transform: translate(-35px, 25px) scale(1.08); }
+  70%       { transform: translate(20px, -30px) scale(0.95); }
+}
+@keyframes blob-float-3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%       { transform: translate(25px, 35px) scale(1.06); }
+}
+
+/* Card xuất hiện: fade-in + trượt lên + scale nhẹ */
+@keyframes auth-card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(28px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Shine (vệt sáng) lướt qua card định kỳ */
+@keyframes auth-shine {
+  0%   { transform: translateX(-120%) skewX(-15deg); opacity: 0; }
+  8%   { opacity: 0.5; }
+  50%  { opacity: 0.12; }
+  92%  { opacity: 0; }
+  100% { transform: translateX(250%) skewX(-15deg); opacity: 0; }
+}
+
+/* Stat card stagger hover lift */
+@keyframes stat-appear {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 /* ====== UTILITY CLASSES ====== */
 
 /* Hero background Ken Burns */
 .ken-burns {
   animation: ken-burns 20s ease-in-out infinite alternate;
 }
+
+/* ====== AUTH CARD FRAME UTILITIES ====== */
+
+/* Nền trang auth: gradient dịch chuyển chậm */
+.auth-bg {
+  background: linear-gradient(
+    135deg,
+    #f0fdfa 0%,
+    #e0f2fe 20%,
+    #f8fafc 40%,
+    #fef3c7 60%,
+    #ecfdf5 80%,
+    #f0fdfa 100%
+  );
+  background-size: 400% 400%;
+  animation: auth-bg-shift 18s ease infinite;
+}
+
+/* Blob 1 — teal top-left */
+.auth-blob-1 {
+  animation: blob-float-1 22s ease-in-out infinite;
+}
+/* Blob 2 — orange bottom-right */
+.auth-blob-2 {
+  animation: blob-float-2 28s ease-in-out infinite;
+}
+/* Blob 3 — cyan mid-center */
+.auth-blob-3 {
+  animation: blob-float-3 18s ease-in-out infinite;
+}
+
+/* Card wrapper: viền gradient xoay, bo góc lớn, đổ bóng nhiều lớp */
+.auth-card-frame {
+  position: relative;
+  border-radius: 1.75rem;
+  /* Đổ bóng nhiều lớp mềm */
+  box-shadow:
+    0 0 0 1px rgba(20, 184, 166, 0.12),
+    0 4px 6px -1px rgba(0, 0, 0, 0.06),
+    0 10px 15px -3px rgba(0, 0, 0, 0.08),
+    0 25px 50px -12px rgba(0, 0, 0, 0.14),
+    0 0 60px -15px rgba(20, 184, 166, 0.15);
+  transition: box-shadow 0.35s ease, transform 0.35s ease;
+}
+.auth-card-frame:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 0 0 1px rgba(20, 184, 166, 0.18),
+    0 8px 12px -2px rgba(0, 0, 0, 0.08),
+    0 20px 30px -6px rgba(0, 0, 0, 0.12),
+    0 40px 80px -16px rgba(0, 0, 0, 0.18),
+    0 0 80px -10px rgba(20, 184, 166, 0.22);
+}
+
+/* Viền gradient xoay chậm: pseudo-element bọc ngoài card */
+.auth-card-border {
+  position: absolute;
+  inset: -2px;
+  border-radius: 1.875rem;
+  background: conic-gradient(
+    from var(--border-angle, 0deg),
+    #14b8a6 0deg,
+    #06b6d4 60deg,
+    #f97316 120deg,
+    #fbbf24 180deg,
+    #14b8a6 240deg,
+    transparent 300deg,
+    transparent 360deg
+  );
+  opacity: 0.45;
+  z-index: -1;
+  animation: border-spin 8s linear infinite;
+  @property --border-angle { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+}
+
+/* Shine: vệt sáng lướt qua định kỳ */
+.auth-card-shine {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 20;
+}
+.auth-card-shine::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.18) 50%,
+    transparent 100%
+  );
+  animation: auth-shine 6s ease-in-out infinite;
+  animation-delay: 2s;
+}
+
+/* Card entrance animation */
+.auth-card-animate {
+  animation: auth-card-enter 0.65s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+/* Stat cards stagger */
+.stat-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+}
+.stat-card-stagger-1 { animation: stat-appear 0.5s 0.5s ease both; }
+.stat-card-stagger-2 { animation: stat-appear 0.5s 0.65s ease both; }
+.stat-card-stagger-3 { animation: stat-appear 0.5s 0.8s ease both; }
 
 /* Shimmer gradient background */
 .shimmer-bg {
@@ -273,6 +442,44 @@ body {
   .text-gradient-animate-warm {
     animation: none !important;
     background-position: 0% center !important;
+  }
+
+  /* Auth card frame: tắt tất cả animation, giữ static style */
+  .auth-bg {
+    animation: none !important;
+    background: linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 50%, #f8fafc 100%) !important;
+    background-size: 100% !important;
+  }
+  .auth-blob-1,
+  .auth-blob-2,
+  .auth-blob-3 {
+    animation: none !important;
+  }
+  .auth-card-animate {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .auth-card-border {
+    animation: none !important;
+    opacity: 0.2 !important;
+  }
+  .auth-card-shine::after {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+  .auth-card-frame:hover {
+    transform: none !important;
+  }
+  .stat-card:hover {
+    transform: none !important;
+  }
+  .stat-card-stagger-1,
+  .stat-card-stagger-2,
+  .stat-card-stagger-3 {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
   }
 }
 

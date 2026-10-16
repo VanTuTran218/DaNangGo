@@ -209,7 +209,7 @@ export let mockAdminReviews: AdminReviewItem[] = [
     rating: 5,
     comment: 'Phòng ốc rộng rãi, dịch vụ rất chu đáo, hồ bơi riêng sát biển tuyệt đẹp!',
     isReported: false,
-    status: 'ACTIVE',
+    status: 'APPROVED',
     createdAt: '2026-10-02T14:20:00Z',
   },
   {
@@ -222,7 +222,7 @@ export let mockAdminReviews: AdminReviewItem[] = [
     comment: 'Đồ ăn kém chất lượng, lừa đảo khách hàng! Hãy tránh xa quán này!!',
     isReported: true,
     reportReason: 'Sử dụng ngôn từ phỉ báng và cáo buộc lừa đảo không căn cứ.',
-    status: 'ACTIVE',
+    status: 'APPROVED',
     createdAt: '2026-10-05T19:40:00Z',
   },
   {
@@ -234,7 +234,7 @@ export let mockAdminReviews: AdminReviewItem[] = [
     rating: 5,
     comment: 'Cảnh quan quá vĩ đại, đi ngày sương mù nhẹ chụp ảnh Cầu Vàng cực ảo.',
     isReported: false,
-    status: 'ACTIVE',
+    status: 'APPROVED',
     createdAt: '2026-10-06T11:10:00Z',
   },
 ];

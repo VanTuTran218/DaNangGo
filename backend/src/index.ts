@@ -9,6 +9,8 @@ import placesRouter from './modules/places/places.routes';
 import accommodationsRouter from './modules/accommodations/accommodations.routes';
 import travelRouter from './modules/routes/travel.routes';
 import adminContentRouter from './modules/admin/admin-content.routes';
+import { adminReviewsRouter } from './modules/reviews/reviews.routes';
+import adminPartnersRouter from './modules/admin/admin.routes';
 import { csrfProtection } from './middleware/csrf.middleware';
 import { errorHandler } from './middleware/error-handler';
 
@@ -30,7 +32,9 @@ app.use(csrfProtection);
 // ==================== ROUTES ====================
 app.use('/api/auth', authRouter);
 app.use('/api/admin/auth', adminRouter);
+app.use('/api/admin/partners', adminPartnersRouter);
 app.use('/api/places', placesRouter);
+app.use('/api/admin/reviews', adminReviewsRouter);
 app.use('/api/accommodations', accommodationsRouter);
 app.use('/api/routes', travelRouter);
 app.use('/api/admin', adminContentRouter);

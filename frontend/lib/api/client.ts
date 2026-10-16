@@ -1,6 +1,6 @@
 import type { User, UserRole } from '@/types/user';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 export interface ApiEnvelope<T> {
   success: boolean;
@@ -72,7 +72,12 @@ export async function apiRequest<T>(
       ...init.headers,
     },
   };
-  let response = await fetch(apiUrl(path), requestInit);
+  let response: Response;
+  try {
+    response = await fetch(apiUrl(path), requestInit);
+  } catch {
+    throw new ApiError('Không thể kết nối máy chủ backend. Vui lòng kiểm tra kết nối mạng hoặc server.', 0);
+  }
   let envelope = await readEnvelope<T>(response);
   const canRefresh = options.retryAfterRefresh !== false
     && response.status === 401

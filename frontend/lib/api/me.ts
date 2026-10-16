@@ -8,7 +8,7 @@ export async function getSession(): Promise<{ user: User | null }> {
     const response = await apiRequest<MeData>('/api/auth/me');
     return { user: mapApiUser(response.data!.user) };
   } catch (error) {
-    if (error instanceof ApiError && error.status === 401) return { user: null };
+    if (error instanceof ApiError && (error.status === 401 || error.status === 0)) return { user: null };
     throw error;
   }
 }

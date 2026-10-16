@@ -6,6 +6,9 @@ import helmet from 'helmet';
 import { connectDB, closeDB } from './config/db';
 import authRouter, { adminRouter } from './modules/auth/auth.routes';
 import placesRouter from './modules/places/places.routes';
+import accommodationsRouter from './modules/accommodations/accommodations.routes';
+import travelRouter from './modules/routes/travel.routes';
+import adminContentRouter from './modules/admin/admin-content.routes';
 import { csrfProtection } from './middleware/csrf.middleware';
 import { errorHandler } from './middleware/error-handler';
 
@@ -28,6 +31,9 @@ app.use(csrfProtection);
 app.use('/api/auth', authRouter);
 app.use('/api/admin/auth', adminRouter);
 app.use('/api/places', placesRouter);
+app.use('/api/accommodations', accommodationsRouter);
+app.use('/api/routes', travelRouter);
+app.use('/api/admin', adminContentRouter);
 import restaurantRouter from './modules/restaurants/restaurants.routes';
 
 app.use('/api/restaurants', restaurantRouter);

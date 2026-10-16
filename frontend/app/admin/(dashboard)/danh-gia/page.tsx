@@ -2,63 +2,51 @@
 
 import { useState } from 'react';
 import { useAsyncData } from '@/hooks/useAsyncData';
-import { getAdminReviews, updateAdminReviewStatus, deleteAdminReview } from '@/lib/api/admin';
-import type { AdminReviewItem } from '@/types/admin';
+import { getContentReviews, moderateContentReview } from '@/lib/api/admin-content';
+import type { ContentReviewItem, ContentReviewStatus } from '@/types/admin-content';
 import DataTable, { Column } from '@/components/ui/DataTable';
 import StatusBadge from '@/components/ui/StatusBadge';
-import ConfirmDialog from '@/components/ui/ConfirmDialog';
-import { Eye, EyeOff, Trash2, AlertTriangle, Star, X } from 'lucide-react';
+import { Check, EyeOff, Star, X } from 'lucide-react';
+
+const selectClass =
+  'px-3 py-2 text-xs font-semibold bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500';
+
+function errorMessage(err: unknown, fallback: string): string {
+  return err instanceof Error && err.message ? err.message : fallback;
+}
 
 export default function AdminReviewsPage() {
+  const [statusFilter, setStatusFilter] = useState<ContentReviewStatus | 'ALL'>('PENDING');
   const [starFilter, setStarFilter] = useState<number | 'ALL'>('ALL');
-  const [reportedOnly, setReportedOnly] = useState(false);
-  const [deletingReview, setDeletingReview] = useState<AdminReviewItem | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   const { data: reviews, loading, error, reload } = useAsyncData(
-    () => getAdminReviews({ rating: starFilter, isReportedOnly: reportedOnly }),
-    [starFilter, reportedOnly]
+    () => getContentReviews({ status: statusFilter, rating: starFilter }),
+    [statusFilter, starFilter],
   );
 
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
     setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
+    setTimeout(() => setToast(null), 3500);
   };
 
-  const handleToggleStatus = async (review: AdminReviewItem) => {
+  const handleModerate = async (review: ContentReviewItem, action: 'APPROVE' | 'HIDE') => {
     setActionLoading(true);
     try {
-      const nextStatus = review.status === 'ACTIVE' ? 'HIDDEN' : 'ACTIVE';
-      const res = await updateAdminReviewStatus(review.id, nextStatus);
-      showToast(res.message);
+      showToast(await moderateContentReview(review.id, action));
       reload();
-    } catch (err: any) {
-      showToast(err?.message || 'Thao tác thất bại', 'error');
+    } catch (err) {
+      showToast(errorMessage(err, 'Thao tác thất bại'), 'error');
     } finally {
       setActionLoading(false);
     }
   };
 
-  const handleDeleteConfirm = async () => {
-    if (!deletingReview) return;
-    setActionLoading(true);
-    try {
-      const res = await deleteAdminReview(deletingReview.id);
-      showToast(res.message);
-      setDeletingReview(null);
-      reload();
-    } catch (err: any) {
-      showToast(err?.message || 'Xóa thất bại', 'error');
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const columns: Column<AdminReviewItem>[] = [
+  const columns: Column<ContentReviewItem>[] = [
     {
       key: 'placeName',
-      header: 'Địa điểm & Người dùng',
+      header: 'Địa điểm & Người viết',
       sortable: true,
       render: (r) => (
         <div>
@@ -82,17 +70,7 @@ export default function AdminReviewsPage() {
       key: 'comment',
       header: 'Nội dung nhận xét',
       className: 'max-w-xs',
-      render: (r) => (
-        <div>
-          <p className="text-xs text-gray-800 line-clamp-2">{r.comment}</p>
-          {r.isReported && (
-            <div className="mt-1 flex items-center gap-1 text-[11px] font-bold text-red-600 bg-red-50 p-1 rounded-md">
-              <AlertTriangle className="w-3 h-3 flex-shrink-0" />
-              <span>Báo cáo: {r.reportReason || 'Nội dung vi phạm'}</span>
-            </div>
-          )}
-        </div>
-      ),
+      render: (r) => <p className="text-xs text-gray-800 line-clamp-2">{r.comment || '(Không có nội dung)'}</p>,
     },
     { key: 'status', header: 'Trạng thái', render: (r) => <StatusBadge status={r.status} /> },
     {
@@ -106,23 +84,26 @@ export default function AdminReviewsPage() {
       header: 'Thao tác',
       render: (r) => (
         <div className="flex items-center gap-1.5">
-          <button
-            onClick={() => handleToggleStatus(r)}
-            disabled={actionLoading}
-            title={r.status === 'ACTIVE' ? 'Ẩn đánh giá' : 'Hiện đánh giá'}
-            className={`p-1.5 rounded-lg transition-colors ${
-              r.status === 'ACTIVE' ? 'text-amber-600 hover:bg-amber-50' : 'text-teal-600 hover:bg-teal-50'
-            }`}
-          >
-            {r.status === 'ACTIVE' ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-          </button>
-          <button
-            onClick={() => setDeletingReview(r)}
-            title="Xóa vĩnh viễn"
-            className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+          {r.status !== 'APPROVED' && (
+            <button
+              onClick={() => handleModerate(r, 'APPROVE')}
+              disabled={actionLoading}
+              title="Duyệt đánh giá"
+              className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 disabled:opacity-50"
+            >
+              <Check className="w-4 h-4" />
+            </button>
+          )}
+          {r.status !== 'HIDDEN' && (
+            <button
+              onClick={() => handleModerate(r, 'HIDE')}
+              disabled={actionLoading}
+              title="Ẩn đánh giá"
+              className="p-1.5 rounded-lg text-amber-600 hover:bg-amber-50 disabled:opacity-50"
+            >
+              <EyeOff className="w-4 h-4" />
+            </button>
+          )}
         </div>
       ),
     },
@@ -132,7 +113,7 @@ export default function AdminReviewsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Kiểm duyệt đánh giá</h1>
-        <p className="text-sm text-gray-500">Quản lý nhận xét và phản hồi các báo cáo vi phạm nội dung.</p>
+        <p className="text-sm text-gray-500">Duyệt hoặc ẩn đánh giá của người dùng. Điểm trung bình của địa điểm được tính lại tự động.</p>
       </div>
 
       {toast && (
@@ -143,7 +124,7 @@ export default function AdminReviewsPage() {
           }`}
         >
           <span>{toast.message}</span>
-          <button onClick={() => setToast(null)}>
+          <button onClick={() => setToast(null)} aria-label="Đóng thông báo">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -164,12 +145,24 @@ export default function AdminReviewsPage() {
           searchPlaceholder="Tìm theo tên địa điểm, người viết..."
           searchField={(r) => `${r.placeName} ${r.userName} ${r.comment}`}
           rowKey={(r) => r.id}
+          emptyTitle="Không có đánh giá nào"
+          emptyDescription="Thử đổi bộ lọc trạng thái hoặc số sao."
           filterSlot={
             <>
               <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value as ContentReviewStatus | 'ALL')}
+                className={selectClass}
+              >
+                <option value="PENDING">Chờ duyệt</option>
+                <option value="APPROVED">Đã duyệt</option>
+                <option value="HIDDEN">Đã ẩn</option>
+                <option value="ALL">Tất cả trạng thái</option>
+              </select>
+              <select
                 value={starFilter}
                 onChange={(e) => setStarFilter(e.target.value === 'ALL' ? 'ALL' : Number(e.target.value))}
-                className="px-3 py-2 text-xs font-semibold bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className={selectClass}
               >
                 <option value="ALL">Tất cả sao</option>
                 <option value="5">5 sao</option>
@@ -178,32 +171,10 @@ export default function AdminReviewsPage() {
                 <option value="2">2 sao</option>
                 <option value="1">1 sao</option>
               </select>
-
-              <label className="flex items-center gap-2 cursor-pointer bg-gray-50 px-3 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700">
-                <input
-                  type="checkbox"
-                  checked={reportedOnly}
-                  onChange={(e) => setReportedOnly(e.target.checked)}
-                  className="w-4 h-4 text-teal-600 rounded-md focus:ring-teal-500"
-                />
-                <span>Chỉ hiện bị báo cáo</span>
-              </label>
             </>
           }
         />
       )}
-
-      {/* Delete Dialog */}
-      <ConfirmDialog
-        isOpen={Boolean(deletingReview)}
-        onClose={() => setDeletingReview(null)}
-        onConfirm={handleDeleteConfirm}
-        title="Xóa đánh giá"
-        description="Bạn có chắc chắn muốn xóa vĩnh viễn đánh giá này? Thao tác không thể hoàn tác."
-        variant="danger"
-        confirmText="Xóa đánh giá"
-        loading={actionLoading}
-      />
     </div>
   );
 }

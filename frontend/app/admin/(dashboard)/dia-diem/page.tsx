@@ -2,73 +2,101 @@
 
 import { useState } from 'react';
 import { useAsyncData } from '@/hooks/useAsyncData';
-import { getAdminPlaces, updateAdminPlaceStatus, deleteAdminPlace } from '@/lib/api/admin';
-import type { AdminPlaceItem, PlaceStatus } from '@/types/admin';
+import { getContentPlaces, lockContentPlace, unlockContentPlace } from '@/lib/api/admin-content';
+import type { ContentPlaceItem } from '@/types/admin-content';
 import DataTable, { Column } from '@/components/ui/DataTable';
 import StatusBadge from '@/components/ui/StatusBadge';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
-import { Eye, Check, EyeOff, Trash2, X, MapPin } from 'lucide-react';
-import Image from 'next/image';
+import { Eye, Lock, Unlock, X, MapPin, Building2 } from 'lucide-react';
+
+const CATEGORY_LABEL: Record<ContentPlaceItem['category'], string> = {
+  luutru: 'Lưu trú',
+  amthuc: 'Ẩm thực',
+  diemdulich: 'Điểm du lịch',
+};
+
+const selectClass =
+  'px-3 py-2 text-xs font-semibold bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500';
+
+function errorMessage(err: unknown, fallback: string): string {
+  return err instanceof Error && err.message ? err.message : fallback;
+}
+
+function Thumb({ src, name, size }: { src: string | null; name: string; size: string }) {
+  return (
+    <div className={`relative ${size} rounded-xl overflow-hidden bg-gray-100 flex-shrink-0 flex items-center justify-center`}>
+      {src ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={src} alt={name} className="w-full h-full object-cover" />
+      ) : (
+        <Building2 className="w-5 h-5 text-gray-400" />
+      )}
+    </div>
+  );
+}
 
 export default function AdminPlacesPage() {
   const [catFilter, setCatFilter] = useState('ALL');
   const [statusFilter, setStatusFilter] = useState('ALL');
-  const [selectedPlace, setSelectedPlace] = useState<AdminPlaceItem | null>(null);
-  const [deletingPlace, setDeletingPlace] = useState<AdminPlaceItem | null>(null);
+  const [selectedPlace, setSelectedPlace] = useState<ContentPlaceItem | null>(null);
+  const [lockingPlace, setLockingPlace] = useState<ContentPlaceItem | null>(null);
+  const [unlockingPlace, setUnlockingPlace] = useState<ContentPlaceItem | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   const { data: places, loading, error, reload } = useAsyncData(
-    () => getAdminPlaces({ category: catFilter, status: statusFilter }),
-    [catFilter, statusFilter]
+    () =>
+      getContentPlaces({
+        category: catFilter as ContentPlaceItem['category'] | 'ALL',
+        status: statusFilter as ContentPlaceItem['status'] | 'ALL',
+      }),
+    [catFilter, statusFilter],
   );
 
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
     setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
+    setTimeout(() => setToast(null), 3500);
   };
 
-  const handleUpdateStatus = async (placeId: string, status: PlaceStatus) => {
+  const handleLock = async (reason?: string) => {
+    if (!lockingPlace) return;
     setActionLoading(true);
     try {
-      const res = await updateAdminPlaceStatus(placeId, status);
-      showToast(res.message);
+      showToast(await lockContentPlace(lockingPlace.id, reason ?? ''));
+      setLockingPlace(null);
       reload();
-    } catch (err: any) {
-      showToast(err?.message || 'Thao tác thất bại', 'error');
+    } catch (err) {
+      showToast(errorMessage(err, 'Khóa địa điểm thất bại'), 'error');
     } finally {
       setActionLoading(false);
     }
   };
 
-  const handleDelete = async () => {
-    if (!deletingPlace) return;
+  const handleUnlock = async () => {
+    if (!unlockingPlace) return;
     setActionLoading(true);
     try {
-      const res = await deleteAdminPlace(deletingPlace.id);
-      showToast(res.message);
-      setDeletingPlace(null);
+      showToast(await unlockContentPlace(unlockingPlace.id));
+      setUnlockingPlace(null);
       reload();
-    } catch (err: any) {
-      showToast(err?.message || 'Xóa thất bại', 'error');
+    } catch (err) {
+      showToast(errorMessage(err, 'Mở khóa địa điểm thất bại'), 'error');
     } finally {
       setActionLoading(false);
     }
   };
 
-  const columns: Column<AdminPlaceItem>[] = [
+  const columns: Column<ContentPlaceItem>[] = [
     {
       key: 'name',
       header: 'Địa điểm',
       sortable: true,
       render: (p) => (
         <div className="flex items-center gap-3">
-          <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
-            <Image src={p.imageUrl} alt={p.name} fill className="object-cover" />
-          </div>
+          <Thumb src={p.imageUrl} name={p.name} size="w-12 h-12" />
           <div>
             <p className="font-bold text-gray-900">{p.name}</p>
-            <p className="text-xs text-gray-500">{p.address}</p>
+            <p className="text-xs text-gray-500">{[p.address, p.districtName].filter(Boolean).join(', ')}</p>
           </div>
         </div>
       ),
@@ -78,7 +106,7 @@ export default function AdminPlacesPage() {
       header: 'Phân loại',
       render: (p) => (
         <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-teal-50 text-teal-700">
-          {p.category === 'luutru' ? 'Lưu trú' : p.category === 'amthuc' ? 'Ẩm thực' : 'Điểm du lịch'}
+          {CATEGORY_LABEL[p.category]}
         </span>
       ),
     },
@@ -96,42 +124,25 @@ export default function AdminPlacesPage() {
           >
             <Eye className="w-4 h-4" />
           </button>
-          {p.status === 'PENDING' && (
+          {p.status === 'LOCKED' ? (
             <button
-              onClick={() => handleUpdateStatus(p.id, 'APPROVED')}
+              onClick={() => setUnlockingPlace(p)}
               disabled={actionLoading}
-              title="Phê duyệt"
-              className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50"
-            >
-              <Check className="w-4 h-4" />
-            </button>
-          )}
-          {p.status === 'APPROVED' ? (
-            <button
-              onClick={() => handleUpdateStatus(p.id, 'HIDDEN')}
-              disabled={actionLoading}
-              title="Ẩn địa điểm"
-              className="p-1.5 rounded-lg text-amber-600 hover:bg-amber-50"
-            >
-              <EyeOff className="w-4 h-4" />
-            </button>
-          ) : p.status === 'HIDDEN' ? (
-            <button
-              onClick={() => handleUpdateStatus(p.id, 'APPROVED')}
-              disabled={actionLoading}
-              title="Hiện địa điểm"
+              title="Mở khóa"
               className="p-1.5 rounded-lg text-teal-600 hover:bg-teal-50"
             >
-              <Eye className="w-4 h-4" />
+              <Unlock className="w-4 h-4" />
             </button>
-          ) : null}
-          <button
-            onClick={() => setDeletingPlace(p)}
-            title="Xóa địa điểm"
-            className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+          ) : (
+            <button
+              onClick={() => setLockingPlace(p)}
+              disabled={actionLoading}
+              title="Khóa địa điểm"
+              className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50"
+            >
+              <Lock className="w-4 h-4" />
+            </button>
+          )}
         </div>
       ),
     },
@@ -141,7 +152,7 @@ export default function AdminPlacesPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Quản lý nội dung địa điểm</h1>
-        <p className="text-sm text-gray-500">Duyệt, chỉnh sửa và quản lý danh sách địa điểm trên website.</p>
+        <p className="text-sm text-gray-500">Xem toàn bộ địa điểm trên hệ thống, khóa hoặc mở khóa địa điểm vi phạm.</p>
       </div>
 
       {toast && (
@@ -152,7 +163,7 @@ export default function AdminPlacesPage() {
           }`}
         >
           <span>{toast.message}</span>
-          <button onClick={() => setToast(null)}>
+          <button onClick={() => setToast(null)} aria-label="Đóng thông báo">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -171,42 +182,35 @@ export default function AdminPlacesPage() {
           columns={columns}
           loading={loading}
           searchPlaceholder="Tìm theo tên địa điểm, địa chỉ..."
-          searchField={(p) => `${p.name} ${p.address}`}
+          searchField={(p) => `${p.name} ${p.address} ${p.districtName}`}
           rowKey={(p) => p.id}
           filterSlot={
             <>
-              <select
-                value={catFilter}
-                onChange={(e) => setCatFilter(e.target.value)}
-                className="px-3 py-2 text-xs font-semibold bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
-              >
+              <select value={catFilter} onChange={(e) => setCatFilter(e.target.value)} className={selectClass}>
                 <option value="ALL">Tất cả loại hình</option>
                 <option value="luutru">Lưu trú</option>
                 <option value="amthuc">Ẩm thực</option>
                 <option value="diemdulich">Điểm du lịch</option>
               </select>
-
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-2 text-xs font-semibold bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
-              >
+              <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className={selectClass}>
                 <option value="ALL">Tất cả trạng thái</option>
-                <option value="APPROVED">Đang hiển thị</option>
+                <option value="ACTIVE">Đang hoạt động</option>
                 <option value="PENDING">Chờ duyệt</option>
                 <option value="HIDDEN">Đã ẩn</option>
+                <option value="LOCKED">Đã khóa</option>
               </select>
             </>
           }
         />
       )}
 
-      {/* Detail Modal */}
+      {/* Chi tiết */}
       {selectedPlace && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-gray-100 relative space-y-4">
             <button
               onClick={() => setSelectedPlace(null)}
+              aria-label="Đóng"
               className="absolute right-4 top-4 p-1 text-gray-400 hover:text-gray-600 rounded-full"
             >
               <X className="w-5 h-5" />
@@ -216,11 +220,13 @@ export default function AdminPlacesPage() {
               <h3 className="text-lg font-bold text-gray-900">{selectedPlace.name}</h3>
             </div>
             <div className="space-y-2 text-sm text-gray-700">
-              <p><span className="font-semibold text-gray-500">Đối tác:</span> {selectedPlace.partnerName || 'N/A'}</p>
-              <p><span className="font-semibold text-gray-500">Địa chỉ:</span> {selectedPlace.address}</p>
+              <p><span className="font-semibold text-gray-500">Loại hình:</span> {CATEGORY_LABEL[selectedPlace.category]}</p>
+              <p><span className="font-semibold text-gray-500">Đối tác:</span> {selectedPlace.partnerName || 'Không có (do Admin tạo)'}</p>
+              <p><span className="font-semibold text-gray-500">Địa chỉ:</span> {[selectedPlace.address, selectedPlace.districtName].filter(Boolean).join(', ')}</p>
               <p><span className="font-semibold text-gray-500">Khoảng giá:</span> {selectedPlace.priceText}</p>
-              <p><span className="font-semibold text-gray-500">Đánh giá:</span> ⭐ {selectedPlace.rating} ({selectedPlace.reviewCount} đánh giá)</p>
-              <p><span className="font-semibold text-gray-500">Trạng thái:</span> <StatusBadge status={selectedPlace.status} /></p>
+              <p><span className="font-semibold text-gray-500">Đánh giá:</span> ⭐ {selectedPlace.rating.toFixed(1)} ({selectedPlace.reviewCount} đánh giá)</p>
+              <p><span className="font-semibold text-gray-500">Lượt xem:</span> {selectedPlace.viewCount}</p>
+              <p className="flex items-center gap-2"><span className="font-semibold text-gray-500">Trạng thái:</span> <StatusBadge status={selectedPlace.status} /></p>
             </div>
             <div className="flex justify-end pt-2">
               <button
@@ -234,15 +240,29 @@ export default function AdminPlacesPage() {
         </div>
       )}
 
-      {/* Delete Dialog */}
+      {/* Khóa (bắt buộc nhập lý do) */}
       <ConfirmDialog
-        isOpen={Boolean(deletingPlace)}
-        onClose={() => setDeletingPlace(null)}
-        onConfirm={handleDelete}
-        title="Xóa địa điểm"
-        description={`Bạn có chắc chắn muốn xóa địa điểm "${deletingPlace?.name}" khỏi hệ thống? Thao tác này không thể hoàn tác.`}
+        isOpen={Boolean(lockingPlace)}
+        onClose={() => setLockingPlace(null)}
+        onConfirm={handleLock}
+        title="Khóa địa điểm"
+        description={`Địa điểm "${lockingPlace?.name ?? ''}" sẽ biến mất với người dùng và đối tác không tự mở lại được.`}
         variant="danger"
-        confirmText="Xóa địa điểm"
+        confirmText="Khóa địa điểm"
+        requireReason
+        reasonPlaceholder="Ví dụ: Nội dung sai sự thật, vi phạm quy định..."
+        loading={actionLoading}
+      />
+
+      {/* Mở khóa */}
+      <ConfirmDialog
+        isOpen={Boolean(unlockingPlace)}
+        onClose={() => setUnlockingPlace(null)}
+        onConfirm={handleUnlock}
+        title="Mở khóa địa điểm"
+        description={`Khôi phục địa điểm "${unlockingPlace?.name ?? ''}" về trạng thái trước khi bị khóa?`}
+        variant="teal"
+        confirmText="Mở khóa"
         loading={actionLoading}
       />
     </div>

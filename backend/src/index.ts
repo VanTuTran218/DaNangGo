@@ -10,6 +10,7 @@ import adminPartnersRouter from './modules/admin/admin.routes';
 import restaurantRouter from './modules/restaurants/restaurants.routes';
 import categoriesRouter from './modules/categories/categories.routes';
 import menuItemsRouter from './modules/menu-items/menu-items.routes';
+import attractionsRouter from './modules/attractions/attractions.routes';
 import { csrfProtection } from './middleware/csrf.middleware';
 import { errorHandler } from './middleware/error-handler';
 
@@ -35,6 +36,7 @@ app.use('/api/admin/partners', adminPartnersRouter);
 app.use('/api/places', placesRouter);
 app.use('/api/restaurants', restaurantRouter);
 app.use('/api/menu-items', menuItemsRouter);
+app.use('/api/attractions', attractionsRouter);
 app.use('/api', categoriesRouter);
 app.use('/api/categories', categoriesRouter);
 

@@ -44,7 +44,8 @@ export default function ReviewSection({ placeId, placeName, imageUrl }: { placeI
 
     setSubmitting(true);
     try {
-      setNotice(await createPlaceReview(placeId, rating, comment.trim()));
+      const result = await createPlaceReview(placeId, rating, comment.trim());
+      setNotice(result.message || 'Gửi đánh giá thành công.');
       setPendingReview(true);
       setRating(0);
       setComment('');

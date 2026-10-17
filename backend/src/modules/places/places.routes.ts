@@ -10,7 +10,7 @@ router.use('/:id/reviews', reviewsRouter);
 // GET /api/places - Lấy tất cả địa điểm
 router.get('/', async (req: Request, res: Response) => {
   try {
-    const places = await getAllPlaces();
+    const places = await getAllPlaces(req.query);
     res.json({ success: true, data: places });
   } catch (error) {
     console.error('Lỗi lấy danh sách địa điểm:', error);

@@ -24,12 +24,14 @@ export function requireAuth(sessionType: 'USER' | 'ADMIN' = 'USER'): RequestHand
   return async (req, res, next) => {
     const cookies = req.cookies as Record<string, string> | undefined;
     let effectiveSession = sessionType;
-    let token = cookies?.[sessionType === 'ADMIN' ? 'admin_access' : 'access_token'];
+    let token: string | undefined;
 
-    // Cho phép Admin (admin_access) gọi các API dùng chung khi chưa có access_token
-    if (!token && sessionType === 'USER' && cookies?.admin_access) {
+    // Cho phép Admin (admin_access) được ưu tiên gọi các API dùng chung kể cả khi còn cookie access_token cũ
+    if (cookies?.admin_access) {
       token = cookies.admin_access;
       effectiveSession = 'ADMIN';
+    } else {
+      token = cookies?.[sessionType === 'ADMIN' ? 'admin_access' : 'access_token'];
     }
 
     if (!token) {

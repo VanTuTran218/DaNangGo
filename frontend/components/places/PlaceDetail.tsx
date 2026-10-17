@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { getPlace, type PlaceDetail as PlaceDetailData } from '@/lib/api/places';
 import ReviewSection from './ReviewSection';
+import RouteDirectionsModal from './RouteDirectionsModal';
 import { MapPin, Navigation, ExternalLink, Clock, Bed, Users, Sparkles, CheckCircle2 } from 'lucide-react';
 
 const ACCOMMODATION_TYPE_LABEL: Record<string, string> = {
@@ -18,6 +19,7 @@ const fmt = (n: number) => new Intl.NumberFormat('vi-VN').format(n);
 export default function PlaceDetail({ id }: { id: string }) {
   const [place, setPlace] = useState<PlaceDetailData | null>(null);
   const [error, setError] = useState('');
+  const [isDirectionsOpen, setIsDirectionsOpen] = useState(false);
 
   useEffect(() => {
     getPlace(id)
@@ -55,13 +57,14 @@ export default function PlaceDetail({ id }: { id: string }) {
         <Link href="/places" className="text-sm font-medium text-teal-700 hover:underline">
           ← Tất cả địa điểm
         </Link>
-        <Link
-          href={`/bando?to=${place.latitude},${place.longitude}&toName=${encodeURIComponent(place.name)}`}
-          className="inline-flex items-center gap-1.5 rounded-xl bg-teal-50 px-3.5 py-1.5 text-xs font-semibold text-teal-700 transition hover:bg-teal-100"
+        <button
+          type="button"
+          onClick={() => setIsDirectionsOpen(true)}
+          className="inline-flex items-center gap-1.5 rounded-xl bg-teal-50 px-3.5 py-1.5 text-xs font-semibold text-teal-700 transition hover:bg-teal-100 shadow-xs cursor-pointer"
         >
           <Navigation className="h-3.5 w-3.5" />
           Chỉ đường đến đây
-        </Link>
+        </button>
       </div>
 
       <article className="mt-5 overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm">
@@ -210,6 +213,19 @@ export default function PlaceDetail({ id }: { id: string }) {
 
       {/* Đánh giá */}
       <ReviewSection placeId={id} placeName={place.name} imageUrl={imageUrl} />
+
+      {/* Modal chỉ đường & so sánh 5 phương tiện */}
+      <RouteDirectionsModal
+        isOpen={isDirectionsOpen}
+        onClose={() => setIsDirectionsOpen(false)}
+        destination={{
+          place_id: place.place_id,
+          name: place.name,
+          address: place.address,
+          latitude: place.latitude,
+          longitude: place.longitude,
+        }}
+      />
     </section>
   );
 }

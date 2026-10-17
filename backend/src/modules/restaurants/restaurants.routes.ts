@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { requireAuth, requireRole } from '../../middleware/auth.middleware';
 import * as controller from './restaurants.controller';
+import * as menuController from '../menu-items/menu-items.controller';
 
 const router = Router();
 
@@ -16,6 +17,18 @@ router.get('/', controller.getAll);
  * Lấy chi tiết 1 nhà hàng (công khai)
  */
 router.get('/:id', controller.getOne);
+
+/**
+ * GET /api/restaurants/:id/menu-items
+ * Lấy danh sách món ăn của nhà hàng (công khai)
+ */
+router.get('/:id/menu-items', menuController.getByRestaurant);
+
+/**
+ * POST /api/restaurants/:id/menu-items
+ * Thêm món ăn mới vào thực đơn — chỉ Partner sở hữu hoặc Admin
+ */
+router.post('/:id/menu-items', requireAuth('USER'), requireRole('PARTNER', 'ADMIN'), menuController.create);
 
 /**
  * POST /api/restaurants

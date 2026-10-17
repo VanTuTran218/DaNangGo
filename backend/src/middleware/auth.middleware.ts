@@ -23,8 +23,15 @@ declare global {
 export function requireAuth(sessionType: 'USER' | 'ADMIN' = 'USER'): RequestHandler {
   return async (req, res, next) => {
     const cookies = req.cookies as Record<string, string> | undefined;
-    const cookieName = sessionType === 'ADMIN' ? 'admin_access' : 'access_token';
-    const token = cookies?.[cookieName];
+    let effectiveSession = sessionType;
+    let token = cookies?.[sessionType === 'ADMIN' ? 'admin_access' : 'access_token'];
+
+    // Cho phép Admin (admin_access) gọi các API dùng chung khi chưa có access_token
+    if (!token && sessionType === 'USER' && cookies?.admin_access) {
+      token = cookies.admin_access;
+      effectiveSession = 'ADMIN';
+    }
+
     if (!token) {
       if (sessionType === 'ADMIN' && cookies?.access_token) {
         try {
@@ -42,7 +49,7 @@ export function requireAuth(sessionType: 'USER' | 'ADMIN' = 'USER'): RequestHand
       return;
     }
     try {
-      const userId = await verifyAccessToken(token, sessionType);
+      const userId = await verifyAccessToken(token, effectiveSession);
       const authDetails = await getAccountAuthDetails(userId);
       if (!authDetails) throw new AuthError(401, 'Phiên đăng nhập không còn hiệu lực.');
       res.locals.authUserId = userId;

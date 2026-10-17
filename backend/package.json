@@ -11,7 +11,8 @@
     "start": "node dist/index.js",
     "build": "tsc",
     "seed:admin": "npm run build && node dist/scripts/seed-admin.js",
-    "test": "npx tsx tests/auth.test.ts"
+    "test": "npx tsx tests/auth.test.ts",
+    "test:step2": "npx tsx tests/step2.test.ts"
   },
   "keywords": [],
   "author": "",

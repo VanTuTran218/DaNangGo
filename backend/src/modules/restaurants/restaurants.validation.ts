@@ -7,6 +7,7 @@ export interface CreateRestaurantDto {
   longitude?: number;
   phone?: string;
   website?: string;
+  booking_url?: string;
   cuisine_id?: number;
   price_min?: number;
   price_max?: number;
@@ -62,6 +63,13 @@ export const validateCreateRestaurant = (
       return 'cuisine_id phải là số nguyên dương';
   }
 
+  if (body['booking_url'] !== undefined && body['booking_url'] !== null && String(body['booking_url']).trim() !== '') {
+    const url = String(body['booking_url']).trim();
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      return 'booking_url phải bắt đầu bằng http:// hoặc https://';
+    }
+  }
+
   return null;
 };
 
@@ -80,6 +88,13 @@ export const validateUpdateRestaurant = (
     const min = Number(body['price_min'] ?? 0);
     if (max < 0) return 'price_max phải >= 0';
     if (max < min) return 'price_max phải >= price_min';
+  }
+
+  if (body['booking_url'] !== undefined && body['booking_url'] !== null && String(body['booking_url']).trim() !== '') {
+    const url = String(body['booking_url']).trim();
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      return 'booking_url phải bắt đầu bằng http:// hoặc https://';
+    }
   }
 
   return null;

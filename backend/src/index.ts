@@ -7,6 +7,9 @@ import { connectDB, closeDB } from './config/db';
 import authRouter, { adminRouter } from './modules/auth/auth.routes';
 import placesRouter from './modules/places/places.routes';
 import adminPartnersRouter from './modules/admin/admin.routes';
+import restaurantRouter from './modules/restaurants/restaurants.routes';
+import categoriesRouter from './modules/categories/categories.routes';
+import menuItemsRouter from './modules/menu-items/menu-items.routes';
 import { csrfProtection } from './middleware/csrf.middleware';
 import { errorHandler } from './middleware/error-handler';
 
@@ -30,9 +33,10 @@ app.use('/api/auth', authRouter);
 app.use('/api/admin/auth', adminRouter);
 app.use('/api/admin/partners', adminPartnersRouter);
 app.use('/api/places', placesRouter);
-import restaurantRouter from './modules/restaurants/restaurants.routes';
-
 app.use('/api/restaurants', restaurantRouter);
+app.use('/api/menu-items', menuItemsRouter);
+app.use('/api', categoriesRouter);
+app.use('/api/categories', categoriesRouter);
 
 // TODO: Import và đăng ký các router theo từng module
 // import authRouter from './modules/auth/auth.routes';

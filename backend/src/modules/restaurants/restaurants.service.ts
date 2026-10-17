@@ -47,7 +47,7 @@ export const createRestaurant = async (
   }
 
   // 4. Ghi vào DB (transaction)
-  const partner_id = user.partner_id ?? 1;
+  const partner_id = user.partner_id ?? null;
   const restaurant = await createRestaurantTx(data, partner_id);
   return attachIsOpen(restaurant);
 };
@@ -104,6 +104,11 @@ export const updateRestaurant = async (
   const restaurant = await findRestaurantById(place_id);
   if (!restaurant) throw { status: 404, message: 'Không tìm thấy nhà hàng' };
 
+  // Quán đang LOCKED thì Partner không được sửa
+  if (restaurant.status === 'LOCKED' && user.role !== 'ADMIN') {
+    throw { status: 403, message: 'Nhà hàng đang bị khóa (LOCKED), bạn không thể chỉnh sửa' };
+  }
+
   // 3. Kiểm tra quyền: chỉ Partner sở hữu hoặc Admin
   if (user.role !== 'ADMIN' && restaurant.partner_id !== user.partner_id) {
     throw { status: 403, message: 'Bạn không có quyền sửa nhà hàng này' };
@@ -136,6 +141,11 @@ export const deleteRestaurant = async (
 ) => {
   const restaurant = await findRestaurantById(place_id);
   if (!restaurant) throw { status: 404, message: 'Không tìm thấy nhà hàng' };
+
+  // Quán đang LOCKED thì Partner không được tự ẩn hoặc mở lại
+  if (restaurant.status === 'LOCKED' && user.role !== 'ADMIN') {
+    throw { status: 403, message: 'Nhà hàng đang bị khóa (LOCKED), bạn không thể ẩn hoặc thay đổi' };
+  }
 
   if (user.role !== 'ADMIN' && restaurant.partner_id !== user.partner_id) {
     throw { status: 403, message: 'Bạn không có quyền xóa nhà hàng này' };

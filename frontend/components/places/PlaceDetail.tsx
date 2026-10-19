@@ -29,7 +29,7 @@ export default function PlaceDetail({ id }: { id: string }) {
     'photo-1501785888041-af3ef285b470', 'photo-1470770841072-f978cf4d019e',
     'photo-1518837695005-2083093ee35b', 'photo-1464822759023-fed622ff2c3b',
   ];
-  const imageUrl = place.image_url || `https://images.unsplash.com/${fallbackPhotos[Math.abs(place.place_id) % fallbackPhotos.length]}?auto=format&fit=crop&w=1600&q=85`;
+  const imageUrl = place.cover_image || `https://images.unsplash.com/${fallbackPhotos[Math.abs(place.place_id) % fallbackPhotos.length]}?auto=format&fit=crop&w=1600&q=85`;
 
   return (
     <section className="mx-auto max-w-5xl px-5 pb-16 pt-28">

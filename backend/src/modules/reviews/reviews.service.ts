@@ -2,19 +2,22 @@ import { z } from 'zod';
 import {
   findApprovedReviews,
   findAdminReviews,
-  findUserReviewStatus,
   findPlaceSummary,
   insertPendingReview,
   isActivePlace,
-  isUniqueConstraintError,
   updateReviewStatusTx,
   deleteReviewTx,
+  findUserReviews,
+  findReviewOwner,
+  updateOwnReviewTx,
+  deleteOwnReviewTx,
 } from './reviews.repository';
 
 const paginationSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(50).default(10),
 });
+const REVIEW_COOLDOWN_MINUTES = 5;
 
 const reviewSchema = z.object({
   rating: z.number().int()
@@ -58,25 +61,39 @@ export async function createReview(placeId: number, userId: number, body: unknow
   if (!(await isActivePlace(placeId))) throw new ReviewError(404, 'Không tìm thấy địa điểm đang hoạt động.');
   const input = reviewSchema.safeParse(body);
   if (!input.success) throw new ReviewError(400, input.error.issues[0]?.message ?? 'Dữ liệu đánh giá không hợp lệ.');
-  const existingStatus = await findUserReviewStatus(placeId, userId);
-  if (existingStatus) throw duplicateReviewError(existingStatus);
-
-  try {
-    const reviewId = await insertPendingReview(placeId, userId, input.data.rating, input.data.comment);
-    return { review_id: reviewId };
-  } catch (error) {
-    if (isUniqueConstraintError(error)) {
-      const currentStatus = await findUserReviewStatus(placeId, userId);
-      throw currentStatus ? duplicateReviewError(currentStatus) : new ReviewError(409, 'Bạn đã đánh giá địa điểm này.');
-    }
-    throw error;
+  const result = await insertPendingReview(placeId, userId, input.data.rating, input.data.comment, REVIEW_COOLDOWN_MINUTES);
+  if ('retryAfterSeconds' in result) {
+    const minutes = Math.floor(result.retryAfterSeconds / 60);
+    const seconds = result.retryAfterSeconds % 60;
+    const wait = [minutes ? `${minutes} phút` : '', seconds ? `${seconds} giây` : ''].filter(Boolean).join(' ');
+    throw new ReviewError(429, `Bạn hãy chờ thêm ${wait} rồi gửi đánh giá tiếp theo.`);
   }
+  return { review_id: result.reviewId };
 }
 
-function duplicateReviewError(status: 'PENDING' | 'APPROVED' | 'HIDDEN'): ReviewError {
-  if (status === 'PENDING') return new ReviewError(409, 'Đánh giá của bạn đang chờ phê duyệt.');
-  if (status === 'APPROVED') return new ReviewError(409, 'Bạn đã đánh giá địa điểm này và đánh giá đã được duyệt.');
-  return new ReviewError(409, 'Bạn đã gửi đánh giá này nhưng hiện không hiển thị.');
+export async function listUserReviews(userId: number) {
+  return findUserReviews(userId);
+}
+
+export async function updateOwnReview(reviewId: number, userId: number, body: unknown) {
+  const review = await findReviewOwner(reviewId);
+  if (!review) throw new ReviewError(404, 'Không tìm thấy đánh giá.');
+  if (review.user_id !== userId) throw new ReviewError(403, 'Bạn không có quyền sửa đánh giá này.');
+  const input = reviewSchema.safeParse(body);
+  if (!input.success) throw new ReviewError(400, input.error.issues[0]?.message ?? 'Dữ liệu đánh giá không hợp lệ.');
+  const result = await updateOwnReviewTx(reviewId, userId, input.data.rating, input.data.comment);
+  if (result === 'missing') throw new ReviewError(404, 'Không tìm thấy đánh giá.');
+  if (result === 'forbidden') throw new ReviewError(403, 'Bạn không có quyền sửa đánh giá này.');
+  return { review_id: reviewId, status: 'PENDING' as const };
+}
+
+export async function deleteOwnReview(reviewId: number, userId: number) {
+  const review = await findReviewOwner(reviewId);
+  if (!review) throw new ReviewError(404, 'Không tìm thấy đánh giá.');
+  if (review.user_id !== userId) throw new ReviewError(403, 'Bạn không có quyền xóa đánh giá này.');
+  const result = await deleteOwnReviewTx(reviewId, userId);
+  if (result === 'missing') throw new ReviewError(404, 'Không tìm thấy đánh giá.');
+  if (result === 'forbidden') throw new ReviewError(403, 'Bạn không có quyền xóa đánh giá này.');
 }
 
 export async function listAdminReviews(query: Record<string, unknown>) {

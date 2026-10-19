@@ -8,6 +8,33 @@ export interface PlaceReview {
   created_at: string;
 }
 
+export interface MyReview {
+  review_id: number;
+  place_id: number;
+  place_name: string;
+  rating: number;
+  comment: string | null;
+  status: 'PENDING' | 'APPROVED' | 'HIDDEN';
+  created_at: string;
+}
+
+export async function getMyReviews() {
+  const response = await apiRequest<MyReview[]>('/api/reviews/me');
+  return response.data ?? [];
+}
+
+export async function updatePlaceReview(reviewId: number, rating: number, comment: string) {
+  const response = await apiRequest<{ review_id: number; status: 'PENDING' }>(`/api/reviews/${encodeURIComponent(String(reviewId))}`, {
+    method: 'PUT', body: JSON.stringify({ rating, comment }),
+  });
+  return response.message ?? 'Đánh giá đã được cập nhật.';
+}
+
+export async function deletePlaceReview(reviewId: number) {
+  const response = await apiRequest<void>(`/api/reviews/${encodeURIComponent(String(reviewId))}`, { method: 'DELETE' });
+  return response.message ?? 'Đã xóa đánh giá.';
+}
+
 export interface PlaceReviewsResponse {
   reviews: PlaceReview[];
   avg_rating: number;

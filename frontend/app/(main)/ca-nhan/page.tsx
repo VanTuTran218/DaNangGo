@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import AvatarUploader from "@/components/profile/AvatarUploader";
 import BasicInfoForm from "@/components/profile/BasicInfoForm";
 import ChangePasswordForm from "@/components/profile/ChangePasswordForm";
+import MyReviews from "@/components/profile/MyReviews";
 
 // Mock confetti effect
 const Confetti = () => (
@@ -173,7 +174,7 @@ export default function ProfilePage() {
                   </div>
                 )}
                 {activeTab === "saved" && <div className="text-gray-500 text-center py-10">Chưa có lịch trình nào được lưu.</div>}
-                {activeTab === "reviews" && <div className="text-gray-500 text-center py-10">Bạn chưa có đánh giá nào.</div>}
+                {activeTab === "reviews" && (user.role === "USER" ? <MyReviews /> : <div className="py-10 text-center text-gray-500">Lịch sử đánh giá chỉ dành cho tài khoản khách du lịch.</div>)}
                 {activeTab === "offers" && (
                   <div className="space-y-4">
                     {!isVip ? (

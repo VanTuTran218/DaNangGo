@@ -6,7 +6,7 @@ import helmet from 'helmet';
 import { connectDB, closeDB } from './config/db';
 import authRouter, { adminRouter } from './modules/auth/auth.routes';
 import placesRouter from './modules/places/places.routes';
-import { adminReviewsRouter } from './modules/reviews/reviews.routes';
+import { adminReviewsRouter, userReviewsRouter } from './modules/reviews/reviews.routes';
 import adminPartnersRouter from './modules/admin/admin.routes';
 import { csrfProtection } from './middleware/csrf.middleware';
 import { errorHandler } from './middleware/error-handler';
@@ -32,6 +32,7 @@ app.use('/api/admin/auth', adminRouter);
 app.use('/api/admin/partners', adminPartnersRouter);
 app.use('/api/places', placesRouter);
 app.use('/api/admin/reviews', adminReviewsRouter);
+app.use('/api/reviews', userReviewsRouter);
 import restaurantRouter from './modules/restaurants/restaurants.routes';
 
 app.use('/api/restaurants', restaurantRouter);

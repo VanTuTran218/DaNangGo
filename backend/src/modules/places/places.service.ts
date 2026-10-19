@@ -1,6 +1,29 @@
 import { getPool, sql } from '../../config/db';
+import * as placesRepo from './places.repository';
+import type { SearchPlacesQuery, PlaceType } from './places.validation';
+import type {
+  PlaceSearchItem,
+  SearchPlacesResult,
+  PlaceDetail,
+  PlaceImage,
+  PlaceOpeningHour,
+  AccommodationFilterHook,
+} from './places.repository';
 
-// Kiểu dữ liệu (tùy chỉnh theo bảng trong DB của bạn)
+export type { PlaceType } from './places.validation';
+export type {
+  PlaceSearchItem,
+  SearchPlacesResult,
+  PlaceDetail,
+  PlaceImage,
+  PlaceOpeningHour,
+  AccommodationFilterHook,
+} from './places.repository';
+export { setAccommodationFilterHook } from './places.repository';
+
+export type PlaceStatus = 'ACTIVE' | 'HIDDEN' | 'PENDING' | 'LOCKED';
+
+// Interface tương thích ngược
 export interface Place {
   place_id: number;
   name: string;
@@ -11,30 +34,66 @@ export interface Place {
   created_at?: Date;
 }
 
-/**
- * Lấy tất cả địa điểm
- */
-export async function getAllPlaces(): Promise<Place[]> {
-  const pool = getPool();
-  const result = await pool.request().query('SELECT * FROM Places');
-  return result.recordset;
+export interface CreatePlaceCommonDto {
+  place_type: PlaceType;
+  name: string;
+  description?: string | null;
+  address?: string | null;
+  district_id?: number | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  phone?: string | null;
+  website?: string | null;
+  booking_url?: string | null;
+  partner_id?: number | null;
+  promo_label?: string | null;
+  status?: PlaceStatus;
 }
 
 /**
- * Lấy địa điểm theo ID
+ * Lấy danh sách địa điểm có lọc, tìm kiếm và phân trang
+ * (API dùng chung cho cả Nhà hàng, Lưu trú, Điểm du lịch)
  */
-export async function getPlaceById(id: number): Promise<Place | null> {
-  const pool = getPool();
-  const result = await pool
-    .request()
-    .input('id', sql.Int, id)
-    .query('SELECT * FROM Places WHERE place_id = @id');
-
-  return result.recordset[0] || null;
+export async function getPlaces(
+  query: SearchPlacesQuery,
+  includeHidden: boolean = false
+): Promise<SearchPlacesResult> {
+  return await placesRepo.searchPlaces(query, includeHidden);
 }
 
 /**
- * Tạo địa điểm mới
+ * Lấy chi tiết 1 địa điểm theo ID (kèm ảnh và lịch mở cửa)
+ * Tự động tăng lượt xem (view_count)
+ */
+export async function getPlaceDetail(id: number): Promise<PlaceDetail> {
+  const place = await placesRepo.findPlaceById(id);
+  if (!place) {
+    throw { status: 404, message: 'Không tìm thấy địa điểm' };
+  }
+
+  // Tăng lượt xem (không chặn response)
+  placesRepo.incrementPlaceViewCount(id);
+
+  return place;
+}
+
+/**
+ * Lấy tất cả địa điểm (hàm tương thích ngược với code cũ)
+ */
+export async function getAllPlaces(): Promise<PlaceSearchItem[]> {
+  const result = await placesRepo.searchPlaces({ page: 1, limit: 50 }, true);
+  return result.items;
+}
+
+/**
+ * Lấy địa điểm theo ID (hàm tương thích ngược với code cũ)
+ */
+export async function getPlaceById(id: number): Promise<PlaceDetail | null> {
+  return await placesRepo.findPlaceById(id);
+}
+
+/**
+ * Tạo địa điểm mới (hàm tương thích ngược với code cũ)
  */
 export async function createPlace(data: Omit<Place, 'place_id' | 'created_at'>): Promise<Place> {
   const pool = getPool();
@@ -51,25 +110,6 @@ export async function createPlace(data: Omit<Place, 'place_id' | 'created_at'>):
     `);
 
   return result.recordset[0];
-}
-
-export type PlaceType = 'RESTAURANT' | 'ACCOMMODATION' | 'ATTRACTION';
-export type PlaceStatus = 'ACTIVE' | 'HIDDEN' | 'PENDING' | 'LOCKED';
-
-export interface CreatePlaceCommonDto {
-  place_type: PlaceType;
-  name: string;
-  description?: string | null;
-  address?: string | null;
-  district_id?: number | null;
-  latitude?: number | null;
-  longitude?: number | null;
-  phone?: string | null;
-  website?: string | null;
-  booking_url?: string | null;
-  partner_id?: number | null;
-  promo_label?: string | null;
-  status?: PlaceStatus;
 }
 
 /**
@@ -162,4 +202,3 @@ export async function updatePlaceStatus(
 
   return { success: true, message: `Cập nhật trạng thái địa điểm thành ${new_status} thành công` };
 }
-

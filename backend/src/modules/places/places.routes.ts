@@ -1,60 +1,65 @@
-import { Router, Request, Response } from 'express';
-import { getAllPlaces, getPlaceById, createPlace } from './places.service';
+import { Router, type RequestHandler } from 'express';
 import { requireAuth, requireRole } from '../../middleware/auth.middleware';
+import { getAccountAuthDetails, verifyAccessToken } from '../auth/auth.service';
+import * as controller from './places.controller';
 
 const router = Router();
 
-// GET /api/places - Lấy tất cả địa điểm
-router.get('/', async (req: Request, res: Response) => {
+/**
+ * Middleware tùy chọn xác thực:
+ * - Nếu có cookie access_token hoặc admin_access thì giải mã để gắn req.user.
+ * - Nếu không có token hoặc token không hợp lệ thì vẫn tiếp tục bình thường như khách vãng lai.
+ */
+const optionalAuth: RequestHandler = async (req, res, next) => {
+  const cookies = req.cookies as Record<string, string> | undefined;
+  const token = cookies?.admin_access || cookies?.access_token;
+  if (!token) return next();
+
   try {
-    const places = await getAllPlaces();
-    res.json({ success: true, data: places });
-  } catch (error) {
-    console.error('Lỗi lấy danh sách địa điểm:', error);
-    res.status(500).json({ success: false, message: 'Lỗi server' });
+    const sessionType = cookies?.admin_access ? 'ADMIN' : 'USER';
+    const userId = await verifyAccessToken(token, sessionType);
+    const authDetails = await getAccountAuthDetails(userId);
+    if (authDetails) {
+      res.locals.authUserId = userId;
+      res.locals.authRole = authDetails.role;
+      req.user = {
+        user_id: userId,
+        role: authDetails.role,
+        ...(authDetails.partnerId ? { partner_id: authDetails.partnerId } : {}),
+      };
+    }
+  } catch {
+    // Bỏ qua lỗi token ở route công khai, coi như khách vãng lai
   }
-});
+  next();
+};
 
-// GET /api/places/:id - Lấy 1 địa điểm theo ID
-router.get('/:id', async (req: Request, res: Response) => {
-  try {
-    const rawId = req.params.id;
-    if (typeof rawId !== 'string') {
-      return res.status(400).json({ success: false, message: 'ID không hợp lệ' });
-    }
+/**
+ * GET /api/places
+ * Tìm kiếm và lọc danh sách địa điểm (Công khai, hỗ trợ đa tiêu chí và phân trang)
+ * Query params: ?q=...&type=RESTAURANT&district_id=1&min_price=10000&max_price=200000&sort=rating_desc&page=1&limit=10
+ */
+router.get('/', optionalAuth, controller.getAll);
 
-    const id = parseInt(rawId, 10);
-    if (isNaN(id)) {
-      return res.status(400).json({ success: false, message: 'ID không hợp lệ' });
-    }
+/**
+ * GET /api/places/:id
+ * Lấy chi tiết 1 địa điểm theo ID (kèm danh sách ảnh và giờ mở cửa)
+ */
+router.get('/:id', optionalAuth, controller.getOne);
 
-    const place = await getPlaceById(id);
-    if (!place) {
-      return res.status(404).json({ success: false, message: 'Không tìm thấy địa điểm' });
-    }
+/**
+ * PATCH /api/places/:id/status
+ * PUT /api/places/:id/status
+ * Cập nhật trạng thái địa điểm (ACTIVE, HIDDEN, LOCKED)
+ * Quyền: PARTNER (chỉ cơ sở của mình) hoặc ADMIN (quản trị toàn hệ thống)
+ */
+router.patch('/:id/status', requireAuth('USER'), controller.updateStatus);
+router.put('/:id/status', requireAuth('USER'), controller.updateStatus);
 
-    res.json({ success: true, data: place });
-  } catch (error) {
-    console.error('Lỗi lấy địa điểm:', error);
-    res.status(500).json({ success: false, message: 'Lỗi server' });
-  }
-});
-
-// POST /api/places - Tạo địa điểm mới
-router.post('/', requireAuth('USER'), requireRole('PARTNER'), async (req: Request, res: Response) => {
-  try {
-    const { name, description, address, category } = req.body;
-
-    if (!name) {
-      return res.status(400).json({ success: false, message: 'Tên địa điểm là bắt buộc' });
-    }
-
-    const newPlace = await createPlace({ name, description, address, category });
-    res.status(201).json({ success: true, data: newPlace });
-  } catch (error) {
-    console.error('Lỗi tạo địa điểm:', error);
-    res.status(500).json({ success: false, message: 'Lỗi server' });
-  }
-});
+/**
+ * POST /api/places
+ * Tạo địa điểm mới (tương thích ngược với endpoint cũ)
+ */
+router.post('/', requireAuth('USER'), requireRole('PARTNER', 'ADMIN'), controller.create);
 
 export default router;

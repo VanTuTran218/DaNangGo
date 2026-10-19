@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { getPlaces } from '@/lib/api/places';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import {
   Map,
@@ -70,6 +71,50 @@ export default function DiemDuLichPage() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [likedIds, setLikedIds] = useState<Set<number>>(new Set());
+
+  // Gọi API Backend thật: GET /api/places?type=ATTRACTION
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchLiveAttractions() {
+      try {
+        const res = await getPlaces({ type: 'ATTRACTION', limit: 50 });
+        if (res && res.items && res.items.length > 0 && isMounted) {
+          const liveAttractions: AttractionData[] = res.items.map((item) => {
+            let tint: AttractionData['badgeTint'] = 'blue';
+            const cat = item.category_name || '';
+            if (cat.includes('Núi') || cat.includes('Rừng')) tint = 'green';
+            else if (cat.includes('Văn hoá') || cat.includes('Lịch sử')) tint = 'amber';
+            else if (cat.includes('Check-in') || cat.includes('Ảnh')) tint = 'pink';
+            else if (cat.includes('Giải trí')) tint = 'purple';
+
+            return {
+              id: item.place_id,
+              name: item.name,
+              category: item.category_name || 'Văn hoá & Lịch sử',
+              location: item.district_name ? `${item.district_name}` : (item.address || 'Đà Nẵng'),
+              rating: item.avg_rating || 4.8,
+              visitors: (item.view_count || 100) * 150,
+              img: item.cover_image || 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=600&q=80',
+              shortDesc: item.description ? item.description.slice(0, 80) + '...' : 'Điểm du lịch tuyệt đẹp tại Đà Nẵng...',
+              longDesc: item.description || 'Khám phá nét đẹp thiên nhiên và văn hoá đặc sắc của thành phố biển Đà Nẵng.',
+              badgeTint: tint,
+            };
+          });
+
+          // Ghép dữ liệu thật từ SQL Server lên đầu danh sách
+          const liveIds = new Set(liveAttractions.map((a) => a.id));
+          const merged = [...liveAttractions, ...INITIAL_ATTRACTIONS.filter((a) => !liveIds.has(a.id))];
+          setItems(merged);
+        }
+      } catch (err) {
+        console.warn('API /api/places chưa kết nối, dùng fallback:', err);
+      }
+    }
+    fetchLiveAttractions();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleLike = (id: number) => {
     setLikedIds(prev => {

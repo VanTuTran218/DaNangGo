@@ -13,7 +13,8 @@
     "seed:admin": "npm run build && node dist/scripts/seed-admin.js",
     "test": "npx tsx tests/auth.test.ts",
     "test:step2": "npx tsx tests/step2.test.ts",
-    "test:step3": "npx tsx tests/step3.test.ts"
+    "test:step3": "npx tsx tests/step3.test.ts",
+    "test:step5": "npx tsx tests/step5.test.ts"
   },
   "keywords": [],
   "author": "",

@@ -27,6 +27,8 @@ import Link from 'next/link';
 import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
+import { getPlaces } from "@/lib/api/places";
+import { formatPriceRange } from "@/lib/mappers/place.mapper";
 import Reveal from "@/components/ui/Reveal";
 import AnimatedCounter from "@/components/ui/AnimatedCounter";
 
@@ -223,6 +225,7 @@ type PlanKey = keyof typeof ITINERARY_PLANS;
 // ============================================================
 
 export default function HomePage() {
+  const [popularCards, setPopularCards] = useState(POPULAR_CARDS);
   const [likedCards, setLikedCards] = useState<Set<number>>(new Set());
   const [selectedPlan, setSelectedPlan] = useState<PlanKey>("3N2D");
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -232,7 +235,39 @@ export default function HomePage() {
   const y = useTransform(scrollYProgress, [0, 1], ['0%', '20%']);
   const prefersReduced = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  // Lấy các địa điểm nổi bật từ SQL Server: GET /api/places?limit=4&sort=rating_desc
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchPopular() {
+      try {
+        const res = await getPlaces({ limit: 4, sort: 'rating_desc' });
+        if (res && res.items && res.items.length > 0 && isMounted) {
+          const liveCards = res.items.slice(0, 4).map((p) => ({
+            id: p.place_id,
+            title: p.name,
+            category: p.category_name || (p.place_type === 'RESTAURANT' ? 'Ẩm thực' : 'Điểm tham quan'),
+            location: p.district_name ? `${p.district_name}, Đà Nẵng` : (p.address || 'Đà Nẵng'),
+            rating: p.avg_rating || 4.8,
+            reviews: p.review_count || 120,
+            price: formatPriceRange(p.price_min, p.price_max, p.ticket_price),
+            img: p.cover_image || 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=600&q=80',
+            badge: p.promo_label || '🔥 Nổi bật',
+            badgeColor: 'bg-teal-600',
+          }));
 
+          const liveIds = new Set(liveCards.map((c) => c.id));
+          const merged = [...liveCards, ...POPULAR_CARDS.filter((c) => !liveIds.has(c.id))].slice(0, 4);
+          setPopularCards(merged);
+        }
+      } catch {
+        // Fallback POPULAR_CARDS
+      }
+    }
+    fetchPopular();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     const handler = () => setShowScrollTop(window.scrollY > 400);
@@ -463,7 +498,7 @@ export default function HomePage() {
 
           {/* 4-card grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {POPULAR_CARDS.map((card, i) => (
+            {popularCards.map((card, i) => (
               <Reveal key={card.id} delay={prefersReduced ? 0 : i * 0.08}>
                 <PopularCard
                   card={card}

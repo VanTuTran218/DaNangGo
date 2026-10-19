@@ -1,8 +1,10 @@
 'use client';
 
 import Image from 'next/image';
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { getPlaces } from '@/lib/api/places';
+import { formatPriceRange } from '@/lib/mappers/place.mapper';
 import { motion, AnimatePresence, LayoutGroup, useScroll, useTransform } from 'framer-motion';
 import {
   ChevronRight,
@@ -259,6 +261,7 @@ function FoodSkeleton() {
 // PAGE COMPONENT
 // ─────────────────────────────────────────────────────────────────────────────
 export default function AmThucPage() {
+  const [foodPlaces, setFoodPlaces] = useState<FoodPlace[]>(FOOD_PLACES);
   const [savedPlaces, setSavedPlaces] = useState<Set<number>>(new Set());
   const [activeCategory, setActiveCategory] = useState('Tất cả');
   const [activeTime, setActiveTime]         = useState('Tất cả khung giờ');
@@ -268,6 +271,48 @@ export default function AmThucPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [nearMe, setNearMe] = useState(false);
 
+  // Gọi API Backend thật: GET /api/places?type=RESTAURANT
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchLiveRestaurants() {
+      try {
+        const res = await getPlaces({ type: 'RESTAURANT', limit: 50 });
+        if (res && res.items && res.items.length > 0 && isMounted) {
+          const livePlaces: FoodPlace[] = res.items.map((item) => ({
+            id: item.place_id,
+            name: item.name,
+            badge: item.promo_label || (item.avg_rating >= 4.7 ? 'Đặc sản nổi bật' : 'Món ngon Đà Nẵng'),
+            badgeColor: CAT_TINT[item.category_name || ''] || 'bg-teal-500',
+            badgePulse: item.avg_rating >= 4.8,
+            category: item.category_name || 'Món ngon',
+            location: item.district_name ? `${item.district_name}, Đà Nẵng` : (item.address || 'Đà Nẵng'),
+            rating: item.avg_rating || 4.5,
+            reviews: item.review_count || 100,
+            priceRange: formatPriceRange(item.price_min, item.price_max),
+            priceNote: '/phần',
+            openNow: item.is_open,
+            hours: item.today_hours || '07:00–22:00',
+            img: item.cover_image || 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&q=80',
+            tags: [item.district_name || 'Đà Nẵng', item.category_name || 'Ẩm thực'].filter(Boolean),
+            description: item.description || 'Quán ăn ngon nổi tiếng tại Đà Nẵng.',
+          }));
+
+          // Ghép dữ liệu thật từ SQL Server lên đầu, các món mẫu giữ ở sau để đảm bảo giao diện luôn đủ 24 card
+          const liveIds = new Set(livePlaces.map((p) => p.id));
+          const merged = [...livePlaces, ...FOOD_PLACES.filter((p) => !liveIds.has(p.id))];
+          setFoodPlaces(merged);
+        }
+      } catch (err) {
+        // Nếu backend chưa chạy thì fallback dùng FOOD_PLACES mẫu
+        console.warn('API /api/places chưa kết nối, dùng dữ liệu fallback:', err);
+      }
+    }
+    fetchLiveRestaurants();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const prefersReduced = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   const heroRef = useRef<HTMLElement>(null);
@@ -276,8 +321,6 @@ export default function AmThucPage() {
     offset: ['start start', 'end start']
   });
   const heroY = useTransform(scrollYProgress, [0, 1], ['0%', '30%']);
-
-
 
   const toggleSave = (id: number) => {
     setSavedPlaces(prev => {
@@ -295,7 +338,7 @@ export default function AmThucPage() {
   }, []);
 
   // ── Filtering + sorting ──────────────────────────────────────────────────
-  let filtered = FOOD_PLACES.filter(p => {
+  let filtered = foodPlaces.filter(p => {
     if (activeCategory !== 'Tất cả' && p.category !== activeCategory) return false;
     if (nearMe) return true; // demo: nearMe giữ tất cả
     return true;

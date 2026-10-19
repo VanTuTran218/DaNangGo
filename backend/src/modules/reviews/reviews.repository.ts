@@ -144,7 +144,7 @@ export async function updateOwnReviewTx(reviewId: number, userId: number, rating
           moderated_by = NULL, moderated_at = NULL, updated_at = GETDATE()
         WHERE review_id = @review_id
       `);
-    if (row.status === 'APPROVED') await refreshPlaceReviewSummary(transaction, row.place_id);
+    if (row.status === 'APPROVED') await recalculatePlaceReviewSummary(transaction, row.place_id);
     await transaction.commit();
     return 'updated';
   } catch (error) { await transaction.rollback(); throw error; }
@@ -162,7 +162,7 @@ export async function deleteOwnReviewTx(reviewId: number, userId: number): Promi
     await transaction.request().input('place_id', sql.Int, row.place_id)
       .query('SELECT place_id FROM places WITH (UPDLOCK, HOLDLOCK) WHERE place_id = @place_id');
     await transaction.request().input('review_id', sql.Int, reviewId).query('DELETE FROM reviews WHERE review_id = @review_id');
-    if (row.status === 'APPROVED') await refreshPlaceReviewSummary(transaction, row.place_id);
+    if (row.status === 'APPROVED') await recalculatePlaceReviewSummary(transaction, row.place_id);
     await transaction.commit();
     return 'deleted';
   } catch (error) { await transaction.rollback(); throw error; }
@@ -227,7 +227,7 @@ export async function updateReviewStatusTx(
       await transaction.rollback();
       return false;
     }
-    await refreshPlaceReviewSummary(transaction, placeId);
+    await recalculatePlaceReviewSummary(transaction, placeId);
     await transaction.commit();
     return true;
   } catch (error) {
@@ -255,7 +255,7 @@ export async function deleteReviewTx(reviewId: number): Promise<boolean> {
       await transaction.rollback();
       return false;
     }
-    await refreshPlaceReviewSummary(transaction, placeId);
+    await recalculatePlaceReviewSummary(transaction, placeId);
     await transaction.commit();
     return true;
   } catch (error) {
@@ -267,7 +267,7 @@ export async function deleteReviewTx(reviewId: number): Promise<boolean> {
 async function lockReviewPlace(transaction: sql.Transaction, reviewId: number): Promise<number | null> {
   const review = await transaction.request()
     .input('review_id', sql.Int, reviewId)
-    .query('SELECT place_id FROM reviews WHERE review_id = @review_id');
+    .query('SELECT place_id FROM reviews WITH (UPDLOCK, HOLDLOCK) WHERE review_id = @review_id');
   const placeId = (review.recordset[0] as { place_id: number } | undefined)?.place_id;
   if (!placeId) return null;
 
@@ -277,7 +277,30 @@ async function lockReviewPlace(transaction: sql.Transaction, reviewId: number): 
   return placeId;
 }
 
-async function refreshPlaceReviewSummary(transaction: sql.Transaction, placeId: number): Promise<void> {
+/**
+ * Tính avg_rating (làm tròn 1 chữ số thập phân) và review_count, chỉ từ review APPROVED;
+ * nếu không có review APPROVED thì cả hai bằng 0. Hàm nhận transaction đang mở từ caller,
+ * không tự mở/commit/rollback transaction; lỗi truy vấn được truyền lên caller.
+ *
+ * Bàn giao cho Tin — luồng hiện tại:
+ * - Admin: API /api/admin/reviews → controller → moderateReview → updateReviewStatusTx.
+ *   Repository mở transaction, khóa review rồi place, đổi trạng thái APPROVED/HIDDEN, gọi hàm
+ *   này rồi mới commit. Đây là nơi hiện tại tính lại summary cho luồng duyệt/ẩn.
+ * - User sửa: PUT /api/reviews/:reviewId → updateOwnReviewTx; review APPROVED chuyển thành
+ *   PENDING, sau đó hàm này cập nhật summary trước commit.
+ * - User xóa: DELETE /api/reviews/:reviewId → deleteOwnReviewTx; nếu review đang APPROVED thì
+ *   tính lại summary sau khi xóa và trước commit.
+ *
+ * Khi thêm/đổi API duyệt hoặc ẩn, giữ việc đổi trạng thái và gọi hàm này trong cùng transaction,
+ * gọi sau khi đổi trạng thái và trước commit. Nếu cập nhật review hoặc summary lỗi, rollback
+ * transaction để review và summary không bị lệch. Nếu caller khác sửa/xóa review APPROVED, caller
+ * đó cũng phải gọi hàm này trong transaction của thao tác. Giữ thứ tự khóa review rồi place để
+ * đồng nhất với các luồng hiện có khi nhiều cập nhật cùng địa điểm chạy đồng thời.
+ */
+export async function recalculatePlaceReviewSummary(
+  transaction: sql.Transaction,
+  placeId: number,
+): Promise<void> {
   await transaction.request()
     .input('place_id', sql.Int, placeId)
     .query(`

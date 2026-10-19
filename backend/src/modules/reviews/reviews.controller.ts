@@ -50,8 +50,17 @@ export async function create(req: Request, res: Response) {
   }
 }
 
-function getReviewId(req: Request, res: Response): number | null {
-  const id = Number(req.params['id']);
+export async function myReviews(_req: Request, res: Response) {
+  try {
+    const data = await service.listUserReviews(res.locals.authUserId!);
+    res.json({ success: true, data });
+  } catch (error) {
+    handleError(res, error);
+  }
+}
+
+function getReviewId(req: Request, res: Response, param = 'id'): number | null {
+  const id = Number(req.params[param]);
   if (!Number.isSafeInteger(id) || id < 1) {
     res.status(400).json({ success: false, message: 'ID đánh giá không hợp lệ.' });
     return null;
@@ -84,6 +93,31 @@ export async function adminDelete(req: Request, res: Response) {
   if (reviewId === null) return;
   try {
     await service.removeReview(reviewId);
+    res.json({ success: true, message: 'Đã xóa đánh giá.' });
+  } catch (error) {
+    handleError(res, error);
+  }
+}
+
+export async function updateOwn(req: Request, res: Response) {
+  const reviewId = getReviewId(req, res, 'reviewId');
+  if (reviewId === null) return;
+  try {
+    const data = await service.updateOwnReview(reviewId, res.locals.authUserId!, req.body);
+    res.json({ success: true, data, message: 'Đánh giá đã được cập nhật và đang chờ admin duyệt lại.' });
+  } catch (error) {
+    handleError(res, error);
+  }
+}
+
+export async function deleteOwn(req: Request, res: Response) {
+  const reviewId = Number(req.params['reviewId']);
+  if (!Number.isSafeInteger(reviewId) || reviewId < 1) {
+    res.status(400).json({ success: false, message: 'ID đánh giá không hợp lệ.' });
+    return;
+  }
+  try {
+    await service.deleteOwnReview(reviewId, res.locals.authUserId!);
     res.json({ success: true, message: 'Đã xóa đánh giá.' });
   } catch (error) {
     handleError(res, error);

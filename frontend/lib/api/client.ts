@@ -1,6 +1,6 @@
 import type { User, UserRole } from '@/types/user';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 export interface ApiEnvelope<T> {
   success: boolean;

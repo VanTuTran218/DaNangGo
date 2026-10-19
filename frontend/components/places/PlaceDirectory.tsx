@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useMemo, useState } from 'react';
+import { ArrowRight, MapPin, Search, Star } from 'lucide-react';
 import { getPlaces, type PlaceListItem } from '@/lib/api/places';
 
 export default function PlaceDirectory() {
@@ -26,19 +27,22 @@ export default function PlaceDirectory() {
 
   return (
     <main className="mx-auto min-h-screen max-w-6xl px-5 pb-16 pt-28">
-      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-widest text-teal-700">Dữ liệu địa điểm</p>
-          <h1 className="mt-2 text-3xl font-bold text-[#0f2942]">Chọn địa điểm để xem đánh giá</h1>
-          <p className="mt-2 text-sm text-gray-600">Danh sách này lấy từ các địa điểm ACTIVE trong hệ thống.</p>
+      <div className="mb-8 flex flex-col gap-6 rounded-3xl border border-teal-100 bg-gradient-to-br from-teal-50 via-white to-cyan-50 p-6 shadow-sm sm:flex-row sm:items-end sm:justify-between sm:p-8">
+        <div className="max-w-2xl">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-teal-700">Khám phá Đà Nẵng</p>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-[#0f2942] sm:text-4xl">Tìm địa điểm, đọc đánh giá</h1>
+          <p className="mt-2 text-sm leading-6 text-slate-600">Chọn nơi bạn muốn đến và xem trải nghiệm từ cộng đồng.</p>
         </div>
-        <input
-          value={keyword}
-          onChange={(event) => setKeyword(event.target.value)}
-          placeholder="Tìm theo tên, địa chỉ, loại..."
-          aria-label="Tìm địa điểm"
-          className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm outline-none focus:border-teal-500 sm:max-w-xs"
-        />
+        <label className="relative block w-full sm:max-w-sm">
+          <Search size={18} aria-hidden="true" className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            value={keyword}
+            onChange={(event) => setKeyword(event.target.value)}
+            placeholder="Tìm địa điểm..."
+            aria-label="Tìm địa điểm"
+            className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm shadow-sm outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
+          />
+        </label>
       </div>
 
       {loading ? <p className="py-10 text-center text-gray-500">Đang tải địa điểm...</p> : null}
@@ -48,20 +52,27 @@ export default function PlaceDirectory() {
           {places.length === 0 ? 'Chưa có địa điểm ACTIVE trong cơ sở dữ liệu.' : 'Không tìm thấy địa điểm phù hợp.'}
         </p>
       ) : null}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid items-stretch gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {filteredPlaces.map((place) => (
-          <Link key={place.place_id} href={`/places/${place.place_id}`} className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-            <div className="relative h-48 bg-gray-100">
+          <article key={place.place_id} className="group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm transition duration-200 hover:-translate-y-1 hover:border-teal-200 hover:shadow-lg hover:shadow-teal-900/10">
+            <Link href={`/places/${place.place_id}`} aria-label={`Xem ${place.name}`} className="relative block aspect-[16/9] overflow-hidden bg-gradient-to-br from-teal-100 via-cyan-50 to-sky-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-600">
               {place.cover_image ? <Image src={place.cover_image} alt={place.name} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover" /> : null}
+              {!place.cover_image ? <span className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-teal-800/70"><MapPin size={30} aria-hidden="true" /><span className="text-xs font-semibold">Địa điểm Đà Nẵng</span></span> : null}
+              <span className="absolute left-3 top-3 rounded-full border border-white/70 bg-white/90 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-teal-800 shadow-sm">{place.place_type}</span>
+            </Link>
+            <div className="flex flex-1 flex-col p-5">
+              <h2 className="line-clamp-2 min-h-14 text-lg font-bold leading-7 text-[#0f2942]">{place.name}</h2>
+              <p className="mt-1 flex min-h-10 items-start gap-1.5 text-sm leading-5 text-slate-500"><MapPin size={15} aria-hidden="true" className="mt-0.5 shrink-0 text-teal-600" /><span className="line-clamp-2">{place.address || 'Chưa có địa chỉ'}</span></p>
+              <div className="mt-4 flex items-center gap-1.5 text-sm">
+                <Star size={16} aria-hidden="true" className="fill-amber-400 text-amber-400" />
+                <span className="font-bold text-slate-800">{Number(place.avg_rating).toFixed(1)}</span>
+                <span className="text-slate-500">· {place.review_count} đánh giá</span>
+              </div>
+              <Link href={`/places/${place.place_id}`} className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-teal-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700">
+                Xem chi tiết & đánh giá <ArrowRight size={16} aria-hidden="true" className="transition-transform group-hover:translate-x-0.5" />
+              </Link>
             </div>
-            <div className="p-5">
-              <p className="text-xs font-bold uppercase tracking-wider text-teal-700">{place.place_type}</p>
-              <h2 className="mt-2 text-lg font-bold text-[#0f2942]">{place.name}</h2>
-              <p className="mt-1 min-h-5 text-sm text-gray-500">{place.address || 'Chưa có địa chỉ'}</p>
-              <p className="mt-4 text-sm text-amber-600">★ {Number(place.avg_rating).toFixed(1)} <span className="text-gray-500">({place.review_count} đánh giá)</span></p>
-              <p className="mt-4 text-sm font-semibold text-teal-700">Xem chi tiết và đánh giá →</p>
-            </div>
-          </Link>
+          </article>
         ))}
       </div>
     </main>

@@ -67,3 +67,27 @@ export function mapPlaceToCard(place: PlaceSearchItem): PlaceCardViewModel {
     bookingUrl: place.booking_url,
   };
 }
+
+export function getDayOfWeekName(day: number): string {
+
+  const map: Record<number, string> = {
+    1: 'Chủ Nhật',
+    2: 'Thứ Hai',
+    3: 'Thứ Ba',
+    4: 'Thứ Tư',
+    5: 'Thứ Năm',
+    6: 'Thứ Sáu',
+    7: 'Thứ Bảy',
+  };
+  return map[day] || `Thứ ${day}`;
+}
+
+export function formatDuration(minutes: number | null | undefined): string {
+  if (!minutes || minutes <= 0) return 'Tự do';
+  if (minutes < 60) return `${minutes} phút`;
+  const hours = Math.floor(minutes / 60);
+  const remaining = minutes % 60;
+  if (remaining === 0) return `${hours} giờ`;
+  return `${hours} giờ ${remaining} phút`;
+}
+

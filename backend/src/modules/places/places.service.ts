@@ -1,6 +1,6 @@
 import { getPool, sql } from '../../config/db';
 import * as placesRepo from './places.repository';
-import type { SearchPlacesQuery, PlaceType } from './places.validation';
+import type { SearchPlacesQuery, PlaceType, PlaceDetailResponseDto } from './places.validation';
 import type {
   PlaceSearchItem,
   SearchPlacesResult,
@@ -10,7 +10,7 @@ import type {
   AccommodationFilterHook,
 } from './places.repository';
 
-export type { PlaceType } from './places.validation';
+export type { PlaceType, PlaceDetailResponseDto } from './places.validation';
 export type {
   PlaceSearchItem,
   SearchPlacesResult,
@@ -20,6 +20,7 @@ export type {
   AccommodationFilterHook,
 } from './places.repository';
 export { setAccommodationFilterHook } from './places.repository';
+
 
 export type PlaceStatus = 'ACTIVE' | 'HIDDEN' | 'PENDING' | 'LOCKED';
 
@@ -35,18 +36,31 @@ export interface Place {
 }
 
 export interface CreatePlaceCommonDto {
+  /** Loại địa điểm: Bắt buộc ('RESTAURANT' | 'ATTRACTION' | 'ACCOMMODATION') */
   place_type: PlaceType;
+  /** Tên địa điểm: Bắt buộc (tối đa 200 ký tự) */
   name: string;
+  /** Mô tả chi tiết */
   description?: string | null;
+  /** Địa chỉ chi tiết */
   address?: string | null;
+  /** ID quận/huyện thuộc Đà Nẵng (1..8) */
   district_id?: number | null;
+  /** Tọa độ vĩ độ (-90 đến 90) */
   latitude?: number | null;
+  /** Tọa độ kinh độ (-180 đến 180) */
   longitude?: number | null;
+  /** Số điện thoại liên hệ */
   phone?: string | null;
+  /** Website chính thức */
   website?: string | null;
+  /** URL đặt bàn / đặt phòng trực tuyến (phải bắt đầu bằng http:// hoặc https://) */
   booking_url?: string | null;
+  /** ID đối tác sở hữu (nếu là đối tác tạo) */
   partner_id?: number | null;
+  /** Nhãn khuyến mãi / nổi bật (ví dụ: 'Đặc sản số 1', 'Khách sạn ven biển') */
   promo_label?: string | null;
+  /** Trạng thái hiển thị (Mặc định: 'ACTIVE') */
   status?: PlaceStatus;
 }
 
@@ -61,21 +75,51 @@ export async function getPlaces(
   return await placesRepo.searchPlaces(query, includeHidden);
 }
 
+export interface CurrentUserPayload {
+  id?: number;
+  role: string;
+  partner_id?: number;
+}
+
 /**
- * Lấy chi tiết 1 địa điểm theo ID (kèm ảnh và lịch mở cửa)
- * Tự động tăng lượt xem (view_count)
+ * Lấy chi tiết 1 địa điểm theo ID (kèm ảnh, lịch mở cửa, thực đơn/khẩu vị, giá vé, lưu trú)
+ * Theo đúng 7 yêu cầu Task 6:
+ * - Nếu không tồn tại hoặc ở trạng thái HIDDEN, LOCKED, PENDING với người dùng thường -> trả về 404 Not Found
+ * - Admin hoặc Partner sở hữu cơ sở được phép xem địa điểm ở mọi trạng thái
+ * - Tự động tăng lượt xem (view_count) theo cơ chế fire-and-forget
  */
-export async function getPlaceDetail(id: number): Promise<PlaceDetail> {
+export async function getPlaceDetail(
+  id: number,
+  user?: CurrentUserPayload
+): Promise<PlaceDetail> {
   const place = await placesRepo.findPlaceById(id);
   if (!place) {
     throw { status: 404, message: 'Không tìm thấy địa điểm' };
   }
 
-  // Tăng lượt xem (không chặn response)
+  // Kiểm tra quyền xem theo trạng thái:
+  // Nếu địa điểm không ở trạng thái ACTIVE (tức HIDDEN, LOCKED, PENDING):
+  // Chỉ Admin hoặc Partner sở hữu quán mới có quyền xem. Người dùng thường/khách nhận 404.
+  if (place.status !== 'ACTIVE') {
+    const isAdmin = user?.role === 'ADMIN';
+    const isOwnerPartner =
+      user?.role === 'PARTNER' &&
+      user.partner_id !== undefined &&
+      user.partner_id !== null &&
+      place.partner_id !== null &&
+      user.partner_id === place.partner_id;
+
+    if (!isAdmin && !isOwnerPartner) {
+      throw { status: 404, message: 'Không tìm thấy địa điểm' };
+    }
+  }
+
+  // Tăng lượt xem (fire-and-forget, không làm gián đoạn response)
   placesRepo.incrementPlaceViewCount(id);
 
   return place;
 }
+
 
 /**
  * Lấy tất cả địa điểm (hàm tương thích ngược với code cũ)
@@ -122,15 +166,54 @@ export async function createPlaceCommon(
   data: CreatePlaceCommonDto,
   runner?: sql.Transaction | sql.ConnectionPool
 ): Promise<number> {
+  // 1. Kiểm tra validation phòng thủ trước khi ghi vào Database
+  if (!data || typeof data !== 'object') {
+    throw new Error('Dữ liệu địa điểm không hợp lệ (data is required)');
+  }
+
+  const trimmedName = data.name ? data.name.trim() : '';
+  if (!trimmedName) {
+    throw new Error('Tên địa điểm (name) là bắt buộc và không được để trống');
+  }
+
+  if (!data.place_type || !['RESTAURANT', 'ATTRACTION', 'ACCOMMODATION'].includes(data.place_type)) {
+    throw new Error(
+      `Loại địa điểm (place_type) không hợp lệ: "${data.place_type}". Phải là RESTAURANT, ATTRACTION hoặc ACCOMMODATION.`
+    );
+  }
+
+  const validStatuses: PlaceStatus[] = ['ACTIVE', 'HIDDEN', 'PENDING', 'LOCKED'];
+  const status: PlaceStatus = data.status ?? 'ACTIVE';
+  if (!validStatuses.includes(status)) {
+    throw new Error(
+      `Trạng thái (status) không hợp lệ: "${status}". Phải là một trong: ${validStatuses.join(', ')}.`
+    );
+  }
+
+  if (data.latitude !== undefined && data.latitude !== null) {
+    if (data.latitude < -90 || data.latitude > 90) {
+      throw new Error(`Tọa độ vĩ độ (latitude) phải nằm trong [-90, 90]. Nhận được: ${data.latitude}`);
+    }
+  }
+
+  if (data.longitude !== undefined && data.longitude !== null) {
+    if (data.longitude < -180 || data.longitude > 180) {
+      throw new Error(`Tọa độ kinh độ (longitude) phải nằm trong [-180, 180]. Nhận được: ${data.longitude}`);
+    }
+  }
+
+  if (data.booking_url && !data.booking_url.startsWith('http://') && !data.booking_url.startsWith('https://')) {
+    throw new Error('URL đặt chỗ (booking_url) phải bắt đầu bằng http:// hoặc https://');
+  }
+
+  // 2. Thực thi ghi dữ liệu vào bảng places
   const executor = runner ?? getPool();
   const request = executor.request();
 
-  const status = data.status ?? 'ACTIVE';
-
   const result = await request
     .input('place_type', sql.VarChar(20), data.place_type)
-    .input('name', sql.NVarChar(200), data.name.trim())
-    .input('description', sql.NVarChar(sql.MAX), data.description ?? null)
+    .input('name', sql.NVarChar(200), trimmedName)
+    .input('description', sql.NVarChar(sql.MAX), data.description ? data.description.trim() : null)
     .input('address', sql.NVarChar(255), data.address ? data.address.trim() : null)
     .input('district_id', sql.Int, data.district_id ?? null)
     .input('latitude', sql.Decimal(9, 6), data.latitude ?? null)
@@ -139,7 +222,7 @@ export async function createPlaceCommon(
     .input('website', sql.VarChar(255), data.website ? data.website.trim() : null)
     .input('booking_url', sql.NVarChar(500), data.booking_url ? data.booking_url.trim() : null)
     .input('partner_id', sql.Int, data.partner_id ?? null)
-    .input('promo_label', sql.NVarChar(50), data.promo_label ?? null)
+    .input('promo_label', sql.NVarChar(50), data.promo_label ? data.promo_label.trim() : null)
     .input('status', sql.VarChar(20), status)
     .query<{ place_id: number }>(`
       INSERT INTO places

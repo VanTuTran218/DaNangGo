@@ -64,14 +64,53 @@ export interface PlaceSearchItem {
   star_rating?: number | null;
 }
 
+export interface MenuItemTaste {
+  taste_id: number;
+  name: string;
+}
+
+export interface MenuItemDetail {
+  menu_item_id: number;
+  place_id: number;
+  name: string;
+  description: string | null;
+  price: number;
+  image_url: string | null;
+  is_available: boolean;
+  tastes: MenuItemTaste[];
+}
+
+export interface AccommodationRoomType {
+  room_type_id: number;
+  place_id: number;
+  name: string;
+  capacity: number | null;
+  price_per_night: number;
+  original_price: number | null;
+  status: string;
+}
+
+export interface AccommodationAmenity {
+  amenity_id: number;
+  name: string;
+  icon: string | null;
+}
+
 export interface PlaceDetail extends PlaceSearchItem {
   images: PlaceImage[];
   opening_hours: PlaceOpeningHour[];
+  isOpenNow: boolean;
   visit_duration_minutes?: number | null;
   check_in_time?: string | null;
   check_out_time?: string | null;
   partner_id?: number | null;
+  menu_items?: MenuItemDetail[];
+  room_types?: AccommodationRoomType[];
+  amenities?: AccommodationAmenity[];
+  accepts_cash?: boolean;
+  accepts_bank_transfer?: boolean;
 }
+
 
 export interface SearchPlacesQuery {
   q?: string;
@@ -136,10 +175,13 @@ export async function getPlaces(
  * Lấy chi tiết 1 địa điểm theo ID (Công khai)
  * GET /api/places/:id
  */
-export async function getPlaceById(placeId: number): Promise<PlaceDetail | null> {
+export async function getPlaceDetail(placeId: number | string): Promise<PlaceDetail | null> {
   const res = await apiRequest<PlaceDetail>(`/api/places/${placeId}`);
   return res.data || null;
 }
+
+export const getPlaceById = getPlaceDetail;
+
 
 /**
  * Cập nhật trạng thái địa điểm (Yêu cầu đăng nhập Partner / Admin)

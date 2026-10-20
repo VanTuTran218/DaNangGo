@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { TIER_CONFIG } from "@/lib/constants/tiers";
 
@@ -19,6 +19,8 @@ const NAV_LINKS = [
 
 export default function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const [stickySearchText, setStickySearchText] = useState("");
   const [isAtTop, setIsAtTop] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const [showStickySearch, setShowStickySearch] = useState(false);
@@ -144,28 +146,48 @@ export default function Navbar() {
                 animate={{ y: 0, opacity: 1 }}
                 exit={{ y: -16, opacity: 0 }}
                 transition={{ duration: 0.22, ease: "easeOut" }}
-                className="hidden lg:flex w-44 xl:w-52 flex-shrink-0"
+                className="hidden lg:flex w-44 xl:w-56 flex-shrink-0"
               >
-                <div className="relative w-full">
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (stickySearchText.trim()) {
+                      const targetPath = pathname === '/amthuc' ? '/amthuc' : '/diemdulich';
+                      router.push(`${targetPath}?q=${encodeURIComponent(stickySearchText.trim())}`);
+                    }
+                  }}
+                  className="relative w-full"
+                >
                   <input
                     type="text"
+                    value={stickySearchText}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setStickySearchText(val);
+                      if (pathname === '/diemdulich' || pathname === '/amthuc') {
+                        const url = val.trim() ? `${pathname}?q=${encodeURIComponent(val.trim())}` : pathname;
+                        router.replace(url, { scroll: false });
+                      }
+                    }}
                     placeholder="Tìm điểm đến..."
-                    className={`w-full border text-sm rounded-full px-4 py-1.5 focus:outline-none transition-colors ${
+                    className={`w-full border text-sm rounded-full pl-4 pr-9 py-1.5 focus:outline-none transition-colors ${
                       isAtTop
                         ? "bg-white/20 border-white/30 text-white placeholder-white/70 focus:border-white shadow-sm"
                         : "bg-gray-100 border-gray-200 text-gray-700 placeholder-gray-400 focus:border-teal-400"
                     }`}
                   />
                   <button
+                    type="submit"
                     className={`absolute right-3 top-1/2 -translate-y-1/2 transition-colors ${
                       isAtTop ? "text-white/70 hover:text-white" : "text-gray-400 hover:text-gray-600"
                     }`}
+                    title="Tìm kiếm"
                   >
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
                     </svg>
                   </button>
-                </div>
+                </form>
               </motion.div>
             )}
           </AnimatePresence>

@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 import * as placesService from './places.service';
-import { validateSearchPlacesQuery, ALLOWED_PLACE_TYPES } from './places.validation';
+import { validateSearchPlacesQuery, validatePlaceId, ALLOWED_PLACE_TYPES } from './places.validation';
 import type { PlaceStatus } from './places.service';
 import { ok, created, badRequest, notFound, forbidden, serverError } from '../../utils/response';
 
@@ -36,28 +36,24 @@ export const getAll = async (req: Request, res: Response) => {
 
 /**
  * GET /api/places/:id
- * Lấy thông tin chi tiết một địa điểm theo ID (kèm danh sách ảnh và lịch mở cửa)
+ * Lấy thông tin chi tiết một địa điểm theo ID (kèm thực đơn món ăn/khẩu vị, giá vé, lưu trú, ảnh và giờ mở cửa)
+ * Phân quyền: Địa điểm HIDDEN, LOCKED, PENDING chỉ ADMIN hoặc PARTNER sở hữu mới xem được.
  */
 export const getOne = async (req: Request, res: Response) => {
   try {
-    const rawId = req.params['id'];
-    const id = parseInt(String(rawId ?? ''));
-    if (isNaN(id) || id <= 0) {
-      return badRequest(res, 'ID địa điểm không hợp lệ');
+    const validation = validatePlaceId(req.params['id']);
+    if (validation.error) {
+      return badRequest(res, validation.error);
     }
+    const id = validation.data!;
 
-    const place = await placesService.getPlaceDetail(id);
-
-    // Điểm đang bị ẩn (HIDDEN) chỉ Quản trị viên mới được xem
-    if (place.status === 'HIDDEN' && req.user?.role !== 'ADMIN') {
-      return notFound(res, 'Không tìm thấy địa điểm');
-    }
-
+    const place = await placesService.getPlaceDetail(id, req.user);
     return ok(res, place, 'Lấy thông tin địa điểm thành công');
   } catch (err) {
     return handleError(res, err);
   }
 };
+
 
 /**
  * PATCH /api/places/:id/status

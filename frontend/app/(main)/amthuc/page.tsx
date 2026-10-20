@@ -1,7 +1,8 @@
 'use client';
 
 import Image from 'next/image';
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo, Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getPlaces } from '@/lib/api/places';
 import { formatPriceRange } from '@/lib/mappers/place.mapper';
@@ -20,13 +21,30 @@ import {
   CalendarClock,
   Calendar,
   CheckCircle,
+  Search,
+  X,
+  SearchX,
+  Sparkles,
+  ArrowRight,
+  RefreshCw,
+  Loader2,
 } from 'lucide-react';
 import Reveal from '@/components/ui/Reveal';
 import AnimatedCounter from '@/components/ui/AnimatedCounter';
 
+// Helper chuẩn hóa tiếng Việt không dấu
+function removeVietnameseTones(str: string): string {
+  return str
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D')
+    .toLowerCase()
+    .trim();
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
-// DATA — 24 địa điểm ẩm thực (4 trang × 6 card)
+// DATA — Danh sách địa điểm ẩm thực (Đồng bộ với CSDL SQL Server Task 7)
 // ─────────────────────────────────────────────────────────────────────────────
 interface FoodPlace {
   id: number;
@@ -48,73 +66,277 @@ interface FoodPlace {
 }
 
 const FOOD_PLACES: FoodPlace[] = [
-  // Trang 1
-  { id:1,  name:'Mì Quảng Bà Vị', badge:'Mì Quảng gia truyền', badgeColor:'bg-amber-500', badgePulse:false, category:'Mì Quảng', location:'Hải Châu, Đà Nẵng', rating:4.9, reviews:2156, priceRange:'25.000đ–45.000đ', priceNote:'/tô', openNow:true,  hours:'06:00–14:00', img:'https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=600&q=80', tags:['Gia truyền 40 năm','Nước lèo đậm đà','Đông khách sáng sớm'], description:'Quán mì Quảng nổi tiếng nhất Đà Nẵng, gia truyền 3 đời.' },
-  { id:2,  name:'Bánh Tráng Cuốn Thịt Heo Trần', badge:'Đặc sản số 1', badgeColor:'bg-red-500', badgePulse:true, category:'Bánh tráng cuốn', location:'Sơn Trà, Đà Nẵng', rating:4.8, reviews:1893, priceRange:'60.000đ–120.000đ', priceNote:'/phần', openNow:true,  hours:'10:00–22:00', img:'https://images.unsplash.com/photo-1561189386-42f49bcc29ef?w=600&q=80', tags:['Thịt heo quay giòn','Đặc sản Đà Nẵng','Rau thơm tươi ngon'], description:'Điểm đến bắt buộc khi đến Đà Nẵng, thịt heo quay da giòn rụm.' },
-  { id:3,  name:'Bún Chả Cá Bà Loan', badge:'Bún chả cá lâu năm', badgeColor:'bg-blue-500', badgePulse:false, category:'Bún chả cá', location:'Thanh Khê, Đà Nẵng', rating:4.7, reviews:1204, priceRange:'30.000đ–50.000đ', priceNote:'/tô', openNow:true,  hours:'06:30–13:00', img:'https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?w=600&q=80', tags:['Chả cá tự làm','Súp trong vắt','Mở từ 1985'], description:'Bún chả cá gia truyền với chả cá tự tay làm mỗi sáng sớm.' },
-  { id:4,  name:'Hải Sản Tươi Sống Mỹ Khê', badge:'Hải sản tươi sống', badgeColor:'bg-teal-500', badgePulse:true, category:'Hải sản', location:'Ngũ Hành Sơn, Mỹ Khê', rating:4.6, reviews:987, priceRange:'150.000đ–500.000đ', priceNote:'/kg', openNow:true,  hours:'10:00–23:00', img:'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&q=80', tags:['Tôm cua ghẹ tươi sống','View biển Mỹ Khê','Giá chợ tươi'], description:'Nhà hàng hải sản uy tín, tôm cua bắt từ thuyền vào buổi sáng.' },
-  { id:5,  name:'Bánh Mì Bà Lan', badge:'Quán hẻm nổi tiếng', badgeColor:'bg-purple-500', badgePulse:false, category:'Bánh mì', location:'Hải Châu, Đà Nẵng', rating:4.9, reviews:3241, priceRange:'15.000đ–25.000đ', priceNote:'/ổ', openNow:false, hours:'06:00–10:00', img:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80', tags:['Ổ bánh mì giòn rụm','Nhân phomát trứng','Xếp hàng mua'], description:'Huyền thoại bánh mì Đà Nẵng, giòn bên ngoài mềm bên trong.' },
-  { id:6,  name:'Cà Phê Sân Thượng Việt Ơi', badge:'Cà phê & Check-in hoài niệm', badgeColor:'bg-pink-500', badgePulse:false, category:'Cà phê', location:'Hải Châu, Đà Nẵng', rating:4.7, reviews:1876, priceRange:'35.000đ–75.000đ', priceNote:'/ly', openNow:true,  hours:'07:00–22:30', img:'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=600&q=80', tags:['Sân thượng view sông Hàn','Cà phê rang xay tại chỗ','Decor vintage Việt'], description:'Không gian cà phê Việt retro, view toàn cảnh sông Hàn.' },
-  // Trang 2
-  { id:7,  name:'Cơm Hến Bà Nga', badge:'Mì Quảng gia truyền', badgeColor:'bg-amber-500', badgePulse:false, category:'Cơm hến', location:'Hải Châu, Đà Nẵng', rating:4.8, reviews:765, priceRange:'20.000đ–35.000đ', priceNote:'/phần', openNow:true,  hours:'07:00–13:00', img:'https://images.unsplash.com/photo-1565299507177-b0ac66763828?w=600&q=80', tags:['Hến tươi miền Trung','Mắm ruốc đặc trưng','Bữa sáng dân dã'], description:'Cơm hến đậm chất miền Trung, cay nồng vị ký ức Đà Nẵng.' },
-  { id:8,  name:'Phở Đặc Biệt Anh Tám', badge:'Đặc sản số 1', badgeColor:'bg-red-500', badgePulse:true, category:'Phở', location:'Thanh Khê, Đà Nẵng', rating:4.6, reviews:1432, priceRange:'40.000đ–70.000đ', priceNote:'/tô', openNow:true,  hours:'05:30–11:00', img:'https://images.unsplash.com/photo-1525755662778-989d0524087e?w=600&q=80', tags:['Nước dùng hầm 12 tiếng','Thịt bò tái chín','Sáng sớm đông khách'], description:'Phở bò gia truyền, nước dùng trong veo hầm từ 3 giờ sáng.' },
-  { id:9,  name:'Nem Lụi Bà Hoa', badge:'Quán hẻm nổi tiếng', badgeColor:'bg-purple-500', badgePulse:false, category:'Nem lụi', location:'Sơn Trà, Đà Nẵng', rating:4.8, reviews:654, priceRange:'50.000đ–90.000đ', priceNote:'/phần', openNow:true,  hours:'11:00–21:00', img:'https://images.unsplash.com/photo-1513135467880-6c41603fef6e?w=600&q=80', tags:['Nem nướng thơm phức','Cuốn bánh tráng','Tự cuốn theo ý thích'], description:'Nem lụi nướng than hoa, thơm ngon không nơi nào sánh bằng.' },
-  { id:10, name:'Bún Bò Huế Gánh Thơm', badge:'Bún chả cá lâu năm', badgeColor:'bg-blue-500', badgePulse:false, category:'Bún bò Huế', location:'Ngũ Hành Sơn, Đà Nẵng', rating:4.5, reviews:1123, priceRange:'35.000đ–60.000đ', priceNote:'/tô', openNow:false, hours:'06:00–14:00', img:'https://images.unsplash.com/photo-1585032226651-759b368d7246?w=600&q=80', tags:['Sả nước mắm đặc trưng','Chả cua giò heo','Cay mê mẩn'], description:'Bún bò Huế chuẩn vị, được người Huế sinh sống tại Đà Nẵng yêu thích.' },
-  { id:11, name:'Bánh Xèo Bà Ba', badge:'Đặc sản số 1', badgeColor:'bg-red-500', badgePulse:true, category:'Bánh xèo', location:'Hải Châu, Đà Nẵng', rating:4.9, reviews:2098, priceRange:'45.000đ–80.000đ', priceNote:'/cái', openNow:true,  hours:'10:30–21:00', img:'https://images.unsplash.com/photo-1600850056064-a8b380df8395?w=600&q=80', tags:['Bánh xèo giòn 45cm','Nhân tôm thịt đầy','Rau sống tươi ngon'], description:'Bánh xèo đường kính 45cm, giòn rụm, nhân tôm thịt đầy ắp.' },
-  { id:12, name:'Lẩu Cá Rô Nướng Sông Hàn', badge:'Hải sản tươi sống', badgeColor:'bg-teal-500', badgePulse:true, category:'Lẩu cá', location:'Hải Châu, Đà Nẵng', rating:4.6, reviews:876, priceRange:'200.000đ–350.000đ', priceNote:'/nồi', openNow:true,  hours:'11:00–23:00', img:'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=600&q=80', tags:['View sông Hàn','Cá rô nướng sả ớt','Không gian ngoài trời'], description:'Nhà hàng lẩu cá rô đặc sản, view trực diện cầu sông Hàn lung linh.' },
-  // Trang 3
-  { id:13, name:'Cao Lầu Hội An Giao Lưu', badge:'Mì Quảng gia truyền', badgeColor:'bg-amber-500', badgePulse:false, category:'Cao lầu', location:'Sơn Trà, Đà Nẵng', rating:4.7, reviews:543, priceRange:'40.000đ–65.000đ', priceNote:'/tô', openNow:true,  hours:'08:00–20:00', img:'https://images.unsplash.com/photo-1551326844-4df70f78d0e9?w=600&q=80', tags:['Cao lầu chính hiệu','Thịt heo xá xíu','Bánh crackers giòn'], description:'Cao lầu chuẩn phong cách Hội An, một bước không cần ra Phố cổ.' },
-  { id:14, name:'Chè Ba Màu Đà Nẵng', badge:'Cà phê & Check-in hoài niệm', badgeColor:'bg-pink-500', badgePulse:false, category:'Chè', location:'Hải Châu, Đà Nẵng', rating:4.7, reviews:1345, priceRange:'15.000đ–30.000đ', priceNote:'/ly', openNow:true,  hours:'10:00–22:00', img:'https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=600&q=80', tags:['Chè đậu đỏ đậu xanh','Nước cốt dừa béo','Giải nhiệt mùa hè'], description:'Chè ba màu mát lạnh, điểm đến giải khát yêu thích của người Đà Nẵng.' },
-  { id:15, name:'Mực Nướng Biển Mỹ Khê', badge:'Hải sản tươi sống', badgeColor:'bg-teal-500', badgePulse:true, category:'Hải sản', location:'Ngũ Hành Sơn, Mỹ Khê', rating:4.8, reviews:987, priceRange:'80.000đ–200.000đ', priceNote:'/con', openNow:true,  hours:'16:00–23:30', img:'https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=600&q=80', tags:['Mực tươi nướng than','Nhúng muối ớt xanh','View biển hoàng hôn'], description:'Mực tươi nướng than hoa bên bãi biển Mỹ Khê, ăn ngắm hoàng hôn.' },
-  { id:16, name:'Bánh Canh Bà Thuận', badge:'Bún chả cá lâu năm', badgeColor:'bg-blue-500', badgePulse:false, category:'Bánh canh', location:'Hải Châu, Đà Nẵng', rating:4.6, reviews:654, priceRange:'30.000đ–50.000đ', priceNote:'/tô', openNow:false, hours:'06:00–11:30', img:'https://images.unsplash.com/photo-1540189549336-e6e99eb4b1c2?w=600&q=80', tags:['Sợi bánh canh bột gạo','Cua chả mọc đầy','Nước lèo ngọt tự nhiên'], description:'Bánh canh bột gạo sợi to, nước lèo ngọt thanh từ xương ống.' },
-  { id:17, name:'Mì Hoành Thánh Tàu Bay', badge:'Đặc sản số 1', badgeColor:'bg-red-500', badgePulse:true, category:'Mì', location:'Thanh Khê, Đà Nẵng', rating:4.5, reviews:876, priceRange:'35.000đ–55.000đ', priceNote:'/tô', openNow:true,  hours:'07:00–20:00', img:'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=600&q=80', tags:['Hoành thánh mỏng vỏ','Nước tương dầu mè','Ký ức người Hoa'], description:'Mì hoành thánh phong cách người Hoa, tồn tại hơn 50 năm tại Đà Nẵng.' },
-  { id:18, name:'Quán Cơm Bà Ngoại', badge:'Quán hẻm nổi tiếng', badgeColor:'bg-purple-500', badgePulse:false, category:'Cơm nhà', location:'Liên Chiểu, Đà Nẵng', rating:4.8, reviews:432, priceRange:'30.000đ–55.000đ', priceNote:'/suất', openNow:true,  hours:'10:30–14:00', img:'https://images.unsplash.com/photo-1455619452474-d2be8b1e70cd?w=600&q=80', tags:['Cơm nhà bình dị','Nhiều món thay đổi hàng ngày','Bán hết sớm'], description:'Cơm nhà theo phong cách bà ngoại nấu, hơn 15 món thay đổi mỗi ngày.' },
-  // Trang 4
-  { id:19, name:'Gỏi Cuốn Tôm Thịt Bà Sáu', badge:'Đặc sản số 1', badgeColor:'bg-red-500', badgePulse:true, category:'Gỏi cuốn', location:'Hải Châu, Đà Nẵng', rating:4.7, reviews:765, priceRange:'20.000đ–35.000đ', priceNote:'/cuốn', openNow:true,  hours:'10:00–20:00', img:'https://images.unsplash.com/photo-1562802378-063ec186a863?w=600&q=80', tags:['Gỏi cuốn tươi ngon','Nước chấm đặc biệt','Rau thơm phong phú'], description:'Gỏi cuốn sạch ngon, tươi mát chuẩn vị Nam Bộ giữa lòng Đà Nẵng.' },
-  { id:20, name:'Bia Hơi Đà Nẵng Phạm Cự Lượng', badge:'Quán hẻm nổi tiếng', badgeColor:'bg-purple-500', badgePulse:false, category:'Bia hơi', location:'Hải Châu, Đà Nẵng', rating:4.6, reviews:1987, priceRange:'10.000đ–25.000đ', priceNote:'/ly', openNow:true,  hours:'14:00–23:00', img:'https://images.unsplash.com/photo-1555658636-6e4a36218be7?w=600&q=80', tags:['Bia hơi chính hiệu Đà Nẵng','Mồi đa dạng','Không khí vỉa hè đặc trưng'], description:'Văn hóa bia hơi đường phố Đà Nẵng, giao lưu cuối ngày của người địa phương.' },
-  { id:21, name:'Chả Bò Huỳnh Thúc Kháng', badge:'Mì Quảng gia truyền', badgeColor:'bg-amber-500', badgePulse:false, category:'Chả bò', location:'Hải Châu, Đà Nẵng', rating:4.9, reviews:1234, priceRange:'50.000đ–150.000đ', priceNote:'/gói', openNow:true,  hours:'08:00–18:00', img:'https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=600&q=80', tags:['Chả bò thứ thiệt','Quà tặng đặc sản','Đóng gói chân không'], description:'Chả bò Đà Nẵng nổi tiếng toàn quốc, quà tặng không thể thiếu.' },
-  { id:22, name:'Cháo Lươn Bà Chín', badge:'Bún chả cá lâu năm', badgeColor:'bg-blue-500', badgePulse:false, category:'Cháo', location:'Thanh Khê, Đà Nẵng', rating:4.6, reviews:543, priceRange:'30.000đ–50.000đ', priceNote:'/tô', openNow:false, hours:'06:00–12:00', img:'https://images.unsplash.com/photo-1547592180-85f173990554?w=600&q=80', tags:['Lươn đồng sạch','Cháo sánh ngọt tự nhiên','Thêm tiêu gừng đặc trưng'], description:'Cháo lươn đồng miền Trung thứ thiệt, ấm bụng sáng sớm.' },
-  { id:23, name:'Nộm Sứa Biển Thanh Bình', badge:'Hải sản tươi sống', badgeColor:'bg-teal-500', badgePulse:true, category:'Hải sản', location:'Sơn Trà, Đà Nẵng', rating:4.5, reviews:432, priceRange:'25.000đ–40.000đ', priceNote:'/phần', openNow:true,  hours:'15:00–22:00', img:'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=600&q=80', tags:['Sứa biển tươi giòn','Giấm tỏi chua ngọt','Món ăn vặt buổi chiều'], description:'Nộm sứa biển đặc sản Đà Nẵng, chua ngọt mát lạnh chiều hè.' },
-  { id:24, name:'Cà Phê Trứng Phố Cổ', badge:'Cà phê & Check-in hoài niệm', badgeColor:'bg-pink-500', badgePulse:false, category:'Cà phê', location:'Hải Châu, Đà Nẵng', rating:4.8, reviews:2134, priceRange:'40.000đ–80.000đ', priceNote:'/ly', openNow:true,  hours:'07:00–22:00', img:'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=600&q=80', tags:['Cà phê trứng Hà Nội','Decor nhà cổ','Ảnh check-in đẹp'], description:'Phong cách cà phê trứng Hà Nội giữa không gian nhà cổ Đà Nẵng.' },
+  // Quán ăn đồng bộ với CSDL Task 7
+  {
+    id: 96,
+    name: 'Hải Sản Bé Mặn',
+    badge: 'Hải sản tươi sống',
+    badgeColor: 'bg-teal-500',
+    badgePulse: true,
+    category: 'Hải sản',
+    location: 'Sơn Trà, Đà Nẵng',
+    rating: 4.7,
+    reviews: 2890,
+    priceRange: '70.000đ–180.000đ',
+    priceNote: '/món',
+    openNow: true,
+    hours: '09:00–23:59',
+    img: 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=600&q=80',
+    tags: ['Hải sản tươi sống', 'Sơn Trà', 'Chip chip hấp', 'Mực lá nướng'],
+    description: 'Quán hải sản bình dân đông đúc nhất dọc bãi biển Sơn Trà, hải sản tươi rói vừa cập bến ghe tàu.',
+  },
+  {
+    id: 95,
+    name: 'Bún Chả Cá Hờn',
+    badge: 'Bún chả cá trứ danh',
+    badgeColor: 'bg-blue-500',
+    badgePulse: false,
+    category: 'Bún chả cá',
+    location: 'Hải Châu, Đà Nẵng',
+    rating: 4.8,
+    reviews: 1780,
+    priceRange: '40.000đ–45.000đ',
+    priceNote: '/tô',
+    openNow: true,
+    hours: '06:00–22:00',
+    img: 'https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?w=600&q=80',
+    tags: ['Bún chả cá', 'Hải Châu', 'Chả cá thu', 'Gia truyền'],
+    description: 'Thương hiệu bún chả cá lâu năm nổi danh xứ Đà với nước dùng ngọt lịm từ bí đỏ và chả cá thu dai giòn.',
+  },
+  {
+    id: 94,
+    name: 'Cơm Niêu Nhà Đỏ Đà Nẵng',
+    badge: 'Cơm niêu gia truyền',
+    badgeColor: 'bg-purple-500',
+    badgePulse: false,
+    category: 'Cơm nhà',
+    location: 'Hải Châu, Đà Nẵng',
+    rating: 4.7,
+    reviews: 1650,
+    priceRange: '35.000đ–95.000đ',
+    priceNote: '/món',
+    openNow: true,
+    hours: '10:00–22:00',
+    img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&q=80',
+    tags: ['Cơm niêu đập', 'Cá bống kho tộ', 'Cơm nhà ấm cúng'],
+    description: 'Cơm niêu đập cháy giòn rụm ăn kèm cá bống sông Trà kho tộ và canh cua đồng đậm đà hương vị quê hương.',
+  },
+  {
+    id: 93,
+    name: 'Mì Quảng 1A Hải Phòng',
+    badge: 'Mì Quảng số 1',
+    badgeColor: 'bg-amber-500',
+    badgePulse: true,
+    category: 'Mì Quảng',
+    location: 'Hải Châu, Đà Nẵng',
+    rating: 4.8,
+    reviews: 2450,
+    priceRange: '45.000đ–55.000đ',
+    priceNote: '/tô',
+    openNow: true,
+    hours: '06:00–21:30',
+    img: 'https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=600&q=80',
+    tags: ['Mì Quảng tôm thịt', 'Ếch đồng', 'Đặc sản Đà Nẵng'],
+    description: 'Địa chỉ mì Quảng nức tiếng với sợi mì gạo vàng óng, nước nhưn tôm thịt rim đậm đà và bánh tráng mè nướng.',
+  },
+  {
+    id: 92,
+    name: 'Bánh Xèo Bà Dưỡng',
+    badge: 'Đặc sản số 1',
+    badgeColor: 'bg-red-500',
+    badgePulse: true,
+    category: 'Bánh xèo',
+    location: 'Hải Châu, Đà Nẵng',
+    rating: 4.9,
+    reviews: 3120,
+    priceRange: '60.000đ–75.000đ',
+    priceNote: '/phần',
+    openNow: true,
+    hours: '09:30–21:30',
+    img: 'https://images.unsplash.com/photo-1600850056064-a8b380df8395?w=600&q=80',
+    tags: ['Bánh xèo giòn rụm', 'Nước chấm gan heo mè', 'Nem lụi than hoa'],
+    description: 'Huyền thoại ẩm thực hẻm Hoàng Diệu, bánh xèo vàng ươm giòn tan cuộn rau sống chấm nước sốt gan heo béo bùi.',
+  },
+  {
+    id: 1,
+    name: 'Hải Sản Tươi Sống Mỹ Khê',
+    badge: 'Hải sản ven biển',
+    badgeColor: 'bg-teal-500',
+    badgePulse: false,
+    category: 'Hải sản',
+    location: 'Ngũ Hành Sơn, Đà Nẵng',
+    rating: 4.8,
+    reviews: 1250,
+    priceRange: '45.000đ–500.000đ',
+    priceNote: '/món',
+    openNow: true,
+    hours: '09:00–23:30',
+    img: 'https://images.unsplash.com/photo-1559847844-5315695dadae?w=600&q=80',
+    tags: ['Tôm hùm bơ tỏi', 'Cua huỳnh đế', 'View biển Mỹ Khê'],
+    description: 'Nhà hàng hải sản uy tín bậc nhất ven biển Mỹ Khê, bắt trực tiếp từ hồ kính chế biến theo phong vị miền Trung.',
+  },
+  {
+    id: 2,
+    name: 'Bánh Tráng Cuốn Thịt Heo Trần',
+    badge: 'Đặc sản nổi tiếng',
+    badgeColor: 'bg-red-500',
+    badgePulse: true,
+    category: 'Bánh tráng cuốn',
+    location: 'Hải Châu, Đà Nẵng',
+    rating: 4.8,
+    reviews: 1893,
+    priceRange: '60.000đ–120.000đ',
+    priceNote: '/phần',
+    openNow: true,
+    hours: '10:00–22:00',
+    img: 'https://images.unsplash.com/photo-1561189386-42f49bcc29ef?w=600&q=80',
+    tags: ['Thịt heo 2 đầu da', 'Mắm nêm nguyên chất', 'Rau rừng'],
+    description: 'Điểm đến ẩm thực trứ danh khi đến Đà Nẵng, thịt heo luộc 2 đầu da cuốn bánh tráng Đại Lộc chấm mắm nêm thơm nồng.',
+  },
+  {
+    id: 5,
+    name: 'Bánh Mì Bà Lan',
+    badge: 'Quán hẻm nổi tiếng',
+    badgeColor: 'bg-purple-500',
+    badgePulse: false,
+    category: 'Bánh mì',
+    location: 'Hải Châu, Đà Nẵng',
+    rating: 4.9,
+    reviews: 3241,
+    priceRange: '15.000đ–25.000đ',
+    priceNote: '/ổ',
+    openNow: true,
+    hours: '06:00–21:00',
+    img: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80',
+    tags: ['Bánh mì chả bò', 'Pate béo ngậy', 'Đông khách'],
+    description: 'Huyền thoại bánh mì Đà Nẵng, vỏ giòn ruột mềm nhân chả bò, thịt nguội và pate béo ngậy đặc trưng.',
+  },
+  {
+    id: 6,
+    name: 'Cà Phê Sân Thượng Việt Ơi',
+    badge: 'Check-in sông Hàn',
+    badgeColor: 'bg-pink-500',
+    badgePulse: false,
+    category: 'Cà phê',
+    location: 'Hải Châu, Đà Nẵng',
+    rating: 4.7,
+    reviews: 1876,
+    priceRange: '35.000đ–75.000đ',
+    priceNote: '/ly',
+    openNow: true,
+    hours: '07:00–22:30',
+    img: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=600&q=80',
+    tags: ['View sông Hàn', 'Cà phê muối', 'Decor vintage'],
+    description: 'Không gian cà phê sân thượng ngắm trọn cầu Rồng và cầu sông Hàn lung linh ánh đèn về đêm.',
+  },
+  {
+    id: 3,
+    name: 'Cao Lầu Hội An Giao Lưu',
+    badge: 'Đặc sản xứ Quảng',
+    badgeColor: 'bg-amber-500',
+    badgePulse: false,
+    category: 'Cao lầu',
+    location: 'Sơn Trà, Đà Nẵng',
+    rating: 4.7,
+    reviews: 543,
+    priceRange: '40.000đ–65.000đ',
+    priceNote: '/tô',
+    openNow: true,
+    hours: '08:00–20:00',
+    img: 'https://images.unsplash.com/photo-1551326844-4df70f78d0e9?w=600&q=80',
+    tags: ['Cao lầu chính hiệu', 'Thịt xá xíu', 'Rau Trà Quế'],
+    description: 'Cao lầu sợi to dai sần sật, xá xíu thơm lừng hòa quyện rau sống Trà Quế giòn mát ngay giữa lòng Đà Nẵng.',
+  },
+  {
+    id: 4,
+    name: 'Mì Hoành Thánh Tàu Bay',
+    badge: 'Ẩm thực người Hoa',
+    badgeColor: 'bg-red-500',
+    badgePulse: false,
+    category: 'Mì Quảng',
+    location: 'Thanh Khê, Đà Nẵng',
+    rating: 4.5,
+    reviews: 876,
+    priceRange: '35.000đ–55.000đ',
+    priceNote: '/tô',
+    openNow: true,
+    hours: '07:00–20:00',
+    img: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=600&q=80',
+    tags: ['Hoành thánh mỏng vỏ', 'Nước dùng thanh ngọt', 'Lâu đời'],
+    description: 'Mì hoành thánh chuẩn phong cách người Hoa tồn tại hơn 50 năm, nước dùng trong vắt thanh tao.',
+  },
+  {
+    id: 21,
+    name: 'Chả Bò Huỳnh Thúc Kháng',
+    badge: 'Đặc sản làm quà',
+    badgeColor: 'bg-amber-500',
+    badgePulse: false,
+    category: 'Chả bò',
+    location: 'Hải Châu, Đà Nẵng',
+    rating: 4.9,
+    reviews: 1234,
+    priceRange: '50.000đ–150.000đ',
+    priceNote: '/đòn',
+    openNow: true,
+    hours: '08:00–18:00',
+    img: 'https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=600&q=80',
+    tags: ['Chả bò nguyên chất', 'Tiêu sọ cay nồng', 'Quà tặng Đà Nẵng'],
+    description: 'Chả bò loại 1 thơm lừng tiêu sọ cay nồng, dai giòn sần sật, món quà biếu ý nghĩa khi đến Đà Nẵng.',
+  },
 ];
 
 const TOTAL_DISPLAY = 96;
 const PLACES_PER_PAGE = 6;
 
 const CATEGORIES = [
-  'Tất cả', 'Mì Quảng', 'Bánh tráng cuốn', 'Bún chả cá',
-  'Hải sản', 'Cà phê', 'Bánh xèo', 'Phở',
+  'Tất cả',
+  'Mì Quảng',
+  'Bánh tráng cuốn',
+  'Bún chả cá',
+  'Hải sản',
+  'Cà phê',
+  'Bánh xèo',
+  'Cơm nhà',
 ];
 
 const CAT_TINT: Record<string, string> = {
   'Mì Quảng': 'bg-amber-500',
+  'Bánh tráng cuốn': 'bg-red-500',
+  'Bún chả cá': 'bg-blue-500',
   'Hải sản': 'bg-teal-500',
   'Cà phê': 'bg-pink-500',
   'Bánh xèo': 'bg-orange-500',
-  'Phở': 'bg-red-500',
+  'Cơm nhà': 'bg-purple-500',
   'Tất cả': 'bg-gray-800',
 };
 
+const POPULAR_FOOD_TAGS = [
+  { label: 'Hải Sản Bé Mặn', query: 'bé mặn' },
+  { label: 'Mì Quảng 1A', query: 'mì quảng' },
+  { label: 'Bánh Xèo Bà Dưỡng', query: 'bà dưỡng' },
+  { label: 'Bún Chả Cá Hờn', query: 'chả cá hờn' },
+  { label: 'Cơm Niêu Nhà Đỏ', query: 'cơm niêu' },
+  { label: 'Bánh Mì Bà Lan', query: 'bà lan' },
+  { label: 'Hải Sản Mỹ Khê', query: 'mỹ khê' },
+];
+
 const TIME_FILTERS = ['Tất cả khung giờ', 'Sáng sớm (6-9h)', 'Trưa (11-14h)', 'Tối (18-23h)'];
-const DAY_FILTERS  = ['Tất cả ngày', 'Cuối tuần', 'Ngày thường'];
+const DAY_FILTERS = ['Tất cả ngày', 'Cuối tuần', 'Ngày thường'];
 
 const SORT_OPTIONS = [
   { value: 'recommended', label: 'Đề xuất' },
-  { value: 'rating',      label: 'Đánh giá cao nhất' },
-  { value: 'reviews',     label: 'Nhiều đánh giá nhất' },
-  { value: 'name',        label: 'Tên A–Z' },
+  { value: 'rating', label: 'Đánh giá cao nhất' },
+  { value: 'reviews', label: 'Nhiều đánh giá nhất' },
+  { value: 'name', label: 'Tên A–Z' },
 ];
 
 const TRUST_BADGES = [
-  { icon: Users,       color: 'text-teal-600',  bg: 'bg-teal-50',   title: 'Xác minh bởi cộng đồng', desc: 'Hàng nghìn thực khách đánh giá mỗi ngày.' },
-  { icon: Zap,         color: 'text-orange-500', bg: 'bg-orange-50', title: 'Cập nhật theo thời gian thực', desc: 'Giá & giờ mở cửa được cập nhật liên tục.' },
-  { icon: ThumbsUp,    color: 'text-blue-600',   bg: 'bg-blue-50',   title: 'Chỉ đường chính xác', desc: 'Tích hợp bản đồ, dẫn đường từng ngõ hẻm.' },
+  { icon: Users, color: 'text-teal-600', bg: 'bg-teal-50', title: 'Xác minh bởi cộng đồng', desc: 'Hàng nghìn thực khách đánh giá mỗi ngày.' },
+  { icon: Zap, color: 'text-orange-500', bg: 'bg-orange-50', title: 'Cập nhật theo thời gian thực', desc: 'Giá & giờ mở cửa được cập nhật liên tục.' },
+  { icon: ThumbsUp, color: 'text-blue-600', bg: 'bg-blue-50', title: 'Chỉ đường chính xác', desc: 'Tích hợp bản đồ, dẫn đường từng ngõ hẻm.' },
   { icon: CalendarClock, color: 'text-purple-600', bg: 'bg-purple-50', title: 'Gợi ý theo khung giờ', desc: 'Biết ngay nơi đang mở cửa phù hợp ngay bây giờ.' },
 ];
 
-// ─────────────────────────────────────────────────────────────────────────────
-// BLUR PLACEHOLDER
-// ─────────────────────────────────────────────────────────────────────────────
 const BLUR = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -130,127 +352,129 @@ function FoodCard({
   onSave: () => void;
 }) {
   return (
-    <motion.div whileHover={{ y: -4 }} transition={{ duration: 0.25 }} className="group bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 ease-out border border-gray-100 cursor-pointer">
+    <motion.div
+      whileHover={{ y: -4 }}
+      transition={{ duration: 0.25 }}
+      className="group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 ease-out border border-gray-100 flex flex-col h-full"
+    >
       {/* Image */}
-      <div className="relative h-48 overflow-hidden">
+      <Link href={`/places/${place.id}`} className="block relative h-52 overflow-hidden shrink-0">
         <Image
           src={place.img}
           alt={place.name}
           fill
-          className="object-cover group-hover:scale-[1.08] transition-transform duration-500 ease-out"
+          className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
           sizes="(max-width:640px) 100vw,(max-width:1024px) 50vw,33vw"
           placeholder="blur"
           blurDataURL={BLUR}
         />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
+
         {/* Badge góc trên trái */}
         <div
-          className={`absolute top-3 left-3 ${place.badgeColor} text-white text-[10px] font-bold px-2.5 py-1 rounded-full ${
+          className={`absolute top-3 left-3 ${place.badgeColor} text-white text-[11px] font-bold px-3 py-1 rounded-full shadow-sm ${
             place.badgePulse ? 'animate-[pulse_2s_ease-in-out_infinite]' : ''
           }`}
         >
           {place.badge}
         </div>
+
+        {/* Trạng thái mở cửa */}
+        <div className="absolute bottom-3 left-3">
+          <span
+            className={`inline-flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-1 rounded-full backdrop-blur-md ${
+              place.openNow ? 'bg-emerald-500/90 text-white' : 'bg-gray-800/80 text-white/80'
+            }`}
+          >
+            {place.openNow && <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />}
+            {place.openNow ? 'Đang mở cửa' : 'Đã đóng cửa'}
+          </span>
+        </div>
+
         {/* Bookmark button góc trên phải */}
         <button
-          onClick={(e) => { e.stopPropagation(); onSave(); }}
-          className="absolute top-3 right-3 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-md hover:scale-110 active:scale-95 transition-all duration-200"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onSave();
+          }}
+          className="absolute top-3 right-3 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-md hover:scale-110 active:scale-95 transition-all duration-200 z-10"
           aria-label={saved ? 'Bỏ lưu' : 'Lưu địa điểm'}
         >
           <Bookmark
             size={15}
-            className={`transition-all duration-200 ${saved ? 'fill-orange-500 text-orange-500 scale-110' : 'text-gray-400'}`}
+            className={`transition-all duration-200 ${
+              saved ? 'fill-orange-500 text-orange-500 scale-110' : 'text-gray-400'
+            }`}
           />
         </button>
-        {/* Trạng thái mở cửa */}
-        <div className="absolute bottom-3 left-3">
-          <span
-            className={`inline-flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-1 rounded-full backdrop-blur-sm ${
-              place.openNow
-                ? 'bg-green-500/80 text-white'
-                : 'bg-gray-800/70 text-white/80'
-            }`}
-          >
-            {place.openNow && (
-              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-            )}
-            {place.openNow ? 'Đang mở cửa' : 'Đã đóng cửa'}
-          </span>
-        </div>
-      </div>
+      </Link>
 
       {/* Card body */}
-      <div className="p-4">
-        <h3 className="font-bold text-[#0f2942] text-sm leading-snug line-clamp-1 mb-1">
-          {place.name}
-        </h3>
-        <div className="flex items-center gap-1 text-xs text-gray-500 group-hover:text-gray-600 transition-colors mb-2">
-          <MapPin size={11} className="flex-shrink-0" />
-          <span className="truncate">{place.location}</span>
+      <div className="p-5 flex flex-col flex-1 justify-between">
+        <div>
+          <Link href={`/places/${place.id}`}>
+            <h3 className="font-bold text-[#0f2942] group-hover:text-orange-500 transition-colors text-base leading-snug line-clamp-1 mb-1.5">
+              {place.name}
+            </h3>
+          </Link>
+
+          <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-2.5">
+            <MapPin size={13} className="text-gray-400 shrink-0" />
+            <span className="truncate">{place.location}</span>
+          </div>
+
+          {/* Rating */}
+          <div className="flex items-center gap-1.5 mb-2.5 text-xs">
+            <div className="flex items-center gap-1 text-amber-500 font-bold bg-amber-50 px-2 py-0.5 rounded-md">
+              <Star size={12} className="fill-amber-400 text-amber-400" />
+              <span>{place.rating}</span>
+            </div>
+            <span className="text-gray-400">({place.reviews.toLocaleString('vi-VN')} đánh giá)</span>
+            <span className="text-gray-300">•</span>
+            <span className="text-gray-500 flex items-center gap-1">
+              <Clock size={11} className="text-gray-400" />
+              {place.hours}
+            </span>
+          </div>
+
+          <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed mb-4">
+            {place.description}
+          </p>
         </div>
-        {/* Rating */}
-        <div className="flex items-center gap-1 mb-2">
-          <Star size={12} className="fill-yellow-400 text-yellow-400" />
-          <span className="text-sm font-semibold text-gray-800">{place.rating}</span>
-          <span className="text-xs text-gray-400">
-            ({place.reviews.toLocaleString('vi-VN')} đánh giá)
-          </span>
-        </div>
-        {/* Hours */}
-        <div className="flex items-center gap-1 text-xs text-gray-400 group-hover:text-gray-600 transition-colors mb-3">
-          <Clock size={11} />
-          {place.hours}
-        </div>
-        {/* Price + actions */}
-        <div className="flex items-end justify-between gap-2">
+
+        {/* Price + Action Button "Xem chi tiết" */}
+        <div className="pt-3 border-t border-gray-100 flex items-center justify-between gap-2">
           <div>
-            <p className="text-orange-500 font-bold text-sm leading-tight">
-              {place.priceRange}
-            </p>
-            <p className="text-xs text-gray-400">{place.priceNote}</p>
+            <p className="text-orange-600 font-bold text-sm leading-tight">{place.priceRange}</p>
+            <p className="text-[10px] text-gray-400">{place.priceNote}</p>
           </div>
-          <div className="flex gap-2 flex-shrink-0">
-            <button
-              onClick={(e) => { e.stopPropagation(); onSave(); }}
-              className={`text-[11px] font-medium px-3 py-1.5 rounded-xl border transition-all duration-200 ${
-                saved
-                  ? 'border-orange-400 text-orange-500 bg-orange-50'
-                  : 'border-gray-200 text-gray-600 hover:border-teal-400 hover:text-teal-600'
-              }`}
-            >
-              {saved ? '✓ Đã lưu' : 'Lưu'}
-            </button>
-            <button className="group/dir btn-ripple flex items-center gap-1 bg-[#0f2942] hover:bg-[#1a3f5c] text-white text-[11px] font-semibold px-3 py-1.5 rounded-xl transition-all">
-              <motion.span whileHover={{ x: 2 }}>
-                <Navigation
-                  size={11}
-                  className="transition-transform duration-200 group-hover/dir:translate-x-0.5 group-hover/dir:-translate-y-0.5"
-                />
-              </motion.span>
-              Chỉ đường
-            </button>
-          </div>
+
+          <Link
+            href={`/places/${place.id}`}
+            className="inline-flex items-center gap-1.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition-all shadow-md shadow-orange-500/20 group-hover:scale-105"
+          >
+            <span>Xem chi tiết</span>
+            <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
+          </Link>
         </div>
       </div>
     </motion.div>
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SKELETON CARD
-// ─────────────────────────────────────────────────────────────────────────────
+// Skeleton loading
 function FoodSkeleton() {
   return (
-    <div className="bg-white rounded-2xl overflow-hidden shadow-md border border-gray-100">
-      <div className="h-48 bg-gray-200 animate-pulse" />
-      <div className="p-4 space-y-3">
+    <div className="bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100">
+      <div className="h-52 bg-gray-200 animate-pulse" />
+      <div className="p-5 space-y-3">
         <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4" />
         <div className="h-3 bg-gray-200 rounded animate-pulse w-1/2" />
         <div className="h-3 bg-gray-200 rounded animate-pulse w-1/3" />
-        <div className="flex justify-between items-end pt-1">
-          <div className="space-y-1.5">
-            <div className="h-4 bg-gray-200 rounded animate-pulse w-28" />
-          </div>
-          <div className="h-8 bg-gray-200 rounded-xl animate-pulse w-20" />
+        <div className="flex justify-between items-end pt-3">
+          <div className="h-4 bg-gray-200 rounded animate-pulse w-24" />
+          <div className="h-8 bg-gray-200 rounded-xl animate-pulse w-24" />
         </div>
       </div>
     </div>
@@ -258,18 +482,43 @@ function FoodSkeleton() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PAGE COMPONENT
+// NỘI DUNG CHÍNH TRANG ẨM THỰC
 // ─────────────────────────────────────────────────────────────────────────────
-export default function AmThucPage() {
+function AmThucContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const urlQ = searchParams.get('q') || '';
+
   const [foodPlaces, setFoodPlaces] = useState<FoodPlace[]>(FOOD_PLACES);
   const [savedPlaces, setSavedPlaces] = useState<Set<number>>(new Set());
+  const [searchQuery, setSearchQuery] = useState(urlQ);
   const [activeCategory, setActiveCategory] = useState('Tất cả');
-  const [activeTime, setActiveTime]         = useState('Tất cả khung giờ');
-  const [activeDay, setActiveDay]           = useState('Tất cả ngày');
+  const [activeTime, setActiveTime] = useState('Tất cả khung giờ');
+  const [activeDay, setActiveDay] = useState('Tất cả ngày');
   const [sortBy, setSortBy] = useState<string>('recommended');
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [nearMe, setNearMe] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const searchBoxRef = useRef<HTMLDivElement>(null);
+  const heroRef = useRef<HTMLElement>(null);
+
+  // Đóng gợi ý khi nhấp ra ngoài
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (searchBoxRef.current && !searchBoxRef.current.contains(e.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Đồng bộ param ?q= từ URL (khi gõ từ Sticky Navbar hoặc chuyển trang)
+  useEffect(() => {
+    setSearchQuery(urlQ);
+  }, [urlQ]);
 
   // Gọi API Backend thật: GET /api/places?type=RESTAURANT
   useEffect(() => {
@@ -286,24 +535,26 @@ export default function AmThucPage() {
             badgePulse: item.avg_rating >= 4.8,
             category: item.category_name || 'Món ngon',
             location: item.district_name ? `${item.district_name}, Đà Nẵng` : (item.address || 'Đà Nẵng'),
-            rating: item.avg_rating || 4.5,
-            reviews: item.review_count || 100,
+            rating: item.avg_rating || 4.7,
+            reviews: item.review_count || 120,
             priceRange: formatPriceRange(item.price_min, item.price_max),
-            priceNote: '/phần',
+            priceNote: '/món',
             openNow: item.is_open,
-            hours: item.today_hours || '07:00–22:00',
-            img: item.cover_image || 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&q=80',
+            hours: item.today_hours || '08:00–22:00',
+            img: item.cover_image || 'https://images.unsplash.com/photo-1559847844-5315695dadae?w=600&q=80',
             tags: [item.district_name || 'Đà Nẵng', item.category_name || 'Ẩm thực'].filter(Boolean),
             description: item.description || 'Quán ăn ngon nổi tiếng tại Đà Nẵng.',
           }));
 
-          // Ghép dữ liệu thật từ SQL Server lên đầu, các món mẫu giữ ở sau để đảm bảo giao diện luôn đủ 24 card
+          // Ưu tiên dữ liệu thật từ SQL Server, loại bỏ trùng lặp với danh sách mẫu
           const liveIds = new Set(livePlaces.map((p) => p.id));
-          const merged = [...livePlaces, ...FOOD_PLACES.filter((p) => !liveIds.has(p.id))];
-          setFoodPlaces(merged);
+          const liveNames = new Set(livePlaces.map((p) => removeVietnameseTones(p.name)));
+          const additionalMock = FOOD_PLACES.filter(
+            (p) => !liveIds.has(p.id) && !liveNames.has(removeVietnameseTones(p.name))
+          );
+          setFoodPlaces([...livePlaces, ...additionalMock]);
         }
       } catch (err) {
-        // Nếu backend chưa chạy thì fallback dùng FOOD_PLACES mẫu
         console.warn('API /api/places chưa kết nối, dùng dữ liệu fallback:', err);
       }
     }
@@ -313,17 +564,17 @@ export default function AmThucPage() {
     };
   }, []);
 
-  const prefersReduced = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const prefersReduced =
+    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  const heroRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({
     target: heroRef,
-    offset: ['start start', 'end start']
+    offset: ['start start', 'end start'],
   });
   const heroY = useTransform(scrollYProgress, [0, 1], ['0%', '30%']);
 
   const toggleSave = (id: number) => {
-    setSavedPlaces(prev => {
+    setSavedPlaces((prev) => {
       const next = new Set(prev);
       next.has(id) ? next.delete(id) : next.add(id);
       return next;
@@ -334,22 +585,107 @@ export default function AmThucPage() {
     setIsLoading(true);
     fn();
     setCurrentPage(1);
-    setTimeout(() => setIsLoading(false), 500);
+    setTimeout(() => setIsLoading(false), 300);
   }, []);
 
-  // ── Filtering + sorting ──────────────────────────────────────────────────
-  let filtered = foodPlaces.filter(p => {
-    if (activeCategory !== 'Tất cả' && p.category !== activeCategory) return false;
-    if (nearMe) return true; // demo: nearMe giữ tất cả
-    return true;
-  });
+  // Xử lý khi gõ tìm kiếm: cập nhật URL, reset trang 1 và mở gợi ý tức thì
+  const handleSearchChange = (val: string) => {
+    setSearchQuery(val);
+    setCurrentPage(1);
+    if (val.trim()) {
+      setIsDropdownOpen(true);
+    }
+    const trimmed = val.trim();
+    const url = trimmed ? `/amthuc?q=${encodeURIComponent(trimmed)}` : '/amthuc';
+    router.replace(url, { scroll: false });
+  };
 
-  if (sortBy === 'rating')   filtered = [...filtered].sort((a, b) => b.rating - a.rating);
-  if (sortBy === 'reviews')  filtered = [...filtered].sort((a, b) => b.reviews - a.reviews);
-  if (sortBy === 'name')     filtered = [...filtered].sort((a, b) => a.name.localeCompare(b.name, 'vi'));
+  const handleSelectQuickTag = (tagQuery: string) => {
+    setSearchQuery(tagQuery);
+    setIsDropdownOpen(false);
+    setActiveCategory('Tất cả');
+    setCurrentPage(1);
+    const url = `/amthuc?q=${encodeURIComponent(tagQuery)}`;
+    router.replace(url, { scroll: false });
+  };
+
+  const handleClearFilters = () => {
+    setActiveCategory('Tất cả');
+    setSearchQuery('');
+    setSortBy('recommended');
+    setIsDropdownOpen(false);
+    setCurrentPage(1);
+    router.replace('/amthuc', { scroll: false });
+  };
+
+  // 1. Danh sách gợi ý tức thì khi gõ trong ô tìm kiếm
+  const matchingSuggestions = useMemo(() => {
+    const qTrim = searchQuery.trim();
+    if (!qTrim) return [];
+    const qNorm = removeVietnameseTones(qTrim);
+
+    return foodPlaces
+      .filter((place) => {
+        const nameNorm = removeVietnameseTones(place.name);
+        const locNorm = removeVietnameseTones(place.location || '');
+        const catNorm = removeVietnameseTones(place.category || '');
+        const descNorm = removeVietnameseTones(place.description || '');
+        const tagNorm = removeVietnameseTones(place.tags.join(' '));
+        return (
+          nameNorm.includes(qNorm) ||
+          locNorm.includes(qNorm) ||
+          catNorm.includes(qNorm) ||
+          descNorm.includes(qNorm) ||
+          tagNorm.includes(qNorm)
+        );
+      })
+      .slice(0, 5);
+  }, [foodPlaces, searchQuery]);
+
+  // 2. Lọc và sắp xếp danh sách quán ăn
+  const filtered = useMemo(() => {
+    const qTrim = searchQuery.trim();
+    const qNorm = removeVietnameseTones(qTrim);
+
+    let result = foodPlaces.filter((p) => {
+      // 1. Lọc theo danh mục
+      if (activeCategory !== 'Tất cả' && p.category !== activeCategory) {
+        return false;
+      }
+
+      // 2. Lọc theo từ khóa tìm kiếm (không dấu)
+      if (qTrim) {
+        const nameNorm = removeVietnameseTones(p.name);
+        const locNorm = removeVietnameseTones(p.location || '');
+        const catNorm = removeVietnameseTones(p.category || '');
+        const descNorm = removeVietnameseTones(p.description || '');
+        const tagNorm = removeVietnameseTones(p.tags.join(' '));
+
+        const matchesQuery =
+          nameNorm.includes(qNorm) ||
+          locNorm.includes(qNorm) ||
+          catNorm.includes(qNorm) ||
+          descNorm.includes(qNorm) ||
+          tagNorm.includes(qNorm);
+
+        if (!matchesQuery) return false;
+      }
+
+      return true;
+    });
+
+    if (sortBy === 'rating') result = [...result].sort((a, b) => b.rating - a.rating);
+    if (sortBy === 'reviews') result = [...result].sort((a, b) => b.reviews - a.reviews);
+    if (sortBy === 'name') result = [...result].sort((a, b) => a.name.localeCompare(b.name, 'vi'));
+
+    return result;
+  }, [foodPlaces, activeCategory, searchQuery, sortBy]);
 
   const totalPages = Math.ceil(filtered.length / PLACES_PER_PAGE);
-  const paginated  = filtered.slice((currentPage - 1) * PLACES_PER_PAGE, currentPage * PLACES_PER_PAGE);
+  const paginated = filtered.slice(
+    (currentPage - 1) * PLACES_PER_PAGE,
+    currentPage * PLACES_PER_PAGE
+  );
 
   const changePage = (p: number) => {
     setIsLoading(true);
@@ -357,36 +693,31 @@ export default function AmThucPage() {
     setTimeout(() => {
       setIsLoading(false);
       document.getElementById('food-grid')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 400);
+    }, 350);
   };
 
-  // Pagination window
   const pageWindow = () => {
     const delta = 2;
     const range: number[] = [];
-    for (let i = Math.max(1, currentPage - delta); i <= Math.min(totalPages, currentPage + delta); i++) {
+    for (
+      let i = Math.max(1, currentPage - delta);
+      i <= Math.min(totalPages, currentPage + delta);
+      i++
+    ) {
       range.push(i);
     }
     return range;
   };
 
-  // ── RENDER ──────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-gray-50">
-
-      {/* ═══ PHẦN 1: MINI HERO BANNER ════════════════════════════════════════
-          Ảnh: Mâm bánh xèo tôm thịt vàng giòn đặt đẹp — gợi cảm giác
-          ẩm thực Miền Trung phong phú, màu vàng ấm hài hoà với tông cam
-          thương hiệu DanangGo.
-          Ken Burns scale nhẹ; badge cố định góc phải (không đè filter card)
-      ══════════════════════════════════════════════════════════════════════ */}
+    <div className="min-h-screen bg-gray-50 flex flex-col overflow-x-hidden">
+      {/* ═══ PHẦN 1: MINI HERO BANNER ════════════════════════════════════════ */}
       <section
         ref={heroRef}
         data-navbar-overlay="true"
-        className="relative h-[320px] sm:h-[340px] overflow-hidden"
+        className="relative h-[320px] sm:h-[350px] overflow-hidden"
       >
         <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/60 via-black/10 to-transparent pointer-events-none z-20" />
-        {/* Ảnh nền Ken Burns */}
         <motion.div style={{ y: heroY }} className="absolute inset-0 ken-burns">
           <Image
             src="https://images.unsplash.com/photo-1600850056064-a8b380df8395?w=1920&q=85"
@@ -397,44 +728,31 @@ export default function AmThucPage() {
             sizes="100vw"
           />
         </motion.div>
-        {/* Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#071a2e]/55 via-[#0f2942]/45 to-[#071a2e]/82" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#071a2e]/65 via-[#0f2942]/50 to-[#071a2e]/85" />
 
-        {/* Badge "Được tuyển chọn" — cố định góc trên phải, không đè filter card */}
-        <div
-          className="absolute top-20 right-6 sm:right-8 z-20"
-          style={{ opacity: 0, animation: 'fade-up 0.5s 0.3s ease-out forwards' }}
-        >
+        <div className="absolute top-20 right-6 sm:right-8 z-20 hidden sm:block">
           <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm border border-white/25 text-white rounded-full px-4 py-1.5 text-xs font-semibold">
-            <CheckCircle size={12} className="text-green-300" />
+            <CheckCircle size={12} className="text-emerald-300" />
             Được tuyển chọn &amp; xác minh bởi DanangGo
           </div>
         </div>
 
-        {/* Nội dung banner — neo xuống đáy với pb-10 */}
-        <div className="relative z-10 max-w-7xl mx-auto px-6 flex flex-col justify-end h-full pb-10 pt-16">
-          {/* Breadcrumb */}
-          <div
-            className="flex items-center gap-1 text-sm text-white/70 mb-3"
-            style={{ opacity: 0, animation: 'fade-up 0.5s 0.1s ease-out forwards' }}
-          >
-            <Link href="/" className="hover:text-white transition-colors">Trang chủ</Link>
+        <div className="relative z-10 max-w-7xl mx-auto px-6 flex flex-col justify-end h-full pb-14 pt-16">
+          <div className="flex items-center gap-1 text-sm text-white/70 mb-3">
+            <Link href="/" className="hover:text-white transition-colors">
+              Trang chủ
+            </Link>
             <ChevronRight size={14} className="text-white/40" />
             <span className="text-white font-medium">Ẩm thực Đà Nẵng</span>
           </div>
 
-          {/* Badge danh mục */}
-          <div
-            style={{ opacity: 0, animation: 'fade-up 0.5s 0.15s ease-out forwards' }}
-            className="mb-2"
-          >
-            <span className="inline-flex items-center gap-2 bg-orange-500/80 backdrop-blur-sm text-white text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+          <div className="mb-2">
+            <span className="inline-flex items-center gap-2 bg-orange-500/90 backdrop-blur-sm text-white text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
               🗺️ BẢN ĐỒ VỊ GIÁC MIỀN TRUNG
             </span>
           </div>
 
-          {/* Tiêu đề + counter */}
-          <div style={{ opacity: 0, animation: 'fade-up 0.55s 0.2s ease-out forwards' }}>
+          <div>
             <h1 className="h1-hero text-2xl sm:text-3xl lg:text-4xl font-bold text-white leading-tight">
               Ẩm thực Đà Nẵng — Đậm đà phong vị miền Trung
             </h1>
@@ -450,17 +768,138 @@ export default function AmThucPage() {
         </div>
       </section>
 
-      {/* ═══ PHẦN 2: FILTER CARD — overlap lên đáy banner (-mt-8) ════════════ */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 -mt-8 relative z-10 mb-8">
+      {/* ═══ PHẦN 2: BỘ LỌC & Ô TÌM KIẾM NỔI BẬT (-mt-10) ════════════════════ */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 -mt-10 relative z-30 mb-8 w-full">
         <Reveal delay={0.1}>
-          <div className="bg-white rounded-2xl shadow-xl p-5 sm:p-6 border border-gray-100">
+          <div className="bg-white rounded-3xl shadow-xl p-5 sm:p-7 border border-gray-100 flex flex-col gap-5">
+            {/* HÀNG 1: THANH TÌM KIẾM TRỰC TIẾP + GỢI Ý DROPDOWN */}
+            <div ref={searchBoxRef} className="relative w-full">
+              <div className="relative flex items-center">
+                <Search className="absolute left-4 text-orange-500" size={20} />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onFocus={() => {
+                    if (searchQuery.trim()) setIsDropdownOpen(true);
+                  }}
+                  onChange={(e) => handleSearchChange(e.target.value)}
+                  placeholder="Nhập tên quán ăn, món ngon (ví dụ: Bé Mặn, Mì Quảng, Bánh xèo, Bún chả cá)..."
+                  className="w-full bg-slate-50 hover:bg-slate-100/80 focus:bg-white border-2 border-slate-200 focus:border-orange-500 rounded-2xl pl-12 pr-12 py-3.5 text-base font-semibold text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-orange-500/15 transition-all shadow-inner"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => handleSearchChange('')}
+                    className="absolute right-4 text-gray-400 hover:text-gray-700 transition p-1 rounded-full hover:bg-gray-200"
+                    title="Xóa từ khóa"
+                  >
+                    <X size={18} />
+                  </button>
+                )}
+              </div>
 
-            {/* Hàng 1: Category pills với layoutId framer-motion */}
-            <div className="mb-4">
-              <p className="text-xs font-medium text-gray-500 mb-2.5">Danh mục món ăn</p>
+              {/* DROPDOWN KẾT QUẢ GỢI Ý TỨC THÌ (POPUP XEM CHI TIẾT) */}
+              <AnimatePresence>
+                {isDropdownOpen && searchQuery.trim() && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -8, scale: 0.98 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50 p-3 divide-y divide-gray-100"
+                  >
+                    {matchingSuggestions.length > 0 ? (
+                      <>
+                        <div className="px-3 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center justify-between">
+                          <span className="flex items-center gap-1.5 text-orange-600">
+                            <Sparkles size={14} className="text-orange-500" />
+                            Quán ăn khớp tức thì ({matchingSuggestions.length})
+                          </span>
+                          <span className="text-gray-400 font-normal">Nhấn &ldquo;Xem chi tiết&rdquo; để mở thực đơn</span>
+                        </div>
+                        <div className="space-y-1 pt-1">
+                          {matchingSuggestions.map((item) => (
+                            <Link
+                              key={item.id}
+                              href={`/places/${item.id}`}
+                              onClick={() => setIsDropdownOpen(false)}
+                              className="flex items-center gap-3.5 p-2.5 rounded-xl hover:bg-orange-50/70 transition-all group"
+                            >
+                              <div className="relative w-14 h-14 rounded-xl overflow-hidden shrink-0 shadow-sm border border-gray-100">
+                                <Image
+                                  src={item.img}
+                                  alt={item.name}
+                                  fill
+                                  className="object-cover group-hover:scale-110 transition-transform duration-300"
+                                  sizes="56px"
+                                />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <h4 className="font-bold text-gray-900 group-hover:text-orange-600 text-sm truncate transition-colors">
+                                    {item.name}
+                                  </h4>
+                                  <span className="px-2 py-0.5 text-[10px] font-bold bg-orange-50 text-orange-700 rounded-full shrink-0 border border-orange-100">
+                                    {item.category}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
+                                  <span className="flex items-center gap-1">
+                                    <MapPin size={12} className="text-gray-400" /> {item.location}
+                                  </span>
+                                  <span className="flex items-center gap-1 text-amber-500 font-semibold">
+                                    <Star size={12} className="fill-amber-400 text-amber-400" /> {item.rating}
+                                  </span>
+                                  <span className="text-orange-600 font-medium">
+                                    {item.priceRange}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="shrink-0 flex items-center gap-1.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white text-xs font-bold px-3.5 py-2 rounded-xl shadow-md shadow-orange-500/20 group-hover:scale-105 transition-all">
+                                <span>Xem chi tiết</span>
+                                <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+                      </>
+                    ) : (
+                      <div className="p-6 text-center text-sm text-gray-500">
+                        Không tìm thấy quán ăn nào khớp với từ khóa &ldquo;<strong>{searchQuery}</strong>&rdquo;.
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* CHIPS GỢI Ý TỪ KHÓA MÓN ĂN & QUÁN HOT */}
+              <div className="flex items-center gap-2 mt-3 overflow-x-auto hide-scrollbar pt-1">
+                <span className="text-xs font-semibold text-gray-400 shrink-0 flex items-center gap-1">
+                  <Sparkles size={12} className="text-orange-500" /> Quán &amp; Món nổi bật:
+                </span>
+                {POPULAR_FOOD_TAGS.map((tag) => (
+                  <button
+                    key={tag.label}
+                    onClick={() => handleSelectQuickTag(tag.query)}
+                    className={`text-xs px-3 py-1.5 rounded-full font-medium transition-all shrink-0 border ${
+                      removeVietnameseTones(searchQuery) === removeVietnameseTones(tag.query)
+                        ? 'bg-orange-500 text-white border-orange-500 shadow-sm'
+                        : 'bg-gray-100 hover:bg-orange-50 text-gray-700 hover:text-orange-700 border-gray-200'
+                    }`}
+                  >
+                    {tag.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* HÀNG 2: DANH MỤC MÓN ĂN */}
+            <div>
+              <p className="text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">
+                Danh mục món ăn
+              </p>
               <LayoutGroup id="amthuc-cat">
                 <div className="flex flex-wrap gap-2">
-                  {CATEGORIES.map(cat => (
+                  {CATEGORIES.map((cat) => (
                     <button
                       key={cat}
                       onClick={() => applyFilter(() => setActiveCategory(cat))}
@@ -473,7 +912,7 @@ export default function AmThucPage() {
                       {activeCategory === cat && (
                         <motion.div
                           layoutId="active-cat-amthuc"
-                          className={`absolute inset-0 rounded-[inherit] ${CAT_TINT[cat] ?? 'bg-teal-500'}`}
+                          className={`absolute inset-0 rounded-[inherit] ${CAT_TINT[cat] ?? 'bg-orange-500'}`}
                           style={{ zIndex: 0 }}
                           transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                         />
@@ -485,120 +924,161 @@ export default function AmThucPage() {
               </LayoutGroup>
             </div>
 
-            <div className="h-px bg-gray-100 mb-4" />
+            <div className="h-px bg-gray-100" />
 
-            {/* Hàng 2: Khung giờ + Ngày + Sắp xếp + Gần tôi */}
-            <div className="flex flex-wrap items-center gap-3">
-              {/* Khung giờ */}
-              <div className="flex items-center gap-1.5">
-                <Clock size={13} className="text-gray-400" />
-                <select
-                  value={activeTime}
-                  onChange={e => applyFilter(() => setActiveTime(e.target.value))}
-                  className="text-xs border border-gray-200 rounded-xl px-2.5 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400 transition-all bg-gray-50"
+            {/* HÀNG 3: KHUNG GIỜ + SẮP XẾP + GẦN TÔI + NÚT XÓA LỌC */}
+            <div className="flex flex-wrap items-center gap-3 justify-between">
+              <div className="flex flex-wrap items-center gap-3">
+                {/* Khung giờ */}
+                <div className="flex items-center gap-1.5">
+                  <Clock size={13} className="text-gray-400" />
+                  <select
+                    value={activeTime}
+                    onChange={(e) => applyFilter(() => setActiveTime(e.target.value))}
+                    className="text-xs border border-gray-200 rounded-xl px-2.5 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all bg-gray-50 font-medium"
+                  >
+                    {TIME_FILTERS.map((t) => (
+                      <option key={t} value={t}>
+                        {t}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Ngày */}
+                <div className="flex items-center gap-1.5">
+                  <Calendar size={13} className="text-gray-400" />
+                  <select
+                    value={activeDay}
+                    onChange={(e) => applyFilter(() => setActiveDay(e.target.value))}
+                    className="text-xs border border-gray-200 rounded-xl px-2.5 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all bg-gray-50 font-medium"
+                  >
+                    {DAY_FILTERS.map((d) => (
+                      <option key={d} value={d}>
+                        {d}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Sắp xếp */}
+                <div className="flex items-center gap-1.5">
+                  <ArrowUpDown size={13} className="text-[#0f2942]" />
+                  <select
+                    value={sortBy}
+                    onChange={(e) => applyFilter(() => setSortBy(e.target.value))}
+                    className="text-xs border border-gray-200 rounded-xl px-2.5 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all bg-gray-50 font-medium"
+                  >
+                    {SORT_OPTIONS.map((o) => (
+                      <option key={o.value} value={o.value}>
+                        {o.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Gần tôi nhất */}
+                <button
+                  onClick={() => applyFilter(() => setNearMe(!nearMe))}
+                  className={`flex items-center gap-1.5 text-xs font-semibold px-3.5 py-1.5 rounded-full transition-all duration-200 ${
+                    nearMe
+                      ? 'bg-orange-500 text-white shadow-sm shadow-orange-200'
+                      : 'bg-orange-50 text-orange-600 border border-orange-200 hover:bg-orange-100'
+                  }`}
                 >
-                  {TIME_FILTERS.map(t => <option key={t} value={t}>{t}</option>)}
-                </select>
+                  <Navigation
+                    size={12}
+                    className={nearMe ? 'text-white' : 'text-orange-500 animate-[pulse_2s_ease-in-out_infinite]'}
+                  />
+                  Gần tôi nhất
+                </button>
               </div>
 
-              {/* Ngày */}
-              <div className="flex items-center gap-1.5">
-                <Calendar size={13} className="text-gray-400" />
-                <select
-                  value={activeDay}
-                  onChange={e => applyFilter(() => setActiveDay(e.target.value))}
-                  className="text-xs border border-gray-200 rounded-xl px-2.5 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400 transition-all bg-gray-50"
+              {/* Nút Xóa lọc nếu có điều kiện */}
+              {(searchQuery || activeCategory !== 'Tất cả' || sortBy !== 'recommended' || nearMe) && (
+                <button
+                  onClick={handleClearFilters}
+                  className="flex items-center gap-1.5 text-xs font-semibold text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 transition-colors px-3 py-1.5 rounded-xl border border-red-200 shrink-0"
+                  title="Đặt lại toàn bộ bộ lọc"
                 >
-                  {DAY_FILTERS.map(d => <option key={d} value={d}>{d}</option>)}
-                </select>
-              </div>
-
-              {/* Sắp xếp */}
-              <div className="flex items-center gap-1.5">
-                <ArrowUpDown size={13} className="text-[#0f2942]" />
-                <select
-                  value={sortBy}
-                  onChange={e => applyFilter(() => setSortBy(e.target.value))}
-                  className="text-xs border border-gray-200 rounded-xl px-2.5 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400 transition-all bg-gray-50"
-                >
-                  {SORT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                </select>
-              </div>
-
-              {/* Gần tôi nhất */}
-              <button
-                onClick={() => applyFilter(() => setNearMe(!nearMe))}
-                className={`flex items-center gap-1.5 text-xs font-semibold px-3.5 py-1.5 rounded-full transition-all duration-200 ${
-                  nearMe
-                    ? 'bg-orange-500 text-white shadow-sm shadow-orange-200'
-                    : 'bg-orange-50 text-orange-600 border border-orange-200 hover:bg-orange-100'
-                }`}
-              >
-                <Navigation
-                  size={12}
-                  className={nearMe ? 'text-white' : 'text-orange-500 animate-[pulse_2s_ease-in-out_infinite]'}
-                />
-                Gần tôi nhất
-              </button>
-
-              {/* Live map status */}
-              <div className="ml-auto hidden sm:flex items-center gap-1.5 text-xs text-gray-400">
-                <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                Bản đồ đang cập nhật theo thời gian thực
-              </div>
+                  <RefreshCw size={13} /> Xóa bộ lọc
+                </button>
+              )}
             </div>
           </div>
         </Reveal>
       </div>
 
-      {/* ═══ PHẦN 3: FOOD GRID ══════════════════════════════════════════════ */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-4">
+      {/* ═══ PHẦN 3: LƯỚI QUÁN ĂN (FOOD GRID) ════════════════════════════════ */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-4 w-full">
         {/* Results bar */}
-        <div className="flex items-center justify-between mb-4">
-          <p className="text-sm text-gray-500">
+        <div className="flex items-center justify-between mb-5">
+          <p className="text-sm font-medium text-gray-500">
             Hiển thị{' '}
-            <span className="font-semibold text-[#0f2942]">
-              {(currentPage - 1) * PLACES_PER_PAGE + 1}–
+            <span className="font-bold text-[#0f2942]">
+              {filtered.length > 0 ? (currentPage - 1) * PLACES_PER_PAGE + 1 : 0}–
               {Math.min(currentPage * PLACES_PER_PAGE, filtered.length)}
             </span>{' '}
-            trên{' '}
-            <span className="font-semibold text-[#0f2942]">{filtered.length}</span> địa điểm ẩm thực
+            trên <span className="font-bold text-[#0f2942]">{filtered.length}</span> địa điểm ẩm thực
+            {searchQuery && (
+              <span> cho từ khóa &ldquo;<strong className="text-orange-600 font-semibold">{searchQuery}</strong>&rdquo;</span>
+            )}
+            {activeCategory !== 'Tất cả' && (
+              <span> trong mục &ldquo;<strong className="text-gray-900">{activeCategory}</strong>&rdquo;</span>
+            )}
           </p>
-          {activeCategory !== 'Tất cả' && (
-            <span className="text-xs bg-orange-100 text-orange-600 px-2.5 py-1 rounded-full font-medium">
-              Đang lọc: {activeCategory}
-            </span>
+
+          {searchQuery && (
+            <button
+              onClick={() => handleSearchChange('')}
+              className="text-xs text-orange-600 hover:text-orange-800 font-semibold underline underline-offset-2"
+            >
+              Hiển thị tất cả
+            </button>
           )}
         </div>
 
         <div id="food-grid" className="scroll-mt-24">
           {isLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {Array.from({ length: 6 }).map((_, i) => <FoodSkeleton key={i} />)}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <FoodSkeleton key={i} />
+              ))}
             </div>
           ) : filtered.length === 0 ? (
-            <div className="text-center py-20">
-              <p className="text-gray-400 text-lg mb-2">Không tìm thấy địa điểm phù hợp</p>
-              <button onClick={() => applyFilter(() => setActiveCategory('Tất cả'))} className="text-teal-600 font-medium text-sm hover:underline">
-                Xóa bộ lọc
+            <div className="text-center py-20 bg-white rounded-3xl border border-gray-100 shadow-sm p-8 max-w-lg mx-auto">
+              <SearchX className="w-14 h-14 text-gray-300 mx-auto mb-3 stroke-[1.5]" />
+              <h3 className="text-lg font-bold text-gray-800">Không tìm thấy quán ăn phù hợp</h3>
+              <p className="text-gray-500 text-sm mt-1">
+                Không có địa điểm nào khớp với từ khóa &ldquo;<strong className="text-gray-700">{searchQuery}</strong>&rdquo;. Bạn thử tìm món khác hoặc xóa bộ lọc nhé!
+              </p>
+              <button
+                onClick={handleClearFilters}
+                className="mt-5 px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-semibold transition shadow-md shadow-orange-500/20"
+              >
+                Xem lại tất cả quán ăn
               </button>
             </div>
           ) : (
             <AnimatePresence mode="wait">
               <motion.div
-                key={`food-${currentPage}-${activeCategory}`}
+                key={`food-${currentPage}-${activeCategory}-${searchQuery}-${sortBy}`}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.2 }}
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8"
               >
                 {paginated.map((place, i) => (
                   <motion.div
                     key={place.id}
-                    initial={{ opacity: 0, y: 24 }}
+                    initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: prefersReduced ? 0 : i * 0.07, ease: [0.25,0.46,0.45,0.94] }}
+                    transition={{
+                      duration: 0.35,
+                      delay: prefersReduced ? 0 : i * 0.05,
+                      ease: [0.25, 0.46, 0.45, 0.94],
+                    }}
                   >
                     <FoodCard
                       place={place}
@@ -613,16 +1093,18 @@ export default function AmThucPage() {
         </div>
       </div>
 
-      {/* ═══ PHẦN 4: PAGINATION ══════════════════════════════════════════════ */}
+      {/* ═══ PHẦN 4: PHÂN TRANG (PAGINATION) ═════════════════════════════════ */}
       {totalPages > 1 && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex justify-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex justify-center">
           <div className="flex items-center gap-2">
             {/* Prev */}
             <button
               onClick={() => currentPage > 1 && changePage(currentPage - 1)}
               disabled={currentPage === 1}
-              className={`flex items-center justify-center w-9 h-9 rounded-xl border transition-all ${
-                currentPage === 1 ? 'opacity-40 cursor-not-allowed border-gray-200 text-gray-400' : 'border-gray-200 text-gray-600 hover:bg-gray-100 hover:scale-105'
+              className={`flex items-center justify-center w-10 h-10 rounded-xl border transition-all ${
+                currentPage === 1
+                  ? 'opacity-40 cursor-not-allowed border-gray-200 text-gray-400'
+                  : 'border-gray-200 text-gray-600 hover:bg-gray-100 hover:scale-105 active:scale-95'
               }`}
             >
               <ChevronRight size={16} className="rotate-180" />
@@ -630,19 +1112,24 @@ export default function AmThucPage() {
 
             {pageWindow()[0] > 1 && (
               <>
-                <button onClick={() => changePage(1)} className="w-9 h-9 rounded-xl text-sm font-medium border border-gray-200 text-gray-600 hover:bg-gray-100 transition-all">1</button>
+                <button
+                  onClick={() => changePage(1)}
+                  className="w-10 h-10 rounded-xl text-sm font-semibold border border-gray-200 text-gray-600 hover:bg-gray-100 transition-all"
+                >
+                  1
+                </button>
                 {pageWindow()[0] > 2 && <span className="text-gray-400 px-1">…</span>}
               </>
             )}
 
-            {pageWindow().map(p => (
+            {pageWindow().map((p) => (
               <button
                 key={p}
                 onClick={() => p !== currentPage && changePage(p)}
-                className={`w-9 h-9 rounded-xl text-sm font-medium transition-all duration-200 ${
+                className={`w-10 h-10 rounded-xl text-sm font-bold transition-all duration-200 ${
                   p === currentPage
-                    ? 'bg-[#0f2942] text-white shadow-sm scale-105'
-                    : 'border border-gray-200 text-gray-600 hover:bg-gray-100'
+                    ? 'bg-orange-500 text-white shadow-md shadow-orange-500/25 scale-105'
+                    : 'border border-gray-200 text-gray-700 hover:bg-gray-100'
                 }`}
               >
                 {p}
@@ -651,8 +1138,15 @@ export default function AmThucPage() {
 
             {pageWindow()[pageWindow().length - 1] < totalPages && (
               <>
-                {pageWindow()[pageWindow().length - 1] < totalPages - 1 && <span className="text-gray-400 px-1">…</span>}
-                <button onClick={() => changePage(totalPages)} className="w-9 h-9 rounded-xl text-sm font-medium border border-gray-200 text-gray-600 hover:bg-gray-100 transition-all">{totalPages}</button>
+                {pageWindow()[pageWindow().length - 1] < totalPages - 1 && (
+                  <span className="text-gray-400 px-1">…</span>
+                )}
+                <button
+                  onClick={() => changePage(totalPages)}
+                  className="w-10 h-10 rounded-xl text-sm font-semibold border border-gray-200 text-gray-600 hover:bg-gray-100 transition-all"
+                >
+                  {totalPages}
+                </button>
               </>
             )}
 
@@ -660,8 +1154,10 @@ export default function AmThucPage() {
             <button
               onClick={() => currentPage < totalPages && changePage(currentPage + 1)}
               disabled={currentPage === totalPages}
-              className={`flex items-center justify-center w-9 h-9 rounded-xl border transition-all ${
-                currentPage === totalPages ? 'opacity-40 cursor-not-allowed border-gray-200 text-gray-400' : 'border-gray-200 text-gray-600 hover:bg-gray-100 hover:scale-105'
+              className={`flex items-center justify-center w-10 h-10 rounded-xl border transition-all ${
+                currentPage === totalPages
+                  ? 'opacity-40 cursor-not-allowed border-gray-200 text-gray-400'
+                  : 'border-gray-200 text-gray-600 hover:bg-gray-100 hover:scale-105 active:scale-95'
               }`}
             >
               <ChevronRight size={16} />
@@ -674,19 +1170,19 @@ export default function AmThucPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
         <Reveal delay={0.05}>
           <h2 className="h2-section text-center text-xl sm:text-2xl font-bold text-[#0f2942] mb-8">
-            Vì sao chọn ẩm thực trên{' '}
-            <span className="text-cyan-500">Danang</span>
+            Vì sao chọn ẩm thực trên <span className="text-cyan-500">Danang</span>
             <span className="text-orange-400">Go</span>?
           </h2>
         </Reveal>
-        {/* items-stretch + Reveal className="flex" để card đồng chiều cao */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 items-stretch">
           {TRUST_BADGES.map((badge, i) => {
             const Icon = badge.icon;
             return (
               <Reveal key={badge.title} delay={i * 0.1} className="flex">
                 <div className="flex flex-col h-full w-full bg-white rounded-2xl p-5 shadow-sm border border-gray-100 items-center text-center hover:shadow-md transition-shadow duration-300">
-                  <div className={`w-12 h-12 ${badge.bg} rounded-2xl flex items-center justify-center mb-4 flex-shrink-0`}>
+                  <div
+                    className={`w-12 h-12 ${badge.bg} rounded-2xl flex items-center justify-center mb-4 flex-shrink-0`}
+                  >
                     <Icon size={22} className={badge.color} />
                   </div>
                   <h3 className="font-bold text-[#0f2942] text-sm mb-1.5">{badge.title}</h3>
@@ -716,20 +1212,20 @@ export default function AmThucPage() {
                 <span className="text-orange-300">Thêm vào lịch trình ngay!</span>
               </h2>
               <p className="body-text text-white/70 max-w-lg mx-auto mb-8 text-sm leading-relaxed">
-                DanangGo giúp bạn lập hành trình ẩm thực trọn vẹn — kết hợp quán ăn,
-                địa điểm tham quan và lưu trú thành một chuyến đi hoàn hảo.
+                DanangGo giúp bạn lập hành trình ẩm thực trọn vẹn — kết hợp quán ăn, địa điểm tham
+                quan và lưu trú thành một chuyến đi hoàn hảo.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Link
-                  href="#lichtrinhgoiY"
+                  href="/lich-trinh/tao-moi"
                   className="btn-ripple inline-flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-400 text-white font-bold px-8 py-3.5 rounded-xl transition-colors hover:scale-[1.03] active:scale-[0.97] text-sm"
                 >
                   <Calendar size={15} />
                   Thêm vào lịch trình
                 </Link>
                 <Link
-                  href="/"
+                  href="/diemdulich"
                   className="inline-flex items-center justify-center gap-2 border-2 border-white/60 hover:border-white text-white hover:bg-white/10 font-semibold px-8 py-3.5 rounded-xl transition-all text-sm"
                 >
                   Khám phá thêm điểm đến
@@ -744,11 +1240,10 @@ export default function AmThucPage() {
         </Reveal>
       </div>
 
-      {/* ═══ PHẦN 7: FOOTER (đồng bộ với trang chủ và Lưu trú) ════════════ */}
+      {/* ═══ PHẦN 7: FOOTER ══════════════════════════════════════════════════ */}
       <footer className="bg-[#071a2e] text-white/70 pt-14 pb-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
-            {/* Logo + mô tả */}
             <div className="col-span-2 md:col-span-1">
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-teal-600 flex items-center justify-center">
@@ -760,34 +1255,52 @@ export default function AmThucPage() {
                 </span>
               </div>
               <p className="text-sm leading-relaxed text-white/50 mb-4">
-                Cẩm nang du lịch Đà Nẵng đầy đủ và cập nhật nhất — từ điểm đến,
-                ẩm thực đến lịch trình tối ưu.
+                Cẩm nang du lịch Đà Nẵng đầy đủ và cập nhật nhất — từ điểm đến, ẩm thực đến lịch
+                trình tối ưu.
               </p>
               <div className="flex gap-3">
-                {[{ label: 'FB', color: 'bg-blue-600' }, { label: 'IG', color: 'bg-pink-600' }, { label: 'TT', color: 'bg-gray-700' }, { label: 'YT', color: 'bg-red-600' }].map(s => (
-                  <a key={s.label} href="#" className={`w-8 h-8 ${s.color} rounded-full flex items-center justify-center text-white text-xs font-bold hover:opacity-80 transition-opacity`}>{s.label}</a>
+                {[
+                  { label: 'FB', color: 'bg-blue-600' },
+                  { label: 'IG', color: 'bg-pink-600' },
+                  { label: 'TT', color: 'bg-gray-700' },
+                  { label: 'YT', color: 'bg-red-600' },
+                ].map((s) => (
+                  <a
+                    key={s.label}
+                    href="#"
+                    className={`w-8 h-8 ${s.color} rounded-full flex items-center justify-center text-white text-xs font-bold hover:opacity-80 transition-opacity`}
+                  >
+                    {s.label}
+                  </a>
                 ))}
               </div>
             </div>
-            {/* Khám phá */}
             <div>
               <h4 className="text-white font-semibold text-sm mb-4">Khám phá</h4>
               <ul className="space-y-2.5">
-                {['Điểm du lịch', 'Ẩm thực', 'Lưu trú', 'Mua sắm', 'Giải trí'].map(link => (
-                  <li key={link}><a href="#" className="text-sm hover:text-white transition-colors">{link}</a></li>
+                {['Điểm du lịch', 'Ẩm thực', 'Lưu trú', 'Mua sắm', 'Giải trí'].map((link) => (
+                  <li key={link}>
+                    <a href="#" className="text-sm hover:text-white transition-colors">
+                      {link}
+                    </a>
+                  </li>
                 ))}
               </ul>
             </div>
-            {/* Tiện ích */}
             <div>
               <h4 className="text-white font-semibold text-sm mb-4">Tiện ích</h4>
               <ul className="space-y-2.5">
-                {['Tạo lịch trình', 'Bản đồ thành phố', 'Thời tiết', 'Đặt vé online', 'Hỏi đáp'].map(link => (
-                  <li key={link}><a href="#" className="text-sm hover:text-white transition-colors">{link}</a></li>
-                ))}
+                {['Tạo lịch trình', 'Bản đồ thành phố', 'Thời tiết', 'Đặt vé online', 'Hỏi đáp'].map(
+                  (link) => (
+                    <li key={link}>
+                      <a href="#" className="text-sm hover:text-white transition-colors">
+                        {link}
+                      </a>
+                    </li>
+                  )
+                )}
               </ul>
             </div>
-            {/* Liên hệ */}
             <div>
               <h4 className="text-white font-semibold text-sm mb-4">Liên hệ</h4>
               <ul className="space-y-2.5">
@@ -796,24 +1309,43 @@ export default function AmThucPage() {
                 <li className="text-sm">📍 Đà Nẵng, Việt Nam</li>
               </ul>
               <div className="mt-4 space-y-1.5">
-                {['Về chúng tôi', 'Tuyển dụng', 'Báo chí'].map(link => (
-                  <a key={link} href="#" className="block text-sm hover:text-white transition-colors">{link}</a>
+                {['Về chúng tôi', 'Tuyển dụng', 'Báo chí'].map((link) => (
+                  <a key={link} href="#" className="block text-sm hover:text-white transition-colors">
+                    {link}
+                  </a>
                 ))}
               </div>
             </div>
           </div>
-          {/* Copyright */}
           <div className="border-t border-white/10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/40">
             <p>© 2025 DanangGo. Made with ❤️ in Đà Nẵng, Việt Nam.</p>
             <div className="flex gap-4">
-              {['Điều khoản sử dụng', 'Chính sách bảo mật'].map(s => (
-                <a key={s} href="#" className="hover:text-white/70 transition-colors">{s}</a>
+              {['Điều khoản sử dụng', 'Chính sách bảo mật'].map((s) => (
+                <a key={s} href="#" className="hover:text-white/70 transition-colors">
+                  {s}
+                </a>
               ))}
             </div>
           </div>
         </div>
       </footer>
-
     </div>
+  );
+}
+
+export default function AmThucPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+            <p className="text-sm font-medium text-gray-500">Đang tải danh sách ẩm thực...</p>
+          </div>
+        </div>
+      }
+    >
+      <AmThucContent />
+    </Suspense>
   );
 }

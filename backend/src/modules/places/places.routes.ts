@@ -7,21 +7,34 @@ const router = Router();
 
 /**
  * Middleware tùy chọn xác thực:
- * - Nếu có cookie access_token hoặc admin_access thì giải mã để gắn req.user.
- * - Nếu không có token hoặc token không hợp lệ thì vẫn tiếp tục bình thường như khách vãng lai.
+ * - Hỗ trợ cả Cookie (admin_access, access_token) và Header Authorization: Bearer <token>
+ * - Nếu có token hợp lệ: giải mã và gắn req.user + res.locals.
+ * - Nếu không có token hoặc token không hợp lệ: tiếp tục bình thường như khách vãng lai.
  */
 const optionalAuth: RequestHandler = async (req, res, next) => {
   const cookies = req.cookies as Record<string, string> | undefined;
-  const token = cookies?.admin_access || cookies?.access_token;
+  const authHeader = req.headers.authorization;
+  const headerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7).trim() : undefined;
+  const token = cookies?.admin_access || cookies?.access_token || headerToken;
   if (!token) return next();
 
   try {
     const sessionType = cookies?.admin_access ? 'ADMIN' : 'USER';
-    const userId = await verifyAccessToken(token, sessionType);
+    let userId: number;
+    try {
+      userId = await verifyAccessToken(token, sessionType);
+    } catch {
+      // Fallback kiểm tra loại session còn lại nếu dùng headerToken
+      userId = await verifyAccessToken(token, sessionType === 'ADMIN' ? 'USER' : 'ADMIN');
+    }
+
     const authDetails = await getAccountAuthDetails(userId);
     if (authDetails) {
       res.locals.authUserId = userId;
       res.locals.authRole = authDetails.role;
+      if (authDetails.partnerId) {
+        res.locals.authPartnerId = authDetails.partnerId;
+      }
       req.user = {
         user_id: userId,
         role: authDetails.role,
@@ -29,10 +42,11 @@ const optionalAuth: RequestHandler = async (req, res, next) => {
       };
     }
   } catch {
-    // Bỏ qua lỗi token ở route công khai, coi như khách vãng lai
+    // Bỏ qua lỗi token ở route công khai, tiếp tục xử lý như khách vãng lai
   }
   next();
 };
+
 
 /**
  * GET /api/places

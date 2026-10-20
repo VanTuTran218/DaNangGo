@@ -103,9 +103,15 @@ router.post('/register', async (req, res) => {
     throw new AuthError(403, 'Không thể đăng ký tài khoản quản trị.');
   }
   const input = registerSchema.parse(req.body);
-  const session = await register(input, clientMetadata(req));
-  setSessionCookies(res, session, false);
-  res.status(201).json({ success: true, data: { user: session.user }, message: 'Đăng ký thành công.' });
+  const result = await register(input, clientMetadata(req));
+  if (result.session) setSessionCookies(res, result.session, false);
+  res.status(201).json({
+    success: true,
+    data: { user: result.user, requiresApproval: result.session === null },
+    message: result.session
+      ? 'Đăng ký thành công.'
+      : 'Đã nhận hồ sơ đối tác. Tài khoản sẽ đăng nhập được sau khi Admin duyệt.',
+  });
 });
 
 router.post('/login', loginRateLimit, async (req, res) => {

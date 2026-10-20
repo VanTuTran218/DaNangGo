@@ -12,6 +12,7 @@ export interface AuthAccountRecord {
   phone: string | null;
   password_hash: string;
   status: string;
+  admin_locked: boolean;
   email_verified: boolean;
   failed_login_count: number;
   locked_until: Date | null;
@@ -35,7 +36,7 @@ export interface ResetAccount {
 const accountSelect = `
   SELECT u.user_id, u.public_id, u.role_id, r.role_name, u.full_name,
     u.email, u.phone, u.password_hash, u.status, u.email_verified,
-    u.failed_login_count, u.locked_until, u.created_at,
+    u.failed_login_count, u.locked_until, u.created_at, u.admin_locked,
     pp.approval_status
   FROM dbo.users AS u
   INNER JOIN dbo.roles AS r ON r.role_id = u.role_id
@@ -124,11 +125,13 @@ export async function createAccount(input: {
       .input('email', sql.VarChar(150), input.email)
       .input('phone', sql.VarChar(20), input.phone)
       .input('passwordHash', sql.VarChar(255), input.passwordHash)
+      .input('isPartner', sql.Bit, input.role === 'PARTNER')
       .query<{ user_id: number }>(`
         INSERT INTO dbo.users
-          (public_id, role_id, full_name, email, phone, password_hash, status, email_verified, failed_login_count)
+        (public_id, role_id, full_name, email, phone, password_hash, status, email_verified, failed_login_count)
         OUTPUT INSERTED.user_id
-        VALUES (@publicId, @roleId, @name, @email, @phone, @passwordHash, 'ACTIVE', 0, 0)
+        VALUES (@publicId, @roleId, @name, @email, @phone, @passwordHash,
+          CASE WHEN @isPartner = 1 THEN 'LOCKED' ELSE 'ACTIVE' END, 0, 0)
       `);
     const userId = inserted.recordset[0]?.user_id;
     if (!userId) throw new Error('Không nhận được user_id vừa tạo.');

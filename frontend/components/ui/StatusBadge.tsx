@@ -27,6 +27,8 @@ const STATUS_MAP: Record<string, { label: string; className: string }> = {
   CONFIRMED: { label: 'Đã xác nhận', className: 'bg-blue-50 text-blue-700 border-blue-200' },
   COMPLETED: { label: 'Hoàn thành', className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
   CANCELLED: { label: 'Đã hủy', className: 'bg-gray-100 text-gray-500 border-gray-200' },
+  PAID: { label: 'Đã thanh toán', className: 'bg-teal-50 text-teal-700 border-teal-200' },
+  EXPIRED: { label: 'Hết hạn', className: 'bg-gray-100 text-gray-600 border-gray-300' },
 };
 
 export default function StatusBadge({ status, customLabel }: StatusBadgeProps) {

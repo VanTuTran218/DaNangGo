@@ -33,6 +33,7 @@ export default function RegisterForm({ onSwitchToLogin, redirectTo }: RegisterFo
   const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [requiresApprovalNotice, setRequiresApprovalNotice] = useState(false);
   const [shakeKey, setShakeKey] = useState(0);
 
   const validate = () => {
@@ -85,6 +86,11 @@ export default function RegisterForm({ onSwitchToLogin, redirectTo }: RegisterFo
         ...(role === 'PARTNER' ? { partner: { businessName: businessName.trim(), serviceType } } : {}),
       });
       if (res.success) {
+        if (role === 'PARTNER' && res.requiresApproval) {
+          setRequiresApprovalNotice(true);
+          setIsSuccess(true);
+          return;
+        }
         if (res.user) setAuthUser(res.user);
         setIsSuccess(true);
         setTimeout(() => {
@@ -258,6 +264,14 @@ export default function RegisterForm({ onSwitchToLogin, redirectTo }: RegisterFo
       {errors.general && (
         <div className="p-3 bg-red-50 border border-red-200 rounded-lg mt-2">
           <p className="text-sm text-red-600 text-center">{errors.general}</p>
+        </div>
+      )}
+
+      {requiresApprovalNotice && (
+        <div role="status" className="p-3 bg-amber-50 border border-amber-200 rounded-lg mt-2">
+          <p className="text-sm text-amber-800 text-center">
+            &#72;&#7891;&#32;&#115;&#417;&#32;&#273;&#7889;&#105;&#32;&#116;&#225;&#99;&#32;&#273;&#227;&#32;&#273;&#432;&#7907;&#99;&#32;&#103;&#7917;&#105;&#46;&#32;&#84;&#224;&#105;&#32;&#107;&#104;&#111;&#7843;&#110;&#32;&#99;&#104;&#7881;&#32;&#104;&#111;&#7841;&#116;&#32;&#273;&#7897;&#110;&#103;&#32;&#115;&#97;&#117;&#32;&#107;&#104;&#105;&#32;&#65;&#100;&#109;&#105;&#110;&#32;&#100;&#117;&#121;&#7879;&#116;&#59;&#32;&#98;&#7841;&#110;&#32;&#99;&#243;&#32;&#116;&#104;&#7875;&#32;&#273;&#259;&#110;&#103;&#32;&#110;&#104;&#7853;&#112;&#32;&#108;&#7841;&#105;&#32;&#115;&#97;&#117;&#32;&#107;&#104;&#105;&#32;&#273;&#432;&#7907;&#99;&#32;&#100;&#117;&#121;&#7879;&#116;&#46;
+          </p>
         </div>
       )}
 

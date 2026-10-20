@@ -28,13 +28,18 @@ export interface AdminUserItem {
 export interface AdminPartnerItem {
   id: string;
   userId: string;
+  userName?: string;
   businessName: string;
-  serviceType: 'STAY' | 'TABLE' | 'TICKET';
-  taxCode: string;
-  address: string;
-  phone: string;
+  serviceType: 'STAY' | 'TABLE' | 'TICKET' | null;
+  taxCode: string | null;
+  address: string | null;
+  phone: string | null;
   email: string;
-  status: PartnerApprovalStatus;
+  status: Exclude<PartnerApprovalStatus, 'LOCKED'>;
+  adminLocked?: boolean;
+  accountStatus?: 'ACTIVE' | 'LOCKED';
+  reviewerName?: string | null;
+  reviewedAt?: string | null;
   rejectReason?: string;
   createdAt: string;
 }

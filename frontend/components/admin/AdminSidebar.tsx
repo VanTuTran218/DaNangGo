@@ -11,10 +11,12 @@ import {
   ClipboardList,
   X,
   ShieldCheck,
+  CircleDollarSign,
 } from 'lucide-react';
 
 const ADMIN_NAV = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/admin/doanh-thu-goi', label: 'Doanh thu & Gói đối tác', icon: CircleDollarSign },
   { href: '/admin/nguoi-dung', label: 'Quản lý người dùng', icon: Users },
   { href: '/admin/doi-tac', label: 'Quản lý đối tác', icon: Building2 },
   { href: '/admin/dia-diem', label: 'Quản lý nội dung', icon: MapPin },

@@ -12,6 +12,7 @@ import type {
   PlaceStatus,
   ReviewStatus,
 } from '@/types/admin';
+import { apiRequest } from './client';
 
 import {
   mockAdminUsers,
@@ -90,61 +91,99 @@ export async function updateAdminUserStatus(
   };
 }
 
-// TODO: GET /api/admin/partners
+// Admin partner workflows use the authenticated backend API and SQL Server data.
 export async function getAdminPartners(params?: {
   status?: PartnerApprovalStatus | 'ALL';
   search?: string;
 }): Promise<AdminPartnerItem[]> {
-  await delay();
-  let result = [...mockAdminPartners];
-  if (params?.status && params.status !== 'ALL') {
-    result = result.filter((p) => p.status === params.status);
-  }
+  const requestedStatus = params?.status;
+  const apiStatus = requestedStatus === 'LOCKED' ? 'ALL' : requestedStatus;
+  const query = apiStatus && apiStatus !== 'ALL' ? `?status=${encodeURIComponent(apiStatus)}` : '';
+  const response = await apiRequest<{
+    id: number;
+    userId: number;
+    user: { fullName: string; email: string; phone: string | null };
+    businessName: string;
+    serviceType: 'STAY' | 'TABLE' | 'TICKET' | null;
+    taxCode: string | null;
+    contactPhone: string | null;
+    address: string | null;
+    status: 'PENDING' | 'APPROVED' | 'REJECTED';
+    accountStatus: 'ACTIVE' | 'LOCKED';
+    adminLocked: boolean;
+    createdAt: string;
+    reviewer: { id: number; fullName: string | null } | null;
+    reviewedAt: string | null;
+    rejectionReason: string | null;
+  }[]>(`/api/admin/partners${query}`);
+
+  let result: AdminPartnerItem[] = (response.data ?? []).map((partner) => ({
+    id: String(partner.id),
+    userId: String(partner.userId),
+    userName: partner.user.fullName,
+    businessName: partner.businessName,
+    serviceType: partner.serviceType,
+    taxCode: partner.taxCode,
+    address: partner.address,
+    phone: partner.contactPhone || partner.user.phone,
+    email: partner.user.email,
+    status: partner.status,
+    adminLocked: partner.adminLocked,
+    accountStatus: partner.accountStatus,
+    reviewerName: partner.reviewer?.fullName ?? null,
+    reviewedAt: partner.reviewedAt,
+    rejectReason: partner.rejectionReason ?? undefined,
+    createdAt: partner.createdAt,
+  }));
+
+  if (requestedStatus === 'LOCKED') result = result.filter((partner) => partner.adminLocked);
   if (params?.search) {
-    const s = params.search.toLowerCase();
-    result = result.filter(
-      (p) =>
-        p.businessName.toLowerCase().includes(s) ||
-        p.email.toLowerCase().includes(s) ||
-        p.taxCode.includes(s)
+    const search = params.search.toLowerCase();
+    result = result.filter((partner) =>
+      partner.businessName.toLowerCase().includes(search) ||
+      partner.userName?.toLowerCase().includes(search) ||
+      partner.email.toLowerCase().includes(search) ||
+      (partner.taxCode ?? '').toLowerCase().includes(search)
     );
   }
   return result;
 }
 
-// TODO: POST /api/admin/partners/:id/approve
 export async function approveAdminPartner(partnerId: string): Promise<{ success: boolean; message: string }> {
-  await delay();
-  const partner = mockAdminPartners.find((p) => p.id === partnerId);
-  if (!partner) throw new Error('Không tìm thấy đối tác');
-  partner.status = 'APPROVED';
-  partner.rejectReason = undefined;
-  return { success: true, message: 'Đã phê duyệt hồ sơ đối tác.' };
+  const response = await apiRequest<unknown>(`/api/admin/partners/${encodeURIComponent(partnerId)}/approval`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status: 'APPROVED' }),
+  });
+  return { success: true, message: response.message || '\u0110\u00e3 duy\u1ec7t h\u1ed3 s\u01a1 \u0111\u1ed1i t\u00e1c.' };
 }
 
-// TODO: POST /api/admin/partners/:id/reject
 export async function rejectAdminPartner(
   partnerId: string,
   reason: string
 ): Promise<{ success: boolean; message: string }> {
-  await delay();
-  const partner = mockAdminPartners.find((p) => p.id === partnerId);
-  if (!partner) throw new Error('Không tìm thấy đối tác');
-  partner.status = 'REJECTED';
-  partner.rejectReason = reason;
-  return { success: true, message: 'Đã từ chối hồ sơ đối tác.' };
+  const response = await apiRequest<unknown>(`/api/admin/partners/${encodeURIComponent(partnerId)}/approval`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status: 'REJECTED', reason }),
+  });
+  return { success: true, message: response.message || '\u0110\u00e3 t\u1eeb ch\u1ed1i h\u1ed3 s\u01a1 \u0111\u1ed1i t\u00e1c.' };
 }
 
-// TODO: PATCH /api/admin/partners/:id/status
 export async function updateAdminPartnerStatus(
   partnerId: string,
   status: PartnerApprovalStatus
 ): Promise<{ success: boolean; message: string }> {
-  await delay();
-  const partner = mockAdminPartners.find((p) => p.id === partnerId);
-  if (!partner) throw new Error('Không tìm thấy đối tác');
-  partner.status = status;
-  return { success: true, message: `Cập nhật trạng thái đối tác sang ${status}.` };
+  if (status !== 'LOCKED' && status !== 'APPROVED') {
+    throw new Error('Only an approved partner account can be locked or unlocked.');
+  }
+  const locked = status === 'LOCKED';
+  const response = await apiRequest<unknown>(`/api/admin/partners/${encodeURIComponent(partnerId)}/lock`, {
+    method: 'PATCH',
+    body: JSON.stringify({ locked }),
+  });
+  return {
+    success: true,
+    message: response.message || (locked ? '\u0110\u00e3 kh\u00f3a t\u00e0i kho\u1ea3n \u0111\u1ed1i t\u00e1c.' : '\u0110\u00e3 m\u1edf kh\u00f3a t\u00e0i kho\u1ea3n \u0111\u1ed1i t\u00e1c.'),
+  };
 }
 
 // TODO: GET /api/admin/places

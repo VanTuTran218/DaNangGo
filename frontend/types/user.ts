@@ -44,5 +44,6 @@ export interface RegisterPayload {
 export interface AuthResponse {
   success: boolean;
   user?: User;
+  requiresApproval?: boolean;
   error?: string;
 }

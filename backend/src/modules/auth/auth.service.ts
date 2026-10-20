@@ -53,6 +53,11 @@ export interface IssuedSession {
   rememberMe: boolean;
 }
 
+export interface RegistrationResult {
+  user: PublicUser;
+  session: IssuedSession | null;
+}
+
 function toPublicUser(account: AuthAccountRecord): PublicUser {
   const user: PublicUser = {
     id: account.public_id,
@@ -166,7 +171,7 @@ export async function register(input: {
     address?: string | undefined;
   } | undefined;
   rememberMe?: boolean | undefined;
-}, metadata: ClientMetadata): Promise<IssuedSession> {
+}, metadata: ClientMetadata): Promise<RegistrationResult> {
   if (input.role === 'ADMIN') throw new AuthError(403, 'Không thể đăng ký tài khoản quản trị.');
   if (input.role !== 'USER' && input.role !== 'PARTNER') throw new AuthError(400, 'Vai trò tài khoản không hợp lệ.');
   if (input.role === 'PARTNER' && !input.partner) throw new AuthError(400, 'Vui lòng nhập thông tin nhà cung cấp.');
@@ -206,7 +211,11 @@ export async function register(input: {
         },
       } : {}),
     });
-    return issueSession(account, input.rememberMe ?? false, 'USER', metadata);
+    if (role === 'PARTNER') {
+      return { user: toPublicUser(account), session: null };
+    }
+    const session = await issueSession(account, input.rememberMe ?? false, 'USER', metadata);
+    return { user: session.user, session };
   } catch (error) {
     const dbError = error as { number?: number };
     if (dbError.number === 2601 || dbError.number === 2627) {
@@ -234,17 +243,23 @@ async function authenticate(
   const accountRole = account ? mapRoleName(account.role_name) : null;
   const permitted = sessionType === 'ADMIN' ? accountRole === 'ADMIN' : accountRole === 'USER' || accountRole === 'PARTNER';
   if (!account || !permitted) throw new AuthError(401, 'Sai thông tin đăng nhập.');
-
+  if (!passwordMatches) {
+    const failedCount = await recordFailedLogin(account.user_id);
+    if (failedCount >= 5) throw new AuthError(423, 'Tài khoản đã bị khóa 15 phút do đăng nhập sai quá nhiều lần.');
+    throw new AuthError(401, 'Sai thông tin đăng nhập.');
+  }
+  if (accountRole === 'PARTNER' && account.approval_status === 'PENDING') {
+    throw new AuthError(403, 'Hồ sơ đối tác đang chờ Admin duyệt. Bạn sẽ đăng nhập được sau khi hồ sơ được duyệt.');
+  }
+  if (accountRole === 'PARTNER' && account.approval_status === 'REJECTED') {
+    throw new AuthError(403, 'Hồ sơ đối tác đã bị từ chối. Vui lòng liên hệ quản trị viên.');
+  }
+  if (account.admin_locked) throw new AuthError(423, 'Tài khoản đối tác đã bị Admin khóa.');
   if (account.status === 'LOCKED') {
     if (!account.locked_until || account.locked_until.getTime() > Date.now()) {
       throw new AuthError(423, 'Tài khoản đang bị khóa. Vui lòng thử lại sau.');
     }
     await unlockExpiredAccount(account.user_id);
-  }
-  if (!passwordMatches) {
-    const failedCount = await recordFailedLogin(account.user_id);
-    if (failedCount >= 5) throw new AuthError(423, 'Tài khoản đã bị khóa 15 phút do đăng nhập sai quá nhiều lần.');
-    throw new AuthError(401, 'Sai thông tin đăng nhập.');
   }
   if (account.status !== 'ACTIVE' && account.status !== 'LOCKED') {
     throw new AuthError(401, 'Tài khoản hiện không thể đăng nhập.');
@@ -287,6 +302,16 @@ export async function refreshSession(
   if ((sessionType === 'ADMIN' && role !== 'ADMIN') || (sessionType === 'USER' && role === 'ADMIN')) {
     await revokeRefreshToken(nextHash);
     throw new AuthError(403, 'Bạn không có quyền sử dụng phiên này.');
+  }
+  if (account.admin_locked || account.status !== 'ACTIVE') {
+    await revokeRefreshToken(nextHash);
+    throw new AuthError(423, 'Tài khoản đang bị Admin khóa hoặc chưa được kích hoạt.');
+  }
+  if (role === 'PARTNER' && account.approval_status !== 'APPROVED') {
+    await revokeRefreshToken(nextHash);
+    throw new AuthError(403, account.approval_status === 'REJECTED'
+      ? 'Hồ sơ đối tác đã bị từ chối.'
+      : 'Hồ sơ đối tác đang chờ Admin duyệt.');
   }
   return {
     user: toPublicUser(account),
@@ -386,7 +411,10 @@ export async function verifyAccessToken(token: string, expectedSession: 'USER' |
       throw new AuthError(401, 'Phiên đăng nhập không hợp lệ.');
     }
     const account = await findAccountByUserId(userId);
-    if (!account || account.status !== 'ACTIVE') throw new AuthError(401, 'Phiên đăng nhập không còn hiệu lực.');
+    if (!account || account.status !== 'ACTIVE' || account.admin_locked) throw new AuthError(401, 'Phiên đăng nhập không còn hiệu lực.');
+    if (mapRoleName(account.role_name) === 'PARTNER' && account.approval_status !== 'APPROVED') {
+      throw new AuthError(401, 'Quyền truy cập đối tác đã bị thu hồi hoặc hồ sơ chưa được duyệt.');
+    }
     return userId;
   } catch (error) {
     if (error instanceof AuthError) throw error;

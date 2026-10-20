@@ -10,10 +10,12 @@ import {
   UserCheck,
   X,
   Store,
+  CreditCard,
 } from 'lucide-react';
 
 const PARTNER_NAV = [
   { href: '/partner', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/partner/goi-dich-vu', label: 'Gói hoạt động', icon: CreditCard },
   { href: '/partner/co-so', label: 'Cơ sở dịch vụ', icon: Building },
   { href: '/partner/don-dat', label: 'Quản lý đơn đặt', icon: CalendarCheck },
   { href: '/partner/danh-gia', label: 'Đánh giá & Khách hàng', icon: Star },

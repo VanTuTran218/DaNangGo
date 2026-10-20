@@ -15,6 +15,7 @@ import {
   mockPartnerReviews,
   mockPartnerDailyBookings,
 } from '@/lib/mock/partner';
+import { apiRequest } from './client';
 
 function delay(ms = 400) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -81,15 +82,23 @@ export async function getPartnerPlaceById(id: string): Promise<PartnerPlace | nu
   return place ? { ...place } : null;
 }
 
-// TODO: POST /api/partner/places
+// POST /api/places
 export async function createPartnerPlace(
   data: Omit<PartnerPlace, 'id' | 'createdAt' | 'status'>,
   isSubmitForReview: boolean
 ): Promise<PartnerPlace> {
-  await delay();
+  const res = await apiRequest<{ place_id: number; name: string }>('/api/places', {
+    method: 'POST',
+    body: JSON.stringify({
+      name: data.name,
+      description: data.description,
+      address: data.address,
+      category: data.category,
+    }),
+  });
   const newPlace: PartnerPlace = {
     ...data,
-    id: `pp-${Date.now()}`,
+    id: String(res.data?.place_id || `pp-${Date.now()}`),
     status: isSubmitForReview ? 'PENDING' : 'HIDDEN',
     createdAt: new Date().toISOString(),
   };

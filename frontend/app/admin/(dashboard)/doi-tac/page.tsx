@@ -12,7 +12,7 @@ import type { AdminPartnerItem, PartnerApprovalStatus } from '@/types/admin';
 import DataTable, { Column } from '@/components/ui/DataTable';
 import StatusBadge from '@/components/ui/StatusBadge';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
-import { Check, X, Lock, Eye, Building2 } from 'lucide-react';
+import { Check, X, Lock, LockOpen, Eye, Building2 } from 'lucide-react';
 
 const TABS: { key: PartnerApprovalStatus | 'ALL'; label: string }[] = [
   { key: 'PENDING', label: 'Chờ duyệt' },
@@ -72,7 +72,7 @@ export default function AdminPartnersPage() {
     if (!lockingPartner) return;
     setActionLoading(true);
     try {
-      const nextStatus = lockingPartner.status === 'LOCKED' ? 'APPROVED' : 'LOCKED';
+      const nextStatus = lockingPartner.adminLocked ? 'APPROVED' : 'LOCKED';
       const res = await updateAdminPartnerStatus(lockingPartner.id, nextStatus);
       showToast(res.message);
       setLockingPartner(null);
@@ -92,7 +92,7 @@ export default function AdminPartnersPage() {
       render: (p) => (
         <div>
           <p className="font-bold text-gray-900">{p.businessName}</p>
-          <p className="text-xs text-gray-500">MST: {p.taxCode}</p>
+          <p className="text-xs text-gray-500">MST: {p.taxCode || 'Chưa cung cấp'}</p>
         </div>
       ),
     },
@@ -101,12 +101,12 @@ export default function AdminPartnersPage() {
       header: 'Loại dịch vụ',
       render: (p) => (
         <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">
-          {p.serviceType === 'STAY' ? 'Lưu trú' : p.serviceType === 'TABLE' ? 'Ẩm thực' : 'Vé/Tour'}
+          {p.serviceType === 'STAY' ? 'Lưu trú' : p.serviceType === 'TABLE' ? 'Ẩm thực' : p.serviceType === 'TICKET' ? 'Vé/Tour' : 'Chưa cung cấp'}
         </span>
       ),
     },
-    { key: 'phone', header: 'Liên hệ', render: (p) => `${p.phone} (${p.email})` },
-    { key: 'status', header: 'Trạng thái', render: (p) => <StatusBadge status={p.status} /> },
+    { key: 'phone', header: 'Liên hệ', render: (p) => `${p.phone || 'Chưa có SĐT'} (${p.email})` },
+    { key: 'status', header: 'Trạng thái', render: (p) => <StatusBadge status={p.adminLocked ? 'LOCKED' : p.status} /> },
     {
       key: 'actions',
       header: 'Thao tác',
@@ -142,10 +142,10 @@ export default function AdminPartnersPage() {
           {p.status === 'APPROVED' && (
             <button
               onClick={() => setLockingPartner(p)}
-              title="Khóa đối tác"
-              className="p-1.5 rounded-lg text-amber-600 hover:bg-amber-50"
+              title={p.adminLocked ? 'Mở khóa đối tác' : 'Khóa đối tác'}
+              className={`p-1.5 rounded-lg hover:bg-amber-50 ${p.adminLocked ? 'text-emerald-600' : 'text-amber-600'}`}
             >
-              <Lock className="w-4 h-4" />
+              {p.adminLocked ? <LockOpen className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
             </button>
           )}
         </div>
@@ -204,7 +204,7 @@ export default function AdminPartnersPage() {
           columns={columns}
           loading={loading}
           searchPlaceholder="Tìm theo tên doanh nghiệp, MST, email..."
-          searchField={(p) => `${p.businessName} ${p.taxCode} ${p.email}`}
+          searchField={(p) => `${p.userName || ''} ${p.businessName} ${p.taxCode || ''} ${p.email} ${p.phone || ''}`}
           rowKey={(p) => p.id}
         />
       )}
@@ -233,10 +233,13 @@ export default function AdminPartnersPage() {
             <div className="space-y-2 text-sm text-gray-700 pt-2 border-t border-gray-100">
               <p><span className="font-semibold text-gray-500">Loại dịch vụ:</span> {selectedPartner.serviceType}</p>
               <p><span className="font-semibold text-gray-500">Mã số thuế:</span> {selectedPartner.taxCode}</p>
-              <p><span className="font-semibold text-gray-500">Địa chỉ kinh doanh:</span> {selectedPartner.address}</p>
-              <p><span className="font-semibold text-gray-500">Số điện thoại:</span> {selectedPartner.phone}</p>
+              <p><span className="font-semibold text-gray-500">Địa chỉ kinh doanh:</span> {selectedPartner.address || 'Chưa cung cấp'}</p>
+              <p><span className="font-semibold text-gray-500">Số điện thoại:</span> {selectedPartner.phone || 'Chưa cung cấp'}</p>
               <p><span className="font-semibold text-gray-500">Email:</span> {selectedPartner.email}</p>
-              <p><span className="font-semibold text-gray-500">Trạng thái:</span> <StatusBadge status={selectedPartner.status} /></p>
+              {selectedPartner.userName && <p><span className="font-semibold text-gray-500">Người đăng ký:</span> {selectedPartner.userName}</p>}
+              {selectedPartner.reviewerName && <p><span className="font-semibold text-gray-500">Admin xử lý:</span> {selectedPartner.reviewerName}</p>}
+              {selectedPartner.reviewedAt && <p><span className="font-semibold text-gray-500">Thời điểm xử lý:</span> {new Date(selectedPartner.reviewedAt).toLocaleString('vi-VN')}</p>}
+              <p><span className="font-semibold text-gray-500">Trạng thái:</span> <StatusBadge status={selectedPartner.adminLocked ? 'LOCKED' : selectedPartner.status} /></p>
               {selectedPartner.rejectReason && (
                 <p className="p-3 bg-red-50 text-red-700 text-xs rounded-xl font-medium">
                   <span className="font-bold">Lý do từ chối:</span> {selectedPartner.rejectReason}
@@ -275,10 +278,10 @@ export default function AdminPartnersPage() {
         isOpen={Boolean(lockingPartner)}
         onClose={() => setLockingPartner(null)}
         onConfirm={handleLockToggle}
-        title="Khóa tài khoản đối tác"
-        description={`Bạn có chắc chắn muốn khóa tài khoản đối tác ${lockingPartner?.businessName}?`}
+        title={lockingPartner?.adminLocked ? 'Mở khóa tài khoản đối tác' : 'Khóa tài khoản đối tác'}
+        description={`Bạn có chắc chắn muốn ${lockingPartner?.adminLocked ? 'mở khóa' : 'khóa'} tài khoản đối tác ${lockingPartner?.businessName}?`}
         variant="danger"
-        confirmText="Khóa tài khoản"
+        confirmText={lockingPartner?.adminLocked ? 'Mở khóa tài khoản' : 'Khóa tài khoản'}
         loading={actionLoading}
       />
     </div>

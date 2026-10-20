@@ -1,34 +1,18 @@
 import type { AuthResponse, LoginPayload, RegisterPayload, User } from '@/types/user';
 import { apiPost, apiRequest, ApiError, mapApiUser } from './client';
 
-interface AuthData { user: Parameters<typeof mapApiUser>[0] }
+interface AuthData { user?: Parameters<typeof mapApiUser>[0]; requiresApproval?: boolean }
 
 async function authCall(path: string, body: unknown): Promise<AuthResponse> {
   try {
     const response = await apiPost<AuthData>(path, body);
-    return { success: true, user: mapApiUser(response.data!.user) };
+    return { success: true, ...(response.data?.user ? { user: mapApiUser(response.data.user) } : {}), ...(response.data?.requiresApproval ? { requiresApproval: true } : {}) };
   } catch (error) {
     return { success: false, error: error instanceof ApiError ? error.message : 'Không thể kết nối máy chủ. Vui lòng thử lại.' };
   }
 }
 
 export async function login(payload: LoginPayload): Promise<AuthResponse> {
-  const cleanIdentifier = payload.identifier.trim().toLowerCase();
-  if (cleanIdentifier === 'tt1871214@gmail.com' && payload.password === 'Tuan@123456') {
-    if (typeof document !== 'undefined') {
-      document.cookie = 'access_token=mock_partner_token; path=/; max-age=86400';
-    }
-    const partnerUser: User = {
-      id: 'partner-demo-1',
-      name: 'Trần Văn Tuấn (Partner Demo)',
-      email: 'tt1871214@gmail.com',
-      role: 'PARTNER',
-      phone: '0905123456',
-      createdAt: '2026-09-01T08:00:00Z',
-      membership: { isVip: true, tier: 'Diamond', points: 1500, nextTierPoints: 2000 },
-    };
-    return { success: true, user: partnerUser };
-  }
   return authCall('/api/auth/login', payload);
 }
 
@@ -67,7 +51,7 @@ export async function adminLogin(identifier: string, password: string) {
 
 export async function adminGetSession(): Promise<User | null> {
   const response = await apiRequest<AuthData>('/api/admin/auth/me');
-  return mapApiUser(response.data!.user);
+  return response.data?.user ? mapApiUser(response.data.user) : null;
 }
 
 export async function adminLogout(): Promise<void> {

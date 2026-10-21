@@ -73,7 +73,10 @@ export const updateStatus = async (req: Request, res: Response) => {
       return unauthorized(res, 'Vui lòng đăng nhập để thực hiện thao tác này');
     }
 
-    const status = req.body?.status;
+    let status = req.body?.status;
+    if (status === 'APPROVED') {
+      status = 'ACTIVE';
+    }
     const allowedStatuses: PlaceStatus[] = ['ACTIVE', 'HIDDEN', 'PENDING', 'LOCKED'];
     if (!status || !allowedStatuses.includes(status)) {
       return badRequest(res, `Trạng thái không hợp lệ (chỉ chấp nhận: ${allowedStatuses.join(', ')})`);

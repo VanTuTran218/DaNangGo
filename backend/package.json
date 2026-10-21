@@ -12,6 +12,7 @@
     "build": "tsc",
     "seed:admin": "npm run build && node dist/scripts/seed-admin.js",
     "migrate:task7": "npx tsx src/scripts/run-migration-007.ts",
+    "migrate:task8": "npx tsx src/scripts/run-migration-006.ts",
     "seed:task7": "npx tsx src/scripts/seed-task7-data.ts",
     "test": "npx tsx tests/auth.test.ts",
     "test:step2": "npx tsx tests/step2.test.ts",
@@ -19,7 +20,8 @@
     "test:step5": "npx tsx tests/step5.test.ts",
     "test:step6": "npx tsx tests/step6.test.ts",
     "test:step7": "npx tsx tests/step7.test.ts",
-    "test:all": "npx tsx tests/step2.test.ts && npx tsx tests/step3.test.ts && npx tsx tests/step5.test.ts && npx tsx tests/step6.test.ts && npx tsx tests/step7.test.ts"
+    "test:step8": "npx tsx tests/step8.test.ts",
+    "test:all": "npx tsx tests/step2.test.ts && npx tsx tests/step3.test.ts && npx tsx tests/step5.test.ts && npx tsx tests/step6.test.ts && npx tsx tests/step7.test.ts && npx tsx tests/step8.test.ts"
   },
 
   "keywords": [],

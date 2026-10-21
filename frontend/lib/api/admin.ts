@@ -179,16 +179,28 @@ export async function getAdminPlaces(params?: {
   return result;
 }
 
-// TODO: PATCH /api/admin/places/:id/status
+// PATCH /api/admin/places/:id/status
 export async function updateAdminPlaceStatus(
   placeId: string,
   status: PlaceStatus
 ): Promise<{ success: boolean; message: string }> {
-  await delay();
-  const place = mockAdminPlaces.find((p) => p.id === placeId);
-  if (!place) throw new Error('Không tìm thấy địa điểm');
-  place.status = status;
-  return { success: true, message: `Đã cập nhật trạng thái địa điểm.` };
+  const normalizedStatus = status === 'APPROVED' ? 'ACTIVE' : status;
+  try {
+    const res = await apiRequest<{ success: boolean; message: string }>(
+      `/api/admin/places/${placeId}/status`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify({ status: normalizedStatus }),
+      }
+    );
+    const place = mockAdminPlaces.find((p) => p.id === placeId);
+    if (place) place.status = status;
+    return { success: true, message: res.message || 'Cập nhật trạng thái địa điểm thành công.' };
+  } catch (err) {
+    const place = mockAdminPlaces.find((p) => p.id === placeId);
+    if (place) place.status = status;
+    throw err;
+  }
 }
 
 // TODO: DELETE /api/admin/places/:id

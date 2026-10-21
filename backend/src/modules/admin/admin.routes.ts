@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { requireAuth, requireRole } from '../../middleware/auth.middleware';
 import { adminApprovePartner, adminListPartners, adminRejectPartner } from './admin.service';
+import * as placesController from '../places/places.controller';
 
 const adminPartnersRouter = Router();
 
@@ -40,5 +41,10 @@ adminPartnersRouter.post('/:id/reject', async (req, res) => {
   }
   res.json({ success: true, message: 'Đã từ chối tài khoản đối tác và gửi email thông báo.' });
 });
+
+export const adminPlacesRouter = Router();
+adminPlacesRouter.use(requireAuth('ADMIN'), requireRole('ADMIN'));
+adminPlacesRouter.patch('/:id/status', placesController.updateStatus);
+adminPlacesRouter.put('/:id/status', placesController.updateStatus);
 
 export default adminPartnersRouter;

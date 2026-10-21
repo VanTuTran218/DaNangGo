@@ -258,6 +258,32 @@ export function validatePlaceId(param: unknown): ValidationResult<number> {
   return { error: null, data: id };
 }
 
+export const ALLOWED_PLACE_STATUSES = ['ACTIVE', 'HIDDEN', 'PENDING', 'LOCKED'] as const;
+export type ValidPlaceStatus = (typeof ALLOWED_PLACE_STATUSES)[number];
+
+/**
+ * Validate body khi cập nhật trạng thái địa điểm
+ * PATCH /api/places/:id/status
+ */
+export function validateUpdatePlaceStatus(
+  body: Record<string, unknown>
+): ValidationResult<{ status: ValidPlaceStatus }> {
+  if (!body || typeof body !== 'object') {
+    return { error: 'Dữ liệu yêu cầu không hợp lệ' };
+  }
+  const status = body['status'];
+  if (!status || typeof status !== 'string') {
+    return { error: 'Trạng thái (status) là bắt buộc' };
+  }
+  const upperStatus = status.trim().toUpperCase() as ValidPlaceStatus;
+  if (!ALLOWED_PLACE_STATUSES.includes(upperStatus)) {
+    return {
+      error: `Trạng thái không hợp lệ: "${status}". Chỉ chấp nhận: ${ALLOWED_PLACE_STATUSES.join(', ')}`,
+    };
+  }
+  return { error: null, data: { status: upperStatus } };
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // CÁC DTO ĐỊNH NGHĨA DỮ LIỆU CHI TIẾT ĐỊA ĐIỂM (TASK 6)
 // ─────────────────────────────────────────────────────────────────────────────

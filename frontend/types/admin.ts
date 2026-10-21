@@ -1,7 +1,7 @@
 export type UserAccountStatus = 'ACTIVE' | 'LOCKED';
 export type PartnerApprovalStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'LOCKED';
 export type PlaceCategory = 'luutru' | 'amthuc' | 'diemdulich';
-export type PlaceStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'HIDDEN';
+export type PlaceStatus = 'PENDING' | 'APPROVED' | 'ACTIVE' | 'REJECTED' | 'HIDDEN' | 'LOCKED';
 export type ReviewStatus = 'ACTIVE' | 'HIDDEN';
 export type QuestionType = 'STAR' | 'TEXT';
 

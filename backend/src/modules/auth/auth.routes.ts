@@ -56,11 +56,17 @@ const registerSchema = z.object({
   }
 });
 
-const loginSchema = z.object({
+const loginSchema = z.preprocess((val: any) => {
+  if (val && typeof val === 'object') {
+    const identifier = val.identifier || val.email;
+    return { ...val, identifier };
+  }
+  return val;
+}, z.object({
   identifier: z.string().trim().min(3, 'Vui lòng nhập email hoặc số điện thoại.'),
   password: z.string().min(1, 'Vui lòng nhập mật khẩu.'),
   rememberMe: z.boolean().optional(),
-});
+}));
 
 const forgotSchema = z.object({ email: z.string().trim().email('Email không hợp lệ.').max(150) });
 const resetSchema = z.object({ token: z.string().min(20), newPassword: passwordRule, confirmPassword: z.string() })
@@ -102,7 +108,8 @@ function cookieNames(admin: boolean) {
 }
 function setSessionCookies(response: Response, session: IssuedSession, admin: boolean): void {
   const names = cookieNames(admin);
-  response.cookie(names.access, session.accessToken, { ...cookieOptions(), maxAge: 15 * 60 * 1000 });
+  const accessMaxAge = isProduction() ? 15 * 60 * 1000 : 24 * 60 * 60 * 1000;
+  response.cookie(names.access, session.accessToken, { ...cookieOptions(), maxAge: accessMaxAge });
   response.cookie(names.refresh, session.refreshToken, {
     ...cookieOptions(),
     ...(session.rememberMe ? { maxAge: 30 * 24 * 60 * 60 * 1000 } : {}),
@@ -153,7 +160,11 @@ router.post('/login', loginRateLimit, async (req, res) => {
   try {
     const session = await login(input, clientMetadata(req));
     setSessionCookies(res, session, false);
-    res.json({ success: true, data: { user: session.user }, message: 'Đăng nhập thành công.' });
+    res.json({
+      success: true,
+      data: { user: session.user, accessToken: session.accessToken },
+      message: 'Đăng nhập thành công.',
+    });
   } catch (err) {
     // Nếu tài khoản chưa xác thực email → trả 403 với code đặc biệt
     const authErr = err as AuthError & { code?: string; maskedEmail?: string };
@@ -253,7 +264,11 @@ adminRouter.post('/login', loginRateLimit, async (req, res) => {
   const input = loginSchema.parse(req.body);
   const session = await adminLogin(input, clientMetadata(req));
   setSessionCookies(res, session, true);
-  res.json({ success: true, data: { user: session.user }, message: 'Đăng nhập quản trị thành công.' });
+  res.json({
+    success: true,
+    data: { user: session.user, accessToken: session.accessToken },
+    message: 'Đăng nhập quản trị thành công.',
+  });
 });
 
 adminRouter.post('/refresh', async (req, res) => {

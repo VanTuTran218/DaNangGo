@@ -65,21 +65,21 @@ export const updateStatus = async (req: Request, res: Response) => {
     const rawId = req.params['id'];
     const id = parseInt(String(rawId ?? ''));
     if (isNaN(id) || id <= 0) {
-      return badRequest(res, 'ID địa điểm không hợp lệ');
+      return badRequest(res, 'ID địa điểm không hợp lệ (phải là số nguyên dương)');
     }
 
     if (!req.user) {
       return forbidden(res, 'Vui lòng đăng nhập để thực hiện thao tác này');
     }
 
-    const { status } = req.body;
+    const status = req.body?.status;
     const allowedStatuses: PlaceStatus[] = ['ACTIVE', 'HIDDEN', 'PENDING', 'LOCKED'];
     if (!status || !allowedStatuses.includes(status)) {
       return badRequest(res, `Trạng thái không hợp lệ (chỉ chấp nhận: ${allowedStatuses.join(', ')})`);
     }
 
     const result = await placesService.updatePlaceStatus(id, status, req.user);
-    return ok(res, result, result.message);
+    return ok(res, result.data, result.message);
   } catch (err) {
     return handleError(res, err);
   }

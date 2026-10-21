@@ -239,49 +239,114 @@ export async function createPlaceCommon(
   return result.recordset[0].place_id;
 }
 
+export interface UpdatePlaceStatusResult {
+  success: boolean;
+  message: string;
+  data: {
+    place_id: number;
+    name: string;
+    previous_status: PlaceStatus;
+    status: PlaceStatus;
+    updated_at: Date;
+  };
+}
+
 /**
  * Cập nhật trạng thái địa điểm (dùng cho Admin và Partner/Tin)
- * - Địa điểm đang LOCKED chỉ Admin mới được gỡ.
- * - Chỉ Admin mới có quyền đổi sang trạng thái LOCKED.
- * - Partner chỉ được đổi trạng thái địa điểm của mình (khi không bị LOCKED).
+ * - Địa điểm đang LOCKED: CHỈ Admin mới có quyền gỡ khóa (throw 403 nếu Partner cố tình đổi).
+ * - Chỉ Admin mới có quyền đưa địa điểm sang trạng thái LOCKED (throw 403 nếu Partner cố tình set).
+ * - Partner chỉ được đổi trạng thái địa điểm do chính mình sở hữu (place.partner_id === user.partner_id).
+ * - Khách hàng thông thường (USER) hoặc chưa đăng nhập không có quyền thay đổi trạng thái (throw 403).
+ * - Admin có toàn quyền đổi trạng thái bất kỳ địa điểm nào sang ACTIVE, HIDDEN, PENDING, LOCKED.
  */
 export async function updatePlaceStatus(
   place_id: number,
   new_status: PlaceStatus,
   user: { role: string; partner_id?: number }
-): Promise<{ success: boolean; message: string }> {
+): Promise<UpdatePlaceStatusResult> {
+  const validStatuses: PlaceStatus[] = ['ACTIVE', 'HIDDEN', 'PENDING', 'LOCKED'];
+  if (!validStatuses.includes(new_status)) {
+    throw {
+      status: 400,
+      message: `Trạng thái không hợp lệ: "${new_status}". Chỉ chấp nhận: ${validStatuses.join(', ')}`,
+    };
+  }
+
+  // 1. Kiểm tra vai trò người dùng (chỉ ADMIN hoặc PARTNER)
+  if (!user || (user.role !== 'ADMIN' && user.role !== 'PARTNER')) {
+    throw { status: 403, message: 'Bạn không có quyền thay đổi trạng thái địa điểm' };
+  }
+
   const pool = getPool();
 
+  // 2. Tìm thông tin địa điểm hiện tại
   const existingRes = await pool
     .request()
     .input('place_id', sql.Int, place_id)
-    .query('SELECT place_id, partner_id, status FROM places WHERE place_id = @place_id');
+    .query<{ place_id: number; name: string; partner_id: number | null; status: PlaceStatus }>(
+      'SELECT place_id, name, partner_id, status FROM places WHERE place_id = @place_id'
+    );
 
   const place = existingRes.recordset[0];
   if (!place) {
     throw { status: 404, message: 'Không tìm thấy địa điểm' };
   }
 
-  // Quán đang LOCKED chỉ Admin mới được gỡ
+  const previousStatus = place.status;
+
+  // 3. Ràng buộc bảo mật 1: Quán đang LOCKED -> CHỈ Admin mới có quyền mở khóa / đổi trạng thái
   if (place.status === 'LOCKED' && user.role !== 'ADMIN') {
-    throw { status: 403, message: 'Địa điểm đang bị khóa (LOCKED), chỉ Quản trị viên mới có quyền mở khóa' };
+    throw {
+      status: 403,
+      message: 'Địa điểm đang bị khóa (LOCKED), chỉ Quản trị viên mới có quyền mở khóa',
+    };
   }
 
-  // Chỉ Admin mới được set sang LOCKED
+  // 4. Ràng buộc bảo mật 2: Chỉ Admin mới có quyền khóa quán (chuyển sang LOCKED)
   if (new_status === 'LOCKED' && user.role !== 'ADMIN') {
-    throw { status: 403, message: 'Chỉ Quản trị viên mới có quyền khóa địa điểm' };
+    throw {
+      status: 403,
+      message: 'Chỉ Quản trị viên mới có quyền khóa địa điểm',
+    };
   }
 
-  // Partner chỉ được sửa địa điểm của mình
-  if (user.role !== 'ADMIN' && place.partner_id !== user.partner_id) {
-    throw { status: 403, message: 'Bạn không có quyền thay đổi trạng thái địa điểm này' };
+  // 5. Ràng buộc bảo mật 3: Partner chỉ được sửa quán thuộc sở hữu của mình
+  if (user.role === 'PARTNER') {
+    if (!user.partner_id || place.partner_id === null || place.partner_id !== user.partner_id) {
+      throw {
+        status: 403,
+        message: 'Bạn không có quyền thay đổi trạng thái địa điểm này',
+      };
+    }
   }
 
+  // 6. Thực hiện cập nhật vào CSDL
+  const now = new Date();
   await pool
     .request()
     .input('place_id', sql.Int, place_id)
     .input('status', sql.VarChar(20), new_status)
-    .query('UPDATE places SET status = @status, updated_at = GETDATE() WHERE place_id = @place_id');
+    .input('updated_at', sql.DateTime2, now)
+    .query('UPDATE places SET status = @status, updated_at = @updated_at WHERE place_id = @place_id');
 
-  return { success: true, message: `Cập nhật trạng thái địa điểm thành ${new_status} thành công` };
+  const actionText =
+    new_status === 'LOCKED'
+      ? 'Khóa'
+      : new_status === 'ACTIVE'
+      ? 'Kích hoạt'
+      : new_status === 'HIDDEN'
+      ? 'Ẩn'
+      : 'Chuyển sang chờ duyệt';
+
+  return {
+    success: true,
+    message: `${actionText} địa điểm "${place.name}" thành công`,
+    data: {
+      place_id,
+      name: place.name,
+      previous_status: previousStatus,
+      status: new_status,
+      updated_at: now,
+    },
+  };
 }

@@ -12,6 +12,9 @@ export interface CreateRestaurantDto {
   price_min?: number;
   price_max?: number;
   promo_label?: string;
+  images?: string[];
+  partner_id?: number;
+  status?: string;
 }
 
 export interface UpdateRestaurantDto extends Partial<CreateRestaurantDto> {}

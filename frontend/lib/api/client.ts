@@ -44,6 +44,7 @@ export function mapApiUser(user: ApiUser): User {
   if (user.phone) mapped.phone = user.phone;
   if (user.avatarUrl) mapped.avatarUrl = user.avatarUrl;
   if (user.birthday) mapped.birthday = user.birthday;
+  if (user.approvalStatus) mapped.approvalStatus = user.approvalStatus;
   return mapped;
 }
 
@@ -105,3 +106,18 @@ export function apiPost<T>(path: string, body?: unknown, options?: { retryAfterR
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
   }, options);
 }
+
+export function apiPut<T>(path: string, body?: unknown, options?: { retryAfterRefresh?: boolean }): Promise<ApiEnvelope<T>> {
+  return apiRequest<T>(path, {
+    method: 'PUT',
+    ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+  }, options);
+}
+
+export function apiPatch<T>(path: string, body?: unknown, options?: { retryAfterRefresh?: boolean }): Promise<ApiEnvelope<T>> {
+  return apiRequest<T>(path, {
+    method: 'PATCH',
+    ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+  }, options);
+}
+

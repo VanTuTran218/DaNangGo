@@ -28,7 +28,7 @@ const attachIsOpen = (restaurant: RestaurantRow) => ({
 
 export const createRestaurant = async (
   body: Record<string, unknown>,
-  user: { partner_id?: number }
+  user: { partner_id?: number; role?: string }
 ) => {
   // 1. Validate dữ liệu vào
   const validationError = validateCreateRestaurant(body);
@@ -47,7 +47,7 @@ export const createRestaurant = async (
   }
 
   // 4. Ghi vào DB (transaction)
-  const partner_id = user.partner_id ?? null;
+  const partner_id = user.role === 'ADMIN' && body['partner_id'] ? Number(body['partner_id']) : (user.partner_id ?? null);
   const restaurant = await createRestaurantTx(data, partner_id);
   return attachIsOpen(restaurant);
 };

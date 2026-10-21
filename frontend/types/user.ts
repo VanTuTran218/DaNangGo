@@ -10,6 +10,8 @@ export interface User {
   birthday?: string;
   avatarUrl?: string;
   createdAt: string;
+  approvalStatus?: string;
+  partnerId?: number;
   membership: {
     isVip: boolean;
     tier: Tier;

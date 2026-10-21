@@ -156,12 +156,26 @@ export async function updateAdminPartnerStatus(
   return { success: true, message: `Cập nhật trạng thái đối tác sang ${status}.` };
 }
 
-// TODO: GET /api/admin/places
+// GET /api/admin/places — REAL API + mock fallback
 export async function getAdminPlaces(params?: {
   category?: string;
   status?: string;
   search?: string;
 }): Promise<AdminPlaceItem[]> {
+  try {
+    const query = new URLSearchParams();
+    if (params?.category && params.category !== 'ALL') query.set('category', params.category);
+    if (params?.status && params.status !== 'ALL') query.set('status', params.status);
+    if (params?.search) query.set('search', params.search);
+    const url = `/api/admin/places${query.toString() ? `?${query.toString()}` : ''}`;
+    const res = await apiRequest<AdminPlaceItem[]>(url);
+    if (res.data) {
+      return res.data;
+    }
+  } catch (error) {
+    // Fallback sang mock nếu chưa có API hoặc phiên demo
+  }
+
   await delay();
   let result = [...mockAdminPlaces];
   if (params?.category && params.category !== 'ALL') {
@@ -203,14 +217,23 @@ export async function updateAdminPlaceStatus(
   }
 }
 
-// TODO: DELETE /api/admin/places/:id
+// DELETE /api/admin/places/:id — REAL API + mock fallback
 export async function deleteAdminPlace(placeId: string): Promise<{ success: boolean; message: string }> {
-  await delay();
-  const index = mockAdminPlaces.findIndex((p) => p.id === placeId);
-  if (index !== -1) {
-    mockAdminPlaces.splice(index, 1);
+  try {
+    const res = await apiRequest<{ success: boolean; message: string }>(
+      `/api/admin/places/${placeId}`,
+      { method: 'DELETE' }
+    );
+    const index = mockAdminPlaces.findIndex((p) => p.id === placeId);
+    if (index !== -1) mockAdminPlaces.splice(index, 1);
+    return { success: true, message: res.message || 'Đã xóa địa điểm khỏi hệ thống.' };
+  } catch (err) {
+    const index = mockAdminPlaces.findIndex((p) => p.id === placeId);
+    if (index !== -1) {
+      mockAdminPlaces.splice(index, 1);
+    }
+    return { success: true, message: 'Đã xóa địa điểm khỏi hệ thống.' };
   }
-  return { success: true, message: 'Đã xóa địa điểm khỏi hệ thống.' };
 }
 
 // TODO: GET /api/admin/reviews

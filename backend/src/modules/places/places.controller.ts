@@ -2,12 +2,13 @@ import type { Request, Response } from 'express';
 import * as placesService from './places.service';
 import { validateSearchPlacesQuery, validatePlaceId, ALLOWED_PLACE_TYPES } from './places.validation';
 import type { PlaceStatus } from './places.service';
-import { ok, created, badRequest, notFound, forbidden, serverError } from '../../utils/response';
+import { ok, created, badRequest, notFound, forbidden, unauthorized, serverError } from '../../utils/response';
 
 // Xử lý lỗi tập trung cho controller
 const handleError = (res: Response, err: unknown) => {
   const e = err as { status?: number; message?: string };
   if (e.status === 400) return badRequest(res, e.message ?? 'Dữ liệu không hợp lệ');
+  if (e.status === 401) return unauthorized(res, e.message ?? 'Vui lòng đăng nhập để tiếp tục');
   if (e.status === 403) return forbidden(res, e.message ?? 'Bạn không có quyền thực hiện thao tác này');
   if (e.status === 404) return notFound(res, e.message ?? 'Không tìm thấy địa điểm');
   return serverError(res, err);
@@ -69,7 +70,7 @@ export const updateStatus = async (req: Request, res: Response) => {
     }
 
     if (!req.user) {
-      return forbidden(res, 'Vui lòng đăng nhập để thực hiện thao tác này');
+      return unauthorized(res, 'Vui lòng đăng nhập để thực hiện thao tác này');
     }
 
     const status = req.body?.status;

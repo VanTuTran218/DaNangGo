@@ -1,5 +1,12 @@
-import nodemailer from 'nodemailer';
-import { approvePartner, rejectPartner, listPartners, getPartnerContact } from './admin.repository';
+import {
+  approvePartner,
+  rejectPartner,
+  listPartners,
+  getPartnerContact,
+  listAdminPlaces,
+  deleteAdminPlace,
+  type AdminPlaceItemRecord,
+} from './admin.repository';
 import { buildPartnerApprovalEmail, buildPartnerRejectionEmail } from '../../utils/emailTemplates';
 
 /** Tái dùng Gmail transporter từ biến môi trường */
@@ -57,4 +64,16 @@ export async function adminRejectPartner(partnerId: number, adminUserId: number)
     await sendPartnerNotification(partnerId, false);
   }
   return ok;
+}
+
+export async function adminListPlaces(params: {
+  category?: string;
+  status?: string;
+  search?: string;
+}): Promise<AdminPlaceItemRecord[]> {
+  return listAdminPlaces(params);
+}
+
+export async function adminDeletePlace(placeId: number): Promise<boolean> {
+  return deleteAdminPlace(placeId);
 }

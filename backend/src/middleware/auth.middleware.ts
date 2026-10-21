@@ -28,12 +28,15 @@ export function requireAuth(sessionType: 'USER' | 'ADMIN' = 'USER'): RequestHand
     let effectiveSession = sessionType;
     let token: string | undefined;
 
-    // Cho phép Admin (admin_access) được ưu tiên gọi các API dùng chung kể cả khi còn cookie access_token cũ
-    if (cookies?.admin_access) {
+    if (sessionType === 'ADMIN' && cookies?.admin_access) {
       token = cookies.admin_access;
       effectiveSession = 'ADMIN';
-    } else if (cookies?.[sessionType === 'ADMIN' ? 'admin_access' : 'access_token']) {
-      token = cookies?.[sessionType === 'ADMIN' ? 'admin_access' : 'access_token'];
+    } else if (cookies?.access_token) {
+      token = cookies.access_token;
+      effectiveSession = 'USER';
+    } else if (cookies?.admin_access) {
+      token = cookies.admin_access;
+      effectiveSession = 'ADMIN';
     } else if (headerToken) {
       token = headerToken;
     }
@@ -135,6 +138,56 @@ export function requireRole(...roles: AccountRole[]): RequestHandler {
     if (!roles.includes(role)) {
       next(new AuthError(403, 'Bạn không có quyền thực hiện thao tác này.'));
       return;
+    }
+    next();
+  };
+}
+
+export function optionalAuth(sessionType: 'USER' | 'ADMIN' = 'USER'): RequestHandler {
+  return async (req, res, next) => {
+    try {
+      const cookies = req.cookies as Record<string, string> | undefined;
+      const authHeader = req.headers.authorization;
+      const headerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7).trim() : undefined;
+      let effectiveSession = sessionType;
+      let token: string | undefined;
+
+      if (sessionType === 'ADMIN' && cookies?.admin_access) {
+        token = cookies.admin_access;
+        effectiveSession = 'ADMIN';
+      } else if (cookies?.access_token) {
+        token = cookies.access_token;
+        effectiveSession = 'USER';
+      } else if (cookies?.admin_access) {
+        token = cookies.admin_access;
+        effectiveSession = 'ADMIN';
+      } else if (headerToken) {
+        token = headerToken;
+      }
+
+      if (!token) return next();
+
+      let userId: number;
+      try {
+        userId = await verifyAccessToken(token, effectiveSession);
+      } catch {
+        const fallbackSession = effectiveSession === 'ADMIN' ? 'USER' : 'ADMIN';
+        userId = await verifyAccessToken(token, fallbackSession);
+      }
+
+      const authDetails = await getAccountAuthDetails(userId);
+      if (authDetails) {
+        res.locals.authUserId = userId;
+        res.locals.authRole = authDetails.role;
+        if (authDetails.partnerId) res.locals.authPartnerId = authDetails.partnerId;
+        req.user = {
+          user_id: userId,
+          role: authDetails.role,
+          ...(authDetails.partnerId ? { partner_id: authDetails.partnerId } : {}),
+        };
+      }
+    } catch {
+      // Ignored for optional auth
     }
     next();
   };

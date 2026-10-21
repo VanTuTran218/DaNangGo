@@ -223,7 +223,7 @@ router.post('/logout-all', requireAuth('USER'), requireRole('USER', 'PARTNER'), 
   res.json({ success: true, message: 'Đã đăng xuất khỏi tất cả thiết bị.' });
 });
 
-router.get('/me', requireAuth('USER'), requireRole('USER', 'PARTNER'), async (_req, res) => {
+router.get('/me', requireAuth('USER'), requireRole('USER', 'PARTNER', 'ADMIN'), async (_req, res) => {
   const user = await getCurrentUser(res.locals.authUserId!);
   res.json({ success: true, data: { user } });
 });

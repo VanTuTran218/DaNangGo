@@ -87,7 +87,7 @@ export async function approvePartner(
       );
 
     const partner = partnerResult.recordset[0];
-    if (!partner || partner.approval_status !== 'PENDING_APPROVAL') {
+    if (!partner || (partner.approval_status !== 'PENDING_APPROVAL' && partner.approval_status !== 'PENDING')) {
       await transaction.rollback();
       return false;
     }
@@ -97,7 +97,7 @@ export async function approvePartner(
       .input('adminUserId', sql.Int, adminUserId)
       .query(`
         UPDATE dbo.partner_profiles
-        SET approval_status = 'ACTIVE',
+        SET approval_status = 'APPROVED',
             approved_by = @adminUserId,
             approved_at = GETDATE()
         WHERE partner_id = @partnerId
@@ -172,4 +172,125 @@ export async function getPartnerContact(
       WHERE pp.partner_id = @partnerId
     `);
   return result.recordset[0] ?? null;
+}
+
+export interface AdminPlaceItemRecord {
+  id: string;
+  name: string;
+  category: 'luutru' | 'amthuc' | 'diemdulich';
+  partnerId?: string;
+  partnerName?: string;
+  address: string;
+  priceText: string;
+  status: 'PENDING' | 'APPROVED' | 'ACTIVE' | 'REJECTED' | 'HIDDEN' | 'LOCKED';
+  createdAt: string;
+  rating: number;
+  reviewCount: number;
+  imageUrl: string;
+}
+
+/** Lấy danh sách địa điểm cho Admin Portal (kèm đối tác sở hữu và ảnh đại diện) */
+export async function listAdminPlaces(params: {
+  category?: string;
+  status?: string;
+  search?: string;
+}): Promise<AdminPlaceItemRecord[]> {
+  const pool = getPool();
+  const whereClauses: string[] = ['1=1'];
+  const request = pool.request();
+
+  if (params.search && params.search.trim() !== '') {
+    whereClauses.push('(p.name LIKE @search OR p.address LIKE @search)');
+    request.input('search', sql.NVarChar(200), `%${params.search.trim()}%`);
+  }
+
+  if (params.category && params.category !== 'ALL') {
+    if (params.category === 'amthuc') {
+      whereClauses.push("p.place_type = 'RESTAURANT'");
+    } else if (params.category === 'luutru') {
+      whereClauses.push("p.place_type = 'ACCOMMODATION'");
+    } else if (params.category === 'diemdulich') {
+      whereClauses.push("p.place_type = 'ATTRACTION'");
+    }
+  }
+
+  if (params.status && params.status !== 'ALL') {
+    if (params.status === 'APPROVED' || params.status === 'ACTIVE') {
+      whereClauses.push("p.status IN ('ACTIVE', 'APPROVED')");
+    } else if (params.status === 'PENDING') {
+      whereClauses.push("p.status = 'PENDING'");
+    } else if (params.status === 'HIDDEN') {
+      whereClauses.push("p.status = 'HIDDEN'");
+    } else if (params.status === 'LOCKED') {
+      whereClauses.push("p.status = 'LOCKED'");
+    }
+  }
+
+  const query = `
+    SELECT 
+      p.place_id,
+      p.name,
+      p.place_type,
+      p.address,
+      p.status,
+      p.partner_id,
+      p.avg_rating,
+      p.review_count,
+      p.created_at,
+      pp.business_name AS partner_name,
+      r.price_min,
+      r.price_max,
+      (
+        SELECT TOP 1 image_url 
+        FROM place_images 
+        WHERE place_id = p.place_id 
+        ORDER BY is_cover DESC, image_id ASC
+      ) AS image_url
+    FROM places p
+    LEFT JOIN partner_profiles pp ON p.partner_id = pp.partner_id
+    LEFT JOIN restaurants r ON p.place_id = r.place_id
+    WHERE ${whereClauses.join(' AND ')}
+    ORDER BY p.created_at DESC, p.place_id DESC
+  `;
+
+  const result = await request.query<any>(query);
+
+  return result.recordset.map((row) => {
+    let cat: 'luutru' | 'amthuc' | 'diemdulich' = 'amthuc';
+    if (row.place_type === 'ACCOMMODATION') cat = 'luutru';
+    else if (row.place_type === 'ATTRACTION') cat = 'diemdulich';
+
+    let priceText = 'Liên hệ';
+    if (row.price_min && row.price_max) {
+      priceText = `${Number(row.price_min).toLocaleString('vi-VN')} - ${Number(row.price_max).toLocaleString('vi-VN')} VNĐ`;
+    } else if (row.price_min) {
+      priceText = `Từ ${Number(row.price_min).toLocaleString('vi-VN')} VNĐ`;
+    }
+
+    return {
+      id: String(row.place_id),
+      name: row.name,
+      category: cat,
+      partnerId: row.partner_id ? String(row.partner_id) : undefined,
+      partnerName: row.partner_name || 'Hệ thống DanangGo',
+      address: row.address || 'Đà Nẵng',
+      priceText,
+      status: (row.status === 'ACTIVE' ? 'APPROVED' : row.status) as any,
+      createdAt: row.created_at ? new Date(row.created_at).toISOString() : new Date().toISOString(),
+      rating: Number(row.avg_rating) || 5.0,
+      reviewCount: Number(row.review_count) || 0,
+      imageUrl: row.image_url || (cat === 'luutru' 
+        ? 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&q=80'
+        : 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&q=80'),
+    };
+  });
+}
+
+/** Xóa mềm địa điểm cho Admin */
+export async function deleteAdminPlace(placeId: number): Promise<boolean> {
+  const pool = getPool();
+  await pool.request().input('id', sql.Int, placeId).query(`
+    UPDATE places SET status = 'HIDDEN', updated_at = GETDATE() WHERE place_id = @id
+  `);
+  return true;
 }

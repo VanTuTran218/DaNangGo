@@ -7,8 +7,9 @@ import type { AdminPlaceItem, PlaceStatus } from '@/types/admin';
 import DataTable, { Column } from '@/components/ui/DataTable';
 import StatusBadge from '@/components/ui/StatusBadge';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
-import { Eye, Check, EyeOff, Trash2, X, MapPin } from 'lucide-react';
+import { Eye, Check, EyeOff, Trash2, X, MapPin, Pencil, Unlock } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 export default function AdminPlacesPage() {
   const [catFilter, setCatFilter] = useState('ALL');
@@ -96,17 +97,34 @@ export default function AdminPlacesPage() {
           >
             <Eye className="w-4 h-4" />
           </button>
+          <Link
+            href={`/admin/dia-diem/${p.id}/sua`}
+            title="Chỉnh sửa địa điểm (Tái sử dụng PlaceForm)"
+            className="p-1.5 rounded-lg text-slate-500 hover:bg-teal-50 hover:text-teal-600 transition-colors"
+          >
+            <Pencil className="w-4 h-4" />
+          </Link>
           {p.status === 'PENDING' && (
             <button
               onClick={() => handleUpdateStatus(p.id, 'APPROVED')}
               disabled={actionLoading}
-              title="Phê duyệt"
+              title="Phê duyệt địa điểm"
               className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50"
             >
               <Check className="w-4 h-4" />
             </button>
           )}
-          {p.status === 'APPROVED' ? (
+          {p.status === 'LOCKED' && (
+            <button
+              onClick={() => handleUpdateStatus(p.id, 'APPROVED')}
+              disabled={actionLoading}
+              title="Mở khóa địa điểm"
+              className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50"
+            >
+              <Unlock className="w-4 h-4" />
+            </button>
+          )}
+          {p.status === 'APPROVED' || p.status === 'ACTIVE' ? (
             <button
               onClick={() => handleUpdateStatus(p.id, 'HIDDEN')}
               disabled={actionLoading}
@@ -195,6 +213,7 @@ export default function AdminPlacesPage() {
                 <option value="APPROVED">Đang hiển thị</option>
                 <option value="PENDING">Chờ duyệt</option>
                 <option value="HIDDEN">Đã ẩn</option>
+                <option value="LOCKED">Bị khóa (LOCKED)</option>
               </select>
             </>
           }

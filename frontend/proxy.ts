@@ -4,8 +4,8 @@ export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
   const adminAccess = request.cookies.get('admin_access')?.value;
   const accessToken = request.cookies.get('access_token')?.value;
-  const hasValidAdminToken = !!adminAccess && adminAccess !== 'mock_token';
-  const hasValidUserToken = !!accessToken && accessToken !== 'mock_partner_token';
+  const hasValidAdminToken = !!adminAccess;
+  const hasValidUserToken = !!accessToken;
 
   if (pathname.startsWith('/admin')) {
     if (pathname === '/admin/login') {

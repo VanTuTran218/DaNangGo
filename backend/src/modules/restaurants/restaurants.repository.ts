@@ -76,7 +76,7 @@ export const createRestaurantTx = async (
       booking_url: data.booking_url,
       partner_id: partner_id,
       promo_label: data.promo_label,
-      status: 'ACTIVE',
+      status: (data.status as any) || 'ACTIVE',
     }, transaction);
 
     // Bước 2: INSERT vào restaurants
@@ -90,6 +90,24 @@ export const createRestaurantTx = async (
         INSERT INTO restaurants (place_id, place_type, cuisine_id, price_min, price_max)
         VALUES (@place_id, 'RESTAURANT', @cuisine_id, @price_min, @price_max)
       `);
+
+    // Bước 3: INSERT vào place_images nếu có
+    if (data.images && Array.isArray(data.images) && data.images.length > 0) {
+      for (let i = 0; i < data.images.length; i++) {
+        const url = String(data.images[i]).trim();
+        if (url) {
+          await transaction
+            .request()
+            .input('place_id', sql.Int, place_id)
+            .input('image_url', sql.NVarChar(500), url)
+            .input('is_cover', sql.Bit, i === 0 ? 1 : 0)
+            .query(`
+              INSERT INTO place_images (place_id, image_url, is_cover)
+              VALUES (@place_id, @image_url, @is_cover)
+            `);
+        }
+      }
+    }
 
     await transaction.commit();
 
@@ -222,6 +240,8 @@ export const updateRestaurantTx = async (
       .input('website', sql.VarChar(255), data.website ?? null)
       .input('booking_url', sql.NVarChar(500), data.booking_url ?? null)
       .input('promo_label', sql.NVarChar(50), data.promo_label ?? null)
+      .input('partner_id', sql.Int, data.partner_id ?? null)
+      .input('status', sql.VarChar(20), data.status ?? null)
       .query(`
         UPDATE places SET
           name        = COALESCE(@name, name),
@@ -234,6 +254,8 @@ export const updateRestaurantTx = async (
           website     = COALESCE(@website, website),
           booking_url = COALESCE(@booking_url, booking_url),
           promo_label = COALESCE(@promo_label, promo_label),
+          partner_id  = COALESCE(@partner_id, partner_id),
+          status      = COALESCE(@status, status),
           updated_at  = GETDATE()
         WHERE place_id = @place_id
       `);
@@ -251,6 +273,28 @@ export const updateRestaurantTx = async (
           price_max  = COALESCE(@price_max, price_max)
         WHERE place_id = @place_id
       `);
+
+    if (data.images && Array.isArray(data.images)) {
+      await transaction
+        .request()
+        .input('place_id', sql.Int, place_id)
+        .query('DELETE FROM place_images WHERE place_id = @place_id');
+
+      for (let i = 0; i < data.images.length; i++) {
+        const url = String(data.images[i]).trim();
+        if (url) {
+          await transaction
+            .request()
+            .input('place_id', sql.Int, place_id)
+            .input('image_url', sql.NVarChar(500), url)
+            .input('is_cover', sql.Bit, i === 0 ? 1 : 0)
+            .query(`
+              INSERT INTO place_images (place_id, image_url, is_cover)
+              VALUES (@place_id, @image_url, @is_cover)
+            `);
+        }
+      }
+    }
 
     await transaction.commit();
   } catch (err) {

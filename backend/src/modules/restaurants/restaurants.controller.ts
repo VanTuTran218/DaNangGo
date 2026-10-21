@@ -1,13 +1,14 @@
 import type { Request, Response } from 'express';
 import * as service from './restaurants.service';
-import { ok, created, badRequest, notFound, forbidden, serverError } from '../../utils/response';
+import { ok, created, badRequest, notFound, forbidden, unauthorized, serverError } from '../../utils/response';
 
 // Hàm xử lý lỗi dùng chung trong controller
 const handleError = (res: Response, err: unknown) => {
   const e = err as { status?: number; message?: string };
   if (e.status === 400) return badRequest(res, e.message ?? 'Dữ liệu không hợp lệ');
-  if (e.status === 403) return forbidden(res, e.message);
-  if (e.status === 404) return notFound(res, e.message);
+  if (e.status === 401) return unauthorized(res, e.message ?? 'Vui lòng đăng nhập để tiếp tục');
+  if (e.status === 403) return forbidden(res, e.message ?? 'Bạn không có quyền thực hiện thao tác này');
+  if (e.status === 404) return notFound(res, e.message ?? 'Không tìm thấy nhà hàng');
   return serverError(res, err);
 };
 
@@ -36,7 +37,7 @@ export const getOne = async (req: Request, res: Response) => {
 // ─── POST /api/restaurants ────────────────────────────────────────────────────
 export const create = async (req: Request, res: Response) => {
   try {
-    if (!req.user) return forbidden(res, 'Vui lòng đăng nhập để tiếp tục');
+    if (!req.user) return unauthorized(res, 'Vui lòng đăng nhập để tiếp tục');
     const data = await service.createRestaurant(
       req.body as Record<string, unknown>,
       req.user
@@ -52,7 +53,7 @@ export const update = async (req: Request, res: Response) => {
   try {
     const id = parseInt(String(req.params['id'] ?? ''));
     if (isNaN(id)) return badRequest(res, 'ID không hợp lệ');
-    if (!req.user) return forbidden(res, 'Vui lòng đăng nhập để tiếp tục');
+    if (!req.user) return unauthorized(res, 'Vui lòng đăng nhập để tiếp tục');
     const data = await service.updateRestaurant(
       id,
       req.body as Record<string, unknown>,
@@ -69,7 +70,7 @@ export const remove = async (req: Request, res: Response) => {
   try {
     const id = parseInt(String(req.params['id'] ?? ''));
     if (isNaN(id)) return badRequest(res, 'ID không hợp lệ');
-    if (!req.user) return forbidden(res, 'Vui lòng đăng nhập để tiếp tục');
+    if (!req.user) return unauthorized(res, 'Vui lòng đăng nhập để tiếp tục');
     const data = await service.deleteRestaurant(
       id,
       req.user

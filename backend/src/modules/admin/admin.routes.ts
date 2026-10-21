@@ -1,7 +1,13 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { requireAuth, requireRole } from '../../middleware/auth.middleware';
-import { adminApprovePartner, adminListPartners, adminRejectPartner } from './admin.service';
+import {
+  adminApprovePartner,
+  adminListPartners,
+  adminRejectPartner,
+  adminListPlaces,
+  adminDeletePlace,
+} from './admin.service';
 import * as placesController from '../places/places.controller';
 
 const adminPartnersRouter = Router();
@@ -44,7 +50,37 @@ adminPartnersRouter.post('/:id/reject', async (req, res) => {
 
 export const adminPlacesRouter = Router();
 adminPlacesRouter.use(requireAuth('ADMIN'), requireRole('ADMIN'));
+
+/** GET /api/admin/places?category=amthuc&status=APPROVED&search= */
+adminPlacesRouter.get('/', async (req, res) => {
+  try {
+    const category = typeof req.query.category === 'string' ? req.query.category : undefined;
+    const status = typeof req.query.status === 'string' ? req.query.status : undefined;
+    const search = typeof req.query.search === 'string' ? req.query.search : undefined;
+    const places = await adminListPlaces({ category, status, search });
+    res.json({ success: true, data: places });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Lỗi tải danh sách địa điểm' });
+  }
+});
+
+/** PATCH & PUT /api/admin/places/:id/status */
 adminPlacesRouter.patch('/:id/status', placesController.updateStatus);
 adminPlacesRouter.put('/:id/status', placesController.updateStatus);
+
+/** DELETE /api/admin/places/:id */
+adminPlacesRouter.delete('/:id', async (req, res) => {
+  try {
+    const id = parseInt(String(req.params.id));
+    if (isNaN(id) || id <= 0) {
+      res.status(400).json({ success: false, message: 'ID không hợp lệ' });
+      return;
+    }
+    await adminDeletePlace(id);
+    res.json({ success: true, message: 'Đã xóa địa điểm khỏi hệ thống.' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Lỗi xóa địa điểm' });
+  }
+});
 
 export default adminPartnersRouter;

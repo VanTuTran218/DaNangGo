@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { requireAuth, requireRole } from '../../middleware/auth.middleware';
+import { requireAuth, requireRole, optionalAuth } from '../../middleware/auth.middleware';
 import * as controller from './restaurants.controller';
 import * as menuController from '../menu-items/menu-items.controller';
 
@@ -20,9 +20,9 @@ router.get('/:id', controller.getOne);
 
 /**
  * GET /api/restaurants/:id/menu-items
- * Lấy danh sách món ăn của nhà hàng (công khai)
+ * Lấy danh sách món ăn của nhà hàng (công khai, nếu là Partner sở hữu hoặc Admin thì thấy cả món đã ẩn)
  */
-router.get('/:id/menu-items', menuController.getByRestaurant);
+router.get('/:id/menu-items', optionalAuth(), menuController.getByRestaurant);
 
 /**
  * POST /api/restaurants/:id/menu-items

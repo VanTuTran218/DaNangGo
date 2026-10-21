@@ -1,6 +1,6 @@
 export type ServiceType = 'STAY' | 'TABLE' | 'TICKET';
 export type PartnerPlaceCategory = 'luutru' | 'amthuc' | 'diemdulich';
-export type PartnerPlaceStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'HIDDEN';
+export type PartnerPlaceStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'HIDDEN' | 'ACTIVE' | 'LOCKED';
 export type BookingStatus = 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
 export type PaymentMethod = 'CASH' | 'TRANSFER';
 export type PartnerAccountStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'LOCKED';
@@ -14,11 +14,15 @@ export interface PartnerDashboardStats {
 
 export interface PartnerPlace {
   id: string;
+  placeId?: number;
   name: string;
   category: PartnerPlaceCategory;
   description: string;
   address: string;
   area: string;
+  districtId?: number;
+  cuisineId?: number;
+  cuisineName?: string;
   priceMin: number;
   priceMax?: number;
   priceUnit?: string;
@@ -29,6 +33,11 @@ export interface PartnerPlace {
   lat: number;
   lng: number;
   status: PartnerPlaceStatus;
+  viewCount?: number;
+  bookingUrl?: string;
+  phone?: string;
+  website?: string;
+  partnerId?: number;
   rejectReason?: string;
   createdAt: string;
 }

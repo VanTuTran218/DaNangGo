@@ -8,6 +8,7 @@ import type { PartnerProfile } from '@/types/partner';
 import { Clock, AlertTriangle } from 'lucide-react';
 import PartnerSidebar from '@/components/partner/PartnerSidebar';
 import PartnerHeader from '@/components/partner/PartnerHeader';
+import ScrollProgress from '@/components/partner/ScrollProgress';
 
 export default function PartnerDashboardLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
@@ -47,6 +48,7 @@ export default function PartnerDashboardLayout({ children }: { children: ReactNo
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 flex">
+      <ScrollProgress />
       <PartnerSidebar mobileOpen={mobileOpen} onCloseMobile={() => setMobileOpen(false)} />
       <div className="flex-1 md:pl-64 flex flex-col min-w-0">
         <PartnerHeader profile={profile} onOpenMobileMenu={() => setMobileOpen(true)} />

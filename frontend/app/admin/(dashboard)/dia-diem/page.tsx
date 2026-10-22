@@ -1,30 +1,44 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useAsyncData } from '@/hooks/useAsyncData';
-import { getContentPlaces, lockContentPlace, unlockContentPlace } from '@/lib/api/admin-content';
-import type { ContentPlaceItem } from '@/types/admin-content';
-import DataTable, { Column } from '@/components/ui/DataTable';
-import StatusBadge from '@/components/ui/StatusBadge';
-import ConfirmDialog from '@/components/ui/ConfirmDialog';
-import { Eye, Lock, Unlock, X, MapPin, Building2 } from 'lucide-react';
+import { useState } from "react";
+import { useAsyncData } from "@/hooks/useAsyncData";
+import {
+  getContentPlaces,
+  lockContentPlace,
+  unlockContentPlace,
+} from "@/lib/api/admin-content";
+import type { ContentPlaceItem } from "@/types/admin-content";
+import DataTable, { Column } from "@/components/ui/DataTable";
+import StatusBadge from "@/components/ui/StatusBadge";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import { Eye, Lock, Unlock, X, MapPin, Building2 } from "lucide-react";
 
-const CATEGORY_LABEL: Record<ContentPlaceItem['category'], string> = {
-  luutru: 'Lưu trú',
-  amthuc: 'Ẩm thực',
-  diemdulich: 'Điểm du lịch',
+const CATEGORY_LABEL: Record<ContentPlaceItem["category"], string> = {
+  luutru: "Lưu trú",
+  amthuc: "Ẩm thực",
+  diemdulich: "Điểm du lịch",
 };
 
 const selectClass =
-  'px-3 py-2 text-xs font-semibold bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500';
+  "px-3 py-2 text-xs font-semibold bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500";
 
 function errorMessage(err: unknown, fallback: string): string {
   return err instanceof Error && err.message ? err.message : fallback;
 }
 
-function Thumb({ src, name, size }: { src: string | null; name: string; size: string }) {
+function Thumb({
+  src,
+  name,
+  size,
+}: {
+  src: string | null;
+  name: string;
+  size: string;
+}) {
   return (
-    <div className={`relative ${size} rounded-xl overflow-hidden bg-gray-100 flex-shrink-0 flex items-center justify-center`}>
+    <div
+      className={`relative ${size} rounded-xl overflow-hidden bg-gray-100 flex-shrink-0 flex items-center justify-center`}
+    >
       {src ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={src} alt={name} className="w-full h-full object-cover" />
@@ -36,24 +50,41 @@ function Thumb({ src, name, size }: { src: string | null; name: string; size: st
 }
 
 export default function AdminPlacesPage() {
-  const [catFilter, setCatFilter] = useState('ALL');
-  const [statusFilter, setStatusFilter] = useState('ALL');
-  const [selectedPlace, setSelectedPlace] = useState<ContentPlaceItem | null>(null);
-  const [lockingPlace, setLockingPlace] = useState<ContentPlaceItem | null>(null);
-  const [unlockingPlace, setUnlockingPlace] = useState<ContentPlaceItem | null>(null);
+  const [catFilter, setCatFilter] = useState("ALL");
+  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [selectedPlace, setSelectedPlace] = useState<ContentPlaceItem | null>(
+    null,
+  );
+  const [lockingPlace, setLockingPlace] = useState<ContentPlaceItem | null>(
+    null,
+  );
+  const [unlockingPlace, setUnlockingPlace] = useState<ContentPlaceItem | null>(
+    null,
+  );
   const [actionLoading, setActionLoading] = useState(false);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error";
+  } | null>(null);
 
-  const { data: places, loading, error, reload } = useAsyncData(
+  const {
+    data: places,
+    loading,
+    error,
+    reload,
+  } = useAsyncData(
     () =>
       getContentPlaces({
-        category: catFilter as ContentPlaceItem['category'] | 'ALL',
-        status: statusFilter as ContentPlaceItem['status'] | 'ALL',
+        category: catFilter as ContentPlaceItem["category"] | "ALL",
+        status: statusFilter as ContentPlaceItem["status"] | "ALL",
       }),
     [catFilter, statusFilter],
   );
 
-  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+  const showToast = (
+    message: string,
+    type: "success" | "error" = "success",
+  ) => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3500);
   };
@@ -62,11 +93,11 @@ export default function AdminPlacesPage() {
     if (!lockingPlace) return;
     setActionLoading(true);
     try {
-      showToast(await lockContentPlace(lockingPlace.id, reason ?? ''));
+      showToast(await lockContentPlace(lockingPlace.id, reason ?? ""));
       setLockingPlace(null);
       reload();
     } catch (err) {
-      showToast(errorMessage(err, 'Khóa địa điểm thất bại'), 'error');
+      showToast(errorMessage(err, "Khóa địa điểm thất bại"), "error");
     } finally {
       setActionLoading(false);
     }
@@ -80,7 +111,7 @@ export default function AdminPlacesPage() {
       setUnlockingPlace(null);
       reload();
     } catch (err) {
-      showToast(errorMessage(err, 'Mở khóa địa điểm thất bại'), 'error');
+      showToast(errorMessage(err, "Mở khóa địa điểm thất bại"), "error");
     } finally {
       setActionLoading(false);
     }
@@ -88,33 +119,39 @@ export default function AdminPlacesPage() {
 
   const columns: Column<ContentPlaceItem>[] = [
     {
-      key: 'name',
-      header: 'Địa điểm',
+      key: "name",
+      header: "Địa điểm",
       sortable: true,
       render: (p) => (
         <div className="flex items-center gap-3">
           <Thumb src={p.imageUrl} name={p.name} size="w-12 h-12" />
           <div>
             <p className="font-bold text-gray-900">{p.name}</p>
-            <p className="text-xs text-gray-500">{[p.address, p.districtName].filter(Boolean).join(', ')}</p>
+            <p className="text-xs text-gray-500">
+              {[p.address, p.districtName].filter(Boolean).join(", ")}
+            </p>
           </div>
         </div>
       ),
     },
     {
-      key: 'category',
-      header: 'Phân loại',
+      key: "category",
+      header: "Phân loại",
       render: (p) => (
         <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-teal-50 text-teal-700">
           {CATEGORY_LABEL[p.category]}
         </span>
       ),
     },
-    { key: 'priceText', header: 'Khoảng giá' },
-    { key: 'status', header: 'Trạng thái', render: (p) => <StatusBadge status={p.status} /> },
+    { key: "priceText", header: "Khoảng giá" },
     {
-      key: 'actions',
-      header: 'Thao tác',
+      key: "status",
+      header: "Trạng thái",
+      render: (p) => <StatusBadge status={p.status} />,
+    },
+    {
+      key: "actions",
+      header: "Thao tác",
       render: (p) => (
         <div className="flex items-center gap-1.5">
           <button
@@ -124,7 +161,7 @@ export default function AdminPlacesPage() {
           >
             <Eye className="w-4 h-4" />
           </button>
-          {p.status === 'LOCKED' ? (
+          {p.status === "LOCKED" ? (
             <button
               onClick={() => setUnlockingPlace(p)}
               disabled={actionLoading}
@@ -151,15 +188,22 @@ export default function AdminPlacesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Quản lý nội dung địa điểm</h1>
-        <p className="text-sm text-gray-500">Xem toàn bộ địa điểm trên hệ thống, khóa hoặc mở khóa địa điểm vi phạm.</p>
+        <h1 className="text-2xl font-bold text-gray-900">
+          Quản lý nội dung địa điểm
+        </h1>
+        <p className="text-sm text-gray-500">
+          Xem toàn bộ địa điểm trên hệ thống, khóa hoặc mở khóa địa điểm vi
+          phạm.
+        </p>
       </div>
 
       {toast && (
         <div
           role="alert"
           className={`p-4 rounded-xl border text-sm font-semibold flex items-center justify-between ${
-            toast.type === 'error' ? 'bg-red-50 text-red-700 border-red-200' : 'bg-teal-50 text-teal-700 border-teal-200'
+            toast.type === "error"
+              ? "bg-red-50 text-red-700 border-red-200"
+              : "bg-teal-50 text-teal-700 border-teal-200"
           }`}
         >
           <span>{toast.message}</span>
@@ -171,8 +215,13 @@ export default function AdminPlacesPage() {
 
       {error ? (
         <div className="p-6 bg-red-50 rounded-2xl border border-red-200 text-red-700">
-          <p className="font-semibold mb-2" role="alert">{error}</p>
-          <button onClick={reload} className="px-4 py-2 bg-red-600 text-white rounded-xl font-semibold text-xs">
+          <p className="font-semibold mb-2" role="alert">
+            {error}
+          </p>
+          <button
+            onClick={reload}
+            className="px-4 py-2 bg-red-600 text-white rounded-xl font-semibold text-xs"
+          >
             Thử lại
           </button>
         </div>
@@ -186,13 +235,21 @@ export default function AdminPlacesPage() {
           rowKey={(p) => p.id}
           filterSlot={
             <>
-              <select value={catFilter} onChange={(e) => setCatFilter(e.target.value)} className={selectClass}>
+              <select
+                value={catFilter}
+                onChange={(e) => setCatFilter(e.target.value)}
+                className={selectClass}
+              >
                 <option value="ALL">Tất cả loại hình</option>
                 <option value="luutru">Lưu trú</option>
                 <option value="amthuc">Ẩm thực</option>
                 <option value="diemdulich">Điểm du lịch</option>
               </select>
-              <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className={selectClass}>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className={selectClass}
+              >
                 <option value="ALL">Tất cả trạng thái</option>
                 <option value="ACTIVE">Đang hoạt động</option>
                 <option value="PENDING">Chờ duyệt</option>
@@ -217,16 +274,42 @@ export default function AdminPlacesPage() {
             </button>
             <div className="flex items-center gap-3">
               <MapPin className="w-6 h-6 text-teal-600" />
-              <h3 className="text-lg font-bold text-gray-900">{selectedPlace.name}</h3>
+              <h3 className="text-lg font-bold text-gray-900">
+                {selectedPlace.name}
+              </h3>
             </div>
             <div className="space-y-2 text-sm text-gray-700">
-              <p><span className="font-semibold text-gray-500">Loại hình:</span> {CATEGORY_LABEL[selectedPlace.category]}</p>
-              <p><span className="font-semibold text-gray-500">Đối tác:</span> {selectedPlace.partnerName || 'Không có (do Admin tạo)'}</p>
-              <p><span className="font-semibold text-gray-500">Địa chỉ:</span> {[selectedPlace.address, selectedPlace.districtName].filter(Boolean).join(', ')}</p>
-              <p><span className="font-semibold text-gray-500">Khoảng giá:</span> {selectedPlace.priceText}</p>
-              <p><span className="font-semibold text-gray-500">Đánh giá:</span> ⭐ {selectedPlace.rating.toFixed(1)} ({selectedPlace.reviewCount} đánh giá)</p>
-              <p><span className="font-semibold text-gray-500">Lượt xem:</span> {selectedPlace.viewCount}</p>
-              <p className="flex items-center gap-2"><span className="font-semibold text-gray-500">Trạng thái:</span> <StatusBadge status={selectedPlace.status} /></p>
+              <p>
+                <span className="font-semibold text-gray-500">Loại hình:</span>{" "}
+                {CATEGORY_LABEL[selectedPlace.category]}
+              </p>
+              <p>
+                <span className="font-semibold text-gray-500">Đối tác:</span>{" "}
+                {selectedPlace.partnerName || "Không có (do Admin tạo)"}
+              </p>
+              <p>
+                <span className="font-semibold text-gray-500">Địa chỉ:</span>{" "}
+                {[selectedPlace.address, selectedPlace.districtName]
+                  .filter(Boolean)
+                  .join(", ")}
+              </p>
+              <p>
+                <span className="font-semibold text-gray-500">Khoảng giá:</span>{" "}
+                {selectedPlace.priceText}
+              </p>
+              <p>
+                <span className="font-semibold text-gray-500">Đánh giá:</span>{" "}
+                ⭐ {selectedPlace.rating.toFixed(1)} (
+                {selectedPlace.reviewCount} đánh giá)
+              </p>
+              <p>
+                <span className="font-semibold text-gray-500">Lượt xem:</span>{" "}
+                {selectedPlace.viewCount}
+              </p>
+              <p className="flex items-center gap-2">
+                <span className="font-semibold text-gray-500">Trạng thái:</span>{" "}
+                <StatusBadge status={selectedPlace.status} />
+              </p>
             </div>
             <div className="flex justify-end pt-2">
               <button
@@ -246,7 +329,7 @@ export default function AdminPlacesPage() {
         onClose={() => setLockingPlace(null)}
         onConfirm={handleLock}
         title="Khóa địa điểm"
-        description={`Địa điểm "${lockingPlace?.name ?? ''}" sẽ biến mất với người dùng và đối tác không tự mở lại được.`}
+        description={`Địa điểm "${lockingPlace?.name ?? ""}" sẽ biến mất với người dùng và đối tác không tự mở lại được.`}
         variant="danger"
         confirmText="Khóa địa điểm"
         requireReason
@@ -260,7 +343,7 @@ export default function AdminPlacesPage() {
         onClose={() => setUnlockingPlace(null)}
         onConfirm={handleUnlock}
         title="Mở khóa địa điểm"
-        description={`Khôi phục địa điểm "${unlockingPlace?.name ?? ''}" về trạng thái trước khi bị khóa?`}
+        description={`Khôi phục địa điểm "${unlockingPlace?.name ?? ""}" về trạng thái trước khi bị khóa?`}
         variant="teal"
         confirmText="Mở khóa"
         loading={actionLoading}

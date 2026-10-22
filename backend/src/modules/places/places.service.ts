@@ -1,9 +1,9 @@
-import { getPool, sql } from '../../config/db';
+import { getPool, sql } from "../../config/db";
 import {
   getAccommodationDetail,
   applyAccommodationFilter,
   ACCOMMODATION_MIN_PRICE_SQL,
-} from '../accommodations/accommodations.service';
+} from "../accommodations/accommodations.service";
 
 export interface PlaceImage {
   image_id: number;
@@ -93,7 +93,9 @@ export interface PlacesQueryParams {
 /**
  * Lấy danh sách địa điểm (hỗ trợ lọc lưu trú, ẩm thực, điểm du lịch, theo quận, giá, tiện nghi, sắp xếp)
  */
-export async function getAllPlaces(query: PlacesQueryParams = {}): Promise<Place[]> {
+export async function getAllPlaces(
+  query: PlacesQueryParams = {},
+): Promise<Place[]> {
   const pool = getPool();
   const request = pool.request();
   const conditions: string[] = [];
@@ -102,48 +104,48 @@ export async function getAllPlaces(query: PlacesQueryParams = {}): Promise<Place
   let resolvedType = query.type || query.place_type;
   if (!resolvedType && query.category) {
     const cat = query.category.toLowerCase();
-    if (cat === 'luutru') resolvedType = 'ACCOMMODATION';
-    else if (cat === 'amthuc') resolvedType = 'RESTAURANT';
-    else if (cat === 'diemdulich') resolvedType = 'ATTRACTION';
+    if (cat === "luutru") resolvedType = "ACCOMMODATION";
+    else if (cat === "amthuc") resolvedType = "RESTAURANT";
+    else if (cat === "diemdulich") resolvedType = "ATTRACTION";
   }
-  if (resolvedType === 'ALL') resolvedType = undefined;
+  if (resolvedType === "ALL") resolvedType = undefined;
 
   if (resolvedType) {
-    request.input('placeType', sql.VarChar(20), resolvedType);
-    conditions.push('p.place_type = @placeType');
+    request.input("placeType", sql.VarChar(20), resolvedType);
+    conditions.push("p.place_type = @placeType");
   }
 
   // 2. Trạng thái (mặc định lấy ACTIVE cho khách)
-  const status = query.status || 'ACTIVE';
-  if (status !== 'ALL') {
-    request.input('status', sql.VarChar(20), status);
-    conditions.push('p.status = @status');
+  const status = query.status || "ACTIVE";
+  if (status !== "ALL") {
+    request.input("status", sql.VarChar(20), status);
+    conditions.push("p.status = @status");
   }
 
   // 3. Quận
   const district = query.district_id ?? query.districtId;
-  if (district && district !== 'ALL') {
-    request.input('districtId', sql.Int, Number(district));
-    conditions.push('p.district_id = @districtId');
+  if (district && district !== "ALL") {
+    request.input("districtId", sql.Int, Number(district));
+    conditions.push("p.district_id = @districtId");
   }
 
   // 4. Đánh giá tối thiểu
   const minRating = query.min_rating ?? query.minRating;
-  if (minRating && minRating !== 'ALL') {
-    request.input('minRating', sql.Decimal(3, 2), Number(minRating));
-    conditions.push('p.avg_rating >= @minRating');
+  if (minRating && minRating !== "ALL") {
+    request.input("minRating", sql.Decimal(3, 2), Number(minRating));
+    conditions.push("p.avg_rating >= @minRating");
   }
 
   // 5. Tìm kiếm từ khóa (tên hoặc địa chỉ)
   const keyword = (query.q ?? query.search)?.trim();
   if (keyword) {
-    request.input('keyword', sql.NVarChar(100), `%${keyword}%`);
-    conditions.push('(p.name LIKE @keyword OR p.address LIKE @keyword)');
+    request.input("keyword", sql.NVarChar(100), `%${keyword}%`);
+    conditions.push("(p.name LIKE @keyword OR p.address LIKE @keyword)");
   }
 
   // 6. Áp dụng bộ lọc riêng của Lưu trú (giá phòng, tiện nghi, sức chứa, loại phòng/loại lưu trú)
   if (
-    resolvedType === 'ACCOMMODATION' ||
+    resolvedType === "ACCOMMODATION" ||
     query.min_price !== undefined ||
     query.max_price !== undefined ||
     query.capacity !== undefined ||
@@ -158,31 +160,33 @@ export async function getAllPlaces(query: PlacesQueryParams = {}): Promise<Place
     }
   }
 
-  const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+  const whereClause = conditions.length
+    ? `WHERE ${conditions.join(" AND ")}`
+    : "";
 
   // 7. Sắp xếp
-  let orderBy = 'p.place_id DESC';
-  if (query.sort === 'price_asc') {
+  let orderBy = "p.place_id DESC";
+  if (query.sort === "price_asc") {
     orderBy = `CASE WHEN p.place_type = 'ACCOMMODATION' THEN ${ACCOMMODATION_MIN_PRICE_SQL} WHEN p.place_type = 'RESTAURANT' THEN r.price_min ELSE a.ticket_price END ASC`;
-  } else if (query.sort === 'price_desc') {
+  } else if (query.sort === "price_desc") {
     orderBy = `CASE WHEN p.place_type = 'ACCOMMODATION' THEN ${ACCOMMODATION_MIN_PRICE_SQL} WHEN p.place_type = 'RESTAURANT' THEN r.price_min ELSE a.ticket_price END DESC`;
-  } else if (query.sort === 'rating_desc') {
-    orderBy = 'p.avg_rating DESC, p.review_count DESC';
-  } else if (query.sort === 'popular') {
-    orderBy = 'p.view_count DESC, p.avg_rating DESC';
-  } else if (query.sort === 'newest') {
-    orderBy = 'p.created_at DESC';
+  } else if (query.sort === "rating_desc") {
+    orderBy = "p.avg_rating DESC, p.review_count DESC";
+  } else if (query.sort === "popular") {
+    orderBy = "p.view_count DESC, p.avg_rating DESC";
+  } else if (query.sort === "newest") {
+    orderBy = "p.created_at DESC";
   }
 
   // 8. Phân trang
-  let paginationSql = '';
+  let paginationSql = "";
   if (query.limit) {
     const limit = Math.max(1, Math.min(100, Number(query.limit) || 20));
     const page = Math.max(1, Number(query.page) || 1);
     const offset = (page - 1) * limit;
-    request.input('offset', sql.Int, offset);
-    request.input('limit', sql.Int, limit);
-    paginationSql = 'OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY';
+    request.input("offset", sql.Int, offset);
+    request.input("limit", sql.Int, limit);
+    paginationSql = "OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY";
   }
 
   const result = await request.query<Place>(`
@@ -224,10 +228,7 @@ export async function getAllPlaces(query: PlacesQueryParams = {}): Promise<Place
  */
 export async function getPlaceById(id: number): Promise<Place | null> {
   const pool = getPool();
-  const result = await pool
-    .request()
-    .input('id', sql.Int, id)
-    .query(`
+  const result = await pool.request().input("id", sql.Int, id).query(`
       SELECT p.*,
         d.name AS district_name,
         (SELECT TOP 1 image_url
@@ -243,9 +244,7 @@ export async function getPlaceById(id: number): Promise<Place | null> {
   if (!place) return null;
 
   // Lấy toàn bộ danh sách ảnh
-  const imagesResult = await pool
-    .request()
-    .input('id', sql.Int, id)
+  const imagesResult = await pool.request().input("id", sql.Int, id)
     .query<PlaceImage>(`
       SELECT image_id, image_url, is_cover
       FROM dbo.place_images
@@ -255,13 +254,16 @@ export async function getPlaceById(id: number): Promise<Place | null> {
   place.images = imagesResult.recordset;
 
   // Tăng view_count ở background
-  pool.request()
-    .input('id', sql.Int, id)
-    .query('UPDATE dbo.places SET view_count = ISNULL(view_count, 0) + 1 WHERE place_id = @id')
+  pool
+    .request()
+    .input("id", sql.Int, id)
+    .query(
+      "UPDATE dbo.places SET view_count = ISNULL(view_count, 0) + 1 WHERE place_id = @id",
+    )
     .catch(() => {});
 
   // Nếu là cơ sở lưu trú (ACCOMMODATION), gọi phần chi tiết của Tin: phòng, tiện nghi, checkin/checkout, booking_url
-  if (place.place_type === 'ACCOMMODATION') {
+  if (place.place_type === "ACCOMMODATION") {
     try {
       const accDetail = await getAccommodationDetail(id);
       return {
@@ -290,11 +292,10 @@ export async function createPlace(data: {
   const pool = getPool();
   const result = await pool
     .request()
-    .input('name', sql.NVarChar(255), data.name)
-    .input('description', sql.NVarChar(sql.MAX), data.description || null)
-    .input('address', sql.NVarChar(500), data.address || null)
-    .input('districtId', sql.Int, data.district_id || null)
-    .query(`
+    .input("name", sql.NVarChar(255), data.name)
+    .input("description", sql.NVarChar(sql.MAX), data.description || null)
+    .input("address", sql.NVarChar(500), data.address || null)
+    .input("districtId", sql.Int, data.district_id || null).query(`
       INSERT INTO dbo.places (name, description, address, district_id, status)
       OUTPUT INSERTED.*
       VALUES (@name, @description, @address, @districtId, 'ACTIVE')

@@ -268,10 +268,22 @@ export async function rotateRefreshToken(input: {
         INSERT INTO dbo.refresh_tokens (user_id, token_hash, expires_at, user_agent, ip)
         VALUES (@userId, @tokenHash, @expiresAt, @userAgent, @ip)
       `);
+
+    // Load the account before committing token rotation. If this read fails,
+    // the transaction rolls back and the browser's existing refresh token remains usable.
+    const accountResult = await new sql.Request(transaction)
+      .input('userId', sql.Int, session.user_id)
+      .query<AuthAccountRecord>(`${accountSelect} WHERE u.user_id = @userId`);
+    const account = accountResult.recordset[0];
+    if (!account) {
+      await transaction.rollback();
+      return null;
+    }
+
     await transaction.commit();
-    return findAccountByUserId(session.user_id);
+    return account;
   } catch (error) {
-    await transaction.rollback();
+    try { await transaction.rollback(); } catch { /* preserve the original database error */ }
     throw error;
   }
 }

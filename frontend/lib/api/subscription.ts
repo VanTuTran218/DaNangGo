@@ -58,7 +58,7 @@ export async function registerSubscription(
  */
 export async function submitPaymentProof(
   subscriptionId: number,
-  paymentReference: string,
+  paymentReference?: string,
   paymentProofNote?: string
 ): Promise<PartnerSubscriptionItem> {
   const res = await apiRequest<PartnerSubscriptionItem>(`/api/subscriptions/${subscriptionId}/payment-proof`, {

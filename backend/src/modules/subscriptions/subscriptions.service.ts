@@ -1,4 +1,5 @@
 import { AuthError } from '../auth/auth.errors';
+import { randomBytes } from 'node:crypto';
 import {
   adminConfirmSubscriptionPayment,
   adminListSubscriptions,
@@ -21,16 +22,16 @@ import {
 
 // Thông tin tài khoản ngân hàng nhận chuyển khoản của DaNangGo
 export const DANANGGO_BANK_INFO = {
-  bankName: 'MB Bank (Ngân hàng Quân Đội)',
-  accountNumber: '999988886868',
-  accountHolder: 'DANANGGO TRAVEL CO LTD',
-  branch: 'Chi nhánh Đà Nẵng',
+  bankName: process.env.SEPAY_BANK_NAME?.trim() || '',
+  bankCode: process.env.SEPAY_BANK_CODE?.trim() || '',
+  accountNumber: process.env.SEPAY_BANK_ACCOUNT?.trim() || '',
+  accountHolder: process.env.SEPAY_BANK_ACCOUNT_HOLDER?.trim() || '',
+  branch: process.env.SEPAY_BANK_BRANCH?.trim() || '',
 };
 
 function generateTransactionCode(): string {
-  const timestamp = Date.now().toString(36).toUpperCase();
-  const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase();
-  return `DNG-SUB-${timestamp}-${randomPart}`;
+  // DNG + 10 hex chars fits SePay's configurable 3-letter prefix + up-to-10-char suffix format.
+  return `DNG${randomBytes(5).toString('hex').toUpperCase()}`;
 }
 
 export function calculateRemainingDays(endDate: Date | null): number {
@@ -43,6 +44,8 @@ export function calculateRemainingDays(endDate: Date | null): number {
 export interface FormattedSubscription {
   id: number;
   transactionCode: string;
+  bankInfo: typeof DANANGGO_BANK_INFO;
+  qrUrl: string | null;
   partnerId: number;
   packageId: number;
   packageName: string;
@@ -68,6 +71,7 @@ export interface FormattedSubscription {
   contactPhone?: string | null | undefined;
   partnerEmail?: string | undefined;
   partnerUserName?: string | undefined;
+  automaticConfirmationEnabled: boolean;
 }
 
 export function formatSubscription(row: PartnerSubscriptionRow): FormattedSubscription {
@@ -77,6 +81,8 @@ export function formatSubscription(row: PartnerSubscriptionRow): FormattedSubscr
   return {
     id: row.subscription_id,
     transactionCode: row.transaction_code,
+    bankInfo: DANANGGO_BANK_INFO,
+    qrUrl: buildBankQrUrl(row.price, row.transaction_code),
     partnerId: row.partner_id,
     packageId: row.package_id,
     packageName: row.package_name,
@@ -102,6 +108,7 @@ export function formatSubscription(row: PartnerSubscriptionRow): FormattedSubscr
     contactPhone: row.contact_phone,
     partnerEmail: row.partner_email,
     partnerUserName: row.partner_user_name,
+    automaticConfirmationEnabled: Boolean(process.env.SEPAY_WEBHOOK_SECRET?.trim()),
   };
 }
 
@@ -146,6 +153,7 @@ export async function createSubscriptionService(
   subscription: FormattedSubscription;
   bankInfo: typeof DANANGGO_BANK_INFO;
   transferSyntax: string;
+  qrUrl: string | null;
 }> {
   if (!Number.isSafeInteger(packageId) || packageId < 1) {
     throw new AuthError(400, 'Gói đăng ký không hợp lệ.');
@@ -176,13 +184,21 @@ export async function createSubscriptionService(
   });
 
   const formatted = formatSubscription(createdRecord);
-  const transferSyntax = `DANANGGO ${transactionCode}`;
+  const transferSyntax = transactionCode;
+  const qrUrl = buildBankQrUrl(pkg.price, transferSyntax);
 
   return {
     subscription: formatted,
     bankInfo: DANANGGO_BANK_INFO,
     transferSyntax,
+    qrUrl,
   };
+}
+
+function buildBankQrUrl(amount: number, transferSyntax: string): string | null {
+  const { bankCode, accountNumber, accountHolder } = DANANGGO_BANK_INFO;
+  if (!bankCode || !accountNumber || !accountHolder) return null;
+  return `https://img.vietqr.io/image/${encodeURIComponent(bankCode)}-${encodeURIComponent(accountNumber)}-compact2.png?amount=${encodeURIComponent(String(amount))}&addInfo=${encodeURIComponent(transferSyntax)}&accountName=${encodeURIComponent(accountHolder)}`;
 }
 
 /**
@@ -191,23 +207,24 @@ export async function createSubscriptionService(
 export async function submitPaymentProofService(
   subscriptionId: number,
   partnerProfileId: number,
-  data: { paymentReference: string; paymentProofNote?: string | null | undefined }
+  data: { paymentReference?: string | null | undefined; paymentProofNote?: string | null | undefined }
 ): Promise<FormattedSubscription> {
   if (!Number.isSafeInteger(subscriptionId) || subscriptionId < 1) {
     throw new AuthError(400, 'Mã yêu cầu đăng ký không hợp lệ.');
   }
 
-  const trimmedRef = data.paymentReference?.trim();
-  if (!trimmedRef) {
-    throw new AuthError(400, 'Vui lòng cung cấp mã giao dịch ngân hàng hoặc nội dung chuyển khoản.');
+  const trimmedRef = data.paymentReference?.trim() || null;
+  const trimmedNote = data.paymentProofNote?.trim().slice(0, 500) || null;
+  if (!trimmedRef && !trimmedNote) {
+    throw new AuthError(400, 'Vui lòng nhập mã giao dịch hoặc ghi chú bổ sung nếu cần Admin hỗ trợ đối soát.');
   }
-  if (trimmedRef.length > 100) {
+  if (trimmedRef && trimmedRef.length > 100) {
     throw new AuthError(400, 'Mã tham chiếu tối đa 100 ký tự.');
   }
 
   const updated = await submitPaymentProofRecord(subscriptionId, partnerProfileId, {
     paymentReference: trimmedRef,
-    paymentProofNote: data.paymentProofNote?.trim().slice(0, 500) || null,
+    paymentProofNote: trimmedNote,
   });
 
   if (!updated) {

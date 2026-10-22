@@ -11,6 +11,7 @@ import {
   getAllPackagesAdminService,
   updatePackageAdminService,
 } from '../subscriptions/subscriptions.service';
+import { listRecentSePayTransactions } from '../subscriptions/sepay.repository';
 
 const router = Router();
 
@@ -92,6 +93,16 @@ router.get('/export-csv', async (req, res, next) => {
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.status(200).send(csvData);
+  } catch (error) {
+    next(error);
+  }
+});
+
+/** Recent SePay events, including unmatched/incorrect-amount transfers for manual follow-up. */
+router.get('/webhook-transactions', async (_req, res, next) => {
+  try {
+    const data = await listRecentSePayTransactions();
+    res.json({ success: true, data });
   } catch (error) {
     next(error);
   }

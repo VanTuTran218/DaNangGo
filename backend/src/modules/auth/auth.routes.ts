@@ -127,7 +127,10 @@ router.post('/refresh', async (req, res) => {
     setSessionCookies(res, session, false);
     res.json({ success: true, data: { user: session.user } });
   } catch (error) {
-    clearSessionCookies(res, false);
+    // A transient database/server error must not destroy a still-valid refresh token.
+    if (error instanceof AuthError && [401, 403, 423].includes(error.statusCode)) {
+      clearSessionCookies(res, false);
+    }
     throw error;
   }
 });
@@ -180,7 +183,10 @@ adminRouter.post('/refresh', async (req, res) => {
     setSessionCookies(res, session, true);
     res.json({ success: true, data: { user: session.user } });
   } catch (error) {
-    clearSessionCookies(res, true);
+    // Keep the refresh cookie when SQL Server is temporarily unavailable.
+    if (error instanceof AuthError && [401, 403, 423].includes(error.statusCode)) {
+      clearSessionCookies(res, true);
+    }
     throw error;
   }
 });

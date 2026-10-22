@@ -1,6 +1,8 @@
 import type { User, UserRole } from '@/types/user';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+type SessionKind = 'USER' | 'ADMIN';
+const refreshRequests = new Map<SessionKind, Promise<{ ok: boolean; error?: ApiError }>>();
 
 export interface ApiEnvelope<T> {
   success: boolean;
@@ -55,6 +57,37 @@ async function readEnvelope<T>(response: Response): Promise<ApiEnvelope<T>> {
   }
 }
 
+function refreshSession(sessionKind: SessionKind): Promise<{ ok: boolean; error?: ApiError }> {
+  const inFlight = refreshRequests.get(sessionKind);
+  if (inFlight) return inFlight;
+
+  const refreshPath = sessionKind === 'ADMIN' ? '/api/admin/auth/refresh' : '/api/auth/refresh';
+  let request: Promise<{ ok: boolean; error?: ApiError }>;
+  request = fetch(apiUrl(refreshPath), { method: 'POST', credentials: 'include' })
+    .then(async (response) => {
+      if (response.ok) return { ok: true };
+      const envelope = await readEnvelope<never>(response);
+      return {
+        ok: false,
+        error: new ApiError(
+          envelope.message || (response.status === 401
+            ? 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.'
+            : 'Không thể làm mới phiên đăng nhập.'),
+          response.status,
+        ),
+      };
+    })
+    .catch(() => ({
+      ok: false,
+      error: new ApiError('Không thể kết nối máy chủ để làm mới phiên đăng nhập.', 0),
+    }))
+    .finally(() => {
+      if (refreshRequests.get(sessionKind) === request) refreshRequests.delete(sessionKind);
+    });
+  refreshRequests.set(sessionKind, request);
+  return request;
+}
+
 export async function apiRequest<T>(
   path: string,
   init: RequestInit = {},
@@ -76,12 +109,13 @@ export async function apiRequest<T>(
     && path !== '/api/admin/auth/refresh';
 
   if (canRefresh) {
-    const isAdminRequest = path.startsWith('/api/admin/');
-    const refreshPath = isAdminRequest ? '/api/admin/auth/refresh' : '/api/auth/refresh';
-    const refreshResponse = await fetch(apiUrl(refreshPath), { method: 'POST', credentials: 'include' });
-    if (refreshResponse.ok) {
+    const sessionKind: SessionKind = path.startsWith('/api/admin/') ? 'ADMIN' : 'USER';
+    const refreshResult = await refreshSession(sessionKind);
+    if (refreshResult.ok) {
       response = await fetch(apiUrl(path), requestInit);
       envelope = await readEnvelope<T>(response);
+    } else if (refreshResult.error) {
+      throw refreshResult.error;
     }
   }
 

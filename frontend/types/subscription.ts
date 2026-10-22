@@ -17,6 +17,8 @@ export interface SubscriptionPackage {
 export interface PartnerSubscriptionItem {
   id: number;
   transactionCode: string;
+  bankInfo?: BankTransferInfo;
+  qrUrl?: string | null;
   partnerId: number;
   packageId: number;
   packageName: string;
@@ -42,10 +44,12 @@ export interface PartnerSubscriptionItem {
   contactPhone?: string | null;
   partnerEmail?: string;
   partnerUserName?: string;
+  automaticConfirmationEnabled: boolean;
 }
 
 export interface BankTransferInfo {
   bankName: string;
+  bankCode: string;
   accountNumber: string;
   accountHolder: string;
   branch: string;
@@ -55,6 +59,7 @@ export interface CreateSubscriptionResponse {
   subscription: PartnerSubscriptionItem;
   bankInfo: BankTransferInfo;
   transferSyntax: string;
+  qrUrl: string | null;
 }
 
 export interface PartnerCurrentSubscriptionResponse {

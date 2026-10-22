@@ -282,6 +282,7 @@ export default function AdminSubscriptionRevenuePage() {
     startDate: startDateFilter || undefined,
     endDate: endDateFilter || undefined,
   });
+  const statsAuthError = Boolean(errorStats && /đăng nhập|phiên.*hết hạn|phiên.*không hợp lệ/i.test(errorStats));
 
   return (
     <div className="space-y-6">
@@ -358,6 +359,21 @@ export default function AdminSubscriptionRevenuePage() {
       {/* ==================== TAB 1: REVENUE DASHBOARD ==================== */}
       {activeTab === 'REVENUE' && (
         <div className="space-y-6">
+          {errorStats && (
+            <div role="alert" className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+              <div className="flex-1">
+                <p className="font-bold">Không tải được báo cáo doanh thu</p>
+                <p className="mt-1">
+                  {statsAuthError
+                    ? `${errorStats}. Hãy đăng nhập lại tài khoản Admin rồi tải lại báo cáo.`
+                    : `${errorStats}. Hãy kiểm tra backend/API và kết nối SQL Server, sau đó tải lại báo cáo.`}
+                </p>
+              </div>
+              <button onClick={reloadStats} className="shrink-0 font-bold underline">Thử lại</button>
+            </div>
+          )}
+
           {/* Filter Bar */}
           <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs flex flex-wrap items-center gap-4 text-xs">
             <div className="flex items-center gap-1.5 font-bold text-gray-700">
@@ -421,7 +437,7 @@ export default function AdminSubscriptionRevenuePage() {
               <div>
                 <p className="text-xs font-semibold text-gray-500">Tổng phí gói đã thu</p>
                 <p className="text-2xl font-black text-teal-700 mt-1">
-                  {Number(stats?.totalRevenue ?? 0).toLocaleString('vi-VN')}{' '}
+                  {errorStats ? '—' : Number(stats?.totalRevenue ?? 0).toLocaleString('vi-VN')}{' '}
                   <span className="text-xs font-bold text-gray-500">VNĐ</span>
                 </p>
                 <p className="text-[11px] text-gray-400 mt-0.5">Chỉ tính giao dịch đã xác nhận</p>
@@ -434,7 +450,7 @@ export default function AdminSubscriptionRevenuePage() {
             <div className="bg-white rounded-2xl p-5 border border-emerald-100 shadow-xs flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold text-gray-500">Giao dịch đã xác nhận</p>
-                <p className="text-2xl font-black text-emerald-700 mt-1">{stats?.totalConfirmedCount ?? 0}</p>
+                <p className="text-2xl font-black text-emerald-700 mt-1">{errorStats ? '—' : stats?.totalConfirmedCount ?? 0}</p>
                 <p className="text-[11px] text-emerald-600 font-semibold mt-0.5">Đã kích hoạt gói</p>
               </div>
               <div className="p-3.5 rounded-2xl bg-emerald-50 text-emerald-600">
@@ -445,7 +461,7 @@ export default function AdminSubscriptionRevenuePage() {
             <div className="bg-white rounded-2xl p-5 border border-amber-100 shadow-xs flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold text-gray-500">Chờ đối soát chuyển khoản</p>
-                <p className="text-2xl font-black text-amber-700 mt-1">{stats?.totalPendingCount ?? 0}</p>
+                <p className="text-2xl font-black text-amber-700 mt-1">{errorStats ? '—' : stats?.totalPendingCount ?? 0}</p>
                 <p className="text-[11px] text-amber-600 font-semibold mt-0.5">Yêu cầu cần Admin kiểm tra</p>
               </div>
               <div className="p-3.5 rounded-2xl bg-amber-50 text-amber-600">
@@ -456,7 +472,7 @@ export default function AdminSubscriptionRevenuePage() {
             <div className="bg-white rounded-2xl p-5 border border-rose-100 shadow-xs flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold text-gray-500">Giao dịch từ chối</p>
-                <p className="text-2xl font-black text-rose-700 mt-1">{stats?.totalRejectedCount ?? 0}</p>
+                <p className="text-2xl font-black text-rose-700 mt-1">{errorStats ? '—' : stats?.totalRejectedCount ?? 0}</p>
                 <p className="text-[11px] text-rose-500 mt-0.5">Sai mã hoặc không hợp lệ</p>
               </div>
               <div className="p-3.5 rounded-2xl bg-rose-50 text-rose-600">

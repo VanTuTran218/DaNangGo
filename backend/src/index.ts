@@ -9,6 +9,7 @@ import placesRouter from './modules/places/places.routes';
 import adminPartnersRouter from './modules/admin/partners.routes';
 import subscriptionsRouter from './modules/subscriptions/subscriptions.routes';
 import adminSubscriptionsRouter from './modules/admin/subscriptions.routes';
+import sepayWebhookRouter from './modules/subscriptions/sepay.routes';
 import { csrfProtection } from './middleware/csrf.middleware';
 import { errorHandler } from './middleware/error-handler';
 
@@ -23,6 +24,8 @@ const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
 app.use(helmet());
 app.use(cors({ origin: frontendUrl, credentials: true }));
 app.use(cookieParser());
+// SePay HMAC must be verified against the original request bytes before JSON parsing.
+app.use('/api/webhooks/sepay', sepayWebhookRouter);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(csrfProtection);

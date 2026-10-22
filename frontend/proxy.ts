@@ -3,10 +3,9 @@ import { NextRequest, NextResponse } from 'next/server';
 export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
   if (pathname.startsWith('/admin')) {
-    if (pathname === '/admin/login') {
-      if (request.cookies.has('admin_access')) return NextResponse.redirect(new URL('/admin', request.url));
-      return NextResponse.next();
-    }
+    // Cookie presence is only an optimistic check; an expired admin_access
+    // cookie must not redirect the login page back into the protected area.
+    if (pathname === '/admin/login') return NextResponse.next();
     if (!request.cookies.has('admin_access')) return NextResponse.redirect(new URL('/admin/login', request.url));
   }
   if (

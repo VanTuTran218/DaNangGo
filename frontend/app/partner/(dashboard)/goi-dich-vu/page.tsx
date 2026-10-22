@@ -98,16 +98,23 @@ export default function PartnerSubscriptionPage() {
     e.preventDefault();
     const targetSubId = proofSubscription?.id || activeInstruction?.subscription.id;
     if (!targetSubId) return;
+    const automaticConfirmationEnabled = Boolean(
+      activeInstruction?.subscription.automaticConfirmationEnabled || proofSubscription?.automaticConfirmationEnabled
+    );
 
-    if (!paymentRefInput.trim()) {
-      showToast('Vui lòng nhập mã giao dịch ngân hàng / mã tham chiếu.', 'error');
+    if (!paymentRefInput.trim() && !paymentNoteInput.trim()) {
+      showToast(automaticConfirmationEnabled
+        ? 'Không cần gửi thông tin bổ sung nếu SePay đã tự nhận diện giao dịch. Nếu chưa được xác nhận, hãy nhập mã giao dịch để Admin đối soát.'
+        : 'SePay chưa bật tự đối soát. Hãy nhập mã giao dịch hoặc ghi chú để Admin kiểm tra khoản chuyển.', 'error');
       return;
     }
 
     setActionLoading(true);
     try {
       await submitPaymentProof(targetSubId, paymentRefInput, paymentNoteInput);
-      showToast('Đã gửi thông tin chuyển khoản. Ban quản trị sẽ đối soát và kích hoạt gói sớm nhất.');
+      showToast(automaticConfirmationEnabled
+        ? 'Đã gửi thông tin bổ sung. SePay sẽ tự xác nhận khi giao dịch khớp.'
+        : 'Đã gửi thông tin cho Admin đối soát. Gói sẽ được kích hoạt sau khi Admin xác nhận.');
       setActiveInstruction(null);
       setProofSubscription(null);
       setPaymentRefInput('');
@@ -382,7 +389,7 @@ export default function PartnerSubscriptionPage() {
         ) : !history || history.length === 0 ? (
           <div className="p-8 bg-white rounded-2xl border border-gray-100 text-center space-y-2">
             <PackageCheck className="w-8 h-8 text-gray-400 mx-auto" />
-            <p className="text-sm font-semibold text-gray-700">Chưa có lịch sử giao dịch gói</p>
+            <p className="text-sm font-semibold text-gray-700">Chưa có lịch sử đăng ký</p>
             <p className="text-xs text-gray-400">Các gói bạn đăng ký sẽ hiển thị đầy đủ tại đây.</p>
           </div>
         ) : (
@@ -530,19 +537,39 @@ export default function PartnerSubscriptionPage() {
               </div>
             </div>
 
+            <div className={`rounded-xl border p-3 text-xs leading-relaxed ${
+              (activeInstruction?.subscription.automaticConfirmationEnabled || proofSubscription?.automaticConfirmationEnabled)
+                ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                : 'border-amber-200 bg-amber-50 text-amber-900'
+            }`}>
+              {(activeInstruction?.subscription.automaticConfirmationEnabled || proofSubscription?.automaticConfirmationEnabled)
+                ? 'Backend đã có khóa xác thực webhook. Tự đối soát chỉ hoạt động nếu webhook SePay đã được tạo và trỏ đến hệ thống này. Hãy chuyển đúng số tiền và giữ nguyên nội dung chuyển khoản.'
+                : 'SePay chưa được cấu hình tự động. Sau khi chuyển khoản, giao dịch sẽ chờ Admin đối soát và xác nhận để kích hoạt gói.'}
+            </div>
+
+            {(activeInstruction?.qrUrl || proofSubscription?.qrUrl) && (
+              <div className="flex justify-center rounded-2xl border border-gray-100 bg-white p-4">
+                <img
+                  src={activeInstruction?.qrUrl || proofSubscription?.qrUrl || ''}
+                  alt="Mã QR chuyển khoản gói dịch vụ"
+                  className="h-56 w-56 object-contain"
+                />
+              </div>
+            )}
+
             {/* Bank Card Info */}
             <div className="p-5 bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl space-y-3.5 shadow-md">
               <div className="flex justify-between items-center border-b border-slate-700/80 pb-3">
                 <span className="text-xs uppercase tracking-wider text-slate-400 font-semibold">Ngân hàng</span>
-                <span className="text-sm font-bold text-teal-400">MB Bank (Quân Đội)</span>
+                <span className="text-sm font-bold text-teal-400">{activeInstruction?.bankInfo.bankName || proofSubscription?.bankInfo?.bankName || 'Chưa cấu hình'}</span>
               </div>
               <div className="flex justify-between items-center border-b border-slate-700/80 pb-3">
                 <span className="text-xs uppercase tracking-wider text-slate-400 font-semibold">Số tài khoản</span>
-                <span className="text-base font-mono font-bold text-white tracking-widest">999988886868</span>
+                <span className="text-base font-mono font-bold text-white tracking-widest">{activeInstruction?.bankInfo.accountNumber || proofSubscription?.bankInfo?.accountNumber || 'Chưa cấu hình'}</span>
               </div>
               <div className="flex justify-between items-center border-b border-slate-700/80 pb-3">
                 <span className="text-xs uppercase tracking-wider text-slate-400 font-semibold">Chủ tài khoản</span>
-                <span className="text-xs font-bold text-white uppercase">DANANGGO TRAVEL CO LTD</span>
+                <span className="text-xs font-bold text-white uppercase">{activeInstruction?.bankInfo.accountHolder || proofSubscription?.bankInfo?.accountHolder || 'Chưa cấu hình'}</span>
               </div>
               <div className="flex justify-between items-center border-b border-slate-700/80 pb-3">
                 <span className="text-xs uppercase tracking-wider text-slate-400 font-semibold">Số tiền cần chuyển</span>
@@ -555,17 +582,16 @@ export default function PartnerSubscriptionPage() {
               </div>
               <div className="space-y-1.5 pt-1">
                 <span className="text-xs uppercase tracking-wider text-slate-400 font-semibold block">
-                  Nội dung chuyển khoản (Bắt buộc):
+                  Nội dung chuyển khoản (mã riêng cho yêu cầu này):
                 </span>
                 <div className="flex items-center justify-between p-3 bg-slate-950/80 rounded-xl border border-slate-700 font-mono text-xs text-teal-300 font-bold">
                   <span>
-                    DANANGGO{' '}
                     {activeInstruction?.subscription.transactionCode || proofSubscription?.transactionCode}
                   </span>
                   <button
                     onClick={() =>
                       handleCopy(
-                        `DANANGGO ${
+                        `${
                           activeInstruction?.subscription.transactionCode || proofSubscription?.transactionCode
                         }`
                       )
@@ -583,12 +609,11 @@ export default function PartnerSubscriptionPage() {
             <form onSubmit={handleSubmitProof} className="space-y-4 pt-2">
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-gray-700">
-                  Mã giao dịch ngân hàng / Mã tham chiếu sau khi chuyển <span className="text-rose-500">*</span>
+                  Mã giao dịch ngân hàng (nếu có)
                 </label>
                 <input
                   type="text"
-                  required
-                  placeholder="Ví dụ: MB123456789 hoặc FT261015..."
+                  placeholder="Nhập mã trên biên nhận để Admin dễ đối soát"
                   value={paymentRefInput}
                   onChange={(e) => setPaymentRefInput(e.target.value)}
                   className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500"
@@ -623,7 +648,7 @@ export default function PartnerSubscriptionPage() {
                   className="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-xs disabled:opacity-50 inline-flex items-center gap-1.5"
                 >
                   <Send className="w-3.5 h-3.5" />
-                  {actionLoading ? 'Đang gửi...' : 'Gửi thông tin cho Admin đối soát'}
+                  {actionLoading ? 'Đang gửi...' : 'Gửi thông tin bổ sung'}
                 </button>
               </div>
             </form>

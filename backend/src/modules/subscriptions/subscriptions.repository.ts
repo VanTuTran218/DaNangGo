@@ -154,7 +154,7 @@ export async function createSubscriptionRecord(data: {
 export async function submitPaymentProofRecord(
   subscriptionId: number,
   partnerId: number,
-  data: { paymentReference: string; paymentProofNote?: string | null }
+  data: { paymentReference: string | null; paymentProofNote?: string | null }
 ): Promise<PartnerSubscriptionRow | null> {
   const pool = getPool();
   const result = await pool.request()
@@ -310,6 +310,56 @@ export type AdminConfirmResult =
   | { outcome: 'ALREADY_PROCESSED'; currentStatus: string }
   | { outcome: 'CONFIRMED'; subscription: PartnerSubscriptionRow };
 
+/** Write a status log to either supported schema variant found in existing databases. */
+export async function insertSubscriptionStatusLog(
+  transaction: sql.Transaction,
+  input: {
+    subscriptionId: number;
+    previousStatus: string;
+    newStatus: string;
+    changedBy: number | null;
+    note: string;
+  }
+): Promise<void> {
+  const request = new sql.Request(transaction)
+    .input('subscriptionId', sql.Int, input.subscriptionId)
+    .input('previousStatus', sql.NVarChar(50), input.previousStatus)
+    .input('newStatus', sql.NVarChar(50), input.newStatus)
+    .input('changedBy', sql.Int, input.changedBy)
+    .input('note', sql.NVarChar(500), input.note);
+
+  await request.query(`
+    IF COL_LENGTH(N'dbo.subscription_status_logs', N'old_status') IS NOT NULL
+    BEGIN
+      EXEC sys.sp_executesql
+        N'INSERT INTO dbo.subscription_status_logs (subscription_id, old_status, new_status, changed_by, notes)
+          VALUES (@subscriptionId, @previousStatus, @newStatus, @changedBy, @note);',
+        N'@subscriptionId INT, @previousStatus NVARCHAR(50), @newStatus NVARCHAR(50), @changedBy INT, @note NVARCHAR(500)',
+        @subscriptionId = @subscriptionId,
+        @previousStatus = @previousStatus,
+        @newStatus = @newStatus,
+        @changedBy = @changedBy,
+        @note = @note;
+    END
+    ELSE IF COL_LENGTH(N'dbo.subscription_status_logs', N'previous_status') IS NOT NULL
+    BEGIN
+      EXEC sys.sp_executesql
+        N'INSERT INTO dbo.subscription_status_logs (subscription_id, previous_status, new_status, action_by_user_id, note)
+          VALUES (@subscriptionId, @previousStatus, @newStatus, @changedBy, @note);',
+        N'@subscriptionId INT, @previousStatus NVARCHAR(50), @newStatus NVARCHAR(50), @changedBy INT, @note NVARCHAR(500)',
+        @subscriptionId = @subscriptionId,
+        @previousStatus = @previousStatus,
+        @newStatus = @newStatus,
+        @changedBy = @changedBy,
+        @note = @note;
+    END
+    ELSE
+    BEGIN
+      THROW 52010, 'Schema dbo.subscription_status_logs không đúng cấu trúc ứng dụng yêu cầu.', 1;
+    END;
+  `);
+}
+
 /**
  * Admin xác nhận thanh toán hợp lệ (dùng TRANSACTION SERIALIZABLE và UPDLOCK để chống double-approval)
  * Xử lý chính xác gia hạn:
@@ -402,10 +452,6 @@ export async function adminConfirmSubscriptionPayment(
           end_date = @endDate
       OUTPUT INSERTED.*
       WHERE subscription_id = @subscriptionId AND payment_status = 'PENDING';
-
-      -- Ghi log lịch sử xác nhận
-      INSERT INTO dbo.subscription_status_logs (subscription_id, old_status, new_status, changed_by, notes)
-      VALUES (@subscriptionId, 'PENDING', 'PAID_AND_ACTIVE', @adminUserId, N'Admin xác nhận thanh toán hợp lệ và kích hoạt gói.');
     `);
 
     const confirmedSub = updateResult.recordset[0];
@@ -414,6 +460,14 @@ export async function adminConfirmSubscriptionPayment(
       finished = true;
       return { outcome: 'ALREADY_PROCESSED', currentStatus: 'PROCESSED' };
     }
+
+    await insertSubscriptionStatusLog(transaction, {
+      subscriptionId,
+      previousStatus: 'PENDING',
+      newStatus: 'PAID_AND_ACTIVE',
+      changedBy: adminUserId,
+      note: 'Admin xác nhận thanh toán hợp lệ và kích hoạt gói.',
+    });
 
     await transaction.commit();
     finished = true;
@@ -479,10 +533,6 @@ export async function adminRejectSubscriptionPayment(
           rejection_reason = @reason
       OUTPUT INSERTED.*
       WHERE subscription_id = @subscriptionId AND payment_status = 'PENDING';
-
-      -- Ghi log lịch sử từ chối
-      INSERT INTO dbo.subscription_status_logs (subscription_id, old_status, new_status, changed_by, notes)
-      VALUES (@subscriptionId, 'PENDING', 'REJECTED', @adminUserId, @reason);
     `);
 
     const rejectedSub = updateResult.recordset[0];
@@ -491,6 +541,14 @@ export async function adminRejectSubscriptionPayment(
       finished = true;
       return { outcome: 'ALREADY_PROCESSED', currentStatus: 'PROCESSED' };
     }
+
+    await insertSubscriptionStatusLog(transaction, {
+      subscriptionId,
+      previousStatus: 'PENDING',
+      newStatus: 'REJECTED',
+      changedBy: adminUserId,
+      note: reason,
+    });
 
     await transaction.commit();
     finished = true;
@@ -536,7 +594,7 @@ export async function getRevenueStatistics(filters: {
   }
   if (filters.endDate) {
     reqSummary.input('endDate', sql.DateTime2, new Date(filters.endDate));
-    summaryWhere += ` AND (confirmed_at <= @endDate OR (confirmed_at IS NULL AND created_at <= @endDate))`;
+    summaryWhere += ` AND (confirmed_at < DATEADD(day, 1, CONVERT(date, @endDate)) OR (confirmed_at IS NULL AND created_at < DATEADD(day, 1, CONVERT(date, @endDate))))`;
   }
   if (filters.packageId) {
     reqSummary.input('packageId', sql.Int, filters.packageId);
@@ -571,12 +629,18 @@ export async function getRevenueStatistics(filters: {
     expiring_soon_count: number;
     expired_count: number;
   }>(`
+    WITH partner_subscription_ends AS (
+      SELECT partner_id, MAX(end_date) AS end_date
+      FROM dbo.partner_subscriptions
+      WHERE payment_status = 'PAID'
+        AND subscription_status IN ('ACTIVE', 'EXPIRED')
+      GROUP BY partner_id
+    )
     SELECT
-      COUNT(CASE WHEN subscription_status = 'ACTIVE' AND end_date > SYSUTCDATETIME() THEN 1 END) AS active_count,
-      COUNT(CASE WHEN subscription_status = 'ACTIVE' AND end_date > SYSUTCDATETIME() AND end_date <= DATEADD(day, 7, SYSUTCDATETIME()) THEN 1 END) AS expiring_soon_count,
-      COUNT(CASE WHEN (subscription_status = 'EXPIRED') OR (subscription_status = 'ACTIVE' AND end_date <= SYSUTCDATETIME()) THEN 1 END) AS expired_count
-    FROM dbo.partner_subscriptions
-    WHERE payment_status = 'PAID';
+      COUNT(CASE WHEN end_date > SYSUTCDATETIME() THEN 1 END) AS active_count,
+      COUNT(CASE WHEN end_date > SYSUTCDATETIME() AND end_date <= DATEADD(day, 7, SYSUTCDATETIME()) THEN 1 END) AS expiring_soon_count,
+      COUNT(CASE WHEN end_date <= SYSUTCDATETIME() THEN 1 END) AS expired_count
+    FROM partner_subscription_ends;
   `);
   const statusStats = packageStatusRes.recordset[0] ?? {
     active_count: 0,
@@ -586,14 +650,18 @@ export async function getRevenueStatistics(filters: {
 
   // 3. Doanh thu theo loại gói (1 tháng, 6 tháng, 1 năm)
   const reqPackage = pool.request();
-  let packageWhere = `WHERE payment_status = 'PAID'`;
+  let packageWhere = `WHERE ps.payment_status = 'PAID'`;
   if (filters.startDate) {
     reqPackage.input('startDate', sql.DateTime2, new Date(filters.startDate));
-    packageWhere += ` AND confirmed_at >= @startDate`;
+    packageWhere += ` AND ps.confirmed_at >= @startDate`;
   }
   if (filters.endDate) {
     reqPackage.input('endDate', sql.DateTime2, new Date(filters.endDate));
-    packageWhere += ` AND confirmed_at <= @endDate`;
+    packageWhere += ` AND ps.confirmed_at < DATEADD(day, 1, CONVERT(date, @endDate))`;
+  }
+  if (filters.packageId) {
+    reqPackage.input('packageId', sql.Int, filters.packageId);
+    packageWhere += ` AND ps.package_id = @packageId`;
   }
 
   const byPackageRes = await reqPackage.query<{
@@ -620,10 +688,14 @@ export async function getRevenueStatistics(filters: {
   if (filters.startDate) {
     reqDay.input('startDate', sql.DateTime2, new Date(filters.startDate));
     dayWhere = `WHERE payment_status = 'PAID' AND confirmed_at >= @startDate`;
-    if (filters.endDate) {
-      reqDay.input('endDate', sql.DateTime2, new Date(filters.endDate));
-      dayWhere += ` AND confirmed_at <= @endDate`;
-    }
+  }
+  if (filters.endDate) {
+    reqDay.input('endDate', sql.DateTime2, new Date(filters.endDate));
+    dayWhere += ` AND confirmed_at < DATEADD(day, 1, CONVERT(date, @endDate))`;
+  }
+  if (filters.packageId) {
+    reqDay.input('packageId', sql.Int, filters.packageId);
+    dayWhere += ` AND package_id = @packageId`;
   }
 
   const byDayRes = await reqDay.query<{
@@ -642,7 +714,22 @@ export async function getRevenueStatistics(filters: {
   `);
 
   // 5. Doanh thu theo tháng
-  const byMonthRes = await pool.request().query<{
+  const reqMonth = pool.request();
+  let monthWhere = `WHERE payment_status = 'PAID' AND confirmed_at IS NOT NULL`;
+  if (filters.startDate) {
+    reqMonth.input('startDate', sql.DateTime2, new Date(filters.startDate));
+    monthWhere += ` AND confirmed_at >= @startDate`;
+  }
+  if (filters.endDate) {
+    reqMonth.input('endDate', sql.DateTime2, new Date(filters.endDate));
+    monthWhere += ` AND confirmed_at < DATEADD(day, 1, CONVERT(date, @endDate))`;
+  }
+  if (filters.packageId) {
+    reqMonth.input('packageId', sql.Int, filters.packageId);
+    monthWhere += ` AND package_id = @packageId`;
+  }
+
+  const byMonthRes = await reqMonth.query<{
     tx_month: string;
     revenue: number;
     tx_count: number;
@@ -652,7 +739,7 @@ export async function getRevenueStatistics(filters: {
       SUM(price) AS revenue,
       COUNT(*) AS tx_count
     FROM dbo.partner_subscriptions
-    WHERE payment_status = 'PAID' AND confirmed_at IS NOT NULL
+    ${monthWhere}
     GROUP BY FORMAT(confirmed_at, 'yyyy-MM')
     ORDER BY tx_month ASC;
   `);

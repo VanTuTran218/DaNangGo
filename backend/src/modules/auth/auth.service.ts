@@ -402,24 +402,31 @@ export async function updatePassword(
 }
 
 export async function verifyAccessToken(token: string, expectedSession: 'USER' | 'ADMIN'): Promise<number> {
+  let payload: jwt.JwtPayload & { sessionType?: string };
   try {
-    const payload = jwt.verify(token, authSecret('JWT_ACCESS_SECRET')) as jwt.JwtPayload & {
+    payload = jwt.verify(token, authSecret('JWT_ACCESS_SECRET')) as jwt.JwtPayload & {
       sessionType?: string;
     };
-    const userId = Number(payload.sub);
-    if (!Number.isInteger(userId) || userId < 1 || payload.sessionType !== expectedSession) {
-      throw new AuthError(401, 'Phiên đăng nhập không hợp lệ.');
-    }
-    const account = await findAccountByUserId(userId);
-    if (!account || account.status !== 'ACTIVE' || account.admin_locked) throw new AuthError(401, 'Phiên đăng nhập không còn hiệu lực.');
-    if (mapRoleName(account.role_name) === 'PARTNER' && account.approval_status !== 'APPROVED') {
-      throw new AuthError(401, 'Quyền truy cập đối tác đã bị thu hồi hoặc hồ sơ chưa được duyệt.');
-    }
-    return userId;
   } catch (error) {
     if (error instanceof AuthError) throw error;
     throw new AuthError(401, 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
   }
+
+  const userId = Number(payload.sub);
+  if (!Number.isInteger(userId) || userId < 1 || payload.sessionType !== expectedSession) {
+    throw new AuthError(401, 'Phiên đăng nhập không hợp lệ.');
+  }
+
+  // Keep SQL failures as 500s. Treating a dropped DB connection as an expired
+  // token causes refresh loops and may clear a still-valid browser session.
+  const account = await findAccountByUserId(userId);
+  if (!account || account.status !== 'ACTIVE' || account.admin_locked) {
+    throw new AuthError(401, 'Phiên đăng nhập không còn hiệu lực.');
+  }
+  if (mapRoleName(account.role_name) === 'PARTNER' && account.approval_status !== 'APPROVED') {
+    throw new AuthError(401, 'Quyền truy cập đối tác đã bị thu hồi hoặc hồ sơ chưa được duyệt.');
+  }
+  return userId;
 }
 
 export function getAccountRole(userId: number): Promise<AccountRole | null> {

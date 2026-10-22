@@ -108,11 +108,11 @@ BEGIN TRY
         CREATE TABLE dbo.subscription_status_logs (
             log_id              INT IDENTITY(1,1) NOT NULL CONSTRAINT PK_subscription_status_logs PRIMARY KEY,
             subscription_id     INT NOT NULL CONSTRAINT FK_sub_logs_subscription FOREIGN KEY REFERENCES dbo.partner_subscriptions(subscription_id) ON DELETE CASCADE,
-            old_status          NVARCHAR(50) NULL,
+            previous_status     NVARCHAR(50) NULL,
             new_status          NVARCHAR(50) NOT NULL,
-            changed_by          INT NULL CONSTRAINT FK_sub_logs_user FOREIGN KEY REFERENCES dbo.users(user_id),
-            changed_at          DATETIME2 NOT NULL CONSTRAINT DF_sub_logs_changed_at DEFAULT (SYSUTCDATETIME()),
-            notes               NVARCHAR(500) NULL
+            action_by_user_id   INT NULL CONSTRAINT FK_sub_logs_user FOREIGN KEY REFERENCES dbo.users(user_id),
+            created_at          DATETIME2 NOT NULL CONSTRAINT DF_sub_logs_created_at DEFAULT (SYSUTCDATETIME()),
+            note                NVARCHAR(500) NULL
         );
         PRINT 'Đã tạo bảng dbo.subscription_status_logs';
     END;

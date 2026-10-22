@@ -18,7 +18,7 @@ const registerBodySchema = z.object({
 });
 
 const paymentProofBodySchema = z.object({
-  paymentReference: z.string().trim().min(3, 'Vui lòng nhập mã giao dịch ngân hàng / mã tham chiếu.'),
+  paymentReference: z.string().trim().max(100, 'Mã tham chiếu tối đa 100 ký tự.').optional(),
   paymentProofNote: z.string().trim().max(500, 'Ghi chú tối đa 500 ký tự.').optional(),
 });
 
@@ -98,7 +98,9 @@ router.post('/register', async (req, res, next) => {
     res.status(201).json({
       success: true,
       data: result,
-      message: 'Tạo yêu cầu đăng ký gói thành công. Vui lòng chuyển khoản theo hướng dẫn để Admin đối soát kích hoạt gói.',
+      message: result.subscription.automaticConfirmationEnabled
+        ? 'Đã tạo yêu cầu đăng ký gói. Vui lòng chuyển đúng số tiền và nội dung; hệ thống sẽ tự xác nhận khi SePay báo nhận tiền.'
+        : 'Đã tạo yêu cầu đăng ký gói. Vui lòng chuyển đúng số tiền và nội dung; giao dịch sẽ chờ Admin đối soát và xác nhận.',
     });
   } catch (error) {
     next(error);

@@ -1,6 +1,16 @@
-﻿USE [DaNangGo];
+USE [DaNangGo];
 GO
-/* Chạy SAU migration 004 của Tú (LOCKED + booking_url). Đổi số 005 nếu thư mục migration đã dùng. */
+/* Migration bổ sung nghiệp vụ Lưu trú và Khóa địa điểm */
+
+IF COL_LENGTH('dbo.places', 'booking_url') IS NULL
+    ALTER TABLE dbo.places ADD booking_url VARCHAR(255) NULL;
+GO
+IF EXISTS (SELECT 1 FROM sys.check_constraints WHERE name = 'chk_places_status')
+    ALTER TABLE dbo.places DROP CONSTRAINT chk_places_status;
+GO
+ALTER TABLE dbo.places ADD CONSTRAINT chk_places_status
+    CHECK (status IN ('PENDING', 'ACTIVE', 'HIDDEN', 'LOCKED'));
+GO
 
 IF COL_LENGTH('dbo.room_types', 'room_count') IS NULL
     ALTER TABLE dbo.room_types ADD room_count INT NOT NULL CONSTRAINT df_room_count DEFAULT (1);

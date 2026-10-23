@@ -4,7 +4,7 @@ import { useAsyncData } from '@/hooks/useAsyncData';
 import { getAdminDashboardStats, getAdminUserDailyStats, getAdminTodos } from '@/lib/api/admin';
 import ColumnChart from '@/components/ui/ColumnChart';
 import SkeletonTable from '@/components/ui/SkeletonTable';
-import { Users, Building2, Clock, MapPin, Star, ClipboardList, AlertCircle, ArrowRight } from 'lucide-react';
+import { Users, Building2, Clock, Store, Star, ClipboardList, AlertCircle, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AdminDashboardPage() {
@@ -28,11 +28,11 @@ export default function AdminDashboardPage() {
 
   const statCards = [
     { title: 'Tổng người dùng', value: stats?.totalUsers ?? 0, icon: Users, color: 'text-blue-600 bg-blue-50' },
-    { title: 'Tổng đối tác', value: stats?.totalPartners ?? 0, icon: Building2, color: 'text-teal-600 bg-teal-50' },
-    { title: 'Đối tác chờ duyệt', value: stats?.pendingPartners ?? 0, icon: Clock, color: 'text-amber-600 bg-amber-50' },
-    { title: 'Tổng địa điểm', value: stats?.totalPlaces ?? 0, icon: MapPin, color: 'text-emerald-600 bg-emerald-50' },
-    { title: 'Tổng đánh giá', value: stats?.totalReviews ?? 0, icon: Star, color: 'text-purple-600 bg-purple-50' },
-    { title: 'Khảo sát hoạt động', value: stats?.totalSurveys ?? 0, icon: ClipboardList, color: 'text-pink-600 bg-pink-50' },
+    { title: 'Tổng đối tác', value: stats?.totalPartners ?? 0, icon: Building2, color: 'text-teal-600 bg-teal-50', href: '/admin/doi-tac' },
+    { title: 'Đối tác chờ duyệt', value: stats?.pendingPartners ?? 0, icon: Clock, color: 'text-amber-600 bg-amber-50', href: '/admin/doi-tac' },
+    { title: 'Cơ sở quán chờ duyệt', value: stats?.pendingPlaces ?? 0, icon: Store, color: 'text-orange-600 bg-orange-50', href: '/admin/dia-diem?status=PENDING' },
+    { title: 'Tổng địa điểm & cơ sở', value: stats?.totalPlaces ?? 0, icon: Store, color: 'text-emerald-600 bg-emerald-50', href: '/admin/dia-diem' },
+    { title: 'Tổng đánh giá', value: stats?.totalReviews ?? 0, icon: Star, color: 'text-purple-600 bg-purple-50', href: '/admin/danh-gia' },
   ];
 
   return (
@@ -49,16 +49,23 @@ export default function AdminDashboardPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {statCards.map((card, idx) => {
             const Icon = card.icon;
-            return (
-              <div key={idx} className="bg-white rounded-2xl p-5 border border-gray-100 shadow-xs flex items-center justify-between">
+            const content = (
+              <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-xs flex items-center justify-between hover:border-teal-300 transition-all group">
                 <div>
-                  <p className="text-xs font-semibold text-gray-500">{card.title}</p>
+                  <p className="text-xs font-semibold text-gray-500 group-hover:text-teal-700 transition-colors">{card.title}</p>
                   <p className="text-2xl font-extrabold text-gray-900 mt-1">{card.value}</p>
                 </div>
-                <div className={`p-3.5 rounded-2xl ${card.color}`}>
+                <div className={`p-3.5 rounded-2xl ${card.color} group-hover:scale-105 transition-transform`}>
                   <Icon className="w-6 h-6" />
                 </div>
               </div>
+            );
+            return card.href ? (
+              <Link key={idx} href={card.href}>
+                {content}
+              </Link>
+            ) : (
+              <div key={idx}>{content}</div>
             );
           })}
         </div>
@@ -106,7 +113,7 @@ export default function AdminDashboardPage() {
                           ? '/admin/doi-tac'
                           : todo.type === 'REPORTED_REVIEW'
                           ? '/admin/danh-gia'
-                          : '/admin/dia-diem'
+                          : '/admin/dia-diem?status=PENDING'
                       }
                       className="inline-flex items-center gap-1 font-bold text-teal-700 hover:underline"
                     >

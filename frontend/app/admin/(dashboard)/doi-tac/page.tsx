@@ -12,7 +12,8 @@ import type { AdminPartnerItem, PartnerApprovalStatus } from '@/types/admin';
 import DataTable, { Column } from '@/components/ui/DataTable';
 import StatusBadge from '@/components/ui/StatusBadge';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
-import { Check, X, Lock, Eye, Building2 } from 'lucide-react';
+import { Check, X, Lock, Eye, Building2, Store } from 'lucide-react';
+import Link from 'next/link';
 
 const TABS: { key: PartnerApprovalStatus | 'ALL'; label: string }[] = [
   { key: 'PENDING', label: 'Chờ duyệt' },
@@ -119,6 +120,13 @@ export default function AdminPartnersPage() {
           >
             <Eye className="w-4 h-4" />
           </button>
+          <Link
+            href={`/admin/dia-diem?search=${encodeURIComponent(p.businessName)}`}
+            title="Xem danh sách cơ sở của đối tác này"
+            className="p-1.5 rounded-lg text-teal-600 hover:bg-teal-50"
+          >
+            <Store className="w-4 h-4" />
+          </Link>
           {p.status === 'PENDING' && (
             <>
               <button
@@ -244,7 +252,14 @@ export default function AdminPartnersPage() {
               )}
             </div>
 
-            <div className="flex justify-end gap-2 pt-3 border-t border-gray-100">
+            <div className="flex items-center justify-between gap-2 pt-3 border-t border-gray-100">
+              <Link
+                href={`/admin/dia-diem?search=${encodeURIComponent(selectedPartner.businessName)}`}
+                className="px-4 py-2 bg-teal-50 hover:bg-teal-100 text-teal-700 font-semibold text-xs rounded-xl flex items-center gap-1.5 transition-colors"
+              >
+                <Store className="w-4 h-4" />
+                Xem các cơ sở của đối tác này
+              </Link>
               <button
                 onClick={() => setSelectedPartner(null)}
                 className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold text-xs rounded-xl"

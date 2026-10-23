@@ -19,6 +19,7 @@ interface DataTableProps<T> {
   loading?: boolean;
   searchPlaceholder?: string;
   searchField?: (item: T) => string;
+  initialSearch?: string;
   filterSlot?: ReactNode;
   emptyTitle?: string;
   emptyDescription?: string;
@@ -32,13 +33,14 @@ export default function DataTable<T>({
   loading = false,
   searchPlaceholder = 'Tìm kiếm...',
   searchField,
+  initialSearch = '',
   filterSlot,
   emptyTitle,
   emptyDescription,
   pageSize = 8,
   rowKey,
 }: DataTableProps<T>) {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState(initialSearch);
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [currentPage, setCurrentPage] = useState(1);

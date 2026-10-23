@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   Users,
   Building2,
+  Store,
   MapPin,
   MessageSquare,
   ClipboardList,
@@ -17,7 +18,7 @@ const ADMIN_NAV = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/nguoi-dung', label: 'Quản lý người dùng', icon: Users },
   { href: '/admin/doi-tac', label: 'Quản lý đối tác', icon: Building2 },
-  { href: '/admin/dia-diem', label: 'Quản lý nội dung', icon: MapPin },
+  { href: '/admin/dia-diem', label: 'Quản lý cơ sở & địa điểm', icon: Store },
   { href: '/admin/danh-gia', label: 'Kiểm duyệt review', icon: MessageSquare },
   { href: '/admin/khao-sat', label: 'Quản lý khảo sát', icon: ClipboardList },
 ];

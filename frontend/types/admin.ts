@@ -9,6 +9,7 @@ export interface AdminDashboardStats {
   totalUsers: number;
   totalPartners: number;
   pendingPartners: number;
+  pendingPlaces?: number;
   totalPlaces: number;
   totalReviews: number;
   totalSurveys: number;

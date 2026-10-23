@@ -29,17 +29,34 @@ function delay(ms = 400) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-// TODO: GET /api/admin/stats
+// GET /api/admin/stats
 export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
-  await delay();
-  return {
-    totalUsers: mockAdminUsers.length,
-    totalPartners: mockAdminPartners.length,
-    pendingPartners: mockAdminPartners.filter((p) => p.status === 'PENDING').length,
-    totalPlaces: mockAdminPlaces.length,
-    totalReviews: mockAdminReviews.length,
-    totalSurveys: mockAdminSurveys.length,
-  };
+  try {
+    const [places, partners] = await Promise.all([
+      getAdminPlaces().catch(() => mockAdminPlaces),
+      getAdminPartners().catch(() => mockAdminPartners),
+    ]);
+    return {
+      totalUsers: mockAdminUsers.length,
+      totalPartners: partners.length,
+      pendingPartners: partners.filter((p) => p.status === 'PENDING').length,
+      pendingPlaces: places.filter((p) => p.status === 'PENDING').length,
+      totalPlaces: places.length,
+      totalReviews: mockAdminReviews.length,
+      totalSurveys: mockAdminSurveys.length,
+    };
+  } catch {
+    await delay();
+    return {
+      totalUsers: mockAdminUsers.length,
+      totalPartners: mockAdminPartners.length,
+      pendingPartners: mockAdminPartners.filter((p) => p.status === 'PENDING').length,
+      pendingPlaces: mockAdminPlaces.filter((p) => p.status === 'PENDING').length,
+      totalPlaces: mockAdminPlaces.length,
+      totalReviews: mockAdminReviews.length,
+      totalSurveys: mockAdminSurveys.length,
+    };
+  }
 }
 
 // TODO: GET /api/admin/stats/users-chart

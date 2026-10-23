@@ -20,7 +20,7 @@ export interface AdminUserItem {
   name: string;
   email: string;
   phone?: string;
-  role: 'USER' | 'PARTNER' | 'ADMIN';
+  role: "USER" | "PARTNER" | "ADMIN";
   status: UserAccountStatus;
   createdAt: string;
   avatarUrl?: string;
@@ -30,7 +30,7 @@ export interface AdminPartnerItem {
   id: string;
   userId: string;
   businessName: string;
-  serviceType: 'STAY' | 'TABLE' | 'TICKET';
+  serviceType: "STAY" | "TABLE" | "TICKET";
   taxCode: string;
   address: string;
   phone: string;
@@ -67,6 +67,7 @@ export interface AdminReviewItem {
   reportReason?: string;
   status: ReviewStatus;
   createdAt: string;
+  images: { image_id: number; image_url: string }[];
 }
 
 export interface SurveyQuestion {
@@ -95,7 +96,7 @@ export interface AdminSurveyItem {
 
 export interface AdminTodoItem {
   id: string;
-  type: 'PENDING_PARTNER' | 'REPORTED_REVIEW' | 'PENDING_PLACE';
+  type: "PENDING_PARTNER" | "REPORTED_REVIEW" | "PENDING_PLACE";
   title: string;
   description: string;
   targetId: string;

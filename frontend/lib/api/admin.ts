@@ -11,9 +11,9 @@ import type {
   PartnerApprovalStatus,
   PlaceStatus,
   ReviewStatus,
-} from '@/types/admin';
+} from "@/types/admin";
 
-import { apiPost, apiRequest } from './client';
+import { apiPost, apiRequest } from "./client";
 
 import {
   mockAdminUsers,
@@ -23,7 +23,7 @@ import {
   mockAdminSurveys,
   mockAdminTodos,
   mockDailyUserStats,
-} from '@/lib/mock/admin';
+} from "@/lib/mock/admin";
 function delay(ms = 400) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -81,13 +81,14 @@ export async function getAdminUsers(params?: {
   if (params?.search) {
     const s = params.search.toLowerCase();
     result = result.filter(
-      (u) => u.name.toLowerCase().includes(s) || u.email.toLowerCase().includes(s)
+      (u) =>
+        u.name.toLowerCase().includes(s) || u.email.toLowerCase().includes(s),
     );
   }
-  if (params?.role && params.role !== 'ALL') {
+  if (params?.role && params.role !== "ALL") {
     result = result.filter((u) => u.role === params.role);
   }
-  if (params?.status && params.status !== 'ALL') {
+  if (params?.status && params.status !== "ALL") {
     result = result.filter((u) => u.status === params.status);
   }
   return result;
@@ -96,35 +97,47 @@ export async function getAdminUsers(params?: {
 // TODO: PATCH /api/admin/users/:id/status
 export async function updateAdminUserStatus(
   userId: string,
-  status: UserAccountStatus
+  status: UserAccountStatus,
 ): Promise<{ success: boolean; message: string }> {
   await delay();
   const user = mockAdminUsers.find((u) => u.id === userId);
-  if (!user) throw new Error('Không tìm thấy người dùng');
+  if (!user) throw new Error("Không tìm thấy người dùng");
   user.status = status;
   return {
     success: true,
-    message: status === 'LOCKED' ? 'Đã khóa tài khoản thành công.' : 'Đã mở khóa tài khoản.',
+    message:
+      status === "LOCKED"
+        ? "Đã khóa tài khoản thành công."
+        : "Đã mở khóa tài khoản.",
   };
 }
 
-
 // GET /api/admin/partners — REAL API
 export async function getAdminPartners(params?: {
-  status?: PartnerApprovalStatus | 'ALL';
+  status?: PartnerApprovalStatus | "ALL";
   search?: string;
 }): Promise<AdminPartnerItem[]> {
   const searchParams = new URLSearchParams();
-  if (params?.status && params.status !== 'ALL') {
-    searchParams.set('status', params.status);
+  if (params?.status && params.status !== "ALL") {
+    searchParams.set("status", params.status);
   }
   const qs = searchParams.toString();
-  const response = await apiRequest<{ partners: Array<{
-    partner_id: number; user_id: number; public_id: string;
-    full_name: string; email: string; phone: string | null;
-    business_name: string; service_type: string; tax_code: string | null;
-    address: string | null; approval_status: string; created_at: string;
-  }> }>(`/api/admin/partners${qs ? `?${qs}` : ''}`);
+  const response = await apiRequest<{
+    partners: Array<{
+      partner_id: number;
+      user_id: number;
+      public_id: string;
+      full_name: string;
+      email: string;
+      phone: string | null;
+      business_name: string;
+      service_type: string;
+      tax_code: string | null;
+      address: string | null;
+      approval_status: string;
+      created_at: string;
+    }>;
+  }>(`/api/admin/partners${qs ? `?${qs}` : ""}`);
   const records = response.data?.partners ?? [];
   // Ánh xạ sang AdminPartnerItem (kiểu FE cũ)
   return records.map((r) => ({
@@ -132,44 +145,65 @@ export async function getAdminPartners(params?: {
     userId: r.public_id,
     name: r.full_name,
     email: r.email,
-    phone: r.phone ?? '',
+    phone: r.phone ?? "",
     businessName: r.business_name,
-    serviceType: r.service_type as 'STAY' | 'TABLE' | 'TICKET',
-    taxCode: r.tax_code ?? '',
-    address: r.address ?? '',
-    status: (r.approval_status === 'PENDING_APPROVAL' ? 'PENDING' :
-             r.approval_status === 'ACTIVE' ? 'APPROVED' :
-             r.approval_status === 'REJECTED' ? 'REJECTED' : 'LOCKED') as PartnerApprovalStatus,
+    serviceType: r.service_type as "STAY" | "TABLE" | "TICKET",
+    taxCode: r.tax_code ?? "",
+    address: r.address ?? "",
+    status: (r.approval_status === "PENDING_APPROVAL"
+      ? "PENDING"
+      : r.approval_status === "ACTIVE"
+        ? "APPROVED"
+        : r.approval_status === "REJECTED"
+          ? "REJECTED"
+          : "LOCKED") as PartnerApprovalStatus,
     createdAt: r.created_at,
     rejectReason: undefined,
   }));
 }
 
 // POST /api/admin/partners/:id/approve — REAL API
-export async function approveAdminPartner(partnerId: string): Promise<{ success: boolean; message: string }> {
-  const response = await apiPost<never>(`/api/admin/partners/${partnerId}/approve`, {});
-  return { success: true, message: response.message ?? 'Đã phê duyệt hồ sơ đối tác.' };
+export async function approveAdminPartner(
+  partnerId: string,
+): Promise<{ success: boolean; message: string }> {
+  const response = await apiPost<never>(
+    `/api/admin/partners/${partnerId}/approve`,
+    {},
+  );
+  return {
+    success: true,
+    message: response.message ?? "Đã phê duyệt hồ sơ đối tác.",
+  };
 }
 
 // POST /api/admin/partners/:id/reject — REAL API
 export async function rejectAdminPartner(
   partnerId: string,
-  _reason?: string
+  _reason?: string,
 ): Promise<{ success: boolean; message: string }> {
-  const response = await apiPost<never>(`/api/admin/partners/${partnerId}/reject`, {});
-  return { success: true, message: response.message ?? 'Đã từ chối hồ sơ đối tác.' };
+  const response = await apiPost<never>(
+    `/api/admin/partners/${partnerId}/reject`,
+    {},
+  );
+  return {
+    success: true,
+    message: response.message ?? "Đã từ chối hồ sơ đối tác.",
+  };
 }
 
 // TODO: PATCH /api/admin/partners/:id/status
 export async function updateAdminPartnerStatus(
   partnerId: string,
-  status: PartnerApprovalStatus
+  status: PartnerApprovalStatus,
 ): Promise<{ success: boolean; message: string }> {
   await new Promise((resolve) => setTimeout(resolve, 400));
   const partner = mockAdminPartners.find((p) => p.id === partnerId);
-  if (!partner) throw new Error('Không tìm thấy đối tác');
+  if (!partner) throw new Error("Không tìm thấy đối tác");
   partner.status = status;
-  return { success: true, message: `Cập nhật trạng thái đối tác sang ${status}.` };
+  return {
+    success: true,
+    message: `Cập nhật trạng thái đối tác sang ${status}.`,
+  };
 }
 
 // GET /api/admin/places — REAL API + mock fallback
@@ -194,16 +228,17 @@ export async function getAdminPlaces(params?: {
 
   await delay();
   let result = [...mockAdminPlaces];
-  if (params?.category && params.category !== 'ALL') {
+  if (params?.category && params.category !== "ALL") {
     result = result.filter((p) => p.category === params.category);
   }
-  if (params?.status && params.status !== 'ALL') {
+  if (params?.status && params.status !== "ALL") {
     result = result.filter((p) => p.status === params.status);
   }
   if (params?.search) {
     const s = params.search.toLowerCase();
     result = result.filter(
-      (p) => p.name.toLowerCase().includes(s) || p.address.toLowerCase().includes(s)
+      (p) =>
+        p.name.toLowerCase().includes(s) || p.address.toLowerCase().includes(s),
     );
   }
   return result;
@@ -212,7 +247,7 @@ export async function getAdminPlaces(params?: {
 // PATCH /api/admin/places/:id/status
 export async function updateAdminPlaceStatus(
   placeId: string,
-  status: PlaceStatus
+  status: PlaceStatus,
 ): Promise<{ success: boolean; message: string }> {
   const normalizedStatus = status === 'APPROVED' ? 'ACTIVE' : status;
   try {
@@ -253,49 +288,70 @@ export async function deleteAdminPlace(placeId: string): Promise<{ success: bool
 }
 
 export async function getAdminReviews(params?: {
-  rating?: number | 'ALL';
-  status?: ReviewStatus | 'ALL';
+  rating?: number | "ALL";
+  status?: ReviewStatus | "ALL";
 }): Promise<AdminReviewItem[]> {
   const query = new URLSearchParams();
-  if (params?.rating && params.rating !== 'ALL') query.set('rating', String(params.rating));
-  if (params?.status && params.status !== 'ALL') query.set('status', params.status);
-  const response = await apiRequest<Array<{
-    review_id: number;
-    place_id: number;
-    place_name: string;
-    user_name: string;
-    rating: number;
-    comment: string | null;
-    status: ReviewStatus;
-    created_at: string;
-  }>>(`/api/admin/reviews${query.size ? `?${query}` : ''}`);
+  if (params?.rating && params.rating !== "ALL")
+    query.set("rating", String(params.rating));
+  if (params?.status && params.status !== "ALL")
+    query.set("status", params.status);
+  const response = await apiRequest<
+    Array<{
+      review_id: number;
+      place_id: number;
+      place_name: string;
+      user_name: string;
+      rating: number;
+      comment: string | null;
+      status: ReviewStatus;
+      created_at: string;
+      images: { image_id: number; image_url: string }[];
+    }>
+  >(`/api/admin/reviews${query.size ? `?${query}` : ""}`);
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
   return (response.data ?? []).map((review) => ({
     id: String(review.review_id),
     placeId: String(review.place_id),
     placeName: review.place_name,
     userName: review.user_name,
     rating: review.rating,
-    comment: review.comment ?? '',
+    comment: review.comment ?? "",
     isReported: false,
     status: review.status,
     createdAt: review.created_at,
+    images: (review.images ?? []).map((image) => ({
+      ...image,
+      image_url: `${apiBase.replace(/\/$/, "")}${image.image_url}`,
+    })),
   }));
 }
 
 export async function updateAdminReviewStatus(
   reviewId: string,
-  status: Exclude<ReviewStatus, 'PENDING'>
+  status: Exclude<ReviewStatus, "PENDING">,
 ): Promise<{ success: boolean; message: string }> {
-  const response = await apiRequest<void>(`/api/admin/reviews/${encodeURIComponent(reviewId)}/status`, {
-    method: 'PATCH',
-    body: JSON.stringify({ status }),
-  });
-  return { success: true, message: response.message ?? 'Đã cập nhật trạng thái đánh giá.' };
+  const response = await apiRequest<void>(
+    `/api/admin/reviews/${encodeURIComponent(reviewId)}/status`,
+    {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
+    },
+  );
+  return {
+    success: true,
+    message: response.message ?? "Đã cập nhật trạng thái đánh giá.",
+  };
 }
 
-export async function deleteAdminReview(reviewId: string): Promise<{ success: boolean; message: string }> {
-  const response = await apiRequest<void>(`/api/admin/reviews/${encodeURIComponent(reviewId)}`, { method: 'DELETE' });
-  return { success: true, message: response.message ?? 'Đã xóa đánh giá.' };
+export async function deleteAdminReview(
+  reviewId: string,
+): Promise<{ success: boolean; message: string }> {
+  const response = await apiRequest<void>(
+    `/api/admin/reviews/${encodeURIComponent(reviewId)}`,
+    { method: "DELETE" },
+  );
+  return { success: true, message: response.message ?? "Đã xóa đánh giá." };
 }
 
 // TODO: GET /api/admin/surveys
@@ -306,7 +362,7 @@ export async function getAdminSurveys(): Promise<AdminSurveyItem[]> {
 
 // TODO: POST /api/admin/surveys
 export async function createAdminSurvey(
-  survey: Omit<AdminSurveyItem, 'id' | 'createdAt' | 'responseCount'>
+  survey: Omit<AdminSurveyItem, "id" | "createdAt" | "responseCount">,
 ): Promise<AdminSurveyItem> {
   await delay();
   const newSurvey: AdminSurveyItem = {
@@ -322,19 +378,21 @@ export async function createAdminSurvey(
 // TODO: PUT /api/admin/surveys/:id
 export async function updateAdminSurvey(
   id: string,
-  survey: Partial<AdminSurveyItem>
+  survey: Partial<AdminSurveyItem>,
 ): Promise<AdminSurveyItem> {
   await delay();
   const target = mockAdminSurveys.find((s) => s.id === id);
-  if (!target) throw new Error('Không tìm thấy khảo sát');
+  if (!target) throw new Error("Không tìm thấy khảo sát");
   Object.assign(target, survey);
   return target;
 }
 
 // TODO: DELETE /api/admin/surveys/:id
-export async function deleteAdminSurvey(id: string): Promise<{ success: boolean; message: string }> {
+export async function deleteAdminSurvey(
+  id: string,
+): Promise<{ success: boolean; message: string }> {
   await delay();
   const index = mockAdminSurveys.findIndex((s) => s.id === id);
   if (index !== -1) mockAdminSurveys.splice(index, 1);
-  return { success: true, message: 'Đã xóa khảo sát thành công.' };
+  return { success: true, message: "Đã xóa khảo sát thành công." };
 }

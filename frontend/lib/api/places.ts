@@ -12,9 +12,24 @@ export type PlaceSortOption =
 
 export interface PlaceImage {
   image_id: number;
-  place_id: number;
+  place_id?: number;
   image_url: string;
   is_cover: boolean;
+}
+
+export interface PlaceRoomType {
+  room_type_id: number;
+  name: string;
+  capacity: number;
+  price_per_night: number;
+  original_price: number | null;
+  room_count: number;
+}
+
+export interface PlaceAmenity {
+  amenity_id: number;
+  name: string;
+  icon?: string | null;
 }
 
 export interface PlaceOpeningHour {
@@ -46,6 +61,8 @@ export interface PlaceSearchItem {
   created_at: string;
   updated_at: string | null;
   cover_image: string | null;
+  image_url?: string | null;
+  images?: PlaceImage[];
 
   // Thuộc tính mở rộng & phân loại
   category_name: string | null;
@@ -106,11 +123,43 @@ export interface PlaceDetail extends PlaceSearchItem {
   partner_id?: number | null;
   menu_items?: MenuItemDetail[];
   room_types?: AccommodationRoomType[];
-  amenities?: AccommodationAmenity[];
+  rooms?: PlaceRoomType[];
+  amenities?: PlaceAmenity[];
   accepts_cash?: boolean;
   accepts_bank_transfer?: boolean;
 }
 
+export interface PlacesFilterParams {
+  type?: string;
+  category?: string;
+  district_id?: number | string;
+  min_price?: number | string;
+  max_price?: number | string;
+  capacity?: number | string;
+  amenity_ids?: string;
+  accommodation_type?: string;
+  min_rating?: number | string;
+  q?: string;
+  sort?: string;
+  limit?: number;
+  page?: number;
+}
+
+export type PlaceListItem = Pick<
+  PlaceDetail,
+  | 'place_id'
+  | 'place_type'
+  | 'name'
+  | 'address'
+  | 'cover_image'
+  | 'avg_rating'
+  | 'review_count'
+  | 'status'
+  | 'price_min'
+  | 'price_max'
+  | 'accommodation_type'
+  | 'star_rating'
+>;
 
 export interface SearchPlacesQuery {
   q?: string;
@@ -182,6 +231,12 @@ export async function getPlaceDetail(placeId: number | string): Promise<PlaceDet
 
 export const getPlaceById = getPlaceDetail;
 
+export async function getPlace(placeId: string): Promise<PlaceDetail> {
+  const response = await apiRequest<PlaceDetail>(
+    `/api/places/${encodeURIComponent(placeId)}`
+  );
+  return response.data!;
+}
 
 /**
  * Cập nhật trạng thái địa điểm (Yêu cầu đăng nhập Partner / Admin)
@@ -199,11 +254,4 @@ export async function updatePlaceStatus(
     }
   );
   return res.data || { success: true, message: res.message || 'Cập nhật trạng thái thành công' };
-}
-
-export type PlaceListItem = Pick<PlaceDetail, 'place_id' | 'place_type' | 'name' | 'address' | 'cover_image' | 'avg_rating' | 'review_count' | 'status'>;
-
-export async function getPlace(placeId: string): Promise<PlaceDetail> {
-  const response = await apiRequest<PlaceDetail>(`/api/places/${encodeURIComponent(placeId)}`);
-  return response.data!;
 }

@@ -1,5 +1,6 @@
 import { getPool, sql } from '../../config/db';
 import * as placesRepo from './places.repository';
+import { getAccommodationDetail } from '../accommodations/accommodations.service';
 import type { SearchPlacesQuery, PlaceType, PlaceDetailResponseDto } from './places.validation';
 import type {
   PlaceSearchItem,
@@ -21,19 +22,83 @@ export type {
 } from './places.repository';
 export { setAccommodationFilterHook } from './places.repository';
 
-
 export type PlaceStatus = 'ACTIVE' | 'HIDDEN' | 'PENDING' | 'LOCKED';
 
-// Interface tương thích ngược
+export interface PlaceRoomType {
+  room_type_id: number;
+  name: string;
+  capacity: number;
+  price_per_night: number;
+  original_price: number | null;
+  room_count: number;
+}
+
+export interface PlaceAmenity {
+  amenity_id: number;
+  name: string;
+  icon?: string | null;
+}
+
+export interface AccommodationDetail {
+  accommodation_type: string;
+  star_rating: number | null;
+  check_in_time: string | null;
+  check_out_time: string | null;
+  booking_url: string | null;
+  rooms: PlaceRoomType[];
+  amenities: PlaceAmenity[];
+}
 export interface Place {
   place_id: number;
+  place_type: string;
   name: string;
-  description?: string;
-  address?: string;
+  description?: string | null;
+  address?: string | null;
+  district_id?: number | null;
+  district_name?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  phone?: string | null;
+  website?: string | null;
+  booking_url?: string | null;
   cover_image?: string | null;
-  category?: string;
-  rating?: number;
+  images?: PlaceImage[];
+  status: string;
+  avg_rating: number;
+  review_count: number;
+  view_count: number;
+  price_min?: number | null;
+  price_max?: number | null;
   created_at?: Date;
+  accommodation?: AccommodationDetail;
+  // Trải phẳng các trường của lưu trú cho client tiện sử dụng
+  rooms?: PlaceRoomType[];
+  amenities?: PlaceAmenity[];
+  accommodation_type?: string;
+  star_rating?: number | null;
+  check_in_time?: string | null;
+  check_out_time?: string | null;
+}
+
+export interface PlacesQueryParams {
+  type?: string;
+  place_type?: string;
+  category?: string;
+  district_id?: string | number;
+  districtId?: string | number;
+  min_rating?: string | number;
+  minRating?: string | number;
+  min_price?: string | number;
+  max_price?: string | number;
+  capacity?: string | number;
+  amenity_ids?: string;
+  accommodation_type?: string;
+  q?: string;
+  search?: string;
+  status?: string;
+  sort?: string;
+  page?: string | number;
+  limit?: string | number;
 }
 
 export interface CreatePlaceCommonDto {
@@ -118,6 +183,19 @@ export async function getPlaceDetail(
   // Tăng lượt xem (fire-and-forget, không làm gián đoạn response)
   placesRepo.incrementPlaceViewCount(id);
 
+  if (place.place_type === 'ACCOMMODATION') {
+    try {
+      const accDetail = await getAccommodationDetail(id);
+      return {
+        ...place,
+        ...accDetail,
+        accommodation: accDetail,
+      } as PlaceDetail;
+    } catch {
+      // Fallback to place
+    }
+  }
+
   return place;
 }
 
@@ -140,18 +218,24 @@ export async function getPlaceById(id: number): Promise<PlaceDetail | null> {
 /**
  * Tạo địa điểm mới (hàm tương thích ngược với code cũ)
  */
-export async function createPlace(data: Omit<Place, 'place_id' | 'created_at'>): Promise<Place> {
+export async function createPlace(data: {
+  name: string;
+  description?: string | null;
+  address?: string | null;
+  category?: string | null;
+  district_id?: number | null;
+}): Promise<Place> {
   const pool = getPool();
   const result = await pool
     .request()
     .input('name', sql.NVarChar(255), data.name)
     .input('description', sql.NVarChar(sql.MAX), data.description || null)
     .input('address', sql.NVarChar(500), data.address || null)
-    .input('category', sql.NVarChar(100), data.category || null)
+    .input('districtId', sql.Int, data.district_id || null)
     .query(`
-      INSERT INTO places (place_type, name, description, address, status, created_at)
-      OUTPUT INSERTED.place_id, INSERTED.name, INSERTED.description, INSERTED.address, INSERTED.status, INSERTED.created_at
-      VALUES ('ATTRACTION', @name, @description, @address, 'ACTIVE', GETDATE())
+      INSERT INTO places (place_type, name, description, address, district_id, status, created_at)
+      OUTPUT INSERTED.*
+      VALUES ('ATTRACTION', @name, @description, @address, @districtId, 'ACTIVE', GETDATE())
     `);
 
   return result.recordset[0];

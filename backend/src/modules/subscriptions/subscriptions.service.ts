@@ -22,11 +22,11 @@ import {
 
 // Thông tin tài khoản ngân hàng nhận chuyển khoản của DaNangGo
 export const DANANGGO_BANK_INFO = {
-  bankName: process.env.SEPAY_BANK_NAME?.trim() || '',
-  bankCode: process.env.SEPAY_BANK_CODE?.trim() || '',
-  accountNumber: process.env.SEPAY_BANK_ACCOUNT?.trim() || '',
-  accountHolder: process.env.SEPAY_BANK_ACCOUNT_HOLDER?.trim() || '',
-  branch: process.env.SEPAY_BANK_BRANCH?.trim() || '',
+  bankName: process.env.SEPAY_BANK_NAME?.trim() || 'Ngân hàng TMCP Ngoại thương Việt Nam (Vietcombank)',
+  bankCode: process.env.SEPAY_BANK_CODE?.trim() || 'VCB',
+  accountNumber: process.env.SEPAY_BANK_ACCOUNT?.trim() || '999988886868',
+  accountHolder: process.env.SEPAY_BANK_ACCOUNT_HOLDER?.trim() || 'DANANGGO TRAVEL CO LTD',
+  branch: process.env.SEPAY_BANK_BRANCH?.trim() || 'Chi nhánh Đà Nẵng',
 };
 
 function generateTransactionCode(): string {

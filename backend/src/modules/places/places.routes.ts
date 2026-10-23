@@ -1,9 +1,12 @@
 import { Router, type RequestHandler } from 'express';
 import { requireAuth, requireRole } from '../../middleware/auth.middleware';
 import { getAccountAuthDetails, verifyAccessToken } from '../auth/auth.service';
+import reviewsRouter from '../reviews/reviews.routes';
 import * as controller from './places.controller';
 
 const router = Router();
+
+router.use('/:id/reviews', reviewsRouter);
 
 /**
  * Middleware tùy chọn xác thực:
@@ -17,7 +20,6 @@ const optionalAuth: RequestHandler = async (req, res, next) => {
   const headerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7).trim() : undefined;
   const token = cookies?.admin_access || cookies?.access_token || headerToken;
   if (!token) return next();
-
   try {
     const sessionType = cookies?.admin_access ? 'ADMIN' : 'USER';
     let userId: number;

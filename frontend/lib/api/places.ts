@@ -200,3 +200,10 @@ export async function updatePlaceStatus(
   );
   return res.data || { success: true, message: res.message || 'Cập nhật trạng thái thành công' };
 }
+
+export type PlaceListItem = Pick<PlaceDetail, 'place_id' | 'place_type' | 'name' | 'address' | 'cover_image' | 'avg_rating' | 'review_count' | 'status'>;
+
+export async function getPlace(placeId: string): Promise<PlaceDetail> {
+  const response = await apiRequest<PlaceDetail>(`/api/places/${encodeURIComponent(placeId)}`);
+  return response.data!;
+}

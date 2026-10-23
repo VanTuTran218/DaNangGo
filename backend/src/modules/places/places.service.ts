@@ -30,6 +30,7 @@ export interface Place {
   name: string;
   description?: string;
   address?: string;
+  cover_image?: string | null;
   category?: string;
   rating?: number;
   created_at?: Date;

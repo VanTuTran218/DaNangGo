@@ -395,9 +395,9 @@ export default function PlaceDetailPage() {
 
             {/* 4.7. Khu vực đánh giá khách hàng (Long API container) */}
             <ReviewSection
-              avgRating={place.avg_rating}
-              reviewCount={place.review_count}
+              placeId={String(place.place_id)}
               placeName={place.name}
+              imageUrl={place.images?.[0]?.image_url || place.cover_image || ''}
             />
 
             {/* 4.8. Carousel quán gần đây / quán tương tự */}

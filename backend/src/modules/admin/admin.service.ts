@@ -1,3 +1,4 @@
+import nodemailer from 'nodemailer';
 import {
   approvePartner,
   rejectPartner,

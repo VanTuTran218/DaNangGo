@@ -24,7 +24,6 @@ import {
   mockAdminTodos,
   mockDailyUserStats,
 } from '@/lib/mock/admin';
-
 function delay(ms = 400) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -253,40 +252,50 @@ export async function deleteAdminPlace(placeId: string): Promise<{ success: bool
   }
 }
 
-// TODO: GET /api/admin/reviews
 export async function getAdminReviews(params?: {
   rating?: number | 'ALL';
-  isReportedOnly?: boolean;
+  status?: ReviewStatus | 'ALL';
 }): Promise<AdminReviewItem[]> {
-  await delay();
-  let result = [...mockAdminReviews];
-  if (params?.isReportedOnly) {
-    result = result.filter((r) => r.isReported);
-  }
-  if (params?.rating && params.rating !== 'ALL') {
-    result = result.filter((r) => r.rating === Number(params.rating));
-  }
-  return result;
+  const query = new URLSearchParams();
+  if (params?.rating && params.rating !== 'ALL') query.set('rating', String(params.rating));
+  if (params?.status && params.status !== 'ALL') query.set('status', params.status);
+  const response = await apiRequest<Array<{
+    review_id: number;
+    place_id: number;
+    place_name: string;
+    user_name: string;
+    rating: number;
+    comment: string | null;
+    status: ReviewStatus;
+    created_at: string;
+  }>>(`/api/admin/reviews${query.size ? `?${query}` : ''}`);
+  return (response.data ?? []).map((review) => ({
+    id: String(review.review_id),
+    placeId: String(review.place_id),
+    placeName: review.place_name,
+    userName: review.user_name,
+    rating: review.rating,
+    comment: review.comment ?? '',
+    isReported: false,
+    status: review.status,
+    createdAt: review.created_at,
+  }));
 }
 
-// TODO: PATCH /api/admin/reviews/:id/status
 export async function updateAdminReviewStatus(
   reviewId: string,
-  status: ReviewStatus
+  status: Exclude<ReviewStatus, 'PENDING'>
 ): Promise<{ success: boolean; message: string }> {
-  await delay();
-  const review = mockAdminReviews.find((r) => r.id === reviewId);
-  if (!review) throw new Error('Không tìm thấy đánh giá');
-  review.status = status;
-  return { success: true, message: 'Đã cập nhật trạng thái đánh giá.' };
+  const response = await apiRequest<void>(`/api/admin/reviews/${encodeURIComponent(reviewId)}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  });
+  return { success: true, message: response.message ?? 'Đã cập nhật trạng thái đánh giá.' };
 }
 
-// TODO: DELETE /api/admin/reviews/:id
 export async function deleteAdminReview(reviewId: string): Promise<{ success: boolean; message: string }> {
-  await delay();
-  const index = mockAdminReviews.findIndex((r) => r.id === reviewId);
-  if (index !== -1) mockAdminReviews.splice(index, 1);
-  return { success: true, message: 'Đã xóa đánh giá vi phạm.' };
+  const response = await apiRequest<void>(`/api/admin/reviews/${encodeURIComponent(reviewId)}`, { method: 'DELETE' });
+  return { success: true, message: response.message ?? 'Đã xóa đánh giá.' };
 }
 
 // TODO: GET /api/admin/surveys

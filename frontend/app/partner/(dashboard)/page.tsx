@@ -7,14 +7,16 @@ import {
   getPartnerDailyBookings,
   getPartnerReviews,
 } from '@/lib/api/partner';
+import { getCurrentSubscription } from '@/lib/api/subscription';
 import ColumnChart from '@/components/ui/ColumnChart';
 import SkeletonTable from '@/components/ui/SkeletonTable';
 import StatusBadge from '@/components/ui/StatusBadge';
-import { Building, Eye, CalendarCheck, Star, AlertTriangle, ShieldAlert, ArrowRight } from 'lucide-react';
+import { Building, Eye, CalendarCheck, Star, AlertTriangle, ShieldAlert, ArrowRight, CreditCard, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 
 export default function PartnerDashboardPage() {
   const { data: profile } = useAsyncData(getPartnerProfile);
+  const { data: subData } = useAsyncData(getCurrentSubscription);
   const { data: stats, loading: loadingStats, error: errorStats, reload: reloadStats } = useAsyncData(getPartnerDashboardStats);
   const { data: chartData, loading: loadingChart } = useAsyncData(getPartnerDailyBookings);
   const { data: reviews, loading: loadingReviews } = useAsyncData(() => getPartnerReviews({ rating: 'ALL' }));
@@ -73,6 +75,73 @@ export default function PartnerDashboardPage() {
               </Link>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Subscription Status Banners */}
+      {profile?.status === 'APPROVED' && !subData?.hasActiveSubscription && (
+        <div role="alert" className="p-5 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl text-amber-900 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
+          <div className="flex items-start gap-3">
+            <div className="p-2.5 bg-amber-100 rounded-xl text-amber-700 flex-shrink-0 mt-0.5">
+              <CreditCard className="w-5 h-5" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="font-bold text-base text-gray-900">Chưa kích hoạt gói hoạt động</h3>
+              <p className="text-xs text-amber-800 leading-relaxed">
+                Để đăng tải và vận hành cơ sở kinh doanh trên DaNangGo, bạn cần đăng ký và kích hoạt gói dịch vụ đối tác.
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/partner/goi-dich-vu"
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold transition flex-shrink-0 shadow-xs"
+          >
+            Đăng ký gói ngay <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+      )}
+
+      {profile?.status === 'APPROVED' && subData?.hasActiveSubscription && subData.currentSubscription && subData.isExpiringSoon && (
+        <div role="alert" className="p-5 bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-2xl text-orange-950 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
+          <div className="flex items-start gap-3">
+            <div className="p-2.5 bg-orange-100 rounded-xl text-orange-700 flex-shrink-0 mt-0.5">
+              <AlertTriangle className="w-5 h-5" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="font-bold text-base text-gray-900">
+                Gói {subData.currentSubscription.packageName} sắp hết hạn (còn {subData.daysRemaining} ngày)
+              </h3>
+              <p className="text-xs text-orange-800 leading-relaxed">
+                Hạn sử dụng kết thúc vào ngày {subData.currentSubscription.endDate ? new Date(subData.currentSubscription.endDate).toLocaleDateString('vi-VN') : '---'}. Hãy gia hạn sớm để tránh gián đoạn hiển thị địa điểm.
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/partner/goi-dich-vu"
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-xs font-bold transition flex-shrink-0 shadow-xs"
+          >
+            Gia hạn gói <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+      )}
+
+      {profile?.status === 'APPROVED' && subData?.hasActiveSubscription && subData.currentSubscription && !subData.isExpiringSoon && (
+        <div className="px-5 py-3.5 bg-emerald-50/70 border border-emerald-200/80 rounded-2xl text-emerald-950 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-xs">
+          <div className="flex items-center gap-2.5">
+            <span className="flex h-2.5 w-2.5 relative">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+            </span>
+            <span className="font-semibold text-gray-800">
+              Đang hoạt động: <span className="font-bold text-emerald-700">{subData.currentSubscription.packageName}</span> ({subData.daysRemaining} ngày còn lại • Hết hạn: {subData.currentSubscription.endDate ? new Date(subData.currentSubscription.endDate).toLocaleDateString('vi-VN') : '---'})
+            </span>
+          </div>
+          <Link
+            href="/partner/goi-dich-vu"
+            className="text-emerald-700 hover:text-emerald-800 font-bold hover:underline inline-flex items-center gap-1"
+          >
+            Chi tiết gói <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
         </div>
       )}
 

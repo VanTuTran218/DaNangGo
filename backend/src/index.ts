@@ -16,6 +16,9 @@ import categoriesRouter from './modules/categories/categories.routes';
 import menuItemsRouter from './modules/menu-items/menu-items.routes';
 import attractionsRouter from './modules/attractions/attractions.routes';
 import partnerRouter from './modules/partner/partner.routes';
+import subscriptionsRouter from './modules/subscriptions/subscriptions.routes';
+import adminSubscriptionsRouter from './modules/admin/subscriptions.routes';
+import sepayWebhookRouter from './modules/subscriptions/sepay.routes';
 import { csrfProtection } from './middleware/csrf.middleware';
 import { errorHandler } from './middleware/error-handler';
 
@@ -34,6 +37,8 @@ app.use(
 );
 app.use(cors({ origin: frontendUrl, credentials: true }));
 app.use(cookieParser());
+// SePay HMAC must be verified against the original request bytes before JSON parsing.
+app.use('/api/webhooks/sepay', sepayWebhookRouter);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(csrfProtection);
@@ -43,6 +48,8 @@ app.use('/api/auth', authRouter);
 app.use('/api/admin/auth', adminRouter);
 app.use('/api/admin/partners', adminPartnersRouter);
 app.use('/api/admin/places', adminPlacesRouter);
+app.use('/api/admin/subscriptions', adminSubscriptionsRouter);
+app.use('/api/subscriptions', subscriptionsRouter);
 app.use('/api/places', placesRouter);
 app.use('/api/admin/reviews', adminReviewsRouter);
 app.use('/api/reviews', userReviewsRouter);

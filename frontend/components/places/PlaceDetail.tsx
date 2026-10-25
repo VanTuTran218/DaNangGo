@@ -24,6 +24,8 @@ const ACCOMMODATION_TYPE_LABEL: Record<string, string> = {
   HOTEL: "Khách sạn",
   HOMESTAY: "Homestay",
   RESORT: "Khu nghỉ dưỡng (Resort)",
+  HOSTEL: "Nhà nghỉ tập thể (Hostel)",
+  APARTMENT: "Căn hộ (Apartment)",
 };
 
 const fmt = (n: number) => new Intl.NumberFormat("vi-VN").format(n);

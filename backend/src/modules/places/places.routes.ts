@@ -57,6 +57,9 @@ const optionalAuth: RequestHandler = async (req, res, next) => {
  */
 router.get('/', optionalAuth, controller.getAll);
 
+// Public ranking: always ACTIVE, at least 3 approved reviews; must precede /:id.
+router.get('/top', controller.getTop);
+
 /**
  * GET /api/places/:id
  * Lấy chi tiết 1 địa điểm theo ID (kèm danh sách ảnh và giờ mở cửa)

@@ -44,6 +44,24 @@ export interface ValidationResult<T> {
   data?: T;
 }
 
+export interface TopPlacesQuery {
+  type: PlaceType;
+  limit: number;
+}
+
+export function validateTopPlacesQuery(query: Record<string, unknown>): ValidationResult<TopPlacesQuery> {
+  const type = typeof query.type === 'string' ? query.type.trim().toUpperCase() : '';
+  if (!ALLOWED_PLACE_TYPES.includes(type as PlaceType)) {
+    return { error: `type là bắt buộc (chỉ chấp nhận: ${ALLOWED_PLACE_TYPES.join(', ')})` };
+  }
+  const limit = query.limit === undefined ? 10 : Number(query.limit);
+  if ((query.limit !== undefined && (typeof query.limit !== 'string' || !/^\d+$/.test(query.limit))) ||
+      !Number.isInteger(limit) || limit < 1 || limit > 50) {
+    return { error: 'limit phải là số nguyên từ 1 đến 50' };
+  }
+  return { error: null, data: { type: type as PlaceType, limit } };
+}
+
 /**
  * Validate và chuẩn hóa query parameters cho API tìm kiếm / lọc địa điểm
  * GET /api/places

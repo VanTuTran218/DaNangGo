@@ -44,7 +44,7 @@ const baseSchema = z.object({
   phone: z.string().trim().max(20).nullish(),
   website: z.string().trim().max(255).nullish(),
   bookingUrl: httpUrl.nullish(),
-  accommodationType: z.enum(["HOTEL", "HOMESTAY", "RESORT"]),
+  accommodationType: z.enum(["HOTEL", "HOMESTAY", "RESORT", "HOSTEL", "APARTMENT"]),
   starRating: z.coerce.number().int().min(1).max(5).nullish(),
   checkInTime: timeStr.nullish(),
   checkOutTime: timeStr.nullish(),
@@ -343,7 +343,7 @@ export const accommodationFilterSchema = z.object({
             .filter((n) => Number.isInteger(n) && n > 0)
         : [],
     ),
-  accommodation_type: z.enum(["HOTEL", "HOMESTAY", "RESORT"]).optional(),
+  accommodation_type: z.enum(["HOTEL", "HOMESTAY", "RESORT", "HOSTEL", "APARTMENT"]).optional(),
 });
 
 /**

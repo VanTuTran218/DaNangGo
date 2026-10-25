@@ -4,23 +4,38 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, MapPin, Search, Star } from "lucide-react";
-import { getPlaces, type PlaceListItem } from "@/lib/api/places";
+import { getPlaces, getTopPlaces, type PlaceListItem, type PlaceType } from "@/lib/api/places";
+
+const directoryModes: { value: PlaceType | ''; label: string }[] = [
+  { value: '', label: 'Tất cả địa điểm' },
+  { value: 'RESTAURANT', label: 'Top nhà hàng' },
+  { value: 'ACCOMMODATION', label: 'Top lưu trú' },
+  { value: 'ATTRACTION', label: 'Top điểm du lịch' },
+];
 
 export default function PlaceDirectory() {
   const [places, setPlaces] = useState<PlaceListItem[]>([]);
   const [keyword, setKeyword] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [topType, setTopType] = useState<PlaceType | ''>('');
 
   useEffect(() => {
-    getPlaces({ limit: 100 })
-      .then((res: any) => {
-        const items = Array.isArray(res) ? res : res?.items || [];
-        setPlaces(items.filter((place: any) => place.status === 'ACTIVE'));
+    let cancelled = false;
+    setLoading(true);
+    setError('');
+    setPlaces([]);
+    const request = topType ? getTopPlaces(topType) : getPlaces({ limit: 50 }).then(res => res.items);
+    request
+      .then((items) => {
+        if (!cancelled) setPlaces(items.filter(place => place.status === 'ACTIVE'));
       })
-      .catch((loadError: unknown) => setError(loadError instanceof Error ? loadError.message : 'Không thể tải danh sách địa điểm.'))
-      .finally(() => setLoading(false));
-  }, []);
+      .catch((loadError: unknown) => {
+        if (!cancelled) setError(loadError instanceof Error ? loadError.message : 'Không thể tải danh sách địa điểm.');
+      })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [topType]);
 
   const filteredPlaces = useMemo(() => {
     const normalized = keyword.trim().toLocaleLowerCase("vi");
@@ -62,6 +77,16 @@ export default function PlaceDirectory() {
         </label>
       </div>
 
+      <div className="mb-6 flex flex-wrap gap-2" aria-label="Chọn danh sách địa điểm">
+        {directoryModes.map(mode => (
+          <button key={mode.value} type="button" aria-pressed={topType === mode.value}
+            onClick={() => { setTopType(mode.value); setKeyword(''); }}
+            className={`rounded-xl border px-4 py-2 text-sm font-semibold ${topType === mode.value ? 'border-teal-600 bg-teal-600 text-white' : 'border-slate-200 bg-white text-slate-700 hover:border-teal-500'}`}>
+            {mode.label}
+          </button>
+        ))}
+      </div>
+      {topType ? <p className="mb-6 text-sm text-slate-600">Top 10 địa điểm có ít nhất 3 đánh giá đã duyệt. Xếp theo điểm giảm dần; cùng điểm ưu tiên nơi có nhiều đánh giá hơn.</p> : null}
       {loading ? (
         <p className="py-10 text-center text-gray-500">Đang tải địa điểm...</p>
       ) : null}
@@ -76,7 +101,7 @@ export default function PlaceDirectory() {
       {!loading && !error && filteredPlaces.length === 0 ? (
         <p className="rounded-2xl bg-white p-8 text-center text-gray-600 shadow-sm">
           {places.length === 0
-            ? "Chưa có địa điểm ACTIVE trong cơ sở dữ liệu."
+            ? topType ? "Chưa có địa điểm đủ điều kiện xếp hạng." : "Chưa có địa điểm ACTIVE trong cơ sở dữ liệu."
             : "Không tìm thấy địa điểm phù hợp."}
         </p>
       ) : null}

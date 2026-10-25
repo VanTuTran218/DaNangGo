@@ -12,6 +12,7 @@
     "build": "tsc",
     "seed:admin": "npm run build && node dist/scripts/seed-admin.js",
     "seed:ranking": "tsx src/scripts/seed-accommodation-ranking.ts",
+    "seed:ranking:restaurants": "tsx src/scripts/seed-restaurant-ranking.ts",
     "seed:ranking:real": "tsx src/scripts/sync-real-accommodation-samples.ts",
     "seed:subscriptions": "npm run build && node dist/scripts/seed-subscription-samples.js",
     "migrate:task7": "npx tsx src/scripts/run-migration-007.ts",

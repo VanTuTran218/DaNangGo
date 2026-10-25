@@ -17,6 +17,7 @@ import {
   MapPin,
   Pencil,
   Unlock,
+  Lock,
   Building2,
   AlertCircle,
   CheckCircle2,
@@ -197,6 +198,18 @@ function AdminPlacesContent() {
               <Eye className="w-4 h-4" />
             </button>
           ) : null}
+
+                    {/* Khóa cơ sở vi phạm - chỉ Admin mới thấy khi cơ sở ACTIVE/APPROVED */}
+          {(p.status === 'APPROVED' || p.status === 'ACTIVE') && (
+            <button
+              onClick={() => handleUpdateStatus(p.id, 'LOCKED')}
+              disabled={actionLoading}
+              title="Khóa cơ sở vi phạm"
+              className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 transition-colors"
+            >
+              <Lock className="w-4 h-4" />
+            </button>
+          )}
 
           {/* Xóa */}
           <button

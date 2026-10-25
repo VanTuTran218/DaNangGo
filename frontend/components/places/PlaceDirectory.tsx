@@ -13,7 +13,7 @@ export default function PlaceDirectory() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    getPlaces({ limit: 100 })
+    getPlaces({ limit: 50 })
       .then((res: any) => {
         const items = Array.isArray(res) ? res : res?.items || [];
         setPlaces(items.filter((place: any) => place.status === 'ACTIVE'));

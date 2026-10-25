@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -12,6 +12,8 @@ import {
   Hotel,
   CheckCircle2,
   Calendar,
+  Bed,
+  Users,
 } from 'lucide-react';
 
 import { getPlaceDetail, PlaceDetail } from '@/lib/api/places';
@@ -29,6 +31,7 @@ import SimilarPlacesSection from '@/components/places/SimilarPlacesSection';
 import PlaceCTA from '@/components/places/PlaceCTA';
 import SiteFooter from '@/components/places/SiteFooter';
 import ScrollToTop from '@/components/places/ScrollToTop';
+import RouteDirectionsModal from '@/components/places/RouteDirectionsModal';
 
 export default function PlaceDetailPage() {
   const params = useParams();
@@ -42,6 +45,7 @@ export default function PlaceDetailPage() {
   // States tương tác
   const [isSaved, setIsSaved] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [isDirectionsOpen, setIsDirectionsOpen] = useState(false);
 
   // 1. Fetch dữ liệu địa điểm từ API
   useEffect(() => {
@@ -101,16 +105,9 @@ export default function PlaceDetailPage() {
     }
   };
 
-  // 4. Mở Google Maps chỉ đường
-  const handleOpenGoogleMaps = () => {
-    if (!place) return;
-    let url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-      place.name + ' ' + (place.address || 'Đà Nẵng')
-    )}`;
-    if (place.latitude && place.longitude) {
-      url = `https://www.google.com/maps/dir/?api=1&destination=${place.latitude},${place.longitude}`;
-    }
-    window.open(url, '_blank', 'noopener,noreferrer');
+  // 4. Mở modal chỉ đường
+  const handleOpenDirections = () => {
+    setIsDirectionsOpen(true);
   };
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -244,7 +241,7 @@ export default function PlaceDetailPage() {
             />
 
             {/* 4.2. Khối 2 ô cân đối: Địa chỉ & Giờ mở cửa hôm nay + Giới thiệu */}
-            <PlaceInfo place={place} onOpenMap={handleOpenGoogleMaps} />
+            <PlaceInfo place={place} onOpenMap={handleOpenDirections} />
 
             {/* 4.3. THỰC ĐƠN MÓN ĂN & KHẨU VỊ (NHÀ HÀNG - RESTAURANT) */}
             {place.place_type === 'RESTAURANT' && (
@@ -341,6 +338,51 @@ export default function PlaceDetailPage() {
                     </div>
                   </div>
                 )}
+                {/* Danh sách loại phòng nghỉ */}
+                {(place as any).rooms && (place as any).rooms.length > 0 && (
+                  <div>
+                    <h4 className="font-bold text-sm text-[#0f2942] mb-3 flex items-center gap-2">
+                      <Bed size={16} className="text-teal-600" />
+                      Các loại phòng & Bảng giá
+                    </h4>
+                    <div className="space-y-3">
+                      {(place as any).rooms.map((room: any) => (
+                        <div
+                          key={room.room_type_id}
+                          className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl border border-gray-100 bg-slate-50/60 hover:border-teal-200 hover:bg-teal-50/30 transition-all"
+                        >
+                          <div className="flex-1">
+                            <p className="font-bold text-sm text-[#0f2942]">{room.name}</p>
+                            <div className="flex items-center gap-3 text-xs text-gray-500 mt-1">
+                              <span className="flex items-center gap-1">
+                                <Users size={11} className="text-gray-400" />
+                                Tối đa: {room.capacity} khách
+                              </span>
+                              <span>•</span>
+                              <span>Số phòng: {room.room_count ?? 1}</span>
+                              {room.status && room.status !== 'AVAILABLE' && (
+                                <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-semibold">
+                                  {room.status === 'MAINTENANCE' ? 'Đang bảo trì' : room.status}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            {room.original_price && room.original_price > room.price_per_night && (
+                              <p className="text-xs text-gray-400 line-through">
+                                {room.original_price.toLocaleString('vi-VN')}đ/đêm
+                              </p>
+                            )}
+                            <p className="text-base font-extrabold text-teal-700">
+                              {room.price_per_night.toLocaleString('vi-VN')}đ
+                              <span className="text-xs font-normal text-gray-500">/đêm</span>
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -397,7 +439,7 @@ export default function PlaceDetailPage() {
             <ReviewSection
               placeId={String(place.place_id)}
               placeName={place.name}
-              imageUrl={place.images?.[0]?.image_url || place.cover_image || ''}
+              imageUrl={galleryImages[0] || place.cover_image || ''}
             />
 
             {/* 4.8. Carousel quán gần đây / quán tương tự */}
@@ -406,7 +448,7 @@ export default function PlaceDetailPage() {
 
           {/* ═══ CỘT PHẢI: STICKY SIDEBAR LIÊN HỆ & ĐẶT CHỖ (4 CỘT) ═══ */}
           <div className="lg:col-span-4 w-full">
-            <BookingSidebar place={place} onOpenMap={handleOpenGoogleMaps} />
+            <BookingSidebar place={place} onOpenMap={handleOpenDirections} />
           </div>
         </div>
       </main>
@@ -419,6 +461,21 @@ export default function PlaceDetailPage() {
 
       {/* 7. NÚT LÊN ĐẦU TRANG VỚI VÒNG TIẾN ĐỘ CUỘN SVG */}
       <ScrollToTop />
+
+      {/* 8. MODAL CHỈ ĐƯỜNG */}
+      {place && (
+        <RouteDirectionsModal
+          isOpen={isDirectionsOpen}
+          onClose={() => setIsDirectionsOpen(false)}
+          destination={{
+            place_id: place.place_id,
+            name: place.name,
+            address: place.address,
+            latitude: place.latitude,
+            longitude: place.longitude,
+          }}
+        />
+      )}
     </div>
   );
 }

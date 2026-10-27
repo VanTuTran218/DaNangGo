@@ -1,4 +1,6 @@
 "use client";
+
+import Link from 'next/link';
 import Image from "next/image";
 import { Heart, MapPin, Star, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
@@ -116,9 +118,8 @@ export default function HotelCard({ hotel, liked, onLike }: HotelCardProps) {
               <span className="text-xs font-normal text-gray-500">/đêm</span>
             </p>
           </div>
-          <a
-            href="#"
-            onClick={(e) => e.preventDefault()}
+          <Link
+            href={`/places/${hotel.id}`}
             className="btn-ripple flex items-center gap-1 bg-[#0f2942] hover:bg-[#1a3f5c] text-white text-xs font-semibold px-3 py-2 rounded-xl transition-all group/btn"
           >
             Xem chi tiết
@@ -132,7 +133,7 @@ export default function HotelCard({ hotel, liked, onLike }: HotelCardProps) {
                 className="transition-transform duration-200"
               />
             </motion.span>
-          </a>
+          </Link>
         </div>
       </div>
     </motion.div>

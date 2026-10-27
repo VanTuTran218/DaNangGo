@@ -338,16 +338,22 @@ export default function ReviewSection({
     >
       <div className="flex flex-wrap items-end justify-between gap-4 border-b border-gray-100 pb-6">
         <div className="flex min-w-0 items-center gap-4">
-          <div className="relative h-16 w-20 shrink-0 overflow-hidden rounded-xl bg-slate-200 sm:h-20 sm:w-28">
-            <Image
-              src={imageUrl}
-              alt={`Hình ảnh ${placeName}`}
-              fill
-              unoptimized
-              sizes="112px"
-              className="object-cover"
-            />
-          </div>
+          {imageUrl ? (
+            <div className="relative h-16 w-20 shrink-0 overflow-hidden rounded-xl bg-slate-200 sm:h-20 sm:w-28">
+              <Image
+                src={imageUrl}
+                alt={`Hình ảnh ${placeName}`}
+                fill
+                unoptimized
+                sizes="112px"
+                className="object-cover"
+              />
+            </div>
+          ) : (
+            <div className="relative flex h-16 w-20 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-400 sm:h-20 sm:w-28">
+              <span className="text-xs">Không có ảnh</span>
+            </div>
+          )}
           <div>
             <h2 className="text-2xl font-bold text-[#0f2942]">Đánh giá</h2>
             <p className="mt-1 text-sm text-gray-500">

@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence, useScroll, useTransform, LayoutGroup } from 'framer-motion';
 import {
@@ -22,6 +22,7 @@ import {
 import Reveal from '@/components/ui/Reveal';
 import AnimatedCounter from '@/components/ui/AnimatedCounter';
 import HotelCard, { HotelData } from '@/components/places/HotelCard';
+import { getPlaces } from '@/lib/api/places';
 import SkeletonCard from '@/components/ui/SkeletonCard';
 import PriceRangeSlider from '@/components/ui/PriceRangeSlider';
 
@@ -97,6 +98,64 @@ export default function LuuTruPage() {
   const [sortBy, setSortBy] = useState<'recommended' | 'price_asc' | 'price_desc' | 'rating'>('recommended');
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [liveHotels, setLiveHotels] = useState<HotelData[]>([]);
+
+  // Gọi API Backend lấy danh sách lưu trú thật
+  useEffect(() => {
+    let isMounted = true;
+    setIsLoading(true);
+    getPlaces({ type: 'ACCOMMODATION', limit: 50 })
+      .then((res) => {
+        if (!isMounted || !res?.items?.length) return;
+        const live: HotelData[] = res.items.map((item: any) => ({
+          id: item.place_id,
+          name: item.name,
+          category:
+            item.accommodation_type === 'RESORT'
+              ? 'KHU NGHỈ DƯỠNG'
+              : item.accommodation_type === 'HOMESTAY'
+              ? 'BOUTIQUE HOMESTAY'
+              : 'KHÁCH SẠN',
+          badgeColor:
+            item.accommodation_type === 'RESORT'
+              ? 'bg-purple-600'
+              : item.accommodation_type === 'HOMESTAY'
+              ? 'bg-pink-500'
+              : 'bg-blue-500',
+          badgePulse: (item.avg_rating ?? 0) >= 4.8,
+          location: item.district_name
+            ? item.district_name + ', Đà Nẵng'
+            : item.address || 'Đà Nẵng',
+          rating: item.avg_rating ?? 4.5,
+          reviews: item.review_count ?? 0,
+          pricePerNight: item.price_min ?? 500000,
+          originalPrice: item.price_max ?? 800000,
+          img:
+            item.cover_image ||
+            'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=600&q=80',
+          amenities: ['Tiện nghi đầy đủ', 'WiFi miễn phí'],
+          amenityIcon: '🏨',
+          tags: [item.district_name || 'Đà Nẵng'],
+          isLiked: false,
+        }));
+        // Merge: ưu tiên dữ liệu thật, giữ lại mock chưa có trong live
+        const liveIds = new Set(live.map((h) => h.id));
+        const extra = HOTELS.filter((h) => !liveIds.has(h.id));
+        setLiveHotels([...live, ...extra]);
+      })
+      .catch((e) => {
+        // Fallback: dùng toàn bộ HOTELS mẫu, không báo lỗi UI
+        console.error(e);
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
   const [aiBudget, setAiBudget] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
   const [showAiSuggestion, setShowAiSuggestion] = useState(false);
@@ -141,7 +200,7 @@ export default function LuuTruPage() {
   };
 
   // ── Filtering + sorting ──────────────────────────────────────────────────────
-  let filtered = HOTELS.filter((h) => {
+  let filtered = (liveHotels.length > 0 ? liveHotels : HOTELS).filter((h) => {
     if (filterArea !== 'Tất cả' && !h.location.includes(filterArea)) return false;
     if (filterRating > 0 && h.rating < filterRating) return false;
     if (h.pricePerNight < priceRange[0] || h.pricePerNight > priceRange[1]) return false;
@@ -475,13 +534,9 @@ export default function LuuTruPage() {
         {/* Results bar */}
         <div className="flex items-center justify-between mb-4">
           <p className="text-sm text-gray-500">
-            Hiển thị{' '}
-            <span className="font-semibold text-[#0f2942]">
-              {(currentPage - 1) * HOTELS_PER_PAGE + 1}–
-              {Math.min(currentPage * HOTELS_PER_PAGE, filtered.length)}
-            </span>{' '}
-            trong{' '}
-            <span className="font-semibold text-[#0f2942]">{filtered.length}</span> kết quả
+            {filtered.length > 0
+              ? `Hiển thị ${(currentPage - 1) * HOTELS_PER_PAGE + 1}–${Math.min(currentPage * HOTELS_PER_PAGE, filtered.length)} trong ${filtered.length} kết quả`
+              : 'Không có kết quả'}
           </p>
           {hasActiveFilters && (
             <span className="text-xs bg-teal-100 text-teal-700 px-2.5 py-1 rounded-full font-medium">

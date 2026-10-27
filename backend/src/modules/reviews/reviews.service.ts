@@ -8,12 +8,11 @@ import {
   updateReviewStatusTx,
   deleteReviewTx,
   findUserReviews,
-  findReviewOwner,
-  updateOwnReviewTx,
-  deleteOwnReviewTx,
   findApprovedReviewImage,
   findUserReviewImage,
   findAdminReviewImage,
+  findReviewRetryAfterMs,
+  editReviewComment,
 } from "./reviews.repository";
 import type { ReviewImageUpload } from "./reviews.upload";
 
@@ -21,7 +20,6 @@ const paginationSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(50).default(10),
 });
-const REVIEW_COOLDOWN_MINUTES = 5;
 
 const reviewSchema = z.object({
   rating: z
@@ -111,21 +109,12 @@ export async function createReview(
     userId,
     input.data.rating,
     input.data.comment,
-    REVIEW_COOLDOWN_MINUTES,
     images,
   );
-  if ("retryAfterSeconds" in result) {
-    const minutes = Math.floor(result.retryAfterSeconds / 60);
-    const seconds = result.retryAfterSeconds % 60;
-    const wait = [
-      minutes ? `${minutes} phút` : "",
-      seconds ? `${seconds} giây` : "",
-    ]
-      .filter(Boolean)
-      .join(" ");
+  if ("retryAfterMs" in result) {
     throw new ReviewError(
       429,
-      `Bạn hãy chờ thêm ${wait} rồi gửi đánh giá tiếp theo.`,
+      `Bạn cần chờ đủ 7 ngày kể từ lần đánh giá trước để gửi tiếp. Còn khoảng ${Math.ceil(result.retryAfterMs / 60000)} phút.`,
     );
   }
   return { review_id: result.reviewId };
@@ -155,69 +144,8 @@ export async function listUserReviews(userId: number) {
   return findUserReviews(userId);
 }
 
-export async function updateOwnReview(
-  reviewId: number,
-  userId: number,
-  body: unknown,
-  images: ReviewImageUpload[] = [],
-) {
-  const review = await findReviewOwner(reviewId);
-  if (!review) throw new ReviewError(404, "Không tìm thấy đánh giá.");
-  if (review.user_id !== userId)
-    throw new ReviewError(403, "Bạn không có quyền sửa đánh giá này.");
-  const input = reviewSchema
-    .extend({
-      keepImageIds: z
-        .array(z.number().int().min(1).max(2147483647))
-        .max(5)
-        .optional(),
-    })
-    .safeParse(body);
-  if (!input.success)
-    throw new ReviewError(
-      400,
-      input.error.issues[0]?.message ?? "Dữ liệu đánh giá không hợp lệ.",
-    );
-  if (
-    input.data.keepImageIds &&
-    new Set(input.data.keepImageIds).size !== input.data.keepImageIds.length
-  )
-    throw new ReviewError(400, "Danh sách ảnh giữ lại bị trùng.");
-  if (
-    input.data.keepImageIds &&
-    input.data.keepImageIds.length + images.length > 5
-  )
-    throw new ReviewError(400, "Mỗi đánh giá chỉ được đính kèm tối đa 5 ảnh.");
-  const result = await updateOwnReviewTx(
-    reviewId,
-    userId,
-    input.data.rating,
-    input.data.comment,
-    input.data.keepImageIds,
-    images,
-  );
-  if (result === "missing")
-    throw new ReviewError(404, "Không tìm thấy đánh giá.");
-  if (result === "forbidden")
-    throw new ReviewError(403, "Bạn không có quyền sửa đánh giá này.");
-  if (result === "invalidImages")
-    throw new ReviewError(
-      400,
-      "Danh sách ảnh không thuộc đánh giá này. Vui lòng tải lại trang và thử lại.",
-    );
-  return { review_id: reviewId, status: "PENDING" as const };
-}
-
-export async function deleteOwnReview(reviewId: number, userId: number) {
-  const review = await findReviewOwner(reviewId);
-  if (!review) throw new ReviewError(404, "Không tìm thấy đánh giá.");
-  if (review.user_id !== userId)
-    throw new ReviewError(403, "Bạn không có quyền xóa đánh giá này.");
-  const result = await deleteOwnReviewTx(reviewId, userId);
-  if (result === "missing")
-    throw new ReviewError(404, "Không tìm thấy đánh giá.");
-  if (result === "forbidden")
-    throw new ReviewError(403, "Bạn không có quyền xóa đánh giá này.");
+export async function getReviewEligibility(placeId: number, userId: number) {
+  return { retry_after_ms: await findReviewRetryAfterMs(userId, placeId) };
 }
 
 export async function listAdminReviews(query: Record<string, unknown>) {
@@ -247,4 +175,12 @@ export async function moderateReview(
 export async function removeReview(reviewId: number) {
   const deleted = await deleteReviewTx(reviewId);
   if (!deleted) throw new ReviewError(404, "Không tìm thấy đánh giá.");
+}
+
+export async function editReview(reviewId: number, body: unknown) {
+  const input = reviewSchema.pick({ comment: true }).safeParse(body);
+  if (!input.success)
+    throw new ReviewError(400, input.error.issues[0]?.message ?? "Dữ liệu đánh giá không hợp lệ.");
+  if (!(await editReviewComment(reviewId, input.data.comment)))
+    throw new ReviewError(404, "Không tìm thấy đánh giá.");
 }

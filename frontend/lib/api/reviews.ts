@@ -32,40 +32,11 @@ export async function getMyReviews() {
   }));
 }
 
-export async function updatePlaceReview(
-  reviewId: number,
-  rating: number,
-  comment: string,
-  keepImageIds?: number[],
-  images: File[] = [],
-) {
-  let body: BodyInit;
-  // JSON giữ nguyên hợp đồng sửa review cũ; multipart chỉ cần khi danh sách ảnh thay đổi.
-  if (keepImageIds === undefined) body = JSON.stringify({ rating, comment });
-  else {
-    const form = new FormData();
-    form.set("rating", String(rating));
-    form.set("comment", comment);
-    form.set("keepImageIds", JSON.stringify(keepImageIds));
-    for (const image of images) form.append("images", image);
-    body = form;
-  }
-  const response = await apiRequest<{ review_id: number; status: "PENDING" }>(
-    `/api/reviews/${encodeURIComponent(String(reviewId))}`,
-    {
-      method: "PUT",
-      body,
-    },
+export async function getReviewEligibility(placeId: string) {
+  const response = await apiRequest<{ retry_after_ms: number }>(
+    `/api/places/${encodeURIComponent(placeId)}/reviews/eligibility`,
   );
-  return response.message ?? "Đánh giá đã được cập nhật.";
-}
-
-export async function deletePlaceReview(reviewId: number) {
-  const response = await apiRequest<void>(
-    `/api/reviews/${encodeURIComponent(String(reviewId))}`,
-    { method: "DELETE" },
-  );
-  return response.message ?? "Đã xóa đánh giá.";
+  return response.data!;
 }
 
 export interface PlaceReviewsResponse {

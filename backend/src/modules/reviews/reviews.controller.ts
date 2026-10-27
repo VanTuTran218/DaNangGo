@@ -176,6 +176,17 @@ export async function myReviews(_req: Request, res: Response) {
   }
 }
 
+export async function eligibility(req: Request, res: Response) {
+  const placeId = getPlaceId(req, res);
+  if (placeId === null) return;
+  try {
+    const data = await service.getReviewEligibility(placeId, res.locals.authUserId!);
+    res.json({ success: true, data });
+  } catch (error) {
+    handleError(res, error);
+  }
+}
+
 function getReviewId(req: Request, res: Response, param = "id"): number | null {
   const id = Number(req.params[param]);
   if (!Number.isSafeInteger(id) || id < 1) {
@@ -231,37 +242,12 @@ export async function adminDelete(req: Request, res: Response) {
   }
 }
 
-export async function updateOwn(req: Request, res: Response) {
-  const reviewId = getReviewId(req, res, "reviewId");
+export async function adminEdit(req: Request, res: Response) {
+  const reviewId = getReviewId(req, res);
   if (reviewId === null) return;
   try {
-    const data = await service.updateOwnReview(
-      reviewId,
-      res.locals.authUserId!,
-      req.body,
-      req.reviewImages ?? [],
-    );
-    res.json({
-      success: true,
-      data,
-      message: "Đánh giá đã được cập nhật và đang chờ admin duyệt lại.",
-    });
-  } catch (error) {
-    handleError(res, error);
-  }
-}
-
-export async function deleteOwn(req: Request, res: Response) {
-  const reviewId = Number(req.params["reviewId"]);
-  if (!Number.isSafeInteger(reviewId) || reviewId < 1) {
-    res
-      .status(400)
-      .json({ success: false, message: "ID đánh giá không hợp lệ." });
-    return;
-  }
-  try {
-    await service.deleteOwnReview(reviewId, res.locals.authUserId!);
-    res.json({ success: true, message: "Đã xóa đánh giá." });
+    await service.editReview(reviewId, req.body);
+    res.json({ success: true, message: "Đã chỉnh sửa đánh giá." });
   } catch (error) {
     handleError(res, error);
   }

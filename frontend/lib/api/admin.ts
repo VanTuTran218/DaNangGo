@@ -344,6 +344,14 @@ export async function updateAdminReviewStatus(
   };
 }
 
+export async function editAdminReview(reviewId: string, comment: string) {
+  const response = await apiRequest<void>(
+    `/api/admin/reviews/${encodeURIComponent(reviewId)}/content`,
+    { method: "PATCH", body: JSON.stringify({ comment }) },
+  );
+  return response.message ?? "Đã chỉnh sửa đánh giá.";
+}
+
 export async function deleteAdminReview(
   reviewId: string,
 ): Promise<{ success: boolean; message: string }> {

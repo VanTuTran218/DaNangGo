@@ -19,7 +19,7 @@
     "migrate:task8": "npx tsx src/scripts/run-migration-006.ts",
     "migrate:task10": "npx tsx src/scripts/run-migration-008.ts",
     "seed:task7": "npx tsx src/scripts/seed-task7-data.ts",
-    "test": "npx tsx tests/auth.test.ts && npx tsx tests/review-upload.test.ts && npx tsx --test tests/places-top.test.ts",
+    "test": "npx tsx tests/auth.test.ts && npx tsx tests/review-upload.test.ts && npx tsx --test tests/places-top.test.ts && npx tsx --test tests/review-rules.test.ts",
     "test:subscriptions": "npx tsx --test tests/subscriptions.test.ts",
     "test:step2": "npx tsx tests/step2.test.ts",
     "test:step3": "npx tsx tests/step3.test.ts",

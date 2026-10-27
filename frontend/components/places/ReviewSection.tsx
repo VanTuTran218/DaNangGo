@@ -3,23 +3,18 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ImagePlus, Pencil, Star, Trash2, X } from "lucide-react";
+import { ImagePlus, Star, X } from "lucide-react";
 import ReviewPhotoGrid from "./ReviewPhotoGrid";
-import ReviewImageEditor, {
-  type PendingReviewImage,
-} from "./ReviewImageEditor";
-import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { ApiError } from "@/lib/api/client";
 import {
   createPlaceReviewWithImages,
-  deletePlaceReview,
   getMyReviews,
+  getReviewEligibility,
   getPlaceReviews,
   type MyReview,
   type PlaceReview,
   type PlaceReviewsResponse,
-  updatePlaceReview,
 } from "@/lib/api/reviews";
 
 type SelectedReviewImage = { file: File; url: string };
@@ -45,16 +40,8 @@ export default function ReviewSection({
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [myReview, setMyReview] = useState<MyReview | null>(null);
-  const [editingOwnReview, setEditingOwnReview] = useState(false);
-  const [editRating, setEditRating] = useState(0);
-  const [editComment, setEditComment] = useState("");
-  const [editImages, setEditImages] = useState<MyReview["images"]>([]);
-  const [editSelectedImages, setEditSelectedImages] = useState<
-    PendingReviewImage[]
-  >([]);
-  const [savingEdit, setSavingEdit] = useState(false);
-  const [deletingReview, setDeletingReview] = useState(false);
-  const [confirmDeleteReview, setConfirmDeleteReview] = useState(false);
+  const [nextReviewAt, setNextReviewAt] = useState(0);
+  const [now, setNow] = useState(0);
   const [error, setError] = useState("");
   const [loadError, setLoadError] = useState("");
   const [notice, setNotice] = useState("");
@@ -72,14 +59,17 @@ export default function ReviewSection({
   const loadReviews = useCallback(async () => {
     setLoading(true);
     try {
-      const [placeReviews, myReviews] = await Promise.all([
+      const [placeReviews, myReviews, eligibility] = await Promise.all([
         getPlaceReviews(placeId, page),
         user?.role === "USER" ? getMyReviews() : Promise.resolve([]),
+        user?.role === "USER" ? getReviewEligibility(placeId) : Promise.resolve({ retry_after_ms: 0 }),
       ]);
       setData(placeReviews);
       const ownReview =
         myReviews.find((review) => String(review.place_id) === placeId) ?? null;
       setMyReview(ownReview);
+      setNextReviewAt(Date.now() + eligibility.retry_after_ms);
+      setNow(Date.now());
       setLoadError("");
     } catch (loadFailure) {
       setLoadError(
@@ -95,6 +85,14 @@ export default function ReviewSection({
   useEffect(() => {
     void loadReviews();
   }, [loadReviews]);
+
+  useEffect(() => {
+    if (!nextReviewAt || nextReviewAt <= now) return;
+    const timer = setTimeout(() => setNow(Date.now()), Math.max(0, nextReviewAt - Date.now()));
+    return () => clearTimeout(timer);
+  }, [nextReviewAt, now]);
+
+  const waiting = nextReviewAt > now;
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -130,6 +128,7 @@ export default function ReviewSection({
       if (submitError instanceof ApiError && submitError.status === 401) {
         setError("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
       } else {
+        if (submitError instanceof ApiError && submitError.status === 429) void loadReviews();
         setError(
           submitError instanceof Error
             ? submitError.message
@@ -196,140 +195,6 @@ export default function ReviewSection({
     );
   }
 
-  function startEditOwnReview() {
-    if (!myReview) return;
-    setEditRating(myReview.rating);
-    setEditComment(myReview.comment ?? "");
-    setEditImages(myReview.images ?? []);
-    clearEditSelectedImages();
-    setEditingOwnReview(true);
-    setError("");
-  }
-
-  function clearEditSelectedImages() {
-    for (const { url } of editSelectedImages) {
-      URL.revokeObjectURL(url);
-      imageUrls.current.delete(url);
-    }
-    setEditSelectedImages([]);
-  }
-
-  function cancelEdit() {
-    clearEditSelectedImages();
-    setEditingOwnReview(false);
-  }
-
-  function addEditImages(files: File[]) {
-    const accepted: PendingReviewImage[] = [];
-    let message = "";
-    for (const file of files) {
-      if (
-        editImages.length + editSelectedImages.length + accepted.length >=
-        5
-      ) {
-        message = "Mỗi đánh giá chỉ được đính kèm tối đa 5 ảnh.";
-        break;
-      }
-      if (file.size > 5 * 1024 * 1024) {
-        message = `${file.name}: dung lượng ảnh không được vượt quá 5 MB.`;
-        continue;
-      }
-      const extension = file.name.split(".").pop()?.toLowerCase();
-      const mimeByExtension: Record<string, string> = {
-        jpg: "image/jpeg",
-        jpeg: "image/jpeg",
-        png: "image/png",
-        webp: "image/webp",
-      };
-      if (
-        !extension ||
-        !mimeByExtension[extension] ||
-        (file.type && file.type !== mimeByExtension[extension])
-      ) {
-        message = `${file.name}: chỉ chấp nhận ảnh JPG, PNG hoặc WEBP.`;
-        continue;
-      }
-      const url = URL.createObjectURL(file);
-      imageUrls.current.add(url);
-      accepted.push({ file, url });
-    }
-    if (accepted.length)
-      setEditSelectedImages((current) => [...current, ...accepted]);
-    setError(message);
-  }
-
-  function removeEditImage(imageId: number) {
-    setEditImages((current) =>
-      current.filter((image) => image.image_id !== imageId),
-    );
-  }
-
-  function removeEditSelectedImage(url: string) {
-    URL.revokeObjectURL(url);
-    imageUrls.current.delete(url);
-    setEditSelectedImages((current) =>
-      current.filter((image) => image.url !== url),
-    );
-  }
-
-  async function saveOwnReview() {
-    if (!myReview || !editRating || !editComment.trim()) {
-      setError("Vui lòng chọn số sao và nhập nội dung đánh giá.");
-      return;
-    }
-    setSavingEdit(true);
-    setError("");
-    try {
-      const keptIds = editImages.map((image) => image.image_id);
-      const originalIds = (myReview.images ?? []).map(
-        (image) => image.image_id,
-      );
-      const imagesChanged =
-        editSelectedImages.length > 0 ||
-        keptIds.length !== originalIds.length ||
-        keptIds.some((imageId, index) => imageId !== originalIds[index]);
-      // Giữ request JSON tương thích khi người dùng chỉ sửa sao hoặc nội dung.
-      await updatePlaceReview(
-        myReview.review_id,
-        editRating,
-        editComment.trim(),
-        imagesChanged ? keptIds : undefined,
-        editSelectedImages.map((image) => image.file),
-      );
-      setEditingOwnReview(false);
-      clearEditSelectedImages();
-      setNotice("Đánh giá đã cập nhật và đang chờ admin duyệt lại.");
-      await loadReviews();
-    } catch (failure) {
-      setError(
-        failure instanceof Error
-          ? failure.message
-          : "Không thể cập nhật đánh giá.",
-      );
-    } finally {
-      setSavingEdit(false);
-    }
-  }
-
-  async function removeOwnReview() {
-    if (!myReview || deletingReview) return;
-    setDeletingReview(true);
-    setError("");
-    try {
-      await deletePlaceReview(myReview.review_id);
-      setConfirmDeleteReview(false);
-      setNotice("Đã xóa đánh giá của bạn.");
-      setEditingOwnReview(false);
-      await loadReviews();
-    } catch (failure) {
-      setError(
-        failure instanceof Error ? failure.message : "Không thể xóa đánh giá.",
-      );
-      setConfirmDeleteReview(false);
-    } finally {
-      setDeletingReview(false);
-    }
-  }
 
   return (
     <section
@@ -400,150 +265,12 @@ export default function ReviewSection({
           ) : null}
           <div className="space-y-3">
             {ownApprovedReview ? (
-              <article
-                key={ownApprovedReview.review_id}
-                className="rounded-2xl border border-teal-200 bg-gradient-to-br from-teal-50/50 to-white p-4 shadow-sm"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-semibold text-gray-900">
-                        {user?.name ?? "Bạn"}
-                      </p>
-                      <span className="rounded-full bg-teal-100 px-2 py-0.5 text-[11px] font-semibold text-teal-800">
-                        Đánh giá của bạn
-                      </span>
-                    </div>
-                    <time
-                      className="mt-1 block text-xs text-gray-500"
-                      dateTime={ownApprovedReview.created_at}
-                    >
-                      {new Date(
-                        ownApprovedReview.created_at,
-                      ).toLocaleDateString("vi-VN")}
-                    </time>
-                  </div>
-                  {!editingOwnReview ? (
-                    <div className="flex shrink-0 gap-1">
-                      <button
-                        type="button"
-                        onClick={startEditOwnReview}
-                        title="Sửa đánh giá"
-                        aria-label="Sửa đánh giá"
-                        className="rounded-lg p-2 text-slate-500 transition hover:bg-white hover:text-teal-700"
-                      >
-                        <Pencil size={15} aria-hidden="true" />
-                      </button>
-                      <button
-                        type="button"
-                        disabled={deletingReview}
-                        onClick={() => setConfirmDeleteReview(true)}
-                        title="Xóa đánh giá"
-                        aria-label="Xóa đánh giá"
-                        className="rounded-lg p-2 text-slate-500 transition hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
-                      >
-                        <Trash2 size={15} aria-hidden="true" />
-                      </button>
-                    </div>
-                  ) : null}
-                </div>
-                {editingOwnReview ? (
-                  <div className="mt-3 space-y-3">
-                    <fieldset>
-                      <legend className="mb-2 text-sm text-gray-600">
-                        Chỉnh số sao
-                      </legend>
-                      <div className="flex gap-1">
-                        {[1, 2, 3, 4, 5].map((value) => (
-                          <label
-                            key={value}
-                            className="cursor-pointer rounded p-1 focus-within:outline focus-within:outline-2 focus-within:outline-amber-500"
-                          >
-                            <input
-                              type="radio"
-                              name="edit-review-rating"
-                              value={value}
-                              checked={editRating === value}
-                              onChange={() => setEditRating(value)}
-                              className="sr-only"
-                              aria-label={`${value} sao`}
-                            />
-                            <Star
-                              size={24}
-                              aria-hidden="true"
-                              className={
-                                value <= editRating
-                                  ? "fill-amber-400 text-amber-400"
-                                  : "text-gray-300"
-                              }
-                            />
-                          </label>
-                        ))}
-                      </div>
-                    </fieldset>
-                    <div>
-                      <label
-                        htmlFor="edit-approved-review-comment"
-                        className="mb-2 block text-sm text-gray-600"
-                      >
-                        Nội dung đánh giá
-                      </label>
-                      <textarea
-                        id="edit-approved-review-comment"
-                        value={editComment}
-                        onChange={(event) => setEditComment(event.target.value)}
-                        maxLength={1000}
-                        rows={4}
-                        className="w-full resize-y rounded-xl border border-gray-200 bg-white p-3 text-sm outline-none focus:border-teal-500"
-                      />
-                      <p className="text-right text-xs text-gray-400">
-                        {editComment.length}/1000
-                      </p>
-                    </div>
-                    <ReviewImageEditor
-                      images={editImages}
-                      selected={editSelectedImages}
-                      disabled={savingEdit}
-                      onSelect={addEditImages}
-                      onRemoveExisting={removeEditImage}
-                      onRemoveSelected={removeEditSelectedImage}
-                    />
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        disabled={savingEdit}
-                        onClick={() => void saveOwnReview()}
-                        className="rounded-lg bg-teal-600 px-3 py-2 text-sm font-semibold text-white hover:bg-teal-700 disabled:opacity-60"
-                      >
-                        {savingEdit ? "Đang lưu..." : "Lưu"}
-                      </button>
-                      <button
-                        type="button"
-                        disabled={savingEdit}
-                        onClick={cancelEdit}
-                        className="rounded-lg border px-3 py-2 text-sm text-gray-600 hover:bg-gray-50"
-                      >
-                        Hủy
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <p
-                      className="mt-1 text-sm tracking-wide text-amber-500"
-                      aria-label={`${ownApprovedReview.rating} trên 5 sao`}
-                    >
-                      {"★".repeat(ownApprovedReview.rating)}
-                      {"☆".repeat(5 - ownApprovedReview.rating)}
-                    </p>
-                    {ownApprovedReview.comment ? (
-                      <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-gray-700">
-                        {ownApprovedReview.comment}
-                      </p>
-                    ) : null}
-                    <ReviewPhotoGrid images={ownApprovedReview.images ?? []} />
-                  </>
-                )}
+              <article className="rounded-2xl border border-teal-200 bg-teal-50/50 p-4 shadow-sm">
+                <p className="font-semibold text-gray-900">{user?.name ?? "Bạn"} · Đánh giá của bạn</p>
+                <time className="mt-1 block text-xs text-gray-500" dateTime={ownApprovedReview.created_at}>{new Date(ownApprovedReview.created_at).toLocaleDateString("vi-VN")}</time>
+                <p className="mt-2 text-amber-500" aria-label={`${ownApprovedReview.rating} trên 5 sao`}>{"★".repeat(ownApprovedReview.rating)}{"☆".repeat(5 - ownApprovedReview.rating)}</p>
+                <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-gray-700">{ownApprovedReview.comment}</p>
+                <ReviewPhotoGrid images={ownApprovedReview.images ?? []} />
               </article>
             ) : null}
             {data?.reviews
@@ -612,7 +339,7 @@ export default function ReviewSection({
           {!authLoading && user?.role === "USER" ? (
             <p className="mt-1 text-xs leading-5 text-gray-500">
               Bạn có thể gửi nhiều đánh giá, kể cả cho cùng địa điểm. Mỗi địa
-              điểm cần cách nhau 5 phút giữa các lần gửi.
+              điểm cần cách nhau đúng 7 ngày giữa các lần gửi.
             </p>
           ) : null}
           {notice ? (
@@ -629,12 +356,6 @@ export default function ReviewSection({
               className="mt-3 rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-700"
             >
               {error}
-            </p>
-          ) : null}
-          {!authLoading && user?.role === "USER" && ownApprovedReview ? (
-            <p className="mt-4 rounded-xl border border-teal-100 bg-teal-50/70 p-3 text-sm leading-6 text-teal-900">
-              Bạn đã đánh giá địa điểm này. Dùng các biểu tượng ở góc thẻ bên
-              trái để sửa hoặc xóa đánh giá.
             </p>
           ) : null}
           {authLoading ? (
@@ -655,139 +376,20 @@ export default function ReviewSection({
               Chỉ tài khoản khách du lịch mới có thể gửi đánh giá.
             </p>
           ) : null}
-          {!authLoading &&
-          user?.role === "USER" &&
-          myReview &&
-          myReview.status !== "APPROVED" ? (
+          {!authLoading && user?.role === "USER" && myReview && myReview.status !== "APPROVED" ? (
             <article className="mt-4 rounded-2xl border border-teal-100 bg-white p-4 shadow-sm">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <span
-                    className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${myReview.status === "PENDING" ? "bg-amber-50 text-amber-700" : "bg-slate-100 text-slate-600"}`}
-                  >
-                    {myReview.status === "PENDING"
-                      ? "Đang chờ duyệt"
-                      : "Đang ẩn"}
-                  </span>
-                  <p
-                    className="mt-2 text-lg tracking-wide text-amber-500"
-                    aria-label={`${myReview.rating} trên 5 sao`}
-                  >
-                    {"★".repeat(myReview.rating)}
-                    {"☆".repeat(5 - myReview.rating)}
-                  </p>
-                </div>
-                {!editingOwnReview ? (
-                  <div className="flex shrink-0 gap-2">
-                    <button
-                      type="button"
-                      onClick={startEditOwnReview}
-                      className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-teal-300 hover:bg-teal-50"
-                    >
-                      Sửa
-                    </button>
-                    <button
-                      type="button"
-                      disabled={deletingReview}
-                      onClick={() => setConfirmDeleteReview(true)}
-                      className="rounded-lg border border-red-100 px-3 py-2 text-sm font-medium text-red-700 transition hover:bg-red-50 disabled:opacity-50"
-                    >
-                      Xóa
-                    </button>
-                  </div>
-                ) : null}
-              </div>
-              {editingOwnReview ? (
-                <div className="mt-4 space-y-3">
-                  <fieldset>
-                    <legend className="mb-2 text-sm text-gray-600">
-                      Chỉnh số sao
-                    </legend>
-                    <div className="flex gap-1">
-                      {[1, 2, 3, 4, 5].map((value) => (
-                        <label
-                          key={value}
-                          className="cursor-pointer rounded p-1 focus-within:outline focus-within:outline-2 focus-within:outline-amber-500"
-                        >
-                          <input
-                            type="radio"
-                            name="edit-review-rating"
-                            value={value}
-                            checked={editRating === value}
-                            onChange={() => setEditRating(value)}
-                            className="sr-only"
-                            aria-label={`${value} sao`}
-                          />
-                          <Star
-                            size={25}
-                            aria-hidden="true"
-                            className={
-                              value <= editRating
-                                ? "fill-amber-400 text-amber-400"
-                                : "text-gray-300"
-                            }
-                          />
-                        </label>
-                      ))}
-                    </div>
-                  </fieldset>
-                  <div>
-                    <label
-                      htmlFor="edit-review-comment"
-                      className="mb-2 block text-sm text-gray-600"
-                    >
-                      Nội dung đánh giá
-                    </label>
-                    <textarea
-                      id="edit-review-comment"
-                      value={editComment}
-                      onChange={(event) => setEditComment(event.target.value)}
-                      maxLength={1000}
-                      rows={4}
-                      className="w-full resize-y rounded-xl border border-gray-200 bg-white p-3 text-sm outline-none focus:border-teal-500"
-                    />
-                    <p className="text-right text-xs text-gray-400">
-                      {editComment.length}/1000
-                    </p>
-                  </div>
-                  <ReviewImageEditor
-                    images={editImages}
-                    selected={editSelectedImages}
-                    disabled={savingEdit}
-                    onSelect={addEditImages}
-                    onRemoveExisting={removeEditImage}
-                    onRemoveSelected={removeEditSelectedImage}
-                  />
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      disabled={savingEdit}
-                      onClick={() => void saveOwnReview()}
-                      className="flex-1 rounded-xl bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-teal-700 disabled:opacity-60"
-                    >
-                      {savingEdit ? "Đang lưu..." : "Lưu thay đổi"}
-                    </button>
-                    <button
-                      type="button"
-                      disabled={savingEdit}
-                      onClick={cancelEdit}
-                      className="rounded-xl border px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50"
-                    >
-                      Hủy
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-gray-700">
-                    {myReview.comment}
-                  </p>
-                  <ReviewPhotoGrid images={myReview.images ?? []} />
-                </>
-              )}
+              <p className="text-sm font-semibold text-gray-700">{myReview.status === "PENDING" ? "Đang chờ duyệt" : "Đang ẩn"}</p>
+              <p className="mt-2 text-amber-500">{"★".repeat(myReview.rating)}{"☆".repeat(5 - myReview.rating)}</p>
+              <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-gray-700">{myReview.comment}</p>
+              <ReviewPhotoGrid images={myReview.images ?? []} />
             </article>
           ) : null}
-          {!authLoading && user?.role === "USER" ? (
+          {!authLoading && user?.role === "USER" && waiting && !loadError ? (
+            <p role="status" className="mt-4 rounded-xl border border-amber-100 bg-amber-50 p-3 text-sm text-amber-900">
+              Bạn cần chờ đủ 7 ngày kể từ lần đánh giá trước. Có thể đánh giá lại sau {new Date(nextReviewAt).toLocaleString("vi-VN")}.
+            </p>
+          ) : null}
+          {!authLoading && user?.role === "USER" && !loading && !loadError && !waiting ? (
             <form onSubmit={submit} className="mt-4 space-y-4">
               <fieldset>
                 <legend className="mb-2 text-sm text-gray-600">Số sao</legend>
@@ -897,19 +499,6 @@ export default function ReviewSection({
           ) : null}
         </div>
       </div>
-      <ConfirmDialog
-        isOpen={confirmDeleteReview}
-        onClose={() => {
-          if (!deletingReview) setConfirmDeleteReview(false);
-        }}
-        onConfirm={removeOwnReview}
-        title="Xóa đánh giá?"
-        description="Đánh giá và ảnh đính kèm sẽ bị xóa vĩnh viễn. Bạn không thể hoàn tác thao tác này."
-        confirmText="Xóa đánh giá"
-        cancelText="Giữ lại"
-        variant="danger"
-        loading={deletingReview}
-      />
     </section>
   );
 }

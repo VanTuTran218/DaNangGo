@@ -150,9 +150,8 @@ export async function insertPendingReview(
   userId: number,
   rating: number,
   comment: string,
-  cooldownMinutes: number,
   images: ReviewImageUpload[] = [],
-): Promise<{ reviewId: number } | { retryAfterSeconds: number }> {
+): Promise<{ reviewId: number } | { retryAfterMs: number }> {
   const transaction = getPool().transaction();
   await transaction.begin();
   try {
@@ -163,23 +162,22 @@ export async function insertPendingReview(
       .query(
         "SELECT user_id FROM users WITH (UPDLOCK, HOLDLOCK) WHERE user_id = @user_id",
       );
-    const recentReview = await transaction
+    const cooldown = await transaction
       .request()
       .input("user_id", sql.Int, userId)
-      .input("place_id", sql.Int, placeId)
-      .input("cooldown_minutes", sql.Int, cooldownMinutes).query(`
-        SELECT TOP 1 DATEDIFF(SECOND, GETDATE(), DATEADD(MINUTE, @cooldown_minutes, created_at)) AS retry_after_seconds
-        FROM reviews
-        WHERE user_id = @user_id AND place_id = @place_id
-          AND created_at > DATEADD(MINUTE, -@cooldown_minutes, GETDATE())
-        ORDER BY created_at DESC, review_id DESC
+      .input("place_id", sql.Int, placeId).query(`
+        SELECT CASE WHEN last_reviewed_at > DATEADD(DAY, -7, SYSDATETIME())
+          THEN CASE WHEN DATEDIFF_BIG(MILLISECOND, SYSDATETIME(), DATEADD(DAY, 7, last_reviewed_at)) > 0
+            THEN DATEDIFF_BIG(MILLISECOND, SYSDATETIME(), DATEADD(DAY, 7, last_reviewed_at)) ELSE 1 END
+          ELSE 0 END AS retry_after_ms
+        FROM review_cooldowns WHERE user_id = @user_id AND place_id = @place_id
       `);
-    const retryAfterSeconds = (
-      recentReview.recordset[0] as { retry_after_seconds: number } | undefined
-    )?.retry_after_seconds;
-    if (retryAfterSeconds !== undefined) {
+    const retryAfterMs = (
+      cooldown.recordset[0] as { retry_after_ms: number } | undefined
+    )?.retry_after_ms ?? 0;
+    if (retryAfterMs > 0) {
       await transaction.rollback();
-      return { retryAfterSeconds: Math.max(1, retryAfterSeconds) };
+      return { retryAfterMs };
     }
 
     const result = await transaction
@@ -193,6 +191,16 @@ export async function insertPendingReview(
         VALUES (@user_id, @place_id, @rating, @comment, 'PENDING')
       `);
     const reviewId = (result.recordset[0] as { review_id: number }).review_id;
+    await transaction.request()
+      .input("user_id", sql.Int, userId)
+      .input("place_id", sql.Int, placeId)
+      .input("review_id", sql.Int, reviewId).query(`
+        UPDATE review_cooldowns SET last_reviewed_at = (SELECT created_at FROM reviews WHERE review_id = @review_id)
+        WHERE user_id = @user_id AND place_id = @place_id;
+        IF @@ROWCOUNT = 0
+          INSERT INTO review_cooldowns (user_id, place_id, last_reviewed_at)
+          SELECT @user_id, @place_id, created_at FROM reviews WHERE review_id = @review_id;
+      `);
     for (const [index, image] of images.entries()) {
       await transaction
         .request()
@@ -250,6 +258,19 @@ export async function findUserReviews(
   );
 }
 
+export async function findReviewRetryAfterMs(userId: number, placeId: number): Promise<number> {
+  const result = await getPool().request()
+    .input("user_id", sql.Int, userId)
+    .input("place_id", sql.Int, placeId).query(`
+      SELECT CASE WHEN last_reviewed_at > DATEADD(DAY, -7, SYSDATETIME())
+        THEN CASE WHEN DATEDIFF_BIG(MILLISECOND, SYSDATETIME(), DATEADD(DAY, 7, last_reviewed_at)) > 0
+          THEN DATEDIFF_BIG(MILLISECOND, SYSDATETIME(), DATEADD(DAY, 7, last_reviewed_at)) ELSE 1 END
+        ELSE 0 END AS retry_after_ms
+      FROM review_cooldowns WHERE user_id = @user_id AND place_id = @place_id
+    `);
+  return Math.max(0, (result.recordset[0] as { retry_after_ms: number } | undefined)?.retry_after_ms ?? 0);
+}
+
 export async function findUserReviewImage(
   reviewId: number,
   imageId: number,
@@ -278,176 +299,6 @@ export async function findAdminReviewImage(
       `SELECT i.image_id, i.mime_type, i.image_data FROM review_images i INNER JOIN reviews r ON r.review_id = i.review_id WHERE r.review_id = @review_id AND i.image_id = @image_id`,
     );
   return (result.recordset[0] as ReviewImageRow | undefined) ?? null;
-}
-
-export async function findReviewOwner(reviewId: number): Promise<{
-  user_id: number;
-  status: "PENDING" | "APPROVED" | "HIDDEN";
-} | null> {
-  const result = await getPool()
-    .request()
-    .input("review_id", sql.Int, reviewId)
-    .query("SELECT user_id, status FROM reviews WHERE review_id = @review_id");
-  return (
-    (result.recordset[0] as
-      | { user_id: number; status: "PENDING" | "APPROVED" | "HIDDEN" }
-      | undefined) ?? null
-  );
-}
-
-export async function updateOwnReviewTx(
-  reviewId: number,
-  userId: number,
-  rating: number,
-  comment: string,
-  keepImageIds?: number[],
-  images: ReviewImageUpload[] = [],
-): Promise<"updated" | "missing" | "forbidden" | "invalidImages"> {
-  const transaction = getPool().transaction();
-  await transaction.begin();
-  try {
-    const review = await transaction
-      .request()
-      .input("review_id", sql.Int, reviewId)
-      .query(
-        "SELECT user_id, place_id, status FROM reviews WITH (UPDLOCK, HOLDLOCK) WHERE review_id = @review_id",
-      );
-    const row = review.recordset[0] as
-      | {
-          user_id: number;
-          place_id: number;
-          status: "PENDING" | "APPROVED" | "HIDDEN";
-        }
-      | undefined;
-    if (!row) {
-      await transaction.rollback();
-      return "missing";
-    }
-    if (row.user_id !== userId) {
-      await transaction.rollback();
-      return "forbidden";
-    }
-    await transaction
-      .request()
-      .input("place_id", sql.Int, row.place_id)
-      .query(
-        "SELECT place_id FROM places WITH (UPDLOCK, HOLDLOCK) WHERE place_id = @place_id",
-      );
-    // Không có keepImageIds nghĩa là request cũ chỉ sửa nội dung; có danh sách thì thay ảnh cùng transaction.
-    if (keepImageIds !== undefined) {
-      const existing = await transaction
-        .request()
-        .input("review_id", sql.Int, reviewId)
-        .query(
-          "SELECT image_id FROM review_images WITH (UPDLOCK, HOLDLOCK) WHERE review_id = @review_id ORDER BY image_order",
-        );
-      const existingRows = existing.recordset as { image_id: number }[];
-      const existingIds = new Set(existingRows.map((image) => image.image_id));
-      if (keepImageIds.some((imageId) => !existingIds.has(imageId))) {
-        await transaction.rollback();
-        return "invalidImages";
-      }
-      const keepSet = new Set(keepImageIds);
-      const orderedKeepIds = existingRows
-        .filter((image) => keepSet.has(image.image_id))
-        .map((image) => image.image_id);
-      const deleteRequest = transaction
-        .request()
-        .input("review_id", sql.Int, reviewId);
-      const keepParameters = orderedKeepIds.map((imageId, index) => {
-        deleteRequest.input(`keep_image_${index}`, sql.Int, imageId);
-        return `@keep_image_${index}`;
-      });
-      await deleteRequest.query(
-        `DELETE FROM review_images WHERE review_id = @review_id${keepParameters.length ? ` AND image_id NOT IN (${keepParameters.join(",")})` : ""}`,
-      );
-      for (const [index, imageId] of orderedKeepIds.entries()) {
-        await transaction
-          .request()
-          .input("review_id", sql.Int, reviewId)
-          .input("image_id", sql.Int, imageId)
-          .input("image_order", sql.TinyInt, index)
-          .query(
-            "UPDATE review_images SET image_order = @image_order WHERE review_id = @review_id AND image_id = @image_id",
-          );
-      }
-      for (const [index, image] of images.entries()) {
-        await transaction
-          .request()
-          .input("review_id", sql.Int, reviewId)
-          .input("image_order", sql.TinyInt, orderedKeepIds.length + index)
-          .input("mime_type", sql.VarChar(20), image.mimeType)
-          .input("image_data", sql.VarBinary(sql.MAX), image.data)
-          .query(
-            "INSERT INTO review_images (review_id, image_order, mime_type, image_data) VALUES (@review_id, @image_order, @mime_type, @image_data)",
-          );
-      }
-    }
-    await transaction
-      .request()
-      .input("review_id", sql.Int, reviewId)
-      .input("rating", sql.TinyInt, rating)
-      .input("comment", sql.NVarChar(1000), comment).query(`
-        UPDATE reviews SET rating = @rating, comment = @comment, status = 'PENDING',
-          moderated_by = NULL, moderated_at = NULL, updated_at = GETDATE()
-        WHERE review_id = @review_id
-      `);
-    if (row.status === "APPROVED")
-      await recalculatePlaceReviewSummary(transaction, row.place_id);
-    await transaction.commit();
-    return "updated";
-  } catch (error) {
-    await transaction.rollback();
-    throw error;
-  }
-}
-
-export async function deleteOwnReviewTx(
-  reviewId: number,
-  userId: number,
-): Promise<"deleted" | "missing" | "forbidden"> {
-  const transaction = getPool().transaction();
-  await transaction.begin();
-  try {
-    const review = await transaction
-      .request()
-      .input("review_id", sql.Int, reviewId)
-      .query(
-        "SELECT user_id, place_id, status FROM reviews WITH (UPDLOCK, HOLDLOCK) WHERE review_id = @review_id",
-      );
-    const row = review.recordset[0] as
-      | {
-          user_id: number;
-          place_id: number;
-          status: "PENDING" | "APPROVED" | "HIDDEN";
-        }
-      | undefined;
-    if (!row) {
-      await transaction.rollback();
-      return "missing";
-    }
-    if (row.user_id !== userId) {
-      await transaction.rollback();
-      return "forbidden";
-    }
-    await transaction
-      .request()
-      .input("place_id", sql.Int, row.place_id)
-      .query(
-        "SELECT place_id FROM places WITH (UPDLOCK, HOLDLOCK) WHERE place_id = @place_id",
-      );
-    await transaction
-      .request()
-      .input("review_id", sql.Int, reviewId)
-      .query("DELETE FROM reviews WHERE review_id = @review_id");
-    if (row.status === "APPROVED")
-      await recalculatePlaceReviewSummary(transaction, row.place_id);
-    await transaction.commit();
-    return "deleted";
-  } catch (error) {
-    await transaction.rollback();
-    throw error;
-  }
 }
 
 export async function isActivePlace(placeId: number): Promise<boolean> {
@@ -527,6 +378,16 @@ export async function updateReviewStatusTx(
   }
 }
 
+export async function editReviewComment(reviewId: number, comment: string): Promise<boolean> {
+  const result = await getPool().request()
+    .input("review_id", sql.Int, reviewId)
+    .input("comment", sql.NVarChar(1000), comment).query(`
+      UPDATE reviews SET comment = @comment, updated_at = SYSDATETIME()
+      WHERE review_id = @review_id
+    `);
+  return result.rowsAffected[0] > 0;
+}
+
 export async function deleteReviewTx(reviewId: number): Promise<boolean> {
   const transaction = getPool().transaction();
   await transaction.begin();
@@ -587,10 +448,6 @@ async function lockReviewPlace(
  * - Admin: API /api/admin/reviews → controller → moderateReview → updateReviewStatusTx.
  *   Repository mở transaction, khóa review rồi place, đổi trạng thái APPROVED/HIDDEN, gọi hàm
  *   này rồi mới commit. Đây là nơi hiện tại tính lại summary cho luồng duyệt/ẩn.
- * - User sửa: PUT /api/reviews/:reviewId → updateOwnReviewTx; review APPROVED chuyển thành
- *   PENDING, sau đó hàm này cập nhật summary trước commit.
- * - User xóa: DELETE /api/reviews/:reviewId → deleteOwnReviewTx; nếu review đang APPROVED thì
- *   tính lại summary sau khi xóa và trước commit.
  *
  * Khi thêm/đổi API duyệt hoặc ẩn, giữ việc đổi trạng thái và gọi hàm này trong cùng transaction,
  * gọi sau khi đổi trạng thái và trước commit. Nếu cập nhật review hoặc summary lỗi, rollback

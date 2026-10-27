@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -339,14 +339,14 @@ export default function PlaceDetailPage() {
                   </div>
                 )}
                 {/* Danh sách loại phòng nghỉ */}
-                {(place as any).rooms && (place as any).rooms.length > 0 && (
+                {((place as any).room_types || (place as any).rooms) && ((place as any).room_types || (place as any).rooms).length > 0 && (
                   <div>
                     <h4 className="font-bold text-sm text-[#0f2942] mb-3 flex items-center gap-2">
                       <Bed size={16} className="text-teal-600" />
                       Các loại phòng & Bảng giá
                     </h4>
                     <div className="space-y-3">
-                      {(place as any).rooms.map((room: any) => (
+                      {((place as any).room_types || (place as any).rooms).map((room: any) => (
                         <div
                           key={room.room_type_id}
                           className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl border border-gray-100 bg-slate-50/60 hover:border-teal-200 hover:bg-teal-50/30 transition-all"
@@ -374,7 +374,7 @@ export default function PlaceDetailPage() {
                               </p>
                             )}
                             <p className="text-base font-extrabold text-teal-700">
-                              {room.price_per_night.toLocaleString('vi-VN')}đ
+                              {((room.price_per_night ?? 0) as number).toLocaleString('vi-VN')}đ
                               <span className="text-xs font-normal text-gray-500">/đêm</span>
                             </p>
                           </div>

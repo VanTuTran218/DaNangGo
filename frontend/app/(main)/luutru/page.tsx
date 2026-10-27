@@ -103,6 +103,7 @@ export default function LuuTruPage() {
   // Gọi API Backend lấy danh sách lưu trú thật
   useEffect(() => {
     let isMounted = true;
+    setIsLoading(true);
     getPlaces({ type: 'ACCOMMODATION', limit: 50 })
       .then((res) => {
         if (!isMounted || !res?.items?.length) return;
@@ -142,8 +143,14 @@ export default function LuuTruPage() {
         const extra = HOTELS.filter((h) => !liveIds.has(h.id));
         setLiveHotels([...live, ...extra]);
       })
-      .catch(() => {
+      .catch((e) => {
         // Fallback: dùng toàn bộ HOTELS mẫu, không báo lỗi UI
+        console.error(e);
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoading(false);
+        }
       });
     return () => {
       isMounted = false;
@@ -527,13 +534,9 @@ export default function LuuTruPage() {
         {/* Results bar */}
         <div className="flex items-center justify-between mb-4">
           <p className="text-sm text-gray-500">
-            Hiển thị{' '}
-            <span className="font-semibold text-[#0f2942]">
-              {(currentPage - 1) * HOTELS_PER_PAGE + 1}–
-              {Math.min(currentPage * HOTELS_PER_PAGE, filtered.length)}
-            </span>{' '}
-            trong{' '}
-            <span className="font-semibold text-[#0f2942]">{filtered.length}</span> kết quả
+            {filtered.length > 0
+              ? `Hiển thị ${(currentPage - 1) * HOTELS_PER_PAGE + 1}–${Math.min(currentPage * HOTELS_PER_PAGE, filtered.length)} trong ${filtered.length} kết quả`
+              : 'Không có kết quả'}
           </p>
           {hasActiveFilters && (
             <span className="text-xs bg-teal-100 text-teal-700 px-2.5 py-1 rounded-full font-medium">

@@ -102,7 +102,8 @@ export function setAccommodationDetailHook(hook: AccommodationDetailHook | null)
  */
 export async function searchPlaces(
   filters: SearchPlacesQuery,
-  includeHidden: boolean = false
+  includeHidden: boolean = false,
+  minimumReviewCount?: number
 ): Promise<SearchPlacesResult> {
   const pool = getPool();
   const page = filters.page > 0 ? filters.page : 1;
@@ -111,6 +112,9 @@ export async function searchPlaces(
 
   // Danh sách các điều kiện WHERE
   const whereClauses: string[] = [];
+  if (minimumReviewCount !== undefined) {
+    whereClauses.push('p.review_count >= @minimum_review_count');
+  }
 
   // 1. Trạng thái địa điểm
   if (!includeHidden) {
@@ -234,6 +238,7 @@ export async function searchPlaces(
 
   // Helper bind parameters vào request
   const bindParameters = (req: sql.Request) => {
+    if (minimumReviewCount !== undefined) req.input('minimum_review_count', sql.Int, minimumReviewCount);
     if (filters.type) req.input('type', sql.VarChar(20), filters.type);
     if (filters.district_id) req.input('district_id', sql.Int, filters.district_id);
     if (filters.q) req.input('keyword', sql.NVarChar(200), `%${filters.q.trim()}%`);

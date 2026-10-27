@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 import * as placesService from './places.service';
-import { validateSearchPlacesQuery, validatePlaceId, ALLOWED_PLACE_TYPES } from './places.validation';
+import { validateSearchPlacesQuery, validateTopPlacesQuery, validatePlaceId, ALLOWED_PLACE_TYPES } from './places.validation';
 import type { PlaceStatus } from './places.service';
 import { ok, created, badRequest, notFound, forbidden, unauthorized, serverError } from '../../utils/response';
 
@@ -30,6 +30,17 @@ export const getAll = async (req: Request, res: Response) => {
     const result = await placesService.getPlaces(validation.data!, includeHidden);
 
     return ok(res, result, 'Lấy danh sách địa điểm thành công');
+  } catch (err) {
+    return handleError(res, err);
+  }
+};
+
+/** GET /api/places/top: bảng xếp hạng công khai theo loại địa điểm. */
+export const getTop = async (req: Request, res: Response) => {
+  try {
+    const validation = validateTopPlacesQuery(req.query as Record<string, unknown>);
+    if (validation.error) return badRequest(res, validation.error);
+    return ok(res, await placesService.getTopPlaces(validation.data!), 'Lấy bảng xếp hạng thành công');
   } catch (err) {
     return handleError(res, err);
   }

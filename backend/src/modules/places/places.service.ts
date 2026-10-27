@@ -1,7 +1,7 @@
 import { getPool, sql } from '../../config/db';
 import * as placesRepo from './places.repository';
 import { getAccommodationDetail } from '../accommodations/accommodations.service';
-import type { SearchPlacesQuery, PlaceType, PlaceDetailResponseDto } from './places.validation';
+import type { SearchPlacesQuery, PlaceType, PlaceDetailResponseDto, TopPlacesQuery } from './places.validation';
 import type {
   PlaceSearchItem,
   SearchPlacesResult,
@@ -145,6 +145,15 @@ export interface CurrentUserPayload {
   id?: number;
   role: string;
   partner_id?: number;
+}
+
+export async function getTopPlaces(query: TopPlacesQuery): Promise<PlaceSearchItem[]> {
+  const result = await placesRepo.searchPlaces(
+    { type: query.type, limit: query.limit, page: 1, sort: 'rating_desc' },
+    false,
+    3,
+  );
+  return result.items;
 }
 
 /**

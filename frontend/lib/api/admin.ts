@@ -150,9 +150,9 @@ export async function getAdminPartners(params?: {
     serviceType: r.service_type as "STAY" | "TABLE" | "TICKET",
     taxCode: r.tax_code ?? "",
     address: r.address ?? "",
-    status: (r.approval_status === "PENDING_APPROVAL"
+    status: (r.approval_status === "PENDING_APPROVAL" || r.approval_status === "PENDING"
       ? "PENDING"
-      : r.approval_status === "ACTIVE"
+      : r.approval_status === "ACTIVE" || r.approval_status === "APPROVED"
         ? "APPROVED"
         : r.approval_status === "REJECTED"
           ? "REJECTED"

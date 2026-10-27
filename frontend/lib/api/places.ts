@@ -231,6 +231,12 @@ export async function getPlaceDetail(placeId: number | string): Promise<PlaceDet
 
 export const getPlaceById = getPlaceDetail;
 
+export async function getTopPlaces(type: PlaceType, limit = 10): Promise<PlaceSearchItem[]> {
+  const params = new URLSearchParams({ type, limit: String(limit) });
+  const res = await apiRequest<PlaceSearchItem[]>(`/api/places/top?${params}`);
+  return res.data || [];
+}
+
 export async function getPlace(placeId: string): Promise<PlaceDetail> {
   const response = await apiRequest<PlaceDetail>(
     `/api/places/${encodeURIComponent(placeId)}`

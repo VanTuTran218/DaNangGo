@@ -2,7 +2,11 @@ import sql from 'mssql';
 import dotenv from 'dotenv';
 
 dotenv.config();
-
+export const mailConfig = {
+  user: process.env.MAIL_USER,
+  password: process.env.MAIL_APP_PASSWORD,
+  fromName: process.env.MAIL_FROM_NAME,
+};
 // Cấu hình kết nối SQL Server - SQL Server Authentication
 // Dùng port trực tiếp thay vì tên instance để không cần SQL Browser
 const dbConfig: sql.config = {

@@ -20,6 +20,36 @@ router.get('/', async (req, res) => {
   res.json({ success: true, data, message: 'Lấy danh sách đối tác thành công.' });
 });
 
+router.post('/:id/approve', async (req, res) => {
+  const partnerId = partnerIdParam.parse(req.params.id);
+  const data = await reviewPartner({
+    partnerId,
+    adminUserId: res.locals.authUserId!,
+    status: 'APPROVED',
+  });
+  res.json({
+    success: true,
+    data,
+    message: 'Đã phê duyệt tài khoản đối tác.',
+  });
+});
+
+router.post('/:id/reject', async (req, res) => {
+  const partnerId = partnerIdParam.parse(req.params.id);
+  const reason = typeof req.body?.reason === 'string' && req.body.reason.trim() ? req.body.reason.trim() : 'Không đủ điều kiện';
+  const data = await reviewPartner({
+    partnerId,
+    adminUserId: res.locals.authUserId!,
+    status: 'REJECTED',
+    reason,
+  });
+  res.json({
+    success: true,
+    data,
+    message: 'Đã từ chối tài khoản đối tác.',
+  });
+});
+
 router.patch('/:id/approval', async (req, res) => {
   const partnerId = partnerIdParam.parse(req.params.id);
   const body = reviewBody.parse(req.body);

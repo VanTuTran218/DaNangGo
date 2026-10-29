@@ -70,48 +70,60 @@ export async function getAdminTodos(): Promise<AdminTodoItem[]> {
   return [...mockAdminTodos];
 }
 
-// TODO: GET /api/admin/users
 export async function getAdminUsers(params?: {
   search?: string;
   role?: string;
   status?: string;
 }): Promise<AdminUserItem[]> {
-  await delay();
-  let result = [...mockAdminUsers];
-  if (params?.search) {
-    const s = params.search.toLowerCase();
-    result = result.filter(
-      (u) =>
-        u.name.toLowerCase().includes(s) || u.email.toLowerCase().includes(s),
+  const query = new URLSearchParams({ page: '1', limit: '100' });
+  if (params?.search) query.set('search', params.search);
+  if (params?.role && params.role !== 'ALL') query.set('role', params.role);
+  if (params?.status && params.status !== 'ALL') query.set('status', params.status);
+
+  type UserRecord = {
+    id: number;
+    name: string;
+    email: string;
+    role: AdminUserItem['role'];
+    status: AdminUserItem['status'];
+    createdAt: string;
+  };
+
+  const users: AdminUserItem[] = [];
+  let page = 1;
+  let totalPages = 1;
+  do {
+    query.set('page', String(page));
+    const response = await apiRequest<UserRecord[]>(
+      `/api/admin/users?${query.toString()}`,
+      {},
+      { allowMissingSuccess: true },
     );
-  }
-  if (params?.role && params.role !== "ALL") {
-    result = result.filter((u) => u.role === params.role);
-  }
-  if (params?.status && params.status !== "ALL") {
-    result = result.filter((u) => u.status === params.status);
-  }
-  return result;
+    if (!response.data || !response.pagination) {
+      throw new Error('Phản hồi danh sách người dùng không hợp lệ.');
+    }
+    users.push(...response.data.map((user) => ({ ...user, id: String(user.id) })));
+    totalPages = response.pagination.totalPages;
+    page += 1;
+  } while (page <= totalPages);
+
+  return users;
 }
 
-// TODO: PATCH /api/admin/users/:id/status
 export async function updateAdminUserStatus(
   userId: string,
   status: UserAccountStatus,
 ): Promise<{ success: boolean; message: string }> {
-  await delay();
-  const user = mockAdminUsers.find((u) => u.id === userId);
-  if (!user) throw new Error("Không tìm thấy người dùng");
-  user.status = status;
+  await apiRequest<{ id: number; status: UserAccountStatus }>(
+    `/api/admin/users/${encodeURIComponent(userId)}/status`,
+    { method: 'PATCH', body: JSON.stringify({ status }) },
+    { allowMissingSuccess: true },
+  );
   return {
     success: true,
-    message:
-      status === "LOCKED"
-        ? "Đã khóa tài khoản thành công."
-        : "Đã mở khóa tài khoản.",
+    message: status === 'LOCKED' ? 'Đã khóa tài khoản thành công.' : 'Đã mở khóa tài khoản.',
   };
 }
-
 // GET /api/admin/partners — REAL API
 export async function getAdminPartners(params?: {
   status?: PartnerApprovalStatus | "ALL";
@@ -122,24 +134,65 @@ export async function getAdminPartners(params?: {
     searchParams.set("status", params.status);
   }
   const qs = searchParams.toString();
-  const response = await apiRequest<{
-    partners: Array<{
-      partner_id: number;
-      user_id: number;
-      public_id: string;
-      full_name: string;
-      email: string;
-      phone: string | null;
-      business_name: string;
-      service_type: string;
-      tax_code: string | null;
-      address: string | null;
-      approval_status: string;
-      created_at: string;
-    }>;
-  }>(`/api/admin/partners${qs ? `?${qs}` : ""}`);
+  const response = await apiRequest<
+    | Array<{
+        id: number;
+        userId: number;
+        user: { fullName: string; email: string; phone: string | null };
+        businessName: string;
+        serviceType: string | null;
+        taxCode: string | null;
+        contactPhone: string | null;
+        address: string | null;
+        status: PartnerApprovalStatus;
+        accountStatus: string;
+        adminLocked: boolean;
+        createdAt: string;
+        rejectionReason: string | null;
+      }>
+    | {
+        partners: Array<{
+          partner_id: number;
+          user_id: number;
+          public_id: string;
+          full_name: string;
+          email: string;
+          phone: string | null;
+          business_name: string;
+          service_type: string;
+          tax_code: string | null;
+          address: string | null;
+          approval_status: string;
+          created_at: string;
+        }>;
+      }
+  >(`/api/admin/partners${qs ? `?${qs}` : ""}`);
+
+  // Hỗ trợ cả 2 định dạng response từ module partners mới và admin cũ
+  if (Array.isArray(response.data)) {
+    return response.data.map((r) => ({
+      id: String(r.id),
+      userId: String(r.userId),
+      name: r.user.fullName,
+      email: r.user.email,
+      phone: r.contactPhone || r.user.phone || "",
+      businessName: r.businessName,
+      serviceType: (r.serviceType || "TABLE") as "STAY" | "TABLE" | "TICKET",
+      taxCode: r.taxCode ?? "",
+      address: r.address ?? "",
+      status: (r.adminLocked
+        ? "LOCKED"
+        : r.status === "APPROVED"
+          ? "APPROVED"
+          : r.status === "REJECTED"
+            ? "REJECTED"
+            : "PENDING") as PartnerApprovalStatus,
+      createdAt: r.createdAt,
+      rejectReason: r.rejectionReason ?? undefined,
+    }));
+  }
+
   const records = response.data?.partners ?? [];
-  // Ánh xạ sang AdminPartnerItem (kiểu FE cũ)
   return records.map((r) => ({
     id: String(r.partner_id),
     userId: r.public_id,
@@ -150,9 +203,9 @@ export async function getAdminPartners(params?: {
     serviceType: r.service_type as "STAY" | "TABLE" | "TICKET",
     taxCode: r.tax_code ?? "",
     address: r.address ?? "",
-    status: (r.approval_status === "PENDING_APPROVAL"
+    status: (r.approval_status === "PENDING_APPROVAL" || r.approval_status === "PENDING"
       ? "PENDING"
-      : r.approval_status === "ACTIVE"
+      : r.approval_status === "ACTIVE" || r.approval_status === "APPROVED"
         ? "APPROVED"
         : r.approval_status === "REJECTED"
           ? "REJECTED"
@@ -162,47 +215,79 @@ export async function getAdminPartners(params?: {
   }));
 }
 
-// POST /api/admin/partners/:id/approve — REAL API
+// POST /api/admin/partners/:id/approval (hoặc /approve) — REAL API
 export async function approveAdminPartner(
   partnerId: string,
 ): Promise<{ success: boolean; message: string }> {
-  const response = await apiPost<never>(
-    `/api/admin/partners/${partnerId}/approve`,
-    {},
-  );
-  return {
-    success: true,
-    message: response.message ?? "Đã phê duyệt hồ sơ đối tác.",
-  };
+  try {
+    const response = await apiRequest<never>(
+      `/api/admin/partners/${partnerId}/approval`,
+      {
+        method: "PATCH",
+        body: JSON.stringify({ status: "APPROVED" }),
+      },
+    );
+    return {
+      success: true,
+      message: response.message ?? "Đã phê duyệt hồ sơ đối tác.",
+    };
+  } catch {
+    const response = await apiPost<never>(
+      `/api/admin/partners/${partnerId}/approve`,
+      {},
+    );
+    return {
+      success: true,
+      message: response.message ?? "Đã phê duyệt hồ sơ đối tác.",
+    };
+  }
 }
 
-// POST /api/admin/partners/:id/reject — REAL API
+// POST /api/admin/partners/:id/approval (hoặc /reject) — REAL API
 export async function rejectAdminPartner(
   partnerId: string,
-  _reason?: string,
+  reason?: string,
 ): Promise<{ success: boolean; message: string }> {
-  const response = await apiPost<never>(
-    `/api/admin/partners/${partnerId}/reject`,
-    {},
-  );
-  return {
-    success: true,
-    message: response.message ?? "Đã từ chối hồ sơ đối tác.",
-  };
+  try {
+    const response = await apiRequest<never>(
+      `/api/admin/partners/${partnerId}/approval`,
+      {
+        method: "PATCH",
+        body: JSON.stringify({ status: "REJECTED", reason: reason || "Không đủ điều kiện" }),
+      },
+    );
+    return {
+      success: true,
+      message: response.message ?? "Đã từ chối hồ sơ đối tác.",
+    };
+  } catch {
+    const response = await apiPost<never>(
+      `/api/admin/partners/${partnerId}/reject`,
+      { reason },
+    );
+    return {
+      success: true,
+      message: response.message ?? "Đã từ chối hồ sơ đối tác.",
+    };
+  }
 }
 
-// TODO: PATCH /api/admin/partners/:id/status
+// PATCH /api/admin/partners/:id/lock — REAL API
 export async function updateAdminPartnerStatus(
   partnerId: string,
   status: PartnerApprovalStatus,
 ): Promise<{ success: boolean; message: string }> {
-  await new Promise((resolve) => setTimeout(resolve, 400));
-  const partner = mockAdminPartners.find((p) => p.id === partnerId);
-  if (!partner) throw new Error("Không tìm thấy đối tác");
-  partner.status = status;
+  const isLock = status === "LOCKED";
+  const response = await apiRequest<never>(
+    `/api/admin/partners/${partnerId}/lock`,
+    {
+      method: "PATCH",
+      body: JSON.stringify({ locked: isLock }),
+    },
+  );
   return {
     success: true,
-    message: `Cập nhật trạng thái đối tác sang ${status}.`,
+    message: response.message ?? (isLock ? "Đã khóa tài khoản đối tác." : "Đã mở khóa tài khoản đối tác."),
   };
 }
 

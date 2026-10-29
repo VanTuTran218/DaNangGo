@@ -6,6 +6,7 @@ export interface ApiEnvelope<T> {
   success: boolean;
   data?: T;
   message?: string;
+  pagination?: { page: number; limit: number; total: number; totalPages: number };
 }
 
 export class ApiError extends Error {
@@ -68,7 +69,7 @@ async function readEnvelope<T>(response: Response): Promise<ApiEnvelope<T>> {
 export async function apiRequest<T>(
   path: string,
   init: RequestInit = {},
-  options: { retryAfterRefresh?: boolean } = {},
+  options: { retryAfterRefresh?: boolean; allowMissingSuccess?: boolean } = {},
 ): Promise<ApiEnvelope<T>> {
   const requestInit: RequestInit = {
     ...init,
@@ -103,7 +104,8 @@ export async function apiRequest<T>(
     }
   }
 
-  if (!response.ok || !envelope.success) {
+  const requestSucceeded = envelope.success || (options.allowMissingSuccess === true && response.ok);
+  if (!response.ok || !requestSucceeded) {
     throw new ApiError(
       envelope.message || "Không thể kết nối máy chủ. Vui lòng thử lại.",
       response.status,
@@ -116,7 +118,7 @@ export async function apiRequest<T>(
 export function apiPost<T>(
   path: string,
   body?: unknown,
-  options?: { retryAfterRefresh?: boolean },
+  options?: { retryAfterRefresh?: boolean; allowMissingSuccess?: boolean },
 ): Promise<ApiEnvelope<T>> {
   return apiRequest<T>(
     path,
@@ -128,14 +130,14 @@ export function apiPost<T>(
   );
 }
 
-export function apiPut<T>(path: string, body?: unknown, options?: { retryAfterRefresh?: boolean }): Promise<ApiEnvelope<T>> {
+export function apiPut<T>(path: string, body?: unknown, options?: { retryAfterRefresh?: boolean; allowMissingSuccess?: boolean }): Promise<ApiEnvelope<T>> {
   return apiRequest<T>(path, {
     method: 'PUT',
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
   }, options);
 }
 
-export function apiPatch<T>(path: string, body?: unknown, options?: { retryAfterRefresh?: boolean }): Promise<ApiEnvelope<T>> {
+export function apiPatch<T>(path: string, body?: unknown, options?: { retryAfterRefresh?: boolean; allowMissingSuccess?: boolean }): Promise<ApiEnvelope<T>> {
   return apiRequest<T>(path, {
     method: 'PATCH',
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),

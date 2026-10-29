@@ -131,7 +131,7 @@ export async function createAccount(input: {
           (public_id, role_id, full_name, email, phone, password_hash, status, email_verified, failed_login_count)
         OUTPUT INSERTED.user_id
         VALUES (@publicId, @roleId, @name, @email, @phone, @passwordHash,
-                CASE WHEN @role = 'PARTNER' THEN 'PENDING_APPROVAL' ELSE 'ACTIVE' END,
+                CASE WHEN @role = 'PARTNER' THEN 'ACTIVE' ELSE 'ACTIVE' END,
                 0, 0)
       `);
     const userId = inserted.recordset[0]?.user_id;

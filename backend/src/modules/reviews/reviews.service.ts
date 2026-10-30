@@ -112,9 +112,18 @@ export async function createReview(
     images,
   );
   if ("retryAfterMs" in result) {
+    const totalMinutes = Math.ceil(result.retryAfterMs / 60000);
+    const days = Math.floor(totalMinutes / 1440);
+    const hours = Math.floor((totalMinutes % 1440) / 60);
+    const minutes = totalMinutes % 60;
+    const parts: string[] = [];
+    if (days > 0) parts.push(`${days} ngày`);
+    if (hours > 0) parts.push(`${hours} giờ`);
+    if (minutes > 0 && days === 0) parts.push(`${minutes} phút`);
+    const wait = parts.join(" ") || "ít phút";
     throw new ReviewError(
       429,
-      `Bạn cần chờ đủ 7 ngày kể từ lần đánh giá trước để gửi tiếp. Còn khoảng ${Math.ceil(result.retryAfterMs / 60000)} phút.`,
+      `Bạn cần chờ đủ 7 ngày kể từ lần đánh giá trước để gửi tiếp. Còn khoảng ${wait}.`,
     );
   }
   return { review_id: result.reviewId };
@@ -172,8 +181,11 @@ export async function moderateReview(
   return { status: parsed.data.status };
 }
 
-export async function removeReview(reviewId: number) {
-  const deleted = await deleteReviewTx(reviewId);
+export async function removeReview(
+  reviewId: number,
+  opts: { clearCooldown?: boolean } = {},
+) {
+  const deleted = await deleteReviewTx(reviewId, opts);
   if (!deleted) throw new ReviewError(404, "Không tìm thấy đánh giá.");
 }
 

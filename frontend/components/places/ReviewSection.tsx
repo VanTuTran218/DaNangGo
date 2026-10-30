@@ -382,14 +382,23 @@ export default function ReviewSection({
               <p className="mt-2 text-amber-500">{"★".repeat(myReview.rating)}{"☆".repeat(5 - myReview.rating)}</p>
               <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-gray-700">{myReview.comment}</p>
               <ReviewPhotoGrid images={myReview.images ?? []} />
+              {waiting ? (
+                <p className="mt-3 text-xs text-amber-700">
+                  Có thể gửi đánh giá tiếp theo sau{" "}
+                  <time dateTime={new Date(nextReviewAt).toISOString()}>
+                    {new Date(nextReviewAt).toLocaleString("vi-VN")}
+                  </time>.
+                </p>
+              ) : null}
             </article>
-          ) : null}
-          {!authLoading && user?.role === "USER" && waiting && !loadError ? (
+          ) : !authLoading && user?.role === "USER" && waiting && !loadError ? (
             <p role="status" className="mt-4 rounded-xl border border-amber-100 bg-amber-50 p-3 text-sm text-amber-900">
-              Bạn cần chờ đủ 7 ngày kể từ lần đánh giá trước. Có thể đánh giá lại sau {new Date(nextReviewAt).toLocaleString("vi-VN")}.
+              Bạn cần chờ đủ 7 ngày kể từ lần đánh giá trước. Có thể đánh giá lại sau{" "}
+              <time dateTime={new Date(nextReviewAt).toISOString()}>
+                {new Date(nextReviewAt).toLocaleString("vi-VN")}
+              </time>.
             </p>
-          ) : null}
-          {!authLoading && user?.role === "USER" && !loading && !loadError && !waiting ? (
+          ) : !authLoading && user?.role === "USER" && !loading && !loadError ? (
             <form onSubmit={submit} className="mt-4 space-y-4">
               <fieldset>
                 <legend className="mb-2 text-sm text-gray-600">Số sao</legend>

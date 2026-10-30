@@ -2,7 +2,7 @@ export type UserAccountStatus = 'ACTIVE' | 'LOCKED';
 export type PartnerApprovalStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'LOCKED';
 export type PlaceCategory = 'luutru' | 'amthuc' | 'diemdulich';
 export type PlaceStatus = 'PENDING' | 'APPROVED' | 'ACTIVE' | 'REJECTED' | 'HIDDEN' | 'LOCKED';
-export type ReviewStatus = 'PENDING' | 'APPROVED' | 'ACTIVE' | 'HIDDEN';
+export type ReviewStatus = 'PENDING' | 'APPROVED' | 'HIDDEN';
 export type QuestionType = 'STAR' | 'TEXT';
 
 export interface AdminDashboardStats {

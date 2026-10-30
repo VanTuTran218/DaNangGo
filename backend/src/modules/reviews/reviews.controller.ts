@@ -234,9 +234,17 @@ export async function adminModerate(req: Request, res: Response) {
 export async function adminDelete(req: Request, res: Response) {
   const reviewId = getReviewId(req, res);
   if (reviewId === null) return;
+  // clearCooldown=true cho phép admin xóa cooldown của user (ví dụ: review bị xóa do lỗi hệ thống)
+  // để user có thể review lại địa điểm ngay lập tức. Mặc định: false (cooldown vẫn còn hiệu lực).
+  const clearCooldown = req.query["clearCooldown"] === "true";
   try {
-    await service.removeReview(reviewId);
-    res.json({ success: true, message: "Đã xóa đánh giá." });
+    await service.removeReview(reviewId, { clearCooldown });
+    res.json({
+      success: true,
+      message: clearCooldown
+        ? "Đã xóa đánh giá và đặt lại thời gian chờ của người dùng."
+        : "Đã xóa đánh giá.",
+    });
   } catch (error) {
     handleError(res, error);
   }

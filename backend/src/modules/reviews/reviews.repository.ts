@@ -259,6 +259,8 @@ export async function findUserReviews(
 }
 
 export async function findReviewRetryAfterMs(userId: number, placeId: number): Promise<number> {
+  // Nếu user chưa từng review địa điểm này, bảng review_cooldowns sẽ không có row
+  // → recordset rỗng → trả về 0 (không bị block), đây là hành vi đúng.
   const result = await getPool().request()
     .input("user_id", sql.Int, userId)
     .input("place_id", sql.Int, placeId).query(`
@@ -362,7 +364,7 @@ export async function updateReviewStatusTx(
       .input("moderator_id", sql.Int, moderatorId).query(`
         UPDATE reviews
         SET status = @status, moderated_by = @moderator_id,
-            moderated_at = GETDATE(), updated_at = GETDATE()
+            moderated_at = SYSDATETIME(), updated_at = SYSDATETIME()
         WHERE review_id = @review_id
       `);
     if (!result.rowsAffected[0]) {
@@ -388,25 +390,59 @@ export async function editReviewComment(reviewId: number, comment: string): Prom
   return result.rowsAffected[0] > 0;
 }
 
-export async function deleteReviewTx(reviewId: number): Promise<boolean> {
+export async function deleteReviewTx(
+  reviewId: number,
+  opts: { clearCooldown?: boolean } = {},
+): Promise<boolean> {
   const transaction = getPool().transaction();
   await transaction.begin();
   try {
-    const placeId = await lockReviewPlace(transaction, reviewId);
-    if (!placeId) {
+    // Lấy place_id và user_id trước khi xóa để có thể xóa cooldown nếu cần.
+    const meta = await transaction
+      .request()
+      .input("review_id", sql.Int, reviewId)
+      .query(
+        "SELECT place_id, user_id FROM reviews WITH (UPDLOCK, HOLDLOCK) WHERE review_id = @review_id",
+      );
+    const row = meta.recordset[0] as
+      | { place_id: number; user_id: number }
+      | undefined;
+    if (!row) {
       await transaction.rollback();
       return false;
     }
+    const { place_id: placeId, user_id: userId } = row;
+
+    // Khóa place để cập nhật summary nhất quán với các luồng khác.
+    await transaction
+      .request()
+      .input("place_id", sql.Int, placeId)
+      .query(
+        "SELECT place_id FROM places WITH (UPDLOCK, HOLDLOCK) WHERE place_id = @place_id",
+      );
+
     const result = await transaction
       .request()
       .input("review_id", sql.Int, reviewId).query(`
-        DELETE FROM reviews
-        WHERE review_id = @review_id
+        DELETE FROM reviews WHERE review_id = @review_id
       `);
     if (!result.rowsAffected[0]) {
       await transaction.rollback();
       return false;
     }
+
+    // Nếu admin yêu cầu xóa cooldown (ví dụ: xóa review do lỗi hệ thống),
+    // user sẽ có thể review lại địa điểm đó ngay lập tức.
+    if (opts.clearCooldown) {
+      await transaction
+        .request()
+        .input("user_id", sql.Int, userId)
+        .input("place_id", sql.Int, placeId)
+        .query(
+          "DELETE FROM review_cooldowns WHERE user_id = @user_id AND place_id = @place_id",
+        );
+    }
+
     await recalculatePlaceReviewSummary(transaction, placeId);
     await transaction.commit();
     return true;
@@ -468,7 +504,7 @@ export async function recalculatePlaceReviewSummary(
           review_count = (
             SELECT COUNT(*) FROM reviews WHERE place_id = @place_id AND status = 'APPROVED'
           ),
-          updated_at = GETDATE()
+          updated_at = SYSDATETIME()
       WHERE place_id = @place_id
     `);
 }

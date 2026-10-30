@@ -42,11 +42,31 @@ export default function MyReviews() {
     <div className="space-y-5">
       {reviews.map((review) => (
         <article key={review.review_id} className="rounded-xl border border-gray-100 p-4">
-          <Link href={`/places/${review.place_id}#danh-gia`} className="font-semibold text-teal-700 hover:underline">
-            {review.place_name}
-          </Link>
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <Link href={`/places/${review.place_id}#danh-gia`} className="font-semibold text-teal-700 hover:underline">
+              {review.place_name}
+            </Link>
+            <time
+              className="text-xs text-gray-400"
+              dateTime={review.created_at}
+            >
+              {new Date(review.created_at).toLocaleDateString("vi-VN")}
+            </time>
+          </div>
           <p className="mt-1 text-sm text-gray-500">
-            {"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)} · {statusLabel[review.status]}
+            {"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}
+            {" · "}
+            <span
+              className={
+                review.status === "APPROVED"
+                  ? "text-teal-600 font-medium"
+                  : review.status === "HIDDEN"
+                    ? "text-red-500 font-medium"
+                    : "text-amber-600 font-medium"
+              }
+            >
+              {statusLabel[review.status]}
+            </span>
           </p>
           <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-gray-700">{review.comment}</p>
           <ReviewPhotoGrid images={review.images ?? []} />

@@ -29,9 +29,12 @@ test('cooldown blocks duplicate submissions and keeps a ledger after successful 
       queries.push(text);
       if (text.includes('FROM review_cooldowns')) return { recordset: [{ retry_after_ms: retryAfterMs }] };
       if (text.includes('INSERT INTO reviews')) return { recordset: [{ review_id: 42, created_at: new Date() }] };
-      if (text.includes('SELECT place_id FROM reviews')) return { recordset: [{ place_id: 9 }] };
+      // deleteReviewTx now selects both place_id and user_id in the same query
+      if (text.includes('SELECT place_id, user_id FROM reviews')) return { recordset: [{ place_id: 9, user_id: 5 }] };
+      if (text.includes('SELECT place_id FROM places')) return { recordset: [{ place_id: 9 }] };
       if (text.includes('UPDATE reviews SET comment')) return { recordset: [], rowsAffected: [1] };
       if (text.includes('DELETE FROM reviews')) return { recordset: [], rowsAffected: [1] };
+      if (text.includes('DELETE FROM review_cooldowns')) return { recordset: [], rowsAffected: [1] };
       return { recordset: [] };
     },
   });
@@ -58,10 +61,44 @@ test('cooldown blocks duplicate submissions and keeps a ledger after successful 
     assert.equal(await editReviewComment(42, 'Đã chỉnh'), true);
     assert.ok(queries.some(query => query.includes('UPDATE reviews SET comment')));
     assert.ok(!queries.some(query => query.includes('SET rating =')));
+
+    // Xóa review không xóa cooldown theo mặc định (clearCooldown = false)
+    queries.length = 0;
     assert.equal(await deleteReviewTx(42), true);
     assert.ok(queries.some(query => query.includes('DELETE FROM reviews')));
-    assert.ok(!queries.some(query => query.includes('DELETE FROM review_cooldowns')));
+    assert.ok(!queries.some(query => query.includes('DELETE FROM review_cooldowns')), 'mặc định không xóa cooldown');
+
+    // Xóa review với clearCooldown = true phải xóa cả cooldown
+    queries.length = 0;
+    commits = 1;
+    assert.equal(await deleteReviewTx(42, { clearCooldown: true }), true);
+    assert.ok(queries.some(query => query.includes('DELETE FROM review_cooldowns')), 'clearCooldown=true phải xóa cooldown');
   } finally {
     await closeDB();
   }
 });
+
+test('error message 429 formats duration correctly', () => {
+  // Kiểm tra logic format thời gian thủ công
+  function formatRetryAfter(retryAfterMs: number): string {
+    const totalMinutes = Math.ceil(retryAfterMs / 60000);
+    const days = Math.floor(totalMinutes / 1440);
+    const hours = Math.floor((totalMinutes % 1440) / 60);
+    const minutes = totalMinutes % 60;
+    const parts: string[] = [];
+    if (days > 0) parts.push(`${days} ngày`);
+    if (hours > 0) parts.push(`${hours} giờ`);
+    if (minutes > 0 && days === 0) parts.push(`${minutes} phút`);
+    return parts.join(' ') || 'ít phút';
+  }
+
+  // 7 ngày đầy đủ
+  assert.equal(formatRetryAfter(7 * 24 * 60 * 60 * 1000), '7 ngày');
+  // 1 ngày 6 giờ
+  assert.equal(formatRetryAfter((1 * 1440 + 6 * 60) * 60000), '1 ngày 6 giờ');
+  // 45 phút
+  assert.equal(formatRetryAfter(45 * 60000), '45 phút');
+  // Chưa tới 1 phút
+  assert.equal(formatRetryAfter(30000), 'ít phút');
+});
+

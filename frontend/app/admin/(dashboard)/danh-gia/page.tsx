@@ -6,23 +6,26 @@ import {
   getAdminReviews,
   updateAdminReviewStatus,
   deleteAdminReview,
+  editAdminReview,
 } from "@/lib/api/admin";
 import type { AdminReviewItem } from "@/types/admin";
 import DataTable, { Column } from "@/components/ui/DataTable";
 import StatusBadge from "@/components/ui/StatusBadge";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
-import { Check, Eye, EyeOff, Trash2, Star, X, XCircle } from "lucide-react";
+import { Check, Eye, EyeOff, Pencil, Trash2, Star, X, XCircle } from "lucide-react";
 import ReviewPhotoGrid from "@/components/places/ReviewPhotoGrid";
 
 export default function AdminReviewsPage() {
   const [starFilter, setStarFilter] = useState<number | "ALL">("ALL");
   const [statusFilter, setStatusFilter] = useState<
     "ALL" | "PENDING" | "APPROVED" | "HIDDEN"
-  >("PENDING");
+  >("ALL");
   const [deletingReview, setDeletingReview] = useState<AdminReviewItem | null>(
     null,
   );
   const [actionLoading, setActionLoading] = useState(false);
+  const [editingReview, setEditingReview] = useState<AdminReviewItem | null>(null);
+  const [editComment, setEditComment] = useState("");
   const [toast, setToast] = useState<{
     message: string;
     type: "success" | "error";
@@ -84,6 +87,21 @@ export default function AdminReviewsPage() {
     }
   };
 
+  const handleEdit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!editingReview || !editComment.trim()) return;
+    setActionLoading(true);
+    try {
+      showToast(await editAdminReview(editingReview.id, editComment.trim()));
+      setEditingReview(null);
+      reload();
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : "Chỉnh sửa thất bại", "error");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const columns: Column<AdminReviewItem>[] = [
     {
       key: "placeName",
@@ -134,6 +152,15 @@ export default function AdminReviewsPage() {
       header: "Thao tác",
       render: (r) => (
         <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => { setEditingReview(r); setEditComment(r.comment); }}
+            disabled={actionLoading}
+            title="Chỉnh sửa đánh giá"
+            aria-label="Chỉnh sửa đánh giá"
+            className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 disabled:opacity-50"
+          >
+            <Pencil className="w-4 h-4" />
+          </button>
           {r.status === "PENDING" ? (
             <>
               <button
@@ -260,8 +287,8 @@ export default function AdminReviewsPage() {
                 }
                 className="px-3 py-2 text-xs font-semibold bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
               >
-                <option value="PENDING">Chờ duyệt</option>
                 <option value="ALL">Tất cả trạng thái</option>
+                <option value="PENDING">Chờ duyệt</option>
                 <option value="APPROVED">Đã duyệt</option>
                 <option value="HIDDEN">Đã từ chối / ẩn</option>
               </select>
@@ -271,6 +298,20 @@ export default function AdminReviewsPage() {
       )}
 
       {/* Delete Dialog */}
+      {editingReview ? (
+        <div role="presentation" className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <form onSubmit={handleEdit} onKeyDown={(event) => { if (event.key === "Escape" && !actionLoading) setEditingReview(null); }} role="dialog" aria-modal="true" aria-labelledby="edit-review-title" className="w-full max-w-lg space-y-4 rounded-2xl bg-white p-6 shadow-xl">
+            <h2 id="edit-review-title" className="text-lg font-bold">Chỉnh sửa đánh giá</h2>
+            <label className="block text-sm font-medium">Nội dung đánh giá
+              <textarea autoFocus value={editComment} onChange={(event) => setEditComment(event.target.value)} maxLength={1000} required rows={5} className="mt-1 block w-full rounded-lg border p-2" />
+            </label>
+            <div className="flex justify-end gap-2">
+              <button type="button" disabled={actionLoading} onClick={() => setEditingReview(null)} className="rounded-lg border px-4 py-2">Hủy</button>
+              <button type="submit" disabled={actionLoading || !editComment.trim()} className="rounded-lg bg-teal-600 px-4 py-2 font-semibold text-white disabled:opacity-50">{actionLoading ? "Đang lưu..." : "Lưu"}</button>
+            </div>
+          </form>
+        </div>
+      ) : null}
       <ConfirmDialog
         isOpen={Boolean(deletingReview)}
         onClose={() => setDeletingReview(null)}

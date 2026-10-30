@@ -6,6 +6,7 @@ import { parseReviewUpload } from "./reviews.upload";
 const router = Router({ mergeParams: true });
 
 router.get("/", controller.list);
+router.get("/eligibility", requireAuth("USER"), requireRole("USER"), controller.eligibility);
 router.get("/:reviewId/images/:imageId", controller.reviewImage);
 router.post(
   "/",
@@ -19,8 +20,6 @@ export const userReviewsRouter = Router();
 userReviewsRouter.use(requireAuth("USER"), requireRole("USER"));
 userReviewsRouter.get("/me", controller.myReviews);
 userReviewsRouter.get("/:reviewId/images/:imageId", controller.ownReviewImage);
-userReviewsRouter.put("/:reviewId", parseReviewUpload, controller.updateOwn);
-userReviewsRouter.delete("/:reviewId", controller.deleteOwn);
 
 export default router;
 
@@ -32,4 +31,5 @@ adminReviewsRouter.get(
   controller.adminReviewImage,
 );
 adminReviewsRouter.patch("/:id/status", controller.adminModerate);
+adminReviewsRouter.patch("/:id/content", controller.adminEdit);
 adminReviewsRouter.delete("/:id", controller.adminDelete);

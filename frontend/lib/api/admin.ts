@@ -31,9 +31,10 @@ function delay(ms = 400) {
 // GET /api/admin/stats
 export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
   try {
-    const [places, partners] = await Promise.all([
+    const [places, partners, reviews] = await Promise.all([
       getAdminPlaces().catch(() => mockAdminPlaces),
       getAdminPartners().catch(() => mockAdminPartners),
+      getAdminReviews().catch(() => [] as AdminReviewItem[]),
     ]);
     return {
       totalUsers: mockAdminUsers.length,
@@ -41,7 +42,7 @@ export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
       pendingPartners: partners.filter((p) => p.status === 'PENDING').length,
       pendingPlaces: places.filter((p) => p.status === 'PENDING').length,
       totalPlaces: places.length,
-      totalReviews: mockAdminReviews.length,
+      totalReviews: reviews.length,
       totalSurveys: mockAdminSurveys.length,
     };
   } catch {
@@ -342,6 +343,14 @@ export async function updateAdminReviewStatus(
     success: true,
     message: response.message ?? "Đã cập nhật trạng thái đánh giá.",
   };
+}
+
+export async function editAdminReview(reviewId: string, comment: string) {
+  const response = await apiRequest<void>(
+    `/api/admin/reviews/${encodeURIComponent(reviewId)}/content`,
+    { method: "PATCH", body: JSON.stringify({ comment }) },
+  );
+  return response.message ?? "Đã chỉnh sửa đánh giá.";
 }
 
 export async function deleteAdminReview(

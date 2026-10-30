@@ -1,8 +1,13 @@
 import { apiRequest } from './client';
+import { repairTextEncoding } from '@/lib/utils/repair-text-encoding';
 
 export interface CategoryItem {
   id: number;
   name: string;
+}
+
+function repairCategoryNames(items: CategoryItem[]): CategoryItem[] {
+  return items.map((item) => ({ ...item, name: repairTextEncoding(item.name) }));
 }
 
 /**
@@ -10,7 +15,7 @@ export interface CategoryItem {
  */
 export async function getDistricts(): Promise<CategoryItem[]> {
   const res = await apiRequest<CategoryItem[]>('/api/districts');
-  return res.data || [];
+  return repairCategoryNames(res.data || []);
 }
 
 /**
@@ -18,7 +23,7 @@ export async function getDistricts(): Promise<CategoryItem[]> {
  */
 export async function getCuisines(): Promise<CategoryItem[]> {
   const res = await apiRequest<CategoryItem[]>('/api/cuisines');
-  return res.data || [];
+  return repairCategoryNames(res.data || []);
 }
 
 /**
@@ -26,7 +31,7 @@ export async function getCuisines(): Promise<CategoryItem[]> {
  */
 export async function getTastes(): Promise<CategoryItem[]> {
   const res = await apiRequest<CategoryItem[]>('/api/tastes');
-  return res.data || [];
+  return repairCategoryNames(res.data || []);
 }
 
 /**
@@ -34,5 +39,5 @@ export async function getTastes(): Promise<CategoryItem[]> {
  */
 export async function getAttractionCategories(): Promise<CategoryItem[]> {
   const res = await apiRequest<CategoryItem[]>('/api/attraction-categories');
-  return res.data || [];
+  return repairCategoryNames(res.data || []);
 }

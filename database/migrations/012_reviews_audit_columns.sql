@@ -38,12 +38,24 @@ BEGIN TRY
     )
     BEGIN
         ALTER TABLE dbo.reviews ADD moderated_by INT NULL;
-        ALTER TABLE dbo.reviews ADD CONSTRAINT fk_reviews_moderated_by
-            FOREIGN KEY (moderated_by) REFERENCES dbo.users(user_id);
         PRINT 'Migration 012: Added moderated_by column to reviews.';
     END
     ELSE
         PRINT 'Migration 012: moderated_by already exists, skipped.';
+
+    -- Thêm FK fk_reviews_moderated_by nếu cột đã có nhưng FK chưa tồn tại
+    IF NOT EXISTS (
+        SELECT 1 FROM sys.foreign_keys
+        WHERE name = N'fk_reviews_moderated_by'
+            AND parent_object_id = OBJECT_ID(N'dbo.reviews')
+    )
+    BEGIN
+        ALTER TABLE dbo.reviews ADD CONSTRAINT fk_reviews_moderated_by
+            FOREIGN KEY (moderated_by) REFERENCES dbo.users(user_id);
+        PRINT 'Migration 012: Added FK fk_reviews_moderated_by.';
+    END
+    ELSE
+        PRINT 'Migration 012: FK fk_reviews_moderated_by already exists, skipped.';
 
     COMMIT TRANSACTION;
 END TRY

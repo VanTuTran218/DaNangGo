@@ -119,7 +119,8 @@ export async function createReview(
     const parts: string[] = [];
     if (days > 0) parts.push(`${days} ngày`);
     if (hours > 0) parts.push(`${hours} giờ`);
-    if (minutes > 0 && days === 0) parts.push(`${minutes} phút`);
+    // Chỉ hiển thị phút khi >= 1 phút thực (60 giây), để tránh "1 phút" cho 30 giây do Math.ceil
+    if (minutes > 0 && days === 0 && result.retryAfterMs >= 60000) parts.push(`${minutes} phút`);
     const wait = parts.join(" ") || "ít phút";
     throw new ReviewError(
       429,

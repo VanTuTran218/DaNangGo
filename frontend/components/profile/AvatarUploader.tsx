@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { User } from "@/types/user";
 import { useAuth } from "@/contexts/AuthContext";
+import { deleteMyAvatar, uploadMyAvatar } from "@/lib/api/me";
 
 export default function AvatarUploader({
   user,
@@ -18,56 +19,64 @@ export default function AvatarUploader({
   const { updateUser } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [error, setError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  /*
-   * ============================================================================
-   * SERVER-SIDE REQUIREMENTS FOR AVATAR UPLOAD (As requested)
-   * ============================================================================
-   * 1. File Type Sniffing: Do not rely solely on the file extension or Content-Type header.
-   *    Read the first few bytes (magic numbers) of the buffer to determine the actual
-   *    MIME type (e.g. using `file-type` package).
-   * 2. Size Limits: Enforce a strict max file size (e.g. 5MB) early in the request stream
-   *    to prevent payload-based DoS.
-   * 3. Image Processing: Use a library like `sharp` to resize the image to a standard
-   *    dimension (e.g. 512x512) and convert it to modern formats like WebP or AVIF.
-   * 4. Metadata Stripping: Strip all EXIF data (location, camera info) to protect user privacy.
-   * 5. Storage: Save the processed image to a CDN (e.g. AWS S3, Cloudflare R2) and return
-   *    the CDN URL to update the user record.
-   * ============================================================================
-   */
+  useEffect(() => () => {
+    if (selectedImage) URL.revokeObjectURL(selectedImage);
+  }, [selectedImage]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      setError("");
+      if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+        setError("Chỉ chấp nhận ảnh JPG, PNG hoặc WEBP.");
+        e.target.value = "";
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        setError("Ảnh không được vượt quá 5 MB.");
+        e.target.value = "";
+        return;
+      }
       const url = URL.createObjectURL(file);
+      setSelectedFile(file);
       setSelectedImage(url);
     }
   };
 
   const handleSave = async () => {
+    if (!selectedFile) return;
     setIsUploading(true);
-    setIsOpen(false);
-
-    // Mock upload delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    // Mock save logic
-    updateUser({ avatarUrl: selectedImage || "https://i.pravatar.cc/300" });
-    setIsUploading(false);
-    setSelectedImage(null);
-
-    // Mock Toast
-    alert("Cập nhật ảnh đại diện thành công!");
+    setError("");
+    try {
+      const updatedUser = await uploadMyAvatar(selectedFile);
+      updateUser({ avatarUrl: updatedUser.avatarUrl });
+      setSelectedImage(null);
+      setSelectedFile(null);
+      setIsOpen(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Không thể tải ảnh lên.");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleDelete = async () => {
     setIsUploading(true);
-    setIsOpen(false);
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    updateUser({ avatarUrl: undefined });
-    setIsUploading(false);
+    setError("");
+    try {
+      const updatedUser = await deleteMyAvatar();
+      updateUser({ avatarUrl: updatedUser.avatarUrl });
+      setIsOpen(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Không thể xóa ảnh.");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -85,6 +94,7 @@ export default function AvatarUploader({
               alt={user.name}
               fill
               className="rounded-full object-cover"
+              unoptimized
             />
           ) : (
             <div className="w-full h-full rounded-full bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center text-white font-bold text-4xl">
@@ -152,6 +162,7 @@ export default function AvatarUploader({
               <h3 className="text-xl font-bold mb-4 text-center">
                 Cập nhật ảnh đại diện
               </h3>
+              {error && <p role="alert" className="mb-3 text-sm text-red-600">{error}</p>}
 
               {!selectedImage ? (
                 <div className="flex flex-col gap-3">
@@ -159,7 +170,7 @@ export default function AvatarUploader({
                     type="file"
                     ref={fileInputRef}
                     onChange={handleFileChange}
-                    accept="image/*"
+                    accept="image/jpeg,image/png,image/webp"
                     className="hidden"
                   />
                   <button
@@ -185,7 +196,6 @@ export default function AvatarUploader({
                 </div>
               ) : (
                 <div className="flex flex-col items-center gap-6">
-                  {/* Mock Crop UI */}
                   <div className="relative w-64 h-64 bg-gray-100 rounded-full overflow-hidden border-4 border-gray-200">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
@@ -197,26 +207,16 @@ export default function AvatarUploader({
                     <div className="absolute inset-4 rounded-full border-2 border-dashed border-white pointer-events-none"></div>
                   </div>
 
-                  <div className="w-full px-4">
-                    <input
-                      type="range"
-                      className="w-full accent-teal-500"
-                      min="1"
-                      max="3"
-                      step="0.1"
-                      defaultValue="1"
-                    />
-                  </div>
-
                   <div className="flex w-full gap-3">
                     <button
-                      onClick={() => setSelectedImage(null)}
+                      onClick={() => { setSelectedImage(null); setSelectedFile(null); setError(""); }}
                       className="flex-1 py-2.5 border border-gray-200 rounded-xl font-medium text-gray-600 hover:bg-gray-50"
                     >
                       Chọn lại
                     </button>
                     <button
                       onClick={handleSave}
+                      disabled={isUploading}
                       className="flex-1 py-2.5 bg-teal-500 text-white rounded-xl font-medium hover:bg-teal-600"
                     >
                       Lưu thay đổi

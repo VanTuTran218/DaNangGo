@@ -48,7 +48,11 @@ export function mapApiUser(user: ApiUser): User {
     },
   };
   if (user.phone) mapped.phone = user.phone;
-  if (user.avatarUrl) mapped.avatarUrl = user.avatarUrl;
+  if (user.avatarUrl) {
+    mapped.avatarUrl = user.avatarUrl.startsWith('/')
+      ? `${API_BASE_URL.replace(/\/$/, '')}${user.avatarUrl}`
+      : user.avatarUrl;
+  }
   if (user.birthday) mapped.birthday = user.birthday;
   if (user.approvalStatus) mapped.approvalStatus = user.approvalStatus;
   return mapped;

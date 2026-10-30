@@ -10,6 +10,8 @@ export interface AuthAccountRecord {
   full_name: string;
   email: string;
   phone: string | null;
+  date_of_birth: string | null;
+  avatar_url: string | null;
   password_hash: string;
   status: string;
   email_verified: boolean;
@@ -35,7 +37,8 @@ export interface ResetAccount {
 
 const accountSelect = `
   SELECT u.user_id, u.public_id, u.role_id, r.role_name, u.full_name,
-    u.email, u.phone, u.password_hash, u.status, u.email_verified,
+    u.email, u.phone, CONVERT(char(10), u.date_of_birth, 23) AS date_of_birth,
+    u.avatar_url, u.password_hash, u.status, u.email_verified,
     u.failed_login_count, u.locked_until, u.created_at,
     pp.partner_id, pp.approval_status
   FROM dbo.users AS u
@@ -94,6 +97,38 @@ export async function findAccountByUserId(userId: number): Promise<AuthAccountRe
     .input('userId', sql.Int, userId)
     .query<AuthAccountRecord>(`${accountSelect} WHERE u.user_id = @userId`);
   return result.recordset[0] ?? null;
+}
+
+export async function updateAccountProfile(input: {
+  userId: number;
+  name: string;
+  phone: string | null;
+  birthday: string | null;
+}): Promise<AuthAccountRecord | null> {
+  await getPool().request()
+    .input('userId', sql.Int, input.userId)
+    .input('name', sql.NVarChar(50), input.name)
+    .input('phone', sql.VarChar(20), input.phone)
+    .input('birthday', sql.Date, input.birthday ? new Date(`${input.birthday}T00:00:00.000Z`) : null)
+    .query(`
+      UPDATE dbo.users
+      SET full_name = @name, phone = @phone, date_of_birth = @birthday,
+          updated_at = SYSUTCDATETIME()
+      WHERE user_id = @userId
+    `);
+  return findAccountByUserId(input.userId);
+}
+
+export async function updateAccountAvatar(userId: number, avatarUrl: string | null): Promise<AuthAccountRecord | null> {
+  await getPool().request()
+    .input('userId', sql.Int, userId)
+    .input('avatarUrl', sql.VarChar(255), avatarUrl)
+    .query(`
+      UPDATE dbo.users
+      SET avatar_url = @avatarUrl, updated_at = SYSUTCDATETIME()
+      WHERE user_id = @userId
+    `);
+  return findAccountByUserId(userId);
 }
 
 export async function publicIdExists(publicId: string): Promise<boolean> {

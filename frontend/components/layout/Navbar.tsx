@@ -323,7 +323,7 @@ export default function Navbar() {
                   }`}
                 >
                   {user.avatarUrl ? (
-                    <Image src={user.avatarUrl} alt={user.name} fill className="rounded-full object-cover" />
+                    <Image src={user.avatarUrl} alt={user.name} fill className="rounded-full object-cover" unoptimized />
                   ) : (
                     <div className="w-full h-full rounded-full bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center text-white font-bold text-lg">
                       {user.name.charAt(0).toUpperCase()}
@@ -351,7 +351,7 @@ export default function Navbar() {
                             <div className="flex items-center gap-3">
                               <div className={`w-12 h-12 rounded-full ring-2 ring-${TIER_CONFIG[user.membership.tier].color}-400 overflow-hidden relative`}>
                                 {user.avatarUrl ? (
-                                  <Image src={user.avatarUrl} alt={user.name} fill className="object-cover" />
+                                  <Image src={user.avatarUrl} alt={user.name} fill className="object-cover" unoptimized />
                                 ) : (
                                   <div className="w-full h-full bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center text-white font-bold text-lg">
                                     {user.name.charAt(0).toUpperCase()}
@@ -404,7 +404,7 @@ export default function Navbar() {
                           <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full relative overflow-hidden">
                               {user.avatarUrl ? (
-                                <Image src={user.avatarUrl} alt={user.name} fill className="object-cover" />
+                                <Image src={user.avatarUrl} alt={user.name} fill className="object-cover" unoptimized />
                               ) : (
                                 <div className="w-full h-full bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center text-white font-bold text-lg">
                                   {user.name.charAt(0).toUpperCase()}

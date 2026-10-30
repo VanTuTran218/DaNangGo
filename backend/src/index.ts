@@ -1,4 +1,5 @@
 import express from 'express';
+import path from 'node:path';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
@@ -39,6 +40,12 @@ app.use(
 );
 app.use(cors({ origin: frontendUrl, credentials: true }));
 app.use(cookieParser());
+app.use('/uploads/avatars', express.static(path.resolve(process.cwd(), 'uploads', 'avatars'), {
+  dotfiles: 'deny',
+  fallthrough: false,
+  immutable: true,
+  maxAge: '1y',
+}));
 // SePay HMAC must be verified against the original request bytes before JSON parsing.
 app.use('/api/webhooks/sepay', sepayWebhookRouter);
 app.use(express.json());

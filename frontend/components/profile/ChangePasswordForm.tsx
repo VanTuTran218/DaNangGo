@@ -1,14 +1,20 @@
 "use client";
 
 import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { changePassword } from "@/lib/api/auth";
 
 export default function ChangePasswordForm() {
+  const { logoutTo } = useAuth();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const calculateStrength = (password: string) => {
     let strength = 0;
@@ -61,7 +67,8 @@ export default function ChangePasswordForm() {
     setCurrentPassword("");
     setNewPassword("");
     setConfirmPassword("");
-    alert(result.message || "Đổi mật khẩu thành công!");
+    alert(result.message || "Đổi mật khẩu thành công. Vui lòng đăng nhập lại.");
+    await logoutTo("/dang-nhap");
   };
 
   return (
@@ -78,24 +85,34 @@ export default function ChangePasswordForm() {
           <label className="text-sm font-medium text-gray-700">
             Mật khẩu hiện tại
           </label>
-          <input
-            type="password"
-            value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
-            className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-colors"
-          />
+          <div className="relative">
+            <input
+              type={showCurrent ? "text" : "password"}
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              className="w-full px-4 py-2.5 pr-12 rounded-lg border border-gray-200 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-colors"
+            />
+            <button type="button" aria-label={showCurrent ? "Ẩn mật khẩu hiện tại" : "Hiện mật khẩu hiện tại"} onClick={() => setShowCurrent(!showCurrent)} className="absolute inset-y-0 right-3 text-gray-500 hover:text-gray-800">
+              {showCurrent ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
         </div>
 
         <div className="space-y-1.5">
           <label className="text-sm font-medium text-gray-700">
             Mật khẩu mới
           </label>
-          <input
-            type="password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-colors"
-          />
+          <div className="relative">
+            <input
+              type={showNew ? "text" : "password"}
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="w-full px-4 py-2.5 pr-12 rounded-lg border border-gray-200 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-colors"
+            />
+            <button type="button" aria-label={showNew ? "Ẩn mật khẩu mới" : "Hiện mật khẩu mới"} onClick={() => setShowNew(!showNew)} className="absolute inset-y-0 right-3 text-gray-500 hover:text-gray-800">
+              {showNew ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
           {newPassword && (
             <div className="mt-2 flex items-center gap-2">
               <div className="flex-1 flex gap-1 h-1.5">
@@ -119,16 +136,21 @@ export default function ChangePasswordForm() {
           <label className="text-sm font-medium text-gray-700">
             Xác nhận mật khẩu mới
           </label>
-          <input
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            className={`w-full px-4 py-2.5 rounded-lg border focus:outline-none focus:ring-1 transition-colors ${
-              confirmPassword && !isMatch
-                ? "border-red-300 focus:border-red-500 focus:ring-red-500"
-                : "border-gray-200 focus:border-teal-500 focus:ring-teal-500"
-            }`}
-          />
+          <div className="relative">
+            <input
+              type={showConfirm ? "text" : "password"}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className={`w-full px-4 py-2.5 pr-12 rounded-lg border focus:outline-none focus:ring-1 transition-colors ${
+                confirmPassword && !isMatch
+                  ? "border-red-300 focus:border-red-500 focus:ring-red-500"
+                  : "border-gray-200 focus:border-teal-500 focus:ring-teal-500"
+              }`}
+            />
+            <button type="button" aria-label={showConfirm ? "Ẩn mật khẩu xác nhận" : "Hiện mật khẩu xác nhận"} onClick={() => setShowConfirm(!showConfirm)} className="absolute inset-y-0 right-3 text-gray-500 hover:text-gray-800">
+              {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
           {confirmPassword && !isMatch && (
             <p className="text-xs text-red-500">
               Mật khẩu xác nhận không khớp.

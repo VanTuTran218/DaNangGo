@@ -16,6 +16,8 @@ import {
   publicIdExists,
   recordFailedLogin,
   resetLoginStateAndRecordSuccess,
+  updateAccountAvatar,
+  updateAccountProfile,
   resetPasswordByTokenHash,
   revokeAllRefreshTokens,
   revokeRefreshToken,
@@ -108,6 +110,8 @@ export interface PublicUser {
   name: string;
   email: string;
   phone?: string | undefined;
+  birthday?: string;
+  avatarUrl?: string;
   role: AccountRole;
   createdAt: string;
   approvalStatus?: string;
@@ -134,6 +138,8 @@ function toPublicUser(account: AuthAccountRecord): PublicUser {
     createdAt: account.created_at.toISOString(),
   };
   if (account.phone) user.phone = account.phone;
+  if (account.date_of_birth) user.birthday = account.date_of_birth;
+  if (account.avatar_url) user.avatarUrl = account.avatar_url;
   if (account.approval_status) user.approvalStatus = account.approval_status;
   return user;
 }
@@ -407,6 +413,27 @@ export async function getCurrentUser(userId: number): Promise<PublicUser> {
   return toPublicUser(account);
 }
 
+export async function updateCurrentUserProfile(userId: number, input: {
+  name: string;
+  phone: string | null;
+  birthday: string | null;
+}): Promise<PublicUser> {
+  const account = await updateAccountProfile({
+    userId,
+    name: input.name.trim(),
+    phone: input.phone?.trim() ? normalizePhone(input.phone) : null,
+    birthday: input.birthday,
+  });
+  if (!account) throw new AuthError(404, 'KhÃ´ng tÃ¬m tháº¥y tÃ i khoáº£n.');
+  return toPublicUser(account);
+}
+
+export async function updateCurrentUserAvatar(userId: number, avatarUrl: string | null): Promise<PublicUser> {
+  const account = await updateAccountAvatar(userId, avatarUrl);
+  if (!account) throw new AuthError(404, 'KhÃ´ng tÃ¬m tháº¥y tÃ i khoáº£n.');
+  return toPublicUser(account);
+}
+
 export async function logout(rawRefreshToken?: string): Promise<void> {
   if (rawRefreshToken) await revokeRefreshToken(hashRefreshToken(rawRefreshToken));
 }
@@ -498,15 +525,13 @@ export async function updatePassword(
   userId: number,
   currentPassword: string,
   newPassword: string,
-  refreshCookie: string | undefined,
 ): Promise<void> {
   const account = await findAccountByUserId(userId);
   if (!account || !(await bcrypt.compare(currentPassword, account.password_hash))) {
     throw new AuthError(400, 'Mật khẩu hiện tại không chính xác.');
   }
   const passwordHash = await bcrypt.hash(newPassword, 12);
-  const currentRefreshHash = refreshCookie ? hashRefreshToken(refreshCookie) : null;
-  await changePasswordRecord(userId, passwordHash, currentRefreshHash);
+  await changePasswordRecord(userId, passwordHash, null);
 }
 
 export async function verifyAccessToken(token: string, expectedSession: 'USER' | 'ADMIN'): Promise<number> {

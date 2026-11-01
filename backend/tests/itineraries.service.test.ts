@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { generateItinerary } from '../src/modules/itineraries/itineraries.service';
+import {
+  generateItinerary,
+  ItinerarySelectionError,
+  searchItineraryCatalog,
+} from '../src/modules/itineraries/itineraries.service';
 import type {
   GenerateItineraryInput,
   ItineraryCatalogPlace,
@@ -84,6 +88,29 @@ const catalog: ItineraryCatalogPlace[] = [
   },
 ];
 
+test('searches without Vietnamese diacritics and combines category and price filters', () => {
+  const results = searchItineraryCatalog(catalog, {
+    query: 'bao tang',
+    kind: 'ATTRACTION',
+    maxPrice: 60_000,
+  });
+
+  assert.deepEqual(results.places.map((place) => place.id), [5]);
+  assert.deepEqual(results.suggestions, ['Bảo tàng thử nghiệm']);
+});
+
+test('returns matching names as autocomplete suggestions and applies price limits inclusively', () => {
+  const results = searchItineraryCatalog(catalog, {
+    query: 'bữa',
+    kind: 'FOOD',
+    minPrice: 30_000,
+    maxPrice: 45_000,
+  });
+
+  assert.deepEqual(results.places.map((place) => place.id), [2, 3]);
+  assert.deepEqual(results.suggestions, ['Bữa sáng thử nghiệm', 'Bữa trưa thử nghiệm']);
+});
+
 test('builds a dated itinerary and multiplies per-person prices by party size', () => {
   const itinerary = generateItinerary(standardInput, catalog);
   const items = itinerary.days.flatMap((day) => day.items);
@@ -140,6 +167,69 @@ test('still returns a draft-ready advisory plan when the budget is too low', () 
   assert.equal(itinerary.days.length, standardInput.days);
 });
 
+test('suggests two distinct attractions per day even when attractions exceed the remaining budget', () => {
+  const additionalAttractions: ItineraryCatalogPlace[] = [
+    {
+      id: 10, slug: 'attraction-one', kind: 'ATTRACTION', name: 'Điểm tham quan thứ nhất',
+      description: 'Điểm tham quan thử nghiệm.', address: 'Hải Châu', price: 10_000,
+      accommodationType: null, stars: null, mealPeriod: null,
+      imageUrl: 'https://example.com/attraction-one.jpg', preferences: [],
+      openingTime: '08:00:00', closingTime: '17:00:00', visitDurationMinutes: 120,
+      roomType: null, roomCapacity: null, priceBasis: 'PER_PERSON',
+    },
+    {
+      id: 11, slug: 'attraction-two', kind: 'ATTRACTION', name: 'Điểm tham quan thứ hai',
+      description: 'Điểm tham quan thử nghiệm.', address: 'Sơn Trà', price: 20_000,
+      accommodationType: null, stars: null, mealPeriod: null,
+      imageUrl: 'https://example.com/attraction-two.jpg', preferences: [],
+      openingTime: '08:00:00', closingTime: '17:00:00', visitDurationMinutes: 120,
+      roomType: null, roomCapacity: null, priceBasis: 'PER_PERSON',
+    },
+    {
+      id: 12, slug: 'attraction-three', kind: 'ATTRACTION', name: 'Điểm tham quan thứ ba',
+      description: 'Điểm tham quan thử nghiệm.', address: 'Ngũ Hành Sơn', price: 30_000,
+      accommodationType: null, stars: null, mealPeriod: null,
+      imageUrl: 'https://example.com/attraction-three.jpg', preferences: [],
+      openingTime: '08:00:00', closingTime: '17:00:00', visitDurationMinutes: 120,
+      roomType: null, roomCapacity: null, priceBasis: 'PER_PERSON',
+    },
+  ];
+  const itinerary = generateItinerary({
+    ...standardInput,
+    budget: 100_000,
+    needs: ['attractions'],
+  }, [...catalog, ...additionalAttractions]);
+  const attractionsByDay = itinerary.days.map((day) =>
+    day.items.filter((item) => item.type === 'attraction'),
+  );
+  const attractionIds = attractionsByDay.flatMap((items) => items.map((item) => item.catalogPlaceId));
+
+  assert.ok(attractionsByDay.every((items) => items.length === 2));
+  assert.deepEqual(attractionsByDay.map((items) => items.map((item) => item.time)), [
+    ['09:30', '13:30'],
+    ['09:30', '13:30'],
+    ['09:30', '13:30'],
+  ]);
+  assert.equal(new Set(attractionIds).size, itinerary.days.length * 2);
+  assert.equal(itinerary.summary.costs.attractions, 2_040_000);
+  assert.equal(itinerary.summary.budgetStatus, 'over-budget');
+});
+
+test('warns when the catalog cannot provide two distinct attractions per day', () => {
+  const itinerary = generateItinerary({
+    ...standardInput,
+    needs: ['attractions'],
+  }, catalog);
+
+  assert.ok(itinerary.notices.some((notice) => notice.includes('còn thiếu 3 gợi ý')));
+  assert.equal(
+    new Set(itinerary.days.flatMap((day) =>
+      day.items.filter((item) => item.type === 'attraction').map((item) => item.catalogPlaceId),
+    )).size,
+    3,
+  );
+});
+
 test('missing categories in the catalog produce an incomplete plan and explicit warnings', () => {
   const itinerary = generateItinerary(standardInput, []);
 
@@ -154,4 +244,46 @@ test('allows an itinerary without optional preferences', () => {
 
   assert.equal(itinerary.days.length, standardInput.days);
   assert.ok(itinerary.notices.some((notice) => notice.includes('chưa chọn sở thích')));
+});
+
+test('offers food choices for all four periods and includes only the selected places in the itinerary', () => {
+  const snack: ItineraryCatalogPlace = {
+    id: 9, slug: 'afternoon-snack', kind: 'FOOD', name: 'Ăn vặt buổi chiều',
+    description: 'Món ăn nhẹ.', address: 'Hải Châu', price: 25_000,
+    accommodationType: null, stars: null, mealPeriod: 'SNACK',
+    imageUrl: 'https://example.com/snack.jpg', preferences: ['Ẩm thực địa phương'],
+    openingTime: null, closingTime: null, visitDurationMinutes: null,
+    roomType: null, roomCapacity: null, priceBasis: 'PER_PERSON',
+  };
+  const input: GenerateItineraryInput = { ...standardInput, days: 1, needs: ['food'] };
+  const preview = generateItinerary(input, [...catalog, snack]);
+
+  assert.equal(preview.suggestions[0]?.breakfast.length, 2);
+  assert.equal(preview.suggestions[0]?.lunch.length, 1);
+  assert.equal(preview.suggestions[0]?.snack[0]?.catalogPlaceId, snack.id);
+  assert.equal(preview.suggestions[0]?.dinner.length, 1);
+
+  const selected = generateItinerary(input, [...catalog, snack], [
+    { day: 1, mealPeriod: 'BREAKFAST', catalogPlaceId: 6 },
+    { day: 1, mealPeriod: 'LUNCH', catalogPlaceId: 3 },
+    { day: 1, mealPeriod: 'SNACK', catalogPlaceId: 9 },
+    { day: 1, mealPeriod: 'DINNER', catalogPlaceId: 4 },
+  ]);
+  const selectedFood = selected.days[0]?.items.filter((item) => item.type === 'food') ?? [];
+
+  assert.deepEqual(selectedFood.map((item) => item.catalogPlaceId), [6, 3, 9, 4]);
+  assert.equal(selected.summary.costs.food, 340_000);
+
+  const withoutMeals = generateItinerary(input, [...catalog, snack], []);
+  assert.equal(withoutMeals.days[0]?.items.some((item) => item.type === 'food'), false);
+  assert.equal(withoutMeals.summary.costs.food, 0);
+});
+
+test('rejects food selections from a different meal period', () => {
+  assert.throws(
+    () => generateItinerary({ ...standardInput, days: 1 }, catalog, [
+      { day: 1, mealPeriod: 'BREAKFAST', catalogPlaceId: 3 },
+    ]),
+    ItinerarySelectionError,
+  );
 });

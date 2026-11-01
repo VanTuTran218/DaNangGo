@@ -19,6 +19,8 @@ Backend hiện sử dụng Microsoft SQL Server (`mssql`). Các migration trong 
    - `004_create_itinerary_catalog.sql`: Tạo catalog và nạp danh mục địa điểm lưu trú, ăn uống, tham quan. (Chạy lại an toàn mà không nhân bản dữ liệu).
    - `005_create_saved_itineraries.sql`: Tạo bảng lưu lịch trình (itineraries, itinerary_items, itinerary_budgets).
    - `006_extend_itineraries_for_authenticated_drafts.sql`: Bổ sung người sở hữu, ngày bắt đầu, số người, nhu cầu, bảng sở thích người dùng và các trường năng lực phòng/tọa độ/giờ mở cửa catalog.
+   - `007_add_snack_meal_period.sql`: Cho phép phân loại món ăn nhẹ buổi chiều và bổ sung các gợi ý ăn vặt.
+   - `008_itinerary_management.sql`: Hỗ trợ quản lý lịch trình đã lưu và lưu chi phí giải trí trong dự toán.
 3. Cấu hình `backend/.env` với đúng host, port, database, SQL Login và secret xác thực (`JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, `JWT_SECRET`).
 
 ## Xác thực và lưu trữ lịch trình

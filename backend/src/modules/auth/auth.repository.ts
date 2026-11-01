@@ -17,6 +17,7 @@ export interface AuthAccountRecord {
   locked_until: Date | null;
   created_at: Date;
   approval_status: string | null;
+  partner_id?: number | null;
 }
 
 export interface ExistingAdminAccount {
@@ -36,7 +37,7 @@ const accountSelect = `
   SELECT u.user_id, u.public_id, u.role_id, r.role_name, u.full_name,
     u.email, u.phone, u.password_hash, u.status, u.email_verified,
     u.failed_login_count, u.locked_until, u.created_at,
-    pp.approval_status
+    pp.approval_status, pp.partner_id
   FROM dbo.users AS u
   INNER JOIN dbo.roles AS r ON r.role_id = u.role_id
   LEFT JOIN dbo.partner_profiles AS pp ON pp.user_id = u.user_id

@@ -8,10 +8,10 @@ export const ITINERARY_PREFERENCES = [
 
 export type ItineraryPreference = (typeof ITINERARY_PREFERENCES)[number];
 export type AccommodationType = 'Khách sạn' | 'Resort' | 'Homestay' | 'Cắm trại';
-export type ItineraryItemType = 'attraction' | 'food' | 'hotel' | 'transport';
-export type CatalogPlaceKind = 'STAY' | 'FOOD' | 'ATTRACTION';
-export type MealPeriod = 'BREAKFAST' | 'LUNCH' | 'DINNER';
-export type ItineraryNeed = 'accommodation' | 'food' | 'attractions';
+export type ItineraryItemType = 'attraction' | 'food' | 'hotel' | 'transport' | 'entertainment';
+export type CatalogPlaceKind = 'STAY' | 'FOOD' | 'ATTRACTION' | 'ENTERTAINMENT';
+export type MealPeriod = 'BREAKFAST' | 'LUNCH' | 'SNACK' | 'DINNER';
+export type ItineraryNeed = 'accommodation' | 'food' | 'attractions' | 'entertainment';
 
 export interface ItineraryCatalogPlace {
   id: number;
@@ -32,6 +32,20 @@ export interface ItineraryCatalogPlace {
   roomType: string | null;
   roomCapacity: number | null;
   priceBasis: 'PER_PERSON' | 'PER_ROOM';
+}
+
+export interface ManagedItineraryCatalogOption {
+  catalogPlaceId: number;
+  itemType: Exclude<ItineraryItemType, 'transport'>;
+  name: string;
+  description: string;
+  address: string;
+  imageUrl: string;
+  price: number;
+  durationMinutes: number | null;
+  priceBasis: 'PER_PERSON' | 'PER_ROOM';
+  roomCapacity: number | null;
+  mealPeriod: MealPeriod | null;
 }
 
 export interface GenerateItineraryInput {
@@ -68,6 +82,31 @@ export interface ItineraryRecommendation {
   imageUrl: string;
 }
 
+export interface ItineraryFoodSelection {
+  day: number;
+  mealPeriod: MealPeriod;
+  catalogPlaceId: number;
+}
+
+export interface ItineraryFoodSuggestion {
+  catalogPlaceId: number;
+  name: string;
+  description: string;
+  address: string;
+  imageUrl: string;
+  price: number;
+  mealSlot: MealPeriod;
+}
+
+export interface DayFoodSuggestions {
+  day: number;
+  date: string;
+  breakfast: ItineraryFoodSuggestion[];
+  lunch: ItineraryFoodSuggestion[];
+  snack: ItineraryFoodSuggestion[];
+  dinner: ItineraryFoodSuggestion[];
+}
+
 export interface GeneratedItinerary {
   itineraryId?: number;
   status?: 'DRAFT';
@@ -75,6 +114,7 @@ export interface GeneratedItinerary {
   guestCount?: number;
   needs?: ItineraryNeed[];
   days: Array<{ day: number; date?: string; items: ItineraryItem[] }>;
+  suggestions: DayFoodSuggestions[];
   summary: {
     budget: number;
     estimatedTotal: number;
@@ -86,10 +126,30 @@ export interface GeneratedItinerary {
       food: number;
       transport: number;
       attractions: number;
+      entertainment: number;
       contingency: number;
     };
   };
   notices: string[];
   recommendations: ItineraryRecommendation[];
   generatedAt: string;
+}
+
+export interface ManagedItineraryItem extends Omit<ItineraryItem, 'unitPrice' | 'quantity'> {
+  day: number;
+  unitPrice: number;
+  quantity: number;
+}
+
+export interface ManagedItinerary {
+  id: number;
+  title: string;
+  status: 'DRAFT' | 'SAVED' | 'ARCHIVED';
+  startDate: string;
+  dayCount: number;
+  guestCount: number;
+  budget: number;
+  estimatedTotal: number;
+  budgetStatus: 'within-budget' | 'over-budget';
+  items: ManagedItineraryItem[];
 }

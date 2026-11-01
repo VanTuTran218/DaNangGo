@@ -3,19 +3,52 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, Calendar, MapPin, UtensilsCrossed, Navigation } from "lucide-react";
+import { useRouter } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import AiTypewriterText from "@/components/itinerary/AiTypewriterText";
 import BudgetDonutChart from "@/components/itinerary/BudgetDonutChart";
-import ItineraryTimeline from "@/components/itinerary/ItineraryTimeline";
+import ItineraryTimeline, { type TimelineItem } from "@/components/itinerary/ItineraryTimeline";
 import MapMiniPreview from "@/components/itinerary/MapMiniPreview";
-import RecommendationBlock, { RecommendationItem } from "@/components/itinerary/RecommendationBlock";
 import AnimatedCounter from "@/components/ui/AnimatedCounter";
 import AiWizardModal, { ItineraryForm } from "@/components/itinerary/AiWizardModal";
-import { generateItinerary, getSavedItineraryPreferences } from "@/lib/api/itineraries";
-import type { GeneratedItinerary, GeneratedItineraryItem } from "@/types/itinerary";
+import { getSavedItineraryPreferences, previewItinerary, saveItinerary } from "@/lib/api/itineraries";
+import type {
+  FoodSuggestion,
+  GeneratedItinerary,
+  ItineraryFoodSelection,
+  MealSlot,
+} from "@/types/itinerary";
+
+const MEAL_OPTIONS = [
+  { key: "breakfast", mealPeriod: "BREAKFAST", label: "Buổi sáng", time: "08:00" },
+  { key: "lunch", mealPeriod: "LUNCH", label: "Buổi trưa", time: "12:00" },
+  { key: "snack", mealPeriod: "SNACK", label: "Buổi chiều · Ăn nhẹ", time: "15:30" },
+  { key: "dinner", mealPeriod: "DINNER", label: "Buổi tối", time: "18:30" },
+] as const satisfies ReadonlyArray<{
+  key: "breakfast" | "lunch" | "snack" | "dinner";
+  mealPeriod: MealSlot;
+  label: string;
+  time: string;
+}>;
+
+type MealKey = (typeof MEAL_OPTIONS)[number]["key"];
+type FoodSelectionState = Record<number, Partial<Record<MealKey, number | null>>>;
+
+function calculateSelectedFoodCost(
+  suggestions: GeneratedItinerary["suggestions"],
+  selections: FoodSelectionState,
+  guestCount: number,
+): number {
+  return suggestions.reduce((total, day) => total + MEAL_OPTIONS.reduce((dayTotal, meal) => {
+    const placeId = selections[day.day]?.[meal.key];
+    const place = day[meal.key].find((suggestion) => suggestion.catalogPlaceId === placeId);
+    return dayTotal + (place?.price ?? 0) * guestCount;
+  }, 0), 0);
+}
 
 export default function CreateItineraryPage() {
+  const router = useRouter();
   const [wizardOpen, setWizardOpen] = useState(true);
   const [wizardStep, setWizardStep] = useState(0);
   
@@ -31,12 +64,12 @@ export default function CreateItineraryPage() {
   });
 
   const [itinerary, setItinerary] = useState<GeneratedItinerary | null>(null);
-  const [selectedRecommendations, setSelectedRecommendations] = useState<Array<{
-    item: RecommendationItem;
-    day: number;
-  }>>([]);
+  const [foodSelections, setFoodSelections] = useState<FoodSelectionState>({});
   const [activeTab, setActiveTab] = useState("Ngày 1");
   const [budgetNotice, setBudgetNotice] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const [saveError, setSaveError] = useState("");
   
   // Flag to know if user has completed wizard at least once
   const [hasCompletedWizard, setHasCompletedWizard] = useState(false);
@@ -60,9 +93,15 @@ export default function CreateItineraryPage() {
   }, []);
 
   const handleWizardComplete = async () => {
-    const generated = await generateItinerary(formData);
+    const generated = await previewItinerary(formData);
+    const initialSelections = generated.days.reduce<FoodSelectionState>((selections, { day }) => {
+      selections[day] = {};
+      return selections;
+    }, {});
     setItinerary(generated);
-    setSelectedRecommendations([]);
+    setFoodSelections(initialSelections);
+    setIsSaved(false);
+    setSaveError("");
     setWizardOpen(false);
     setHasCompletedWizard(true);
     setAiKey(prev => prev + 1); // Trigger re-render of typewriter
@@ -70,65 +109,110 @@ export default function CreateItineraryPage() {
     setActiveTab("Ngày 1"); // reset to day 1
   };
 
-  const dynamicItinerary: Record<string, GeneratedItineraryItem[]> = Object.fromEntries(
-    (itinerary?.days ?? []).map(({ day, items }) => [
-      `Ngày ${day}`,
-      [
-        ...items,
-        ...selectedRecommendations
-          .filter((selection) => selection.day === day)
-          .map(({ item }) => ({
-            id: `recommendation-${item.id}`,
-            time: "20:30",
-            title: `Gợi ý thêm: ${item.title}`,
-            description: "Đã thêm vào bản xem trước; bạn có thể bỏ gợi ý này bất cứ lúc nào.",
-            type: item.category === "Ẩm thực" ? "food" as const : "attraction" as const,
-            estimatedCost: item.price * formData.guestCount,
-          })),
-      ].sort((left, right) => left.time.localeCompare(right.time)),
-    ]),
+  const handleSelectFood = (day: number, mealKey: MealKey, food: FoodSuggestion | null) => {
+    const nextSelections = {
+      ...foodSelections,
+      [day]: { ...foodSelections[day], [mealKey]: food?.catalogPlaceId ?? null },
+    };
+    setFoodSelections(nextSelections);
+    setIsSaved(false);
+
+    const selectedCost = calculateSelectedFoodCost(itinerary?.suggestions ?? [], nextSelections, formData.guestCount);
+    const defaultFoodCost = (itinerary?.days ?? []).flatMap(({ items }) => items)
+      .filter((item) => item.type === "food")
+      .reduce((total, item) => total + item.estimatedCost, 0);
+    const nextTotal = (itinerary?.summary.estimatedTotal ?? 0) - defaultFoodCost + selectedCost;
+    setBudgetNotice(nextTotal > (itinerary?.summary.budget ?? 0)
+      ? `Lựa chọn hiện vượt ngân sách khoảng ${(nextTotal - (itinerary?.summary.budget ?? 0)).toLocaleString("vi-VN")}đ.`
+      : food ? `Đã chọn ${food.name} cho ${MEAL_OPTIONS.find(({ key }) => key === mealKey)?.label.toLowerCase()}.`
+        : "Đã bỏ chọn địa điểm ăn uống cho buổi này.");
+  };
+
+  const handleCreateItinerary = async () => {
+    if (!itinerary || isSaving || isSaved) return;
+    setIsSaving(true);
+    setSaveError("");
+    try {
+      const selections: ItineraryFoodSelection[] = Object.entries(foodSelections).flatMap(([day, daySelections]) =>
+        MEAL_OPTIONS.flatMap(({ key, mealPeriod }) => {
+          const catalogPlaceId = daySelections[key];
+          return typeof catalogPlaceId === "number"
+            ? [{ day: Number(day), mealPeriod, catalogPlaceId }]
+            : [];
+        }),
+      );
+      const saved = await saveItinerary(formData, selections);
+      if (saved.itineraryId === undefined) throw new Error("Không nhận được mã lịch trình đã lưu.");
+      setItinerary(saved);
+      setIsSaved(true);
+      router.push(`/lich-trinh/${saved.itineraryId}`);
+    } catch (error) {
+      console.error("Không thể lưu lịch trình đã chọn:", error);
+      setSaveError(error instanceof Error ? error.message : "Không thể lưu lịch trình lúc này.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const dynamicItinerary: Record<string, TimelineItem[]> = Object.fromEntries(
+    (itinerary?.days ?? []).map(({ day, items }) => {
+      const daySuggestions = itinerary?.suggestions.find((suggestion) => suggestion.day === day);
+      const selectedFoods: TimelineItem[] = formData.needs.includes("food")
+        ? MEAL_OPTIONS.map((meal) => {
+        const selectedId = foodSelections[day]?.[meal.key];
+        const food = daySuggestions?.[meal.key].find((suggestion) => suggestion.catalogPlaceId === selectedId);
+        const options = daySuggestions?.[meal.key] ?? [];
+        return {
+          id: `d${day}-${meal.key}`,
+          time: meal.time,
+          title: food ? `${meal.label}: ${food.name}` : `${meal.label}: Chưa chọn địa điểm`,
+          description: food
+            ? `${food.description} Chi phí tham khảo ${food.price.toLocaleString("vi-VN")}đ/người.`
+            : "Chọn một trong các địa điểm gợi ý để thêm vào lịch trình.",
+          type: "food" as const,
+          ...(food ? {
+            location: food.address,
+            imageUrl: food.imageUrl,
+            estimatedCost: food.price * formData.guestCount,
+          } : {}),
+          foodOptions: options,
+          selectedFoodId: food?.catalogPlaceId,
+          onFoodSelect: (selection: FoodSuggestion | null) => handleSelectFood(day, meal.key, selection),
+          foodSelectionDisabled: isSaving,
+        };
+      })
+        : [];
+      return [
+        `Ngày ${day}`,
+        [
+          ...items.filter((item) => item.type !== "food"),
+          ...selectedFoods,
+        ].sort((left, right) => left.time.localeCompare(right.time)),
+      ] as const;
+    }),
   );
   const dayTabs = Object.keys(dynamicItinerary);
-  const addedCost = selectedRecommendations.reduce((total, selection) => total + selection.item.price * formData.guestCount, 0);
-  const currentTotal = (itinerary?.summary.estimatedTotal ?? 0) + addedCost;
+  const selectedFoodCost = calculateSelectedFoodCost(itinerary?.suggestions ?? [], foodSelections, formData.guestCount);
+  const defaultFoodCost = (itinerary?.days ?? []).flatMap(({ items }) => items)
+    .filter((item) => item.type === "food")
+    .reduce((total, item) => total + item.estimatedCost, 0);
+  const currentTotal = (itinerary?.summary.estimatedTotal ?? 0) - defaultFoodCost + selectedFoodCost;
   const costs = itinerary?.summary.costs;
-  const addedFoodCost = selectedRecommendations
-    .filter(({ item }) => item.category === "Ẩm thực")
-    .reduce((total, { item }) => total + item.price * formData.guestCount, 0);
-  const addedAttractionCost = selectedRecommendations
-    .filter(({ item }) => item.category !== "Ẩm thực")
-    .reduce((total, { item }) => total + item.price * formData.guestCount, 0);
 
   const donutData = [
     { label: "Lưu trú", value: costs?.accommodation ?? 0, color: "#a855f7" },
-    { label: "Ăn uống", value: (costs?.food ?? 0) + addedFoodCost, color: "#f97316" },
+    { label: "Ăn uống", value: selectedFoodCost, color: "#f97316" },
     { label: "Di chuyển", value: costs?.transport ?? 0, color: "#3b82f6" },
-    { label: "Tham quan", value: (costs?.attractions ?? 0) + addedAttractionCost, color: "#10b981" },
+    { label: "Tham quan", value: costs?.attractions ?? 0, color: "#10b981" },
     { label: "Dự phòng", value: costs?.contingency ?? 0, color: "#94a3b8" },
   ];
-
-  const handleToggleRecommendation = (item: RecommendationItem) => {
-    if (!itinerary) return;
-
-    const isSelected = selectedRecommendations.some((selection) => selection.item.id === item.id);
-    const nextSelections = isSelected
-      ? selectedRecommendations.filter((selection) => selection.item.id !== item.id)
-      : [...selectedRecommendations, { item, day: Number(activeTab.replace("Ngày ", "")) }];
-    setSelectedRecommendations(nextSelections);
-
-    const nextTotal = (itinerary.summary.estimatedTotal ?? 0)
-      + nextSelections.reduce((total, selection) => total + selection.item.price * formData.guestCount, 0);
-    setBudgetNotice(nextTotal > itinerary.summary.budget
-      ? `Bản xem trước đang vượt ngân sách khoảng ${(nextTotal - itinerary.summary.budget).toLocaleString('vi-VN')}đ. Bạn vẫn có thể giữ hoặc bỏ gợi ý tùy ý; không có dịch vụ nào được đặt.`
-      : isSelected
-        ? "Đã bỏ gợi ý khỏi bản xem trước."
-        : "Đã thêm gợi ý vào bản xem trước; chưa có dịch vụ nào được đặt.");
-  };
 
   const openWizardAt = (index: number) => {
     setWizardStep(index);
     setWizardOpen(true);
   };
+  const selectedMealCount = Object.values(foodSelections).reduce((total, daySelections) =>
+    total + Object.values(daySelections).filter((placeId) => typeof placeId === "number").length, 0);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -314,6 +398,13 @@ export default function CreateItineraryPage() {
             {/* Main Content (Left) */}
             <div className="lg:col-span-2 space-y-8">
               
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">Lịch trình tham khảo</h2>
+                <p className="mt-1 text-sm text-gray-500">
+                  Địa điểm tham quan được gợi ý sẵn. Chọn quán ăn ngay trong từng khung giờ ăn của lịch trình.
+                </p>
+              </div>
+
               {/* Tabs */}
               <div className="flex gap-2 p-1 bg-gray-100 rounded-lg overflow-x-auto hide-scrollbar">
                 {dayTabs.map(tab => (
@@ -350,24 +441,7 @@ export default function CreateItineraryPage() {
                   </motion.div>
                 </AnimatePresence>
               </div>
-
-              {/* Recommendations */}
-              <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                  <Sparkles className="w-5 h-5 text-orange-500 mr-2" />
-                  Gợi ý tham khảo cho {activeTab}
-                </h3>
-                <p className="mb-3 text-sm text-gray-500">
-                  Có thể thêm vào bản xem trước hoặc bỏ qua. Đây không phải đặt bàn, đặt phòng hay mua vé.
-                </p>
-                {budgetNotice && <p role="status" className="mb-3 text-sm text-amber-700">{budgetNotice}</p>}
-                <RecommendationBlock
-                  items={itinerary?.recommendations ?? []}
-                  selectedIds={selectedRecommendations.map(({ item }) => item.id)}
-                  guestCount={formData.guestCount}
-                  onToggle={handleToggleRecommendation}
-                />
-              </div>
+              {budgetNotice && <p role="status" className="text-sm text-amber-700">{budgetNotice}</p>}
 
             </div>
 
@@ -433,7 +507,7 @@ export default function CreateItineraryPage() {
                       <UtensilsCrossed className="w-4 h-4" />
                     </div>
                     <div>
-                      <div className="text-lg font-bold text-gray-900 flex"><AnimatedCounter to={formData.days * 3} /></div>
+                      <div className="text-lg font-bold text-gray-900 flex"><AnimatedCounter to={selectedMealCount} /></div>
                       <div className="text-xs text-gray-500">Bữa ăn</div>
                     </div>
                   </div>
@@ -450,13 +524,26 @@ export default function CreateItineraryPage() {
 
                 <ul className="space-y-2 text-xs text-gray-500">
                   {itinerary?.notices.map((notice) => <li key={notice}>{notice}</li>)}
-                  <li>Thêm/bỏ gợi ý chỉ thay đổi bản xem trước trên trang; không tạo đặt chỗ hay thanh toán.</li>
+                  <li>Quán ăn đã chọn sẽ được lưu cùng lịch trình khi bạn bấm “Tạo lịch”.</li>
                   <li>Giá tham khảo được nhân theo {formData.guestCount} người; đi lại đang dự trù khoảng 80.000đ/người/ngày, chưa dùng dữ liệu tuyến đường thực tế.</li>
                 </ul>
                 <p className="text-xs text-gray-500 mt-3">
                   Giá vé, dịch vụ và di chuyển có thể thay đổi.
                 </p>
-                
+                {saveError && <p role="alert" className="mt-4 text-sm text-red-700">{saveError}</p>}
+                {isSaved && (
+                  <p role="status" className="mt-4 rounded-lg bg-teal-50 p-3 text-sm text-teal-800">
+                    Lịch đã được lưu dưới dạng bản nháp. Chức năng hiển thị và quản lý danh sách lịch trình sẽ được bổ sung sau.
+                  </p>
+                )}
+                <button
+                  type="button"
+                  onClick={handleCreateItinerary}
+                  disabled={isSaving || isSaved}
+                  className="mt-5 w-full rounded-xl bg-[#0f2942] px-4 py-3 font-bold text-white transition-colors hover:bg-[#1a3f5c] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isSaving ? "Đang lưu lịch..." : isSaved ? "Đã tạo lịch" : "Tạo lịch"}
+                </button>
               </div>
             </div>
           </div>

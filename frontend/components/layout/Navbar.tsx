@@ -146,10 +146,12 @@ export default function Navbar() {
                 transition={{ duration: 0.22, ease: "easeOut" }}
                 className="hidden lg:flex w-44 xl:w-52 flex-shrink-0"
               >
-                <div className="relative w-full">
+                <form action="/tim-kiem" method="get" className="relative w-full">
                   <input
                     type="text"
                     placeholder="Tìm điểm đến..."
+                    name="q"
+                    aria-label="Tìm điểm đến"
                     className={`w-full border text-sm rounded-full px-4 py-1.5 focus:outline-none transition-colors ${
                       isAtTop
                         ? "bg-white/20 border-white/30 text-white placeholder-white/70 focus:border-white shadow-sm"
@@ -157,6 +159,8 @@ export default function Navbar() {
                     }`}
                   />
                   <button
+                    type="submit"
+                    aria-label="Tìm kiếm"
                     className={`absolute right-3 top-1/2 -translate-y-1/2 transition-colors ${
                       isAtTop ? "text-white/70 hover:text-white" : "text-gray-400 hover:text-gray-600"
                     }`}
@@ -165,7 +169,7 @@ export default function Navbar() {
                       <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
                     </svg>
                   </button>
-                </div>
+                </form>
               </motion.div>
             )}
           </AnimatePresence>
@@ -409,10 +413,10 @@ export default function Navbar() {
                               </Link>
                             </div>
                             <div className="flex justify-between mt-3 px-2">
-                              <div className="text-center">
-                                <p className="text-lg font-bold text-teal-600">0</p>
-                                <p className="text-[10px] text-gray-500">Lịch trình</p>
-                              </div>
+                              <Link href="/lich-trinh" className="text-center hover:text-teal-700" onClick={() => setAvatarDropdownOpen(false)}>
+                                <p className="text-sm font-semibold text-teal-600">Lịch trình của tôi</p>
+                                <p className="text-[10px] text-gray-500">Xem lịch đã lưu</p>
+                              </Link>
                               <div className="w-px h-8 bg-gray-200"></div>
                               <div className="text-center">
                                 <p className="text-lg font-bold text-teal-600">0</p>
@@ -537,6 +541,13 @@ export default function Navbar() {
                     onClick={() => setMobileOpen(false)}
                   >
                     Hồ sơ của tôi
+                  </Link>
+                  <Link
+                    href="/lich-trinh"
+                    className="flex items-center justify-center gap-2 border border-teal-200 bg-teal-50 text-teal-700 hover:bg-teal-100 py-3 rounded-full text-sm font-semibold transition-all"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    Lịch trình của tôi · Xem lịch đã lưu
                   </Link>
                   <button
                     onClick={() => { setMobileOpen(false); logout(); }}

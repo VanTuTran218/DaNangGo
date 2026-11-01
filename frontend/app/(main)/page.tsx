@@ -314,36 +314,44 @@ export default function HomePage() {
           <div
             style={{ opacity: 0, animation: "fade-up 0.7s 0.45s ease-out forwards" }}
           >
-            <div className="flex flex-col sm:flex-row gap-2 max-w-2xl bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-2">
-              {/* Ô 1: Địa điểm */}
+            <form action="/tim-kiem" method="get" className="flex flex-col sm:flex-row gap-2 max-w-2xl bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-2">
+              {/* Ô 1: Từ khóa */}
               <div className="relative flex-1">
                 <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
                 </svg>
                 <input
                   type="text"
-                  placeholder="Địa điểm lưu trú..."
+                  name="q"
+                  placeholder="Từ khóa hoặc địa điểm..."
                   className="w-full bg-transparent text-white placeholder-white/50 pl-9 pr-3 py-3 focus:outline-none text-sm"
                 />
               </div>
               {/* Divider */}
               <div className="hidden sm:block w-px bg-white/20 my-2" />
-              {/* Ô 2: Khu vực / Sở thích */}
+              {/* Ô 2: Danh mục */}
               <div className="relative flex-1">
                 <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
                 </svg>
-                <input
-                  type="text"
-                  placeholder="Khu vực · Sở thích..."
-                  className="w-full bg-transparent text-white placeholder-white/50 pl-9 pr-3 py-3 focus:outline-none text-sm"
-                />
+                <select
+                  name="type"
+                  defaultValue=""
+                  aria-label="Loại địa điểm"
+                  className="w-full appearance-none bg-transparent text-white py-3 pl-9 pr-3 focus:outline-none text-sm [&>option]:text-[#0f2942]"
+                >
+                  <option value="">Tất cả danh mục</option>
+                  <option value="STAY">Nơi lưu trú</option>
+                  <option value="FOOD">Ẩm thực</option>
+                  <option value="ATTRACTION">Điểm du lịch</option>
+                  <option value="ENTERTAINMENT">Giải trí</option>
+                </select>
               </div>
               {/* Nút tìm kiếm */}
-              <button className="btn-ripple bg-orange-500 hover:bg-orange-400 text-white font-semibold px-6 py-3 rounded-xl transition-colors text-sm hover:scale-[1.02] active:scale-[0.97] whitespace-nowrap">
+              <button type="submit" className="btn-ripple bg-orange-500 hover:bg-orange-400 text-white font-semibold px-6 py-3 rounded-xl transition-colors text-sm hover:scale-[1.02] active:scale-[0.97] whitespace-nowrap">
                 Tìm kiếm
               </button>
-            </div>
+            </form>
 
             {/* Tags xu hướng */}
             <div

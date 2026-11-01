@@ -398,3 +398,7 @@ export function getAccountRole(userId: number): Promise<AccountRole | null> {
   return findAccountByUserId(userId).then((account) => account ? mapRoleName(account.role_name) : null);
 }
 
+export function getAccountRecord(userId: number): Promise<AuthAccountRecord | null> {
+  return findAccountByUserId(userId);
+}
+

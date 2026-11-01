@@ -13,14 +13,16 @@ function createToken(claims: Record<string, unknown>): string {
   return `${header}.${payload}.${signature}`;
 }
 
-function invokeMiddleware(authorization?: string) {
+function invokeMiddleware(authorization?: string, cookies?: Record<string, string>) {
   let statusCode: number | undefined;
   let body: unknown;
   let nextCalled = false;
   const request = {
     header: () => authorization,
+    cookies,
   } as unknown as Request;
   const response = {
+    locals: {},
     status(code: number) {
       statusCode = code;
       return this;
@@ -38,7 +40,7 @@ function invokeMiddleware(authorization?: string) {
   return { request, statusCode, body, nextCalled };
 }
 
-test('rejects a request without a bearer token', () => {
+test('rejects a request without a bearer token or cookie', () => {
   const result = invokeMiddleware();
 
   assert.equal(result.statusCode, 401);
@@ -57,6 +59,24 @@ test('accepts a valid HS256 token and exposes its numeric subject', () => {
   } finally {
     if (previousSecret === undefined) delete process.env.JWT_SECRET;
     else process.env.JWT_SECRET = previousSecret;
+  }
+});
+
+test('accepts a valid token via access_token cookie with JWT_ACCESS_SECRET', () => {
+  const previousAccessSecret = process.env.JWT_ACCESS_SECRET;
+  const previousSecret = process.env.JWT_SECRET;
+  delete process.env.JWT_SECRET;
+  process.env.JWT_ACCESS_SECRET = secret;
+  try {
+    const token = createToken({ sub: 99, exp: Math.floor(Date.now() / 1000) + 60 });
+    const result = invokeMiddleware(undefined, { access_token: token });
+
+    assert.equal(result.nextCalled, true);
+    assert.deepEqual(result.request.authenticatedUser, { id: 99 });
+  } finally {
+    if (previousAccessSecret === undefined) delete process.env.JWT_ACCESS_SECRET;
+    else process.env.JWT_ACCESS_SECRET = previousAccessSecret;
+    if (previousSecret !== undefined) process.env.JWT_SECRET = previousSecret;
   }
 });
 

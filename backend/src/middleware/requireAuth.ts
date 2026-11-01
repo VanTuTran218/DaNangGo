@@ -17,15 +17,16 @@ function decodeBase64UrlJson(value: string): unknown {
 
 export function requireAuth(req: Request, res: Response, next: NextFunction): void {
   const authorization = req.header('authorization');
-  const token = authorization?.match(/^Bearer\s+([^\s]+)$/i)?.[1];
+  const cookies = req.cookies as Record<string, string> | undefined;
+  const token = authorization?.match(/^Bearer\s+([^\s]+)$/i)?.[1] || cookies?.access_token;
   if (!token) {
     res.status(401).json({ success: false, message: 'Cần đăng nhập để thực hiện thao tác này.' });
     return;
   }
 
-  const secret = process.env.JWT_SECRET;
+  const secret = process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET;
   if (!secret || secret.length < 32) {
-    console.error('JWT_SECRET phải được cấu hình và có tối thiểu 32 ký tự.');
+    console.error('JWT_ACCESS_SECRET hoặc JWT_SECRET phải được cấu hình và có tối thiểu 32 ký tự.');
     res.status(500).json({ success: false, message: 'Máy chủ chưa được cấu hình xác thực.' });
     return;
   }
@@ -82,6 +83,9 @@ export function requireAuth(req: Request, res: Response, next: NextFunction): vo
     }
 
     req.authenticatedUser = { id: userId };
+    if (res.locals) {
+      res.locals.authUserId = userId;
+    }
     next();
   } catch {
     res.status(401).json({ success: false, message: 'Token không hợp lệ hoặc đã hết hạn.' });

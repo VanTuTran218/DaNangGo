@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import type { User } from '@/types/user';
-import { getSession, logout as apiLogout, _setMockUser } from '@/lib/api/me';
+import { getSession, logout as apiLogout } from '@/lib/api/me';
 import { useRouter } from 'next/navigation';
 
 interface AuthContextType {
@@ -39,16 +39,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
-    await apiLogout();
-    setUser(null);
-    router.push('/');
+    try {
+      await apiLogout();
+    } finally {
+      setUser(null);
+      router.push('/');
+    }
   };
 
   const updateUser = (updates: Partial<User>) => {
     setUser((prev) => {
       if (!prev) return null;
       const updated = { ...prev, ...updates, membership: { ...prev.membership, ...(updates.membership || {}) } };
-      _setMockUser(updated); // Sync with mock server
       return updated;
     });
   };

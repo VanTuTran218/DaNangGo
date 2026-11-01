@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { getAllPlaces, getPlaceById, createPlace } from './places.service';
+import { requireAuth, requireRole } from '../../middleware/auth.middleware';
 
 const router = Router();
 
@@ -17,8 +18,8 @@ router.get('/', async (req: Request, res: Response) => {
 // GET /api/places/:id - Lấy 1 địa điểm theo ID
 router.get('/:id', async (req: Request, res: Response) => {
   try {
-    const idParam = req.params.id;
-    const id = typeof idParam === 'string' ? Number.parseInt(idParam, 10) : Number.NaN;
+    const rawId = req.params.id;
+    const id = typeof rawId === 'string' ? Number.parseInt(rawId, 10) : Number.NaN;
     if (!Number.isInteger(id)) {
       return res.status(400).json({ success: false, message: 'ID không hợp lệ' });
     }
@@ -36,7 +37,7 @@ router.get('/:id', async (req: Request, res: Response) => {
 });
 
 // POST /api/places - Tạo địa điểm mới
-router.post('/', async (req: Request, res: Response) => {
+router.post('/', requireAuth('USER'), requireRole('PARTNER'), async (req: Request, res: Response) => {
   try {
     const { name, description, address, category } = req.body;
 

@@ -8,20 +8,18 @@ Backend hiện sử dụng Microsoft SQL Server (`mssql`). Các migration trong 
 - **`seeds/`**: Chứa các file SQL chèn dữ liệu mẫu ban đầu (INSERT INTO). Được đánh số thứ tự để chạy đúng logic khóa ngoại (VD: `010_roles.sql`, `020_users.sql`, `030_places.sql`).
 - **`diagrams/`**: Chứa các file thiết kế cơ sở dữ liệu (VD: file `.dbml`, ảnh ERD).
 
-## Chạy migration bằng SSMS
+## Thứ tự chạy migration bằng SSMS
 
 1. Tạo database `DaNangGo` trên đúng SQL Server instance mà backend sẽ kết nối.
-2. Mở từng file `migrations/*.sql` trong SSMS và thực thi bằng **Execute** (F5), theo thứ tự số.
-3. Để bật chức năng tạo lịch trình lấy dữ liệu từ database, cần chạy tối thiểu (bằng tài khoản quản trị database có quyền tạo bảng):
-   - `001_setup_login.sql` để tạo/cấp quyền SQL Login cho backend.
-   - `003_create_itinerary_training_data.sql` để lưu các cặp input/output lịch trình.
-   - `004_create_itinerary_catalog.sql` để tạo catalog và nạp địa điểm lưu trú, ăn uống, tham quan.
-4. Cấu hình `backend/.env` với đúng host, port, database, SQL Login và mật khẩu.
+2. Mở từng file `migrations/*.sql` trong SSMS và thực thi bằng **Execute** (F5), theo đúng thứ tự:
+   - `001_setup_login.sql`: Tạo/cấp quyền SQL Login cho backend.
+   - `002_create_booking_tables.sql`: Tạo bảng bookings, booking_items, payments, booking_status_logs.
+   - `003_auth_upgrade.sql`: Nâng cấp schema bảng users (public_id, email_verified, khóa tài khoản, refresh_tokens, password_reset_tokens) cho hệ thống xác thực.
+   - `003b_create_itinerary_training_data.sql`: Tạo bảng lưu các cặp input/output huấn luyện thuật toán lịch trình.
+   - `004_create_itinerary_catalog.sql`: Tạo catalog và nạp danh mục địa điểm lưu trú, ăn uống, tham quan. (Chạy lại an toàn mà không nhân bản dữ liệu).
+   - `005_create_saved_itineraries.sql`: Tạo bảng lưu lịch trình (itineraries, itinerary_items, itinerary_budgets).
+   - `006_extend_itineraries_for_authenticated_drafts.sql`: Bổ sung người sở hữu, ngày bắt đầu, số người, nhu cầu, bảng sở thích người dùng và các trường năng lực phòng/tọa độ/giờ mở cửa catalog.
+3. Cấu hình `backend/.env` với đúng host, port, database, SQL Login và secret xác thực (`JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, `JWT_SECRET`).
 
-`004_create_itinerary_catalog.sql` có thể chạy lại an toàn: bảng chỉ được tạo khi chưa tồn tại, các địa điểm và nhãn sở thích được thêm theo `slug`/cặp duy nhất, không nhân bản dữ liệu đã seed.
-
-`005_create_saved_itineraries.sql` là migration bổ sung, tạo schema lưu lịch trình (trạng thái nháp/đã lưu/đã lưu trữ), các hoạt động theo ngày và dự toán ngân sách; không bắt buộc để chạy API tạo lịch hiện tại. API hiện chưa ghi lịch vào các bảng này. Migration lưu nội dung hoạt động như ảnh chụp tại thời điểm tạo để lịch cũ không đổi khi catalog cập nhật giá hoặc thông tin địa điểm.
-
-`006_extend_itineraries_for_authenticated_drafts.sql` phụ thuộc vào migration `005`; nó bổ sung chủ sở hữu, ngày/số ngày/số người/nhu cầu, giá đơn vị, bảng sở thích người dùng và trường loại phòng/sức chứa/giờ mở cửa/thời lượng/tọa độ trong catalog. Chạy lần lượt `005` rồi `006` nếu muốn dùng API tạo lịch nháp mới. Các trường catalog mới cần được điền bằng dữ liệu đã xác minh trước khi dùng để xếp lịch và báo giá thực tế.
-
-Backend chưa triển khai đăng ký/đăng nhập. Endpoint tạo lịch yêu cầu JWT HS256 do dịch vụ xác thực cung cấp, `sub` phải là ID người dùng dạng số, token phải có `exp`, và backend cần `JWT_SECRET` trùng với secret ký token. Cột `user_id` trong migration hiện cho phép NULL để giữ tương thích dữ liệu cũ; endpoint mới luôn ghi ID lấy từ token, không nhận ID từ body.
+## Xác thực và lưu trữ lịch trình
+Hệ thống xác thực đã hoàn thiện với JWT HS256 (`sub` là numeric ID người dùng). Khi người dùng đã đăng nhập, API tạo lịch (`POST /api/itineraries`) và tải sở thích (`GET /api/itineraries/preferences`) tự động nhận diện người dùng qua HTTP cookie `access_token` hoặc header `Authorization: Bearer <token>`, lưu bản nháp và liên kết trực tiếp với `user_id` trong cơ sở dữ liệu.

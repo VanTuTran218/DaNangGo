@@ -10,7 +10,6 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { Eye, Lock, Unlock, X } from 'lucide-react';
 
 export default function AdminUsersPage() {
-  const [roleFilter, setRoleFilter] = useState('ALL');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [selectedUser, setSelectedUser] = useState<AdminUserItem | null>(null);
   const [confirmUser, setConfirmUser] = useState<AdminUserItem | null>(null);
@@ -18,8 +17,8 @@ export default function AdminUsersPage() {
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   const { data: users, loading, error, reload } = useAsyncData(
-    () => getAdminUsers({ role: roleFilter, status: statusFilter }),
-    [roleFilter, statusFilter]
+    () => getAdminUsers({ role: 'USER', status: statusFilter }),
+    [statusFilter]
   );
 
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
@@ -152,16 +151,9 @@ export default function AdminUsersPage() {
           rowKey={(u) => u.id}
           filterSlot={
             <>
-              <select
-                value={roleFilter}
-                onChange={(e) => setRoleFilter(e.target.value)}
-                className="px-3 py-2 text-xs font-semibold bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
-              >
-                <option value="ALL">Tất cả vai trò</option>
-                <option value="USER">Người dùng</option>
-                <option value="PARTNER">Đối tác</option>
-                <option value="ADMIN">Quản trị</option>
-              </select>
+              <span className="px-3 py-2 text-xs font-semibold bg-gray-50 border border-gray-200 rounded-xl text-gray-600">
+                Người dùng
+              </span>
 
               <select
                 value={statusFilter}

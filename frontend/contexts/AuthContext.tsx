@@ -10,6 +10,7 @@ interface AuthContextType {
   loading: boolean;
   login: (userData: User) => void;
   logout: () => Promise<void>;
+  logoutTo: (path: string) => Promise<void>;
   updateUser: (userData: Partial<User>) => void;
 }
 
@@ -38,14 +39,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(userData);
   };
 
-  const logout = async () => {
+  const endSession = async (redirectTo: string) => {
     try {
       await apiLogout();
     } finally {
       setUser(null);
-      router.push('/');
+      router.push(redirectTo);
     }
   };
+
+  const logout = () => endSession('/');
+  const logoutTo = (path: string) => endSession(path);
 
   const updateUser = (updates: Partial<User>) => {
     setUser((prev) => {
@@ -56,7 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, logoutTo, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

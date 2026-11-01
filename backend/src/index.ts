@@ -1,4 +1,5 @@
 import express from 'express';
+import path from 'node:path';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
@@ -6,7 +7,8 @@ import helmet from 'helmet';
 import { connectDB, closeDB } from './config/db';
 import authRouter, { adminRouter } from './modules/auth/auth.routes';
 import placesRouter from './modules/places/places.routes';
-import adminPartnersRouter, { adminPlacesRouter } from './modules/admin/admin.routes';
+import adminPartnersRouter from './modules/admin/partners.routes';
+import { adminPlacesRouter } from './modules/admin/admin.routes';
 import { adminReviewsRouter, userReviewsRouter } from './modules/reviews/reviews.routes';
 import accommodationsRouter from './modules/accommodations/accommodations.routes';
 import travelRouter from './modules/routes/travel.routes';
@@ -18,6 +20,7 @@ import attractionsRouter from './modules/attractions/attractions.routes';
 import partnerRouter from './modules/partner/partner.routes';
 import subscriptionsRouter from './modules/subscriptions/subscriptions.routes';
 import adminSubscriptionsRouter from './modules/admin/subscriptions.routes';
+import adminUsersRouter from './modules/admin/users.routes';
 import sepayWebhookRouter from './modules/subscriptions/sepay.routes';
 import recommendationsRouter from './modules/recommendations/recommendations.routes';
 import { csrfProtection } from './middleware/csrf.middleware';
@@ -38,6 +41,12 @@ app.use(
 );
 app.use(cors({ origin: frontendUrl, credentials: true }));
 app.use(cookieParser());
+app.use('/uploads/avatars', express.static(path.resolve(process.cwd(), 'uploads', 'avatars'), {
+  dotfiles: 'deny',
+  fallthrough: false,
+  immutable: true,
+  maxAge: '1y',
+}));
 // SePay HMAC must be verified against the original request bytes before JSON parsing.
 app.use('/api/webhooks/sepay', sepayWebhookRouter);
 app.use(express.json());
@@ -48,6 +57,7 @@ app.use(csrfProtection);
 app.use('/api/auth', authRouter);
 app.use('/api/admin/auth', adminRouter);
 app.use('/api/admin/partners', adminPartnersRouter);
+app.use('/api/admin/users', adminUsersRouter);
 app.use('/api/admin/places', adminPlacesRouter);
 app.use('/api/admin/subscriptions', adminSubscriptionsRouter);
 app.use('/api/subscriptions', subscriptionsRouter);

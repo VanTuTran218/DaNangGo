@@ -10,6 +10,8 @@ export interface User {
   birthday?: string;
   avatarUrl?: string;
   createdAt: string;
+  approvalStatus?: string;
+  partnerId?: number;
   membership: {
     isVip: boolean;
     tier: Tier;
@@ -44,5 +46,6 @@ export interface RegisterPayload {
 export interface AuthResponse {
   success: boolean;
   user?: User;
+  requiresApproval?: boolean;
   error?: string;
 }

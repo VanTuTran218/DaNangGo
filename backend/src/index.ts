@@ -7,7 +7,19 @@ import { connectDB, closeDB } from './config/db';
 import itinerariesRouter from './modules/itineraries/itineraries.routes';
 import authRouter, { adminRouter } from './modules/auth/auth.routes';
 import placesRouter from './modules/places/places.routes';
+import adminPartnersRouter, { adminPlacesRouter } from './modules/admin/admin.routes';
+import { adminReviewsRouter, userReviewsRouter } from './modules/reviews/reviews.routes';
+import accommodationsRouter from './modules/accommodations/accommodations.routes';
+import travelRouter from './modules/routes/travel.routes';
+import adminContentRouter from './modules/admin/admin-content.routes';
 import restaurantRouter from './modules/restaurants/restaurants.routes';
+import categoriesRouter from './modules/categories/categories.routes';
+import menuItemsRouter from './modules/menu-items/menu-items.routes';
+import attractionsRouter from './modules/attractions/attractions.routes';
+import partnerRouter from './modules/partner/partner.routes';
+import subscriptionsRouter from './modules/subscriptions/subscriptions.routes';
+import adminSubscriptionsRouter from './modules/admin/subscriptions.routes';
+import sepayWebhookRouter from './modules/subscriptions/sepay.routes';
 import { csrfProtection } from './middleware/csrf.middleware';
 import { errorHandler } from './middleware/error-handler';
 
@@ -19,9 +31,15 @@ const PORT = process.env.PORT || 5000;
 
 // ==================== MIDDLEWARE ====================
 const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-app.use(helmet());
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+  })
+);
 app.use(cors({ origin: frontendUrl, credentials: true }));
 app.use(cookieParser());
+// SePay HMAC must be verified against the original request bytes before JSON parsing.
+app.use('/api/webhooks/sepay', sepayWebhookRouter);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(csrfProtection);
@@ -30,8 +48,22 @@ app.use(csrfProtection);
 app.use('/api/itineraries', itinerariesRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/admin/auth', adminRouter);
+app.use('/api/admin/partners', adminPartnersRouter);
+app.use('/api/admin/places', adminPlacesRouter);
+app.use('/api/admin/subscriptions', adminSubscriptionsRouter);
+app.use('/api/subscriptions', subscriptionsRouter);
 app.use('/api/places', placesRouter);
+app.use('/api/admin/reviews', adminReviewsRouter);
+app.use('/api/reviews', userReviewsRouter);
+app.use('/api/accommodations', accommodationsRouter);
+app.use('/api/routes', travelRouter);
+app.use('/api/admin', adminContentRouter);
 app.use('/api/restaurants', restaurantRouter);
+app.use('/api/menu-items', menuItemsRouter);
+app.use('/api/attractions', attractionsRouter);
+app.use('/api/partner', partnerRouter);
+app.use('/api', categoriesRouter);
+app.use('/api/categories', categoriesRouter);
 
 // TODO: Import và đăng ký các router theo từng module
 // import authRouter from './modules/auth/auth.routes';

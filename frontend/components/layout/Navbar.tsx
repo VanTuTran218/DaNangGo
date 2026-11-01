@@ -4,12 +4,13 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { TIER_CONFIG } from "@/lib/constants/tiers";
 
 const NAV_LINKS = [
   { href: "/", label: "Trang chủ" },
+  { href: "/places", label: "Địa điểm" },
   { href: "/luutru", label: "Lưu trú" },
   { href: "/amthuc", label: "Ẩm thực" },
   { href: "/diemdulich", label: "Điểm du lịch" },
@@ -19,6 +20,8 @@ const NAV_LINKS = [
 
 export default function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const [stickySearchText, setStickySearchText] = useState("");
   const [isAtTop, setIsAtTop] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const [showStickySearch, setShowStickySearch] = useState(false);
@@ -144,11 +147,34 @@ export default function Navbar() {
                 animate={{ y: 0, opacity: 1 }}
                 exit={{ y: -16, opacity: 0 }}
                 transition={{ duration: 0.22, ease: "easeOut" }}
-                className="hidden lg:flex w-44 xl:w-52 flex-shrink-0"
+                className="hidden lg:flex w-44 xl:w-56 flex-shrink-0"
               >
-                <form action="/tim-kiem" method="get" className="relative w-full">
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const query = stickySearchText.trim();
+                    if (!query) return;
+
+                    if (pathname === '/amthuc' || pathname === '/diemdulich') {
+                      router.push(`${pathname}?q=${encodeURIComponent(query)}`);
+                      return;
+                    }
+
+                    router.push(`/tim-kiem?q=${encodeURIComponent(query)}`);
+                  }}
+                  className="relative w-full"
+                >
                   <input
                     type="text"
+                    value={stickySearchText}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setStickySearchText(val);
+                      if (pathname === '/diemdulich' || pathname === '/amthuc') {
+                        const url = val.trim() ? `${pathname}?q=${encodeURIComponent(val.trim())}` : pathname;
+                        router.replace(url, { scroll: false });
+                      }
+                    }}
                     placeholder="Tìm điểm đến..."
                     name="q"
                     aria-label="Tìm điểm đến"
@@ -164,6 +190,7 @@ export default function Navbar() {
                     className={`absolute right-3 top-1/2 -translate-y-1/2 transition-colors ${
                       isAtTop ? "text-white/70 hover:text-white" : "text-gray-400 hover:text-gray-600"
                     }`}
+                    title="Tìm kiếm"
                   >
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />

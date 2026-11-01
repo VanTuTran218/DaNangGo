@@ -1,43 +1,75 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useAsyncData } from '@/hooks/useAsyncData';
-import { getAdminReviews, updateAdminReviewStatus, deleteAdminReview } from '@/lib/api/admin';
-import type { AdminReviewItem } from '@/types/admin';
-import DataTable, { Column } from '@/components/ui/DataTable';
-import StatusBadge from '@/components/ui/StatusBadge';
-import ConfirmDialog from '@/components/ui/ConfirmDialog';
-import { Eye, EyeOff, Trash2, AlertTriangle, Star, X } from 'lucide-react';
+import { useState } from "react";
+import { useAsyncData } from "@/hooks/useAsyncData";
+import {
+  getAdminReviews,
+  updateAdminReviewStatus,
+  deleteAdminReview,
+  editAdminReview,
+} from "@/lib/api/admin";
+import type { AdminReviewItem } from "@/types/admin";
+import DataTable, { Column } from "@/components/ui/DataTable";
+import StatusBadge from "@/components/ui/StatusBadge";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import { Check, Eye, EyeOff, Pencil, Trash2, Star, X, XCircle } from "lucide-react";
+import ReviewPhotoGrid from "@/components/places/ReviewPhotoGrid";
 
 export default function AdminReviewsPage() {
-  const [starFilter, setStarFilter] = useState<number | 'ALL'>('ALL');
-  const [reportedOnly, setReportedOnly] = useState(false);
-  const [deletingReview, setDeletingReview] = useState<AdminReviewItem | null>(null);
+  const [starFilter, setStarFilter] = useState<number | "ALL">("ALL");
+  const [statusFilter, setStatusFilter] = useState<
+    "ALL" | "PENDING" | "APPROVED" | "HIDDEN"
+  >("ALL");
+  const [deletingReview, setDeletingReview] = useState<AdminReviewItem | null>(
+    null,
+  );
   const [actionLoading, setActionLoading] = useState(false);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [editingReview, setEditingReview] = useState<AdminReviewItem | null>(null);
+  const [editComment, setEditComment] = useState("");
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error";
+  } | null>(null);
 
-  const { data: reviews, loading, error, reload } = useAsyncData(
-    () => getAdminReviews({ rating: starFilter, isReportedOnly: reportedOnly }),
-    [starFilter, reportedOnly]
+  const {
+    data: reviews,
+    loading,
+    error,
+    reload,
+  } = useAsyncData(
+    () => getAdminReviews({ rating: starFilter, status: statusFilter }),
+    [starFilter, statusFilter],
   );
 
-  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+  const showToast = (
+    message: string,
+    type: "success" | "error" = "success",
+  ) => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3000);
   };
 
-  const handleToggleStatus = async (review: AdminReviewItem) => {
+  const handleSetStatus = async (
+    review: AdminReviewItem,
+    status: "APPROVED" | "HIDDEN",
+  ) => {
     setActionLoading(true);
     try {
-      const nextStatus = review.status === 'ACTIVE' ? 'HIDDEN' : 'ACTIVE';
-      const res = await updateAdminReviewStatus(review.id, nextStatus);
+      const res = await updateAdminReviewStatus(review.id, status);
       showToast(res.message);
       reload();
     } catch (err: any) {
-      showToast(err?.message || 'Thao tác thất bại', 'error');
+      showToast(err?.message || "Thao tác thất bại", "error");
     } finally {
       setActionLoading(false);
     }
+  };
+
+  const handleToggleStatus = (review: AdminReviewItem) => {
+    void handleSetStatus(
+      review,
+      review.status === "APPROVED" ? "HIDDEN" : "APPROVED",
+    );
   };
 
   const handleDeleteConfirm = async () => {
@@ -49,7 +81,22 @@ export default function AdminReviewsPage() {
       setDeletingReview(null);
       reload();
     } catch (err: any) {
-      showToast(err?.message || 'Xóa thất bại', 'error');
+      showToast(err?.message || "Xóa thất bại", "error");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleEdit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!editingReview || !editComment.trim()) return;
+    setActionLoading(true);
+    try {
+      showToast(await editAdminReview(editingReview.id, editComment.trim()));
+      setEditingReview(null);
+      reload();
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : "Chỉnh sửa thất bại", "error");
     } finally {
       setActionLoading(false);
     }
@@ -57,8 +104,8 @@ export default function AdminReviewsPage() {
 
   const columns: Column<AdminReviewItem>[] = [
     {
-      key: 'placeName',
-      header: 'Địa điểm & Người dùng',
+      key: "placeName",
+      header: "Địa điểm & Người dùng",
       sortable: true,
       render: (r) => (
         <div>
@@ -68,8 +115,8 @@ export default function AdminReviewsPage() {
       ),
     },
     {
-      key: 'rating',
-      header: 'Đánh giá',
+      key: "rating",
+      header: "Đánh giá",
       sortable: true,
       render: (r) => (
         <div className="flex items-center gap-1 text-amber-500 font-bold">
@@ -79,43 +126,81 @@ export default function AdminReviewsPage() {
       ),
     },
     {
-      key: 'comment',
-      header: 'Nội dung nhận xét',
-      className: 'max-w-xs',
+      key: "comment",
+      header: "Nội dung nhận xét",
+      className: "max-w-xs",
       render: (r) => (
         <div>
           <p className="text-xs text-gray-800 line-clamp-2">{r.comment}</p>
-          {r.isReported && (
-            <div className="mt-1 flex items-center gap-1 text-[11px] font-bold text-red-600 bg-red-50 p-1 rounded-md">
-              <AlertTriangle className="w-3 h-3 flex-shrink-0" />
-              <span>Báo cáo: {r.reportReason || 'Nội dung vi phạm'}</span>
-            </div>
-          )}
+          <ReviewPhotoGrid images={r.images ?? []} />
         </div>
       ),
     },
-    { key: 'status', header: 'Trạng thái', render: (r) => <StatusBadge status={r.status} /> },
     {
-      key: 'createdAt',
-      header: 'Ngày đăng',
-      sortable: true,
-      render: (r) => new Date(r.createdAt).toLocaleDateString('vi-VN'),
+      key: "status",
+      header: "Trạng thái",
+      render: (r) => <StatusBadge status={r.status} />,
     },
     {
-      key: 'actions',
-      header: 'Thao tác',
+      key: "createdAt",
+      header: "Ngày đăng",
+      sortable: true,
+      render: (r) => new Date(r.createdAt).toLocaleDateString("vi-VN"),
+    },
+    {
+      key: "actions",
+      header: "Thao tác",
       render: (r) => (
         <div className="flex items-center gap-1.5">
           <button
-            onClick={() => handleToggleStatus(r)}
+            onClick={() => { setEditingReview(r); setEditComment(r.comment); }}
             disabled={actionLoading}
-            title={r.status === 'ACTIVE' ? 'Ẩn đánh giá' : 'Hiện đánh giá'}
-            className={`p-1.5 rounded-lg transition-colors ${
-              r.status === 'ACTIVE' ? 'text-amber-600 hover:bg-amber-50' : 'text-teal-600 hover:bg-teal-50'
-            }`}
+            title="Chỉnh sửa đánh giá"
+            aria-label="Chỉnh sửa đánh giá"
+            className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 disabled:opacity-50"
           >
-            {r.status === 'ACTIVE' ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            <Pencil className="w-4 h-4" />
           </button>
+          {r.status === "PENDING" ? (
+            <>
+              <button
+                onClick={() => handleToggleStatus(r)}
+                disabled={actionLoading}
+                title="Duyệt đánh giá"
+                aria-label="Duyệt đánh giá"
+                className="p-1.5 rounded-lg text-teal-700 hover:bg-teal-50 disabled:opacity-50"
+              >
+                <Check className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => void handleSetStatus(r, "HIDDEN")}
+                disabled={actionLoading}
+                title="Từ chối đánh giá"
+                aria-label="Từ chối đánh giá"
+                className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 disabled:opacity-50"
+              >
+                <XCircle className="w-4 h-4" />
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => handleToggleStatus(r)}
+              disabled={actionLoading}
+              title={
+                r.status === "APPROVED" ? "Ẩn đánh giá" : "Duyệt lại đánh giá"
+              }
+              aria-label={
+                r.status === "APPROVED" ? "Ẩn đánh giá" : "Duyệt lại đánh giá"
+              }
+              className={`p-1.5 rounded-lg transition-colors ${r.status === "APPROVED" ? "text-amber-600 hover:bg-amber-50" : "text-teal-600 hover:bg-teal-50"}`}
+            >
+              {r.status === "APPROVED" ? (
+                <EyeOff className="w-4 h-4" />
+              ) : (
+                <Eye className="w-4 h-4" />
+              )}
+            </button>
+          )}
           <button
             onClick={() => setDeletingReview(r)}
             title="Xóa vĩnh viễn"
@@ -131,15 +216,22 @@ export default function AdminReviewsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Kiểm duyệt đánh giá</h1>
-        <p className="text-sm text-gray-500">Quản lý nhận xét và phản hồi các báo cáo vi phạm nội dung.</p>
+        <h1 className="text-2xl font-bold text-gray-900">
+          Kiểm duyệt đánh giá
+        </h1>
+        <p className="text-sm text-gray-500">
+          Duyệt đánh giá của người dùng trước khi hiển thị trên trang chi tiết
+          địa điểm.
+        </p>
       </div>
 
       {toast && (
         <div
           role="alert"
           className={`p-4 rounded-xl border text-sm font-semibold flex items-center justify-between ${
-            toast.type === 'error' ? 'bg-red-50 text-red-700 border-red-200' : 'bg-teal-50 text-teal-700 border-teal-200'
+            toast.type === "error"
+              ? "bg-red-50 text-red-700 border-red-200"
+              : "bg-teal-50 text-teal-700 border-teal-200"
           }`}
         >
           <span>{toast.message}</span>
@@ -151,8 +243,13 @@ export default function AdminReviewsPage() {
 
       {error ? (
         <div className="p-6 bg-red-50 rounded-2xl border border-red-200 text-red-700">
-          <p className="font-semibold mb-2" role="alert">{error}</p>
-          <button onClick={reload} className="px-4 py-2 bg-red-600 text-white rounded-xl font-semibold text-xs">
+          <p className="font-semibold mb-2" role="alert">
+            {error}
+          </p>
+          <button
+            onClick={reload}
+            className="px-4 py-2 bg-red-600 text-white rounded-xl font-semibold text-xs"
+          >
             Thử lại
           </button>
         </div>
@@ -168,7 +265,11 @@ export default function AdminReviewsPage() {
             <>
               <select
                 value={starFilter}
-                onChange={(e) => setStarFilter(e.target.value === 'ALL' ? 'ALL' : Number(e.target.value))}
+                onChange={(e) =>
+                  setStarFilter(
+                    e.target.value === "ALL" ? "ALL" : Number(e.target.value),
+                  )
+                }
                 className="px-3 py-2 text-xs font-semibold bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
               >
                 <option value="ALL">Tất cả sao</option>
@@ -179,21 +280,38 @@ export default function AdminReviewsPage() {
                 <option value="1">1 sao</option>
               </select>
 
-              <label className="flex items-center gap-2 cursor-pointer bg-gray-50 px-3 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700">
-                <input
-                  type="checkbox"
-                  checked={reportedOnly}
-                  onChange={(e) => setReportedOnly(e.target.checked)}
-                  className="w-4 h-4 text-teal-600 rounded-md focus:ring-teal-500"
-                />
-                <span>Chỉ hiện bị báo cáo</span>
-              </label>
+              <select
+                value={statusFilter}
+                onChange={(event) =>
+                  setStatusFilter(event.target.value as typeof statusFilter)
+                }
+                className="px-3 py-2 text-xs font-semibold bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
+              >
+                <option value="ALL">Tất cả trạng thái</option>
+                <option value="PENDING">Chờ duyệt</option>
+                <option value="APPROVED">Đã duyệt</option>
+                <option value="HIDDEN">Đã từ chối / ẩn</option>
+              </select>
             </>
           }
         />
       )}
 
       {/* Delete Dialog */}
+      {editingReview ? (
+        <div role="presentation" className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <form onSubmit={handleEdit} onKeyDown={(event) => { if (event.key === "Escape" && !actionLoading) setEditingReview(null); }} role="dialog" aria-modal="true" aria-labelledby="edit-review-title" className="w-full max-w-lg space-y-4 rounded-2xl bg-white p-6 shadow-xl">
+            <h2 id="edit-review-title" className="text-lg font-bold">Chỉnh sửa đánh giá</h2>
+            <label className="block text-sm font-medium">Nội dung đánh giá
+              <textarea autoFocus value={editComment} onChange={(event) => setEditComment(event.target.value)} maxLength={1000} required rows={5} className="mt-1 block w-full rounded-lg border p-2" />
+            </label>
+            <div className="flex justify-end gap-2">
+              <button type="button" disabled={actionLoading} onClick={() => setEditingReview(null)} className="rounded-lg border px-4 py-2">Hủy</button>
+              <button type="submit" disabled={actionLoading || !editComment.trim()} className="rounded-lg bg-teal-600 px-4 py-2 font-semibold text-white disabled:opacity-50">{actionLoading ? "Đang lưu..." : "Lưu"}</button>
+            </div>
+          </form>
+        </div>
+      ) : null}
       <ConfirmDialog
         isOpen={Boolean(deletingReview)}
         onClose={() => setDeletingReview(null)}

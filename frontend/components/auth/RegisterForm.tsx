@@ -2,14 +2,15 @@
 
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import PasswordField from './PasswordField';
 import PasswordStrength from './PasswordStrength';
 import { register } from '@/lib/api/auth';
 import { useAuth } from '@/contexts/AuthContext';
+import VerifyEmailStep from './VerifyEmailStep';
 
 interface RegisterFormProps {
-  onSwitchToLogin: () => void;
+  onSwitchToLogin: (registeredEmail?: string) => void;
   redirectTo: string;
 }
 
@@ -34,6 +35,9 @@ export default function RegisterForm({ onSwitchToLogin, redirectTo }: RegisterFo
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [shakeKey, setShakeKey] = useState(0);
+
+  // Bước xác thực email (null = chưa vào bước xác thực)
+  const [verifyData, setVerifyData] = useState<{ email: string; maskedEmail: string } | null>(null);
 
   const validate = () => {
     const newErrors: typeof errors = {};
@@ -84,16 +88,13 @@ export default function RegisterForm({ onSwitchToLogin, redirectTo }: RegisterFo
         password, confirmPassword, agreedToTerms,
         ...(role === 'PARTNER' ? { partner: { businessName: businessName.trim(), serviceType } } : {}),
       });
-      if (res.success) {
-        if (res.user) setAuthUser(res.user);
-        setIsSuccess(true);
-        setTimeout(() => {
-          if (intent === 'vip') {
-            router.push('/vip?action=register-vip');
-          } else {
-            router.push(redirectTo || '/');
-          }
-        }, 800);
+      if (res.success && res.email && res.maskedEmail) {
+        // Đăng ký thành công → chuyển sang bước xác thực OTP
+        setVerifyData({ email: res.email, maskedEmail: res.maskedEmail });
+      } else if (res.code === 'EMAIL_ALREADY_EXISTS') {
+        // Email đã tồn tại và đã xác thực → gợi ý đăng nhập
+        setErrors({ general: res.error || 'Email này đã được đăng ký.', generalCode: 'EMAIL_ALREADY_EXISTS' });
+        setShakeKey(prev => prev + 1);
       } else {
         setErrors({ general: res.error || 'Đăng ký thất bại' });
         setShakeKey(prev => prev + 1);
@@ -110,6 +111,32 @@ export default function RegisterForm({ onSwitchToLogin, redirectTo }: RegisterFo
     setTouched(prev => ({ ...prev, [field]: true }));
     validate();
   };
+
+  /** Xác thực OTP thành công → chuyển về tab Đăng nhập + điền sẵn email */
+  const handleVerifySuccess = (verifiedEmail: string) => {
+    onSwitchToLogin(verifiedEmail);
+  };
+
+  /** Quay lại form đăng ký */
+  const handleBackToRegister = () => {
+    setVerifyData(null);
+    setErrors({});
+  };
+
+  // ─── Nếu đang ở bước xác thực OTP ───
+  if (verifyData) {
+    return (
+      <AnimatePresence mode="wait">
+        <VerifyEmailStep
+          key="verify"
+          email={verifyData.email}
+          maskedEmail={verifyData.maskedEmail}
+          onSuccess={handleVerifySuccess}
+          onBack={handleBackToRegister}
+        />
+      </AnimatePresence>
+    );
+  }
 
   return (
     <motion.form 
@@ -139,6 +166,7 @@ export default function RegisterForm({ onSwitchToLogin, redirectTo }: RegisterFo
           <input
             id="name"
             type="text"
+            autoComplete="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             onBlur={() => handleBlur('name')}
@@ -148,7 +176,7 @@ export default function RegisterForm({ onSwitchToLogin, redirectTo }: RegisterFo
             } rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-shadow duration-200`}
           />
         </div>
-        {touched.name && errors.name && <p className="text-sm text-red-500 mt-1">{errors.name}</p>}
+        {touched.name && errors.name && <p role="alert" className="text-sm text-red-500 mt-1">{errors.name}</p>}
       </div>
 
       <div className="flex flex-col gap-1.5">
@@ -165,6 +193,7 @@ export default function RegisterForm({ onSwitchToLogin, redirectTo }: RegisterFo
             id="reg-email"
             type="email"
             required
+            autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             onBlur={() => handleBlur('email')}
@@ -174,13 +203,13 @@ export default function RegisterForm({ onSwitchToLogin, redirectTo }: RegisterFo
             } rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-shadow duration-200`}
           />
         </div>
-        {touched.email && errors.email && <p className="text-sm text-red-500 mt-1">{errors.email}</p>}
+        {touched.email && errors.email && <p role="alert" className="text-sm text-red-500 mt-1">{errors.email}</p>}
       </div>
 
       <div className="flex flex-col gap-1.5">
         <label htmlFor="reg-phone" className="text-sm font-medium text-gray-700">Số điện thoại <span className="text-gray-400">(không bắt buộc)</span></label>
-        <input id="reg-phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} onBlur={() => handleBlur('phone')} placeholder="09xxxxxxxx" className={`block w-full px-4 py-2.5 bg-white border ${touched.phone && errors.phone ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'} rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-shadow duration-200`} />
-        {touched.phone && errors.phone && <p className="text-sm text-red-500 mt-1">{errors.phone}</p>}
+        <input id="reg-phone" type="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} onBlur={() => handleBlur('phone')} placeholder="09xxxxxxxx" className={`block w-full px-4 py-2.5 bg-white border ${touched.phone && errors.phone ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'} rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-shadow duration-200`} />
+        {touched.phone && errors.phone && <p role="alert" className="text-sm text-red-500 mt-1">{errors.phone}</p>}
       </div>
 
       <div className="flex flex-col gap-1.5">
@@ -193,7 +222,7 @@ export default function RegisterForm({ onSwitchToLogin, redirectTo }: RegisterFo
         <div className="flex flex-col gap-1.5">
           <label htmlFor="partner-business" className="text-sm font-medium text-gray-700">Tên doanh nghiệp/cơ sở <span className="text-red-500">*</span></label>
           <input id="partner-business" value={businessName} onChange={(e) => setBusinessName(e.target.value)} onBlur={() => handleBlur('businessName')} className={`block w-full px-4 py-2.5 bg-white border ${touched.businessName && errors.businessName ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-teal-500'} rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-shadow duration-200`} />
-          {touched.businessName && errors.businessName && <p className="text-sm text-red-500 mt-1">{errors.businessName}</p>}
+          {touched.businessName && errors.businessName && <p role="alert" className="text-sm text-red-500 mt-1">{errors.businessName}</p>}
         </div>
         <div className="flex flex-col gap-1.5">
           <label htmlFor="partner-service" className="text-sm font-medium text-gray-700">Loại dịch vụ <span className="text-red-500">*</span></label>
@@ -206,6 +235,7 @@ export default function RegisterForm({ onSwitchToLogin, redirectTo }: RegisterFo
           id="reg-password"
           name="password"
           label="Mật khẩu"
+          autoComplete="new-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           onBlur={() => handleBlur('password')}
@@ -219,6 +249,7 @@ export default function RegisterForm({ onSwitchToLogin, redirectTo }: RegisterFo
         id="confirm-password"
         name="confirmPassword"
         label="Xác nhận mật khẩu"
+        autoComplete="new-password"
         value={confirmPassword}
         onChange={(e) => setConfirmPassword(e.target.value)}
         onBlur={() => handleBlur('confirmPassword')}
@@ -250,14 +281,23 @@ export default function RegisterForm({ onSwitchToLogin, redirectTo }: RegisterFo
           </svg>
         </div>
         <span className="text-sm text-gray-600">
-          Tôi đồng ý với <a href="#" className="text-teal-600 hover:underline">Điều khoản dịch vụ</a> và <a href="#" className="text-teal-600 hover:underline">Chính sách bảo mật</a>
+          Tôi đồng ý với <a href="/dieu-khoan" target="_blank" rel="noopener noreferrer" className="text-teal-600 hover:underline">Điều khoản dịch vụ</a> và <a href="/chinh-sach" target="_blank" rel="noopener noreferrer" className="text-teal-600 hover:underline">Chính sách bảo mật</a>
         </span>
       </label>
-      {touched.agreedToTerms && errors.agreedToTerms && <p className="text-sm text-red-500">{errors.agreedToTerms}</p>}
+      {touched.agreedToTerms && errors.agreedToTerms && <p role="alert" className="text-sm text-red-500">{errors.agreedToTerms}</p>}
 
       {errors.general && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-lg mt-2">
+        <div role="alert" className="p-3 bg-red-50 border border-red-200 rounded-lg mt-2">
           <p className="text-sm text-red-600 text-center">{errors.general}</p>
+          {errors.generalCode === 'EMAIL_ALREADY_EXISTS' && (
+            <button
+              type="button"
+              onClick={() => onSwitchToLogin(email.trim())}
+              className="mt-2 w-full text-sm text-teal-600 hover:text-teal-700 font-medium underline underline-offset-2 text-center"
+            >
+              Đăng nhập ngay →
+            </button>
+          )}
         </div>
       )}
 
@@ -281,7 +321,7 @@ export default function RegisterForm({ onSwitchToLogin, redirectTo }: RegisterFo
         Đã có tài khoản?{' '}
         <button
           type="button"
-          onClick={onSwitchToLogin}
+          onClick={() => onSwitchToLogin()}
           className="text-teal-600 font-bold hover:underline focus:outline-none"
         >
           Đăng nhập ngay

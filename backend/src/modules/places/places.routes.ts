@@ -1,56 +1,83 @@
-import { Router, Request, Response } from 'express';
-import { getAllPlaces, getPlaceById, createPlace } from './places.service';
+import { Router, type RequestHandler } from 'express';
 import { requireAuth, requireRole } from '../../middleware/auth.middleware';
+import { getAccountAuthDetails, verifyAccessToken } from '../auth/auth.service';
+import reviewsRouter from '../reviews/reviews.routes';
+import * as controller from './places.controller';
 
 const router = Router();
 
-// GET /api/places - Lấy tất cả địa điểm
-router.get('/', async (req: Request, res: Response) => {
-  try {
-    const places = await getAllPlaces();
-    res.json({ success: true, data: places });
-  } catch (error) {
-    console.error('Lỗi lấy danh sách địa điểm:', error);
-    res.status(500).json({ success: false, message: 'Lỗi server' });
-  }
-});
+router.use('/:id/reviews', reviewsRouter);
 
-// GET /api/places/:id - Lấy 1 địa điểm theo ID
-router.get('/:id', async (req: Request, res: Response) => {
+/**
+ * Middleware tùy chọn xác thực:
+ * - Hỗ trợ cả Cookie (admin_access, access_token) và Header Authorization: Bearer <token>
+ * - Nếu có token hợp lệ: giải mã và gắn req.user + res.locals.
+ * - Nếu không có token hoặc token không hợp lệ: tiếp tục bình thường như khách vãng lai.
+ */
+const optionalAuth: RequestHandler = async (req, res, next) => {
+  const cookies = req.cookies as Record<string, string> | undefined;
+  const authHeader = req.headers.authorization;
+  const headerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7).trim() : undefined;
+  const token = cookies?.admin_access || cookies?.access_token || headerToken;
+  if (!token) return next();
   try {
-    const rawId = req.params.id;
-    const id = typeof rawId === 'string' ? Number.parseInt(rawId, 10) : Number.NaN;
-    if (!Number.isInteger(id)) {
-      return res.status(400).json({ success: false, message: 'ID không hợp lệ' });
+    const sessionType = cookies?.admin_access ? 'ADMIN' : 'USER';
+    let userId: number;
+    try {
+      userId = await verifyAccessToken(token, sessionType);
+    } catch {
+      // Fallback kiểm tra loại session còn lại nếu dùng headerToken
+      userId = await verifyAccessToken(token, sessionType === 'ADMIN' ? 'USER' : 'ADMIN');
     }
 
-    const place = await getPlaceById(id);
-    if (!place) {
-      return res.status(404).json({ success: false, message: 'Không tìm thấy địa điểm' });
+    const authDetails = await getAccountAuthDetails(userId);
+    if (authDetails) {
+      res.locals.authUserId = userId;
+      res.locals.authRole = authDetails.role;
+      if (authDetails.partnerId) {
+        res.locals.authPartnerId = authDetails.partnerId;
+      }
+      req.user = {
+        user_id: userId,
+        role: authDetails.role,
+        ...(authDetails.partnerId ? { partner_id: authDetails.partnerId } : {}),
+      };
     }
-
-    res.json({ success: true, data: place });
-  } catch (error) {
-    console.error('Lỗi lấy địa điểm:', error);
-    res.status(500).json({ success: false, message: 'Lỗi server' });
+  } catch {
+    // Bỏ qua lỗi token ở route công khai, tiếp tục xử lý như khách vãng lai
   }
-});
+  next();
+};
 
-// POST /api/places - Tạo địa điểm mới
-router.post('/', requireAuth('USER'), requireRole('PARTNER'), async (req: Request, res: Response) => {
-  try {
-    const { name, description, address, category } = req.body;
+/**
+ * GET /api/places
+ * Tìm kiếm và lọc danh sách địa điểm (Công khai, hỗ trợ đa tiêu chí và phân trang)
+ * Query params: ?q=...&type=RESTAURANT&district_id=1&min_price=10000&max_price=200000&sort=rating_desc&page=1&limit=10
+ */
+router.get('/', optionalAuth, controller.getAll);
 
-    if (!name) {
-      return res.status(400).json({ success: false, message: 'Tên địa điểm là bắt buộc' });
-    }
+// Public ranking: always ACTIVE, at least 3 approved reviews; must precede /:id.
+router.get('/top', controller.getTop);
 
-    const newPlace = await createPlace({ name, description, address, category });
-    res.status(201).json({ success: true, data: newPlace });
-  } catch (error) {
-    console.error('Lỗi tạo địa điểm:', error);
-    res.status(500).json({ success: false, message: 'Lỗi server' });
-  }
-});
+/**
+ * GET /api/places/:id
+ * Lấy chi tiết 1 địa điểm theo ID (kèm danh sách ảnh và giờ mở cửa)
+ */
+router.get('/:id', optionalAuth, controller.getOne);
+
+/**
+ * PATCH /api/places/:id/status
+ * PUT /api/places/:id/status
+ * Cập nhật trạng thái địa điểm (ACTIVE, HIDDEN, LOCKED)
+ * Quyền: PARTNER (chỉ cơ sở của mình) hoặc ADMIN (quản trị toàn hệ thống)
+ */
+router.patch('/:id/status', requireAuth('USER'), controller.updateStatus);
+router.put('/:id/status', requireAuth('USER'), controller.updateStatus);
+
+/**
+ * POST /api/places
+ * Tạo địa điểm mới (tương thích ngược với endpoint cũ)
+ */
+router.post('/', requireAuth('USER'), requireRole('PARTNER', 'ADMIN'), controller.create);
 
 export default router;

@@ -36,7 +36,7 @@ export default function ChangePasswordForm() {
   };
 
   const strength = calculateStrength(newPassword);
-  
+
   const isDirty = currentPassword && newPassword && confirmPassword;
   const isMatch = newPassword === confirmPassword;
 
@@ -48,9 +48,16 @@ export default function ChangePasswordForm() {
     }
     setIsSaving(true);
     setError("");
-    const result = await changePassword(currentPassword, newPassword, confirmPassword);
+    const result = await changePassword(
+      currentPassword,
+      newPassword,
+      confirmPassword,
+    );
     setIsSaving(false);
-    if (!result.success) { setError(result.error || "Không thể đổi mật khẩu."); return; }
+    if (!result.success) {
+      setError(result.error || "Không thể đổi mật khẩu.");
+      return;
+    }
     setCurrentPassword("");
     setNewPassword("");
     setConfirmPassword("");
@@ -60,38 +67,48 @@ export default function ChangePasswordForm() {
   return (
     <div className="bg-white rounded-xl border border-gray-100 p-6 md:p-8">
       <h3 className="font-bold text-gray-800 text-lg mb-6">Đổi mật khẩu</h3>
-      
+
       <form onSubmit={handleSubmit} className="space-y-5 max-w-md">
-        {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+        {error && (
+          <p role="alert" className="text-sm text-red-600">
+            {error}
+          </p>
+        )}
         <div className="space-y-1.5">
-          <label className="text-sm font-medium text-gray-700">Mật khẩu hiện tại</label>
-          <input 
-            type="password" 
+          <label className="text-sm font-medium text-gray-700">
+            Mật khẩu hiện tại
+          </label>
+          <input
+            type="password"
             value={currentPassword}
-            onChange={e => setCurrentPassword(e.target.value)}
+            onChange={(e) => setCurrentPassword(e.target.value)}
             className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-colors"
           />
         </div>
-        
+
         <div className="space-y-1.5">
-          <label className="text-sm font-medium text-gray-700">Mật khẩu mới</label>
-          <input 
-            type="password" 
+          <label className="text-sm font-medium text-gray-700">
+            Mật khẩu mới
+          </label>
+          <input
+            type="password"
             value={newPassword}
-            onChange={e => setNewPassword(e.target.value)}
+            onChange={(e) => setNewPassword(e.target.value)}
             className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-colors"
           />
           {newPassword && (
             <div className="mt-2 flex items-center gap-2">
               <div className="flex-1 flex gap-1 h-1.5">
-                {[25, 50, 75, 100].map(threshold => (
-                  <div 
-                    key={threshold} 
+                {[25, 50, 75, 100].map((threshold) => (
+                  <div
+                    key={threshold}
                     className={`flex-1 rounded-full transition-colors ${strength >= threshold ? getStrengthColor(strength) : "bg-gray-200"}`}
                   />
                 ))}
               </div>
-              <span className={`text-xs font-medium text-${getStrengthColor(strength).replace('bg-', '')}`}>
+              <span
+                className={`text-xs font-medium text-${getStrengthColor(strength).replace("bg-", "")}`}
+              >
                 {getStrengthLabel(strength)}
               </span>
             </div>
@@ -99,19 +116,23 @@ export default function ChangePasswordForm() {
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-sm font-medium text-gray-700">Xác nhận mật khẩu mới</label>
-          <input 
-            type="password" 
+          <label className="text-sm font-medium text-gray-700">
+            Xác nhận mật khẩu mới
+          </label>
+          <input
+            type="password"
             value={confirmPassword}
-            onChange={e => setConfirmPassword(e.target.value)}
+            onChange={(e) => setConfirmPassword(e.target.value)}
             className={`w-full px-4 py-2.5 rounded-lg border focus:outline-none focus:ring-1 transition-colors ${
-              confirmPassword && !isMatch 
-                ? "border-red-300 focus:border-red-500 focus:ring-red-500" 
+              confirmPassword && !isMatch
+                ? "border-red-300 focus:border-red-500 focus:ring-red-500"
                 : "border-gray-200 focus:border-teal-500 focus:ring-teal-500"
             }`}
           />
           {confirmPassword && !isMatch && (
-            <p className="text-xs text-red-500">Mật khẩu xác nhận không khớp.</p>
+            <p className="text-xs text-red-500">
+              Mật khẩu xác nhận không khớp.
+            </p>
           )}
         </div>
 
@@ -122,9 +143,24 @@ export default function ChangePasswordForm() {
             className="px-6 py-2.5 bg-gray-800 hover:bg-gray-900 text-white font-semibold rounded-lg shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {isSaving && (
-              <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              <svg
+                className="animate-spin h-4 w-4 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
               </svg>
             )}
             Cập nhật mật khẩu

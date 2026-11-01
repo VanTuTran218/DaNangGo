@@ -1,54 +1,446 @@
 import { getPool, sql } from '../../config/db';
+import * as placesRepo from './places.repository';
+import { getAccommodationDetail } from '../accommodations/accommodations.service';
+import type { SearchPlacesQuery, PlaceType, PlaceDetailResponseDto, TopPlacesQuery } from './places.validation';
+import type {
+  PlaceSearchItem,
+  SearchPlacesResult,
+  PlaceDetail,
+  PlaceImage,
+  PlaceOpeningHour,
+  AccommodationFilterHook,
+} from './places.repository';
 
-// Kiểu dữ liệu (tùy chỉnh theo bảng trong DB của bạn)
+export type { PlaceType, PlaceDetailResponseDto } from './places.validation';
+export type {
+  PlaceSearchItem,
+  SearchPlacesResult,
+  PlaceDetail,
+  PlaceImage,
+  PlaceOpeningHour,
+  AccommodationFilterHook,
+} from './places.repository';
+export { setAccommodationFilterHook } from './places.repository';
+
+export type PlaceStatus = 'ACTIVE' | 'HIDDEN' | 'PENDING' | 'LOCKED';
+
+export interface PlaceRoomType {
+  room_type_id: number;
+  name: string;
+  capacity: number;
+  price_per_night: number;
+  original_price: number | null;
+  room_count: number;
+}
+
+export interface PlaceAmenity {
+  amenity_id: number;
+  name: string;
+  icon?: string | null;
+}
+
+export interface AccommodationDetail {
+  accommodation_type: string;
+  star_rating: number | null;
+  check_in_time: string | null;
+  check_out_time: string | null;
+  booking_url: string | null;
+  rooms: PlaceRoomType[];
+  amenities: PlaceAmenity[];
+}
 export interface Place {
   place_id: number;
+  place_type: string;
   name: string;
-  description?: string;
-  address?: string;
-  category?: string;
-  rating?: number;
+  description?: string | null;
+  address?: string | null;
+  district_id?: number | null;
+  district_name?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  phone?: string | null;
+  website?: string | null;
+  booking_url?: string | null;
+  cover_image?: string | null;
+  images?: PlaceImage[];
+  status: string;
+  avg_rating: number;
+  review_count: number;
+  view_count: number;
+  price_min?: number | null;
+  price_max?: number | null;
   created_at?: Date;
+  accommodation?: AccommodationDetail;
+  // Trải phẳng các trường của lưu trú cho client tiện sử dụng
+  rooms?: PlaceRoomType[];
+  amenities?: PlaceAmenity[];
+  accommodation_type?: string;
+  star_rating?: number | null;
+  check_in_time?: string | null;
+  check_out_time?: string | null;
+}
+
+export interface PlacesQueryParams {
+  type?: string;
+  place_type?: string;
+  category?: string;
+  district_id?: string | number;
+  districtId?: string | number;
+  min_rating?: string | number;
+  minRating?: string | number;
+  min_price?: string | number;
+  max_price?: string | number;
+  capacity?: string | number;
+  amenity_ids?: string;
+  accommodation_type?: string;
+  q?: string;
+  search?: string;
+  status?: string;
+  sort?: string;
+  page?: string | number;
+  limit?: string | number;
+}
+
+export interface CreatePlaceCommonDto {
+  /** Loại địa điểm: Bắt buộc ('RESTAURANT' | 'ATTRACTION' | 'ACCOMMODATION') */
+  place_type: PlaceType;
+  /** Tên địa điểm: Bắt buộc (tối đa 200 ký tự) */
+  name: string;
+  /** Mô tả chi tiết */
+  description?: string | null;
+  /** Địa chỉ chi tiết */
+  address?: string | null;
+  /** ID quận/huyện thuộc Đà Nẵng (1..8) */
+  district_id?: number | null;
+  /** Tọa độ vĩ độ (-90 đến 90) */
+  latitude?: number | null;
+  /** Tọa độ kinh độ (-180 đến 180) */
+  longitude?: number | null;
+  /** Số điện thoại liên hệ */
+  phone?: string | null;
+  /** Website chính thức */
+  website?: string | null;
+  /** URL đặt bàn / đặt phòng trực tuyến (phải bắt đầu bằng http:// hoặc https://) */
+  booking_url?: string | null;
+  /** ID đối tác sở hữu (nếu là đối tác tạo) */
+  partner_id?: number | null;
+  /** Nhãn khuyến mãi / nổi bật (ví dụ: 'Đặc sản số 1', 'Khách sạn ven biển') */
+  promo_label?: string | null;
+  /** Trạng thái hiển thị (Mặc định: 'ACTIVE') */
+  status?: PlaceStatus;
 }
 
 /**
- * Lấy tất cả địa điểm
+ * Lấy danh sách địa điểm có lọc, tìm kiếm và phân trang
+ * (API dùng chung cho cả Nhà hàng, Lưu trú, Điểm du lịch)
  */
-export async function getAllPlaces(): Promise<Place[]> {
-  const pool = getPool();
-  const result = await pool.request().query('SELECT * FROM Places');
-  return result.recordset;
+export async function getPlaces(
+  query: SearchPlacesQuery,
+  includeHidden: boolean = false
+): Promise<SearchPlacesResult> {
+  return await placesRepo.searchPlaces(query, includeHidden);
+}
+
+export interface CurrentUserPayload {
+  id?: number;
+  role: string;
+  partner_id?: number;
+}
+
+export async function getTopPlaces(query: TopPlacesQuery): Promise<PlaceSearchItem[]> {
+  const result = await placesRepo.searchPlaces(
+    { type: query.type, limit: query.limit, page: 1, sort: 'rating_desc' },
+    false,
+    3,
+  );
+  return result.items;
 }
 
 /**
- * Lấy địa điểm theo ID
+ * Lấy chi tiết 1 địa điểm theo ID (kèm ảnh, lịch mở cửa, thực đơn/khẩu vị, giá vé, lưu trú)
+ * Theo đúng 7 yêu cầu Task 6:
+ * - Nếu không tồn tại hoặc ở trạng thái HIDDEN, LOCKED, PENDING với người dùng thường -> trả về 404 Not Found
+ * - Admin hoặc Partner sở hữu cơ sở được phép xem địa điểm ở mọi trạng thái
+ * - Tự động tăng lượt xem (view_count) theo cơ chế fire-and-forget
  */
-export async function getPlaceById(id: number): Promise<Place | null> {
-  const pool = getPool();
-  const result = await pool
-    .request()
-    .input('id', sql.Int, id)
-    .query('SELECT * FROM Places WHERE place_id = @id');
+export async function getPlaceDetail(
+  id: number,
+  user?: CurrentUserPayload
+): Promise<PlaceDetail> {
+  const place = await placesRepo.findPlaceById(id);
+  if (!place) {
+    throw { status: 404, message: 'Không tìm thấy địa điểm' };
+  }
 
-  return result.recordset[0] || null;
+  // Kiểm tra quyền xem theo trạng thái:
+  // Nếu địa điểm không ở trạng thái ACTIVE (tức HIDDEN, LOCKED, PENDING):
+  // Chỉ Admin hoặc Partner sở hữu quán mới có quyền xem. Người dùng thường/khách nhận 404.
+  if (place.status !== 'ACTIVE') {
+    const isAdmin = user?.role === 'ADMIN';
+    const isOwnerPartner =
+      user?.role === 'PARTNER' &&
+      user.partner_id !== undefined &&
+      user.partner_id !== null &&
+      place.partner_id !== null &&
+      user.partner_id === place.partner_id;
+
+    if (!isAdmin && !isOwnerPartner) {
+      throw { status: 404, message: 'Không tìm thấy địa điểm' };
+    }
+  }
+
+  // Tăng lượt xem (fire-and-forget, không làm gián đoạn response)
+  placesRepo.incrementPlaceViewCount(id);
+
+  if (place.place_type === 'ACCOMMODATION') {
+    try {
+      const accDetail = await getAccommodationDetail(id);
+      return {
+        ...place,
+        ...accDetail,
+        accommodation: accDetail,
+      } as PlaceDetail;
+    } catch {
+      // Fallback to place
+    }
+  }
+
+  return place;
+}
+
+
+/**
+ * Lấy tất cả địa điểm (hàm tương thích ngược với code cũ)
+ */
+export async function getAllPlaces(): Promise<PlaceSearchItem[]> {
+  const result = await placesRepo.searchPlaces({ page: 1, limit: 50 }, true);
+  return result.items;
 }
 
 /**
- * Tạo địa điểm mới
+ * Lấy địa điểm theo ID (hàm tương thích ngược với code cũ)
  */
-export async function createPlace(data: Omit<Place, 'place_id' | 'created_at'>): Promise<Place> {
+export async function getPlaceById(id: number): Promise<PlaceDetail | null> {
+  return await placesRepo.findPlaceById(id);
+}
+
+/**
+ * Tạo địa điểm mới (hàm tương thích ngược với code cũ)
+ */
+export async function createPlace(data: {
+  name: string;
+  description?: string | null;
+  address?: string | null;
+  category?: string | null;
+  district_id?: number | null;
+}): Promise<Place> {
   const pool = getPool();
   const result = await pool
     .request()
     .input('name', sql.NVarChar(255), data.name)
     .input('description', sql.NVarChar(sql.MAX), data.description || null)
     .input('address', sql.NVarChar(500), data.address || null)
-    .input('category', sql.NVarChar(100), data.category || null)
+    .input('districtId', sql.Int, data.district_id || null)
     .query(`
-      INSERT INTO Places (name, description, address, category)
+      INSERT INTO places (place_type, name, description, address, district_id, status, created_at)
       OUTPUT INSERTED.*
-      VALUES (@name, @description, @address, @category)
+      VALUES ('ATTRACTION', @name, @description, @address, @districtId, 'ACTIVE', GETDATE())
     `);
 
   return result.recordset[0];
+}
+
+/**
+ * Hàm ghi `places` dùng chung cho tất cả các loại địa điểm (Nhà hàng, Lưu trú, Điểm du lịch)
+ * - Hỗ trợ truyền sql.Transaction để dùng trong transaction liên bảng (places + restaurants, places + accommodations...)
+ * - Nếu không truyền runner, sẽ dùng getPool() mặc định.
+ * - Trả về place_id vừa tạo.
+ */
+export async function createPlaceCommon(
+  data: CreatePlaceCommonDto,
+  runner?: sql.Transaction | sql.ConnectionPool
+): Promise<number> {
+  // 1. Kiểm tra validation phòng thủ trước khi ghi vào Database
+  if (!data || typeof data !== 'object') {
+    throw new Error('Dữ liệu địa điểm không hợp lệ (data is required)');
+  }
+
+  const trimmedName = data.name ? data.name.trim() : '';
+  if (!trimmedName) {
+    throw new Error('Tên địa điểm (name) là bắt buộc và không được để trống');
+  }
+
+  if (!data.place_type || !['RESTAURANT', 'ATTRACTION', 'ACCOMMODATION'].includes(data.place_type)) {
+    throw new Error(
+      `Loại địa điểm (place_type) không hợp lệ: "${data.place_type}". Phải là RESTAURANT, ATTRACTION hoặc ACCOMMODATION.`
+    );
+  }
+
+  const validStatuses: PlaceStatus[] = ['ACTIVE', 'HIDDEN', 'PENDING', 'LOCKED'];
+  const status: PlaceStatus = data.status ?? 'ACTIVE';
+  if (!validStatuses.includes(status)) {
+    throw new Error(
+      `Trạng thái (status) không hợp lệ: "${status}". Phải là một trong: ${validStatuses.join(', ')}.`
+    );
+  }
+
+  if (data.latitude !== undefined && data.latitude !== null) {
+    if (data.latitude < -90 || data.latitude > 90) {
+      throw new Error(`Tọa độ vĩ độ (latitude) phải nằm trong [-90, 90]. Nhận được: ${data.latitude}`);
+    }
+  }
+
+  if (data.longitude !== undefined && data.longitude !== null) {
+    if (data.longitude < -180 || data.longitude > 180) {
+      throw new Error(`Tọa độ kinh độ (longitude) phải nằm trong [-180, 180]. Nhận được: ${data.longitude}`);
+    }
+  }
+
+  if (data.booking_url && !data.booking_url.startsWith('http://') && !data.booking_url.startsWith('https://')) {
+    throw new Error('URL đặt chỗ (booking_url) phải bắt đầu bằng http:// hoặc https://');
+  }
+
+  // 2. Thực thi ghi dữ liệu vào bảng places
+  const executor = runner ?? getPool();
+  const request = executor.request();
+
+  const result = await request
+    .input('place_type', sql.VarChar(20), data.place_type)
+    .input('name', sql.NVarChar(200), trimmedName)
+    .input('description', sql.NVarChar(sql.MAX), data.description ? data.description.trim() : null)
+    .input('address', sql.NVarChar(255), data.address ? data.address.trim() : null)
+    .input('district_id', sql.Int, data.district_id ?? null)
+    .input('latitude', sql.Decimal(9, 6), data.latitude ?? null)
+    .input('longitude', sql.Decimal(9, 6), data.longitude ?? null)
+    .input('phone', sql.VarChar(20), data.phone ? data.phone.trim() : null)
+    .input('website', sql.VarChar(255), data.website ? data.website.trim() : null)
+    .input('booking_url', sql.NVarChar(500), data.booking_url ? data.booking_url.trim() : null)
+    .input('partner_id', sql.Int, data.partner_id ?? null)
+    .input('promo_label', sql.NVarChar(50), data.promo_label ? data.promo_label.trim() : null)
+    .input('status', sql.VarChar(20), status)
+    .query<{ place_id: number }>(`
+      INSERT INTO places
+        (place_type, name, description, address, district_id, latitude, longitude,
+         phone, website, booking_url, partner_id, avg_rating, review_count, view_count,
+         promo_label, status, created_at)
+      OUTPUT INSERTED.place_id
+      VALUES
+        (@place_type, @name, @description, @address, @district_id, @latitude, @longitude,
+         @phone, @website, @booking_url, @partner_id, 0, 0, 0,
+         @promo_label, @status, GETDATE())
+    `);
+
+  return result.recordset[0].place_id;
+}
+
+export interface UpdatePlaceStatusResult {
+  success: boolean;
+  message: string;
+  data: {
+    place_id: number;
+    name: string;
+    previous_status: PlaceStatus;
+    status: PlaceStatus;
+    updated_at: Date;
+  };
+}
+
+/**
+ * Cập nhật trạng thái địa điểm (dùng cho Admin và Partner/Tin)
+ * - Địa điểm đang LOCKED: CHỈ Admin mới có quyền gỡ khóa (throw 403 nếu Partner cố tình đổi).
+ * - Chỉ Admin mới có quyền đưa địa điểm sang trạng thái LOCKED (throw 403 nếu Partner cố tình set).
+ * - Partner chỉ được đổi trạng thái địa điểm do chính mình sở hữu (place.partner_id === user.partner_id).
+ * - Khách hàng thông thường (USER) hoặc chưa đăng nhập không có quyền thay đổi trạng thái (throw 403).
+ * - Admin có toàn quyền đổi trạng thái bất kỳ địa điểm nào sang ACTIVE, HIDDEN, PENDING, LOCKED.
+ */
+export async function updatePlaceStatus(
+  place_id: number,
+  new_status: PlaceStatus,
+  user: { role: string; partner_id?: number }
+): Promise<UpdatePlaceStatusResult> {
+  const validStatuses: PlaceStatus[] = ['ACTIVE', 'HIDDEN', 'PENDING', 'LOCKED'];
+  if (!validStatuses.includes(new_status)) {
+    throw {
+      status: 400,
+      message: `Trạng thái không hợp lệ: "${new_status}". Chỉ chấp nhận: ${validStatuses.join(', ')}`,
+    };
+  }
+
+  // 1. Kiểm tra vai trò người dùng (chỉ ADMIN hoặc PARTNER)
+  if (!user || (user.role !== 'ADMIN' && user.role !== 'PARTNER')) {
+    throw { status: 403, message: 'Bạn không có quyền thay đổi trạng thái địa điểm' };
+  }
+
+  const pool = getPool();
+
+  // 2. Tìm thông tin địa điểm hiện tại
+  const existingRes = await pool
+    .request()
+    .input('place_id', sql.Int, place_id)
+    .query<{ place_id: number; name: string; partner_id: number | null; status: PlaceStatus }>(
+      'SELECT place_id, name, partner_id, status FROM places WHERE place_id = @place_id'
+    );
+
+  const place = existingRes.recordset[0];
+  if (!place) {
+    throw { status: 404, message: 'Không tìm thấy địa điểm' };
+  }
+
+  const previousStatus = place.status;
+
+  // 3. Ràng buộc bảo mật 1: Quán đang LOCKED -> CHỈ Admin mới có quyền mở khóa / đổi trạng thái
+  if (place.status === 'LOCKED' && user.role !== 'ADMIN') {
+    throw {
+      status: 403,
+      message: 'Địa điểm đang bị khóa (LOCKED), chỉ Quản trị viên mới có quyền mở khóa',
+    };
+  }
+
+  // 4. Ràng buộc bảo mật 2: Chỉ Admin mới có quyền khóa quán (chuyển sang LOCKED)
+  if (new_status === 'LOCKED' && user.role !== 'ADMIN') {
+    throw {
+      status: 403,
+      message: 'Chỉ Quản trị viên mới có quyền khóa địa điểm',
+    };
+  }
+
+  // 5. Ràng buộc bảo mật 3: Partner chỉ được sửa quán thuộc sở hữu của mình
+  if (user.role === 'PARTNER') {
+    if (!user.partner_id || place.partner_id === null || place.partner_id !== user.partner_id) {
+      throw {
+        status: 403,
+        message: 'Bạn không có quyền thay đổi trạng thái địa điểm này',
+      };
+    }
+  }
+
+  // 6. Thực hiện cập nhật vào CSDL
+  const now = new Date();
+  await pool
+    .request()
+    .input('place_id', sql.Int, place_id)
+    .input('status', sql.VarChar(20), new_status)
+    .input('updated_at', sql.DateTime2, now)
+    .query('UPDATE places SET status = @status, updated_at = @updated_at WHERE place_id = @place_id');
+
+  const actionText =
+    new_status === 'LOCKED'
+      ? 'Khóa'
+      : new_status === 'ACTIVE'
+      ? 'Kích hoạt'
+      : new_status === 'HIDDEN'
+      ? 'Ẩn'
+      : 'Chuyển sang chờ duyệt';
+
+  return {
+    success: true,
+    message: `${actionText} địa điểm "${place.name}" thành công`,
+    data: {
+      place_id,
+      name: place.name,
+      previous_status: previousStatus,
+      status: new_status,
+      updated_at: now,
+    },
+  };
 }

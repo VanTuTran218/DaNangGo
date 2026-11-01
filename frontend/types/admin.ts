@@ -1,14 +1,15 @@
 export type UserAccountStatus = 'ACTIVE' | 'LOCKED';
 export type PartnerApprovalStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'LOCKED';
 export type PlaceCategory = 'luutru' | 'amthuc' | 'diemdulich';
-export type PlaceStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'HIDDEN';
-export type ReviewStatus = 'ACTIVE' | 'HIDDEN';
+export type PlaceStatus = 'PENDING' | 'APPROVED' | 'ACTIVE' | 'REJECTED' | 'HIDDEN' | 'LOCKED';
+export type ReviewStatus = 'PENDING' | 'APPROVED' | 'HIDDEN';
 export type QuestionType = 'STAR' | 'TEXT';
 
 export interface AdminDashboardStats {
   totalUsers: number;
   totalPartners: number;
   pendingPartners: number;
+  pendingPlaces?: number;
   totalPlaces: number;
   totalReviews: number;
   totalSurveys: number;
@@ -19,7 +20,7 @@ export interface AdminUserItem {
   name: string;
   email: string;
   phone?: string;
-  role: 'USER' | 'PARTNER' | 'ADMIN';
+  role: "USER" | "PARTNER" | "ADMIN";
   status: UserAccountStatus;
   createdAt: string;
   avatarUrl?: string;
@@ -29,7 +30,7 @@ export interface AdminPartnerItem {
   id: string;
   userId: string;
   businessName: string;
-  serviceType: 'STAY' | 'TABLE' | 'TICKET';
+  serviceType: "STAY" | "TABLE" | "TICKET";
   taxCode: string;
   address: string;
   phone: string;
@@ -66,6 +67,7 @@ export interface AdminReviewItem {
   reportReason?: string;
   status: ReviewStatus;
   createdAt: string;
+  images: { image_id: number; image_url: string }[];
 }
 
 export interface SurveyQuestion {
@@ -94,7 +96,7 @@ export interface AdminSurveyItem {
 
 export interface AdminTodoItem {
   id: string;
-  type: 'PENDING_PARTNER' | 'REPORTED_REVIEW' | 'PENDING_PLACE';
+  type: "PENDING_PARTNER" | "REPORTED_REVIEW" | "PENDING_PLACE";
   title: string;
   description: string;
   targetId: string;

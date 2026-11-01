@@ -1,8 +1,9 @@
 'use client';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
+import Link from 'next/link';
 import { Heart, MapPin, Star, Users, ArrowRight } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export interface AttractionData {
   id: number;
@@ -41,21 +42,31 @@ const tintText = {
 
 export default function StoryCard({ data, liked, onLike }: Props) {
   const [isHovered, setIsHovered] = useState(false);
+  const [imgSrc, setImgSrc] = useState(data.img);
+
+  useEffect(() => {
+    setImgSrc(data.img);
+  }, [data.img]);
 
   return (
-    <div 
-      className="group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 border border-gray-100 cursor-pointer h-[420px] flex flex-col relative"
+    <Link
+      href={`/places/${data.id}`}
+      className="group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 border border-gray-100 cursor-pointer h-[420px] flex flex-col relative block"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
+
       {/* Nửa trên: Hình ảnh */}
       <div className="relative h-[240px] w-full overflow-hidden shrink-0">
         <Image
-          src={data.img}
+          src={imgSrc || 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=800&q=80'}
           alt={data.name}
           fill
           className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          onError={() => {
+            setImgSrc('https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=800&q=80');
+          }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80" />
         
@@ -107,14 +118,15 @@ export default function StoryCard({ data, liked, onLike }: Props) {
         </div>
 
         <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
-          <span className={`text-xs font-bold px-2 py-1 rounded-md ${tintText[data.badgeTint]}`}>
-            Khám phá ngay
+          <span className={`text-xs font-bold px-2.5 py-1.5 rounded-lg ${tintText[data.badgeTint]} flex items-center gap-1`}>
+            Xem chi tiết
           </span>
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white ${tintColors[data.badgeTint]} group-hover:scale-110 transition-transform`}>
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white ${tintColors[data.badgeTint]} group-hover:scale-110 transition-transform shadow-sm`}>
             <ArrowRight size={14} />
           </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
+

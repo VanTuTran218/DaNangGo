@@ -15,6 +15,13 @@ export const csrfProtection: RequestHandler = (req, res, next) => {
 
   const source = req.get('origin') || req.get('referer');
   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+
+  // Cho phép các công cụ test như Postman / cURL trong môi trường development
+  if (process.env.NODE_ENV !== 'production' && !source) {
+    next();
+    return;
+  }
+
   try {
     if (!source || new URL(source).origin !== new URL(frontendUrl).origin) {
       res.status(403).json({ success: false, message: 'Nguồn yêu cầu không hợp lệ.' });

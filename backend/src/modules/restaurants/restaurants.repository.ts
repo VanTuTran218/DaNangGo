@@ -1,5 +1,6 @@
 import { getPool, sql } from '../../config/db';
 import type { CreateRestaurantDto, UpdateRestaurantDto } from './restaurants.validation';
+import { createPlaceCommon } from '../places/places.service';
 
 // ─── Kiểu dữ liệu trả về ─────────────────────────────────────────────────────
 
@@ -14,6 +15,7 @@ export interface RestaurantRow {
   longitude: number | null;
   phone: string | null;
   website: string | null;
+  booking_url: string | null;
   partner_id: number | null;
   avg_rating: number;
   review_count: number;
@@ -53,39 +55,29 @@ export const checkCuisineExists = async (cuisine_id: number): Promise<boolean> =
 
 export const createRestaurantTx = async (
   data: CreateRestaurantDto,
-  partner_id: number
+  partner_id: number | null
 ): Promise<RestaurantRow> => {
   const pool = getPool();
   const transaction = pool.transaction();
   await transaction.begin();
 
   try {
-    // Bước 1: INSERT vào places
-    const placeResult = await transaction
-      .request()
-      .input('name', sql.NVarChar(200), data.name.trim())
-      .input('description', sql.NVarChar(sql.MAX), data.description ?? null)
-      .input('address', sql.NVarChar(255), data.address.trim())
-      .input('district_id', sql.Int, data.district_id)
-      .input('latitude', sql.Decimal(9, 6), data.latitude ?? null)
-      .input('longitude', sql.Decimal(9, 6), data.longitude ?? null)
-      .input('phone', sql.VarChar(20), data.phone ?? null)
-      .input('website', sql.VarChar(255), data.website ?? null)
-      .input('partner_id', sql.Int, partner_id)
-      .input('promo_label', sql.NVarChar(50), data.promo_label ?? null)
-      .query(`
-        INSERT INTO places
-          (place_type, name, description, address, district_id, latitude, longitude,
-           phone, website, partner_id, avg_rating, review_count, view_count,
-           promo_label, status, created_at)
-        OUTPUT INSERTED.place_id
-        VALUES
-          ('RESTAURANT', @name, @description, @address, @district_id, @latitude, @longitude,
-           @phone, @website, @partner_id, 0, 0, 0,
-           @promo_label, 'ACTIVE', GETDATE())
-      `);
-
-    const place_id = (placeResult.recordset[0] as { place_id: number }).place_id;
+    // Bước 1: INSERT vào places bằng hàm dùng chung createPlaceCommon
+    const place_id = await createPlaceCommon({
+      place_type: 'RESTAURANT',
+      name: data.name,
+      description: data.description,
+      address: data.address,
+      district_id: data.district_id,
+      latitude: data.latitude,
+      longitude: data.longitude,
+      phone: data.phone,
+      website: data.website,
+      booking_url: data.booking_url,
+      partner_id: partner_id,
+      promo_label: data.promo_label,
+      status: (data.status as any) || 'ACTIVE',
+    }, transaction);
 
     // Bước 2: INSERT vào restaurants
     await transaction
@@ -98,6 +90,24 @@ export const createRestaurantTx = async (
         INSERT INTO restaurants (place_id, place_type, cuisine_id, price_min, price_max)
         VALUES (@place_id, 'RESTAURANT', @cuisine_id, @price_min, @price_max)
       `);
+
+    // Bước 3: INSERT vào place_images nếu có
+    if (data.images && Array.isArray(data.images) && data.images.length > 0) {
+      for (let i = 0; i < data.images.length; i++) {
+        const url = String(data.images[i]).trim();
+        if (url) {
+          await transaction
+            .request()
+            .input('place_id', sql.Int, place_id)
+            .input('image_url', sql.NVarChar(500), url)
+            .input('is_cover', sql.Bit, i === 0 ? 1 : 0)
+            .query(`
+              INSERT INTO place_images (place_id, image_url, is_cover)
+              VALUES (@place_id, @image_url, @is_cover)
+            `);
+        }
+      }
+    }
 
     await transaction.commit();
 
@@ -123,7 +133,7 @@ export const findRestaurantById = async (
       SELECT
         p.place_id, p.name, p.description, p.address,
         p.district_id, d.name AS district_name,
-        p.latitude, p.longitude, p.phone, p.website,
+        p.latitude, p.longitude, p.phone, p.website, p.booking_url,
         p.partner_id, p.avg_rating, p.review_count, p.view_count,
         p.promo_label, p.status, p.created_at, p.updated_at,
         r.cuisine_id, c.name AS cuisine_name,
@@ -187,7 +197,7 @@ export const findAllRestaurants = async (
     SELECT
       p.place_id, p.name, p.description, p.address,
       p.district_id, d.name AS district_name,
-      p.latitude, p.longitude, p.phone, p.website,
+      p.latitude, p.longitude, p.phone, p.website, p.booking_url,
       p.partner_id, p.avg_rating, p.review_count, p.view_count,
       p.promo_label, p.status, p.created_at, p.updated_at,
       r.cuisine_id, c.name AS cuisine_name,
@@ -228,7 +238,10 @@ export const updateRestaurantTx = async (
       .input('longitude', sql.Decimal(9, 6), data.longitude ?? null)
       .input('phone', sql.VarChar(20), data.phone ?? null)
       .input('website', sql.VarChar(255), data.website ?? null)
+      .input('booking_url', sql.NVarChar(500), data.booking_url ?? null)
       .input('promo_label', sql.NVarChar(50), data.promo_label ?? null)
+      .input('partner_id', sql.Int, data.partner_id ?? null)
+      .input('status', sql.VarChar(20), data.status ?? null)
       .query(`
         UPDATE places SET
           name        = COALESCE(@name, name),
@@ -239,7 +252,10 @@ export const updateRestaurantTx = async (
           longitude   = COALESCE(@longitude, longitude),
           phone       = COALESCE(@phone, phone),
           website     = COALESCE(@website, website),
+          booking_url = COALESCE(@booking_url, booking_url),
           promo_label = COALESCE(@promo_label, promo_label),
+          partner_id  = COALESCE(@partner_id, partner_id),
+          status      = COALESCE(@status, status),
           updated_at  = GETDATE()
         WHERE place_id = @place_id
       `);
@@ -257,6 +273,28 @@ export const updateRestaurantTx = async (
           price_max  = COALESCE(@price_max, price_max)
         WHERE place_id = @place_id
       `);
+
+    if (data.images && Array.isArray(data.images)) {
+      await transaction
+        .request()
+        .input('place_id', sql.Int, place_id)
+        .query('DELETE FROM place_images WHERE place_id = @place_id');
+
+      for (let i = 0; i < data.images.length; i++) {
+        const url = String(data.images[i]).trim();
+        if (url) {
+          await transaction
+            .request()
+            .input('place_id', sql.Int, place_id)
+            .input('image_url', sql.NVarChar(500), url)
+            .input('is_cover', sql.Bit, i === 0 ? 1 : 0)
+            .query(`
+              INSERT INTO place_images (place_id, image_url, is_cover)
+              VALUES (@place_id, @image_url, @is_cover)
+            `);
+        }
+      }
+    }
 
     await transaction.commit();
   } catch (err) {

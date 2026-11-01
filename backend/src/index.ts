@@ -19,6 +19,7 @@ import partnerRouter from './modules/partner/partner.routes';
 import subscriptionsRouter from './modules/subscriptions/subscriptions.routes';
 import adminSubscriptionsRouter from './modules/admin/subscriptions.routes';
 import sepayWebhookRouter from './modules/subscriptions/sepay.routes';
+import recommendationsRouter from './modules/recommendations/recommendations.routes';
 import { csrfProtection } from './middleware/csrf.middleware';
 import { errorHandler } from './middleware/error-handler';
 
@@ -50,6 +51,7 @@ app.use('/api/admin/partners', adminPartnersRouter);
 app.use('/api/admin/places', adminPlacesRouter);
 app.use('/api/admin/subscriptions', adminSubscriptionsRouter);
 app.use('/api/subscriptions', subscriptionsRouter);
+app.use('/api/recommendations', recommendationsRouter);
 app.use('/api/places', placesRouter);
 app.use('/api/admin/reviews', adminReviewsRouter);
 app.use('/api/reviews', userReviewsRouter);

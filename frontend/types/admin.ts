@@ -21,7 +21,7 @@ export interface AdminUserItem {
   email: string;
   phone?: string;
   role: "USER" | "PARTNER" | "ADMIN";
-  status: UserAccountStatus;
+  status: UserAccountStatus | "PENDING_APPROVAL" | "REJECTED";
   createdAt: string;
   avatarUrl?: string;
 }

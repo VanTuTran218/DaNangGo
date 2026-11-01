@@ -16,6 +16,8 @@ import {
   publicIdExists,
   recordFailedLogin,
   resetLoginStateAndRecordSuccess,
+  updateAccountAvatar,
+  updateAccountProfile,
   resetPasswordByTokenHash,
   revokeAllRefreshTokens,
   revokeRefreshToken,
@@ -74,6 +76,8 @@ async function issueOtp(
   await upsertVerification({ userId, codeHash, expiresAt, now, purpose });
 
   // Gửi email (nếu development và chưa có MAIL_USER → in ra console)
+  console.log('MAIL_USER=', process.env.MAIL_USER);
+  console.log('MAIL_APP_PASSWORD=', process.env.MAIL_APP_PASSWORD);
   if (!process.env.MAIL_USER && process.env.NODE_ENV !== 'production') {
     console.info(`[DEV OTP:${purpose}] ${email} → ${code} (hết hạn: ${expiresAt.toISOString()})`);
     return;
@@ -106,6 +110,8 @@ export interface PublicUser {
   name: string;
   email: string;
   phone?: string | undefined;
+  birthday?: string;
+  avatarUrl?: string;
   role: AccountRole;
   createdAt: string;
   approvalStatus?: string;
@@ -132,6 +138,8 @@ function toPublicUser(account: AuthAccountRecord): PublicUser {
     createdAt: account.created_at.toISOString(),
   };
   if (account.phone) user.phone = account.phone;
+  if (account.date_of_birth) user.birthday = account.date_of_birth;
+  if (account.avatar_url) user.avatarUrl = account.avatar_url;
   if (account.approval_status) user.approvalStatus = account.approval_status;
   return user;
 }
@@ -318,6 +326,7 @@ async function authenticate(
   const permitted = sessionType === 'ADMIN' ? accountRole === 'ADMIN' : accountRole === 'USER' || accountRole === 'PARTNER';
   if (!account || !permitted) throw new AuthError(401, 'Sai thông tin đăng nhập.');
 
+  if (account.status === 'LOCKED') throw new AuthError(403, 'Tài khoản đã bị khóa');
   if (account.status === 'LOCKED') {
     if (!account.locked_until || account.locked_until.getTime() > Date.now()) {
       throw new AuthError(423, 'Tài khoản đang bị khóa. Vui lòng thử lại sau.');
@@ -401,6 +410,27 @@ export async function refreshSession(
 export async function getCurrentUser(userId: number): Promise<PublicUser> {
   const account = await findAccountByUserId(userId);
   if (!account) throw new AuthError(401, 'Tài khoản không còn khả dụng.');
+  return toPublicUser(account);
+}
+
+export async function updateCurrentUserProfile(userId: number, input: {
+  name: string;
+  phone: string | null;
+  birthday: string | null;
+}): Promise<PublicUser> {
+  const account = await updateAccountProfile({
+    userId,
+    name: input.name.trim(),
+    phone: input.phone?.trim() ? normalizePhone(input.phone) : null,
+    birthday: input.birthday,
+  });
+  if (!account) throw new AuthError(404, 'KhÃ´ng tÃ¬m tháº¥y tÃ i khoáº£n.');
+  return toPublicUser(account);
+}
+
+export async function updateCurrentUserAvatar(userId: number, avatarUrl: string | null): Promise<PublicUser> {
+  const account = await updateAccountAvatar(userId, avatarUrl);
+  if (!account) throw new AuthError(404, 'KhÃ´ng tÃ¬m tháº¥y tÃ i khoáº£n.');
   return toPublicUser(account);
 }
 
@@ -495,15 +525,13 @@ export async function updatePassword(
   userId: number,
   currentPassword: string,
   newPassword: string,
-  refreshCookie: string | undefined,
 ): Promise<void> {
   const account = await findAccountByUserId(userId);
   if (!account || !(await bcrypt.compare(currentPassword, account.password_hash))) {
     throw new AuthError(400, 'Mật khẩu hiện tại không chính xác.');
   }
   const passwordHash = await bcrypt.hash(newPassword, 12);
-  const currentRefreshHash = refreshCookie ? hashRefreshToken(refreshCookie) : null;
-  await changePasswordRecord(userId, passwordHash, currentRefreshHash);
+  await changePasswordRecord(userId, passwordHash, null);
 }
 
 export async function verifyAccessToken(token: string, expectedSession: 'USER' | 'ADMIN'): Promise<number> {
@@ -516,6 +544,7 @@ export async function verifyAccessToken(token: string, expectedSession: 'USER' |
       throw new AuthError(401, 'Phiên đăng nhập không hợp lệ.');
     }
     const account = await findAccountByUserId(userId);
+    if (account?.status === 'LOCKED') throw new AuthError(403, 'Tài khoản đã bị khóa');
     if (!account || account.status !== 'ACTIVE') throw new AuthError(401, 'Phiên đăng nhập không còn hiệu lực.');
     return userId;
   } catch (error) {

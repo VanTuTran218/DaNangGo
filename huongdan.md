@@ -464,3 +464,76 @@ npm test
 3. Khi đối tác chưa có gói hoặc gói hết hạn:
    - Dashboard đối tác hiển thị banner cảnh báo màu vàng yêu cầu kích hoạt gói.
    - Thao tác gửi cơ sở `POST /api/places` bị backend chặn với mã lỗi 403 `NO_ACTIVE_SUBSCRIPTION`.
+
+---
+
+# Tổng hợp cập nhật: duyệt tài khoản, quản lý người dùng và hồ sơ cá nhân
+
+Phần này ghi lại các chức năng đã được triển khai trong codebase để tiện tra cứu. Các API bên dưới dùng prefix `/api`; những route Admin yêu cầu phiên Admin hợp lệ.
+
+## 14. Duyệt tài khoản đối tác
+
+Luồng đăng ký và xét duyệt đối tác được mô tả chi tiết ở phần **Hướng dẫn chức năng duyệt tài khoản đối tác** phía trên. Tóm tắt:
+
+- Đăng ký Partner tạo user và hồ sơ đối tác trong SQL Server với trạng thái chờ duyệt; tài khoản chưa được đăng nhập như Partner đã hoạt động.
+- Admin xem danh sách, duyệt hoặc từ chối kèm lý do; trạng thái xét duyệt và thông tin người/thời điểm xét duyệt được lưu trong database.
+- Backend kiểm tra trạng thái tài khoản/hồ sơ trước khi cấp phiên và trước khi cho Partner tạo địa điểm.
+- Các API chính: `GET /api/admin/partners`, `PATCH /api/admin/partners/:id/approval`, `PATCH /api/admin/partners/:id/lock`.
+
+## 15. Admin quản lý người dùng
+
+Các API được đăng ký tại `backend/src/modules/admin/users.routes.ts` và được bảo vệ bằng xác thực cùng role `ADMIN`.
+
+| API | Chức năng |
+|---|---|
+| `GET /api/admin/users?page=1&limit=10&role=USER&status=ACTIVE&search=ten` | Phân trang, lọc vai trò/trạng thái và tìm theo tên/email. Query SQL dùng tham số; response chỉ gồm thông tin công khai và phân trang. |
+| `PATCH /api/admin/users/:id/status` với `{ "status": "LOCKED" }` hoặc `{ "status": "ACTIVE" }` | Khóa/mở khóa tài khoản. Trả 404 nếu không có user; không cho Admin khóa hoặc mở khóa chính mình hay thay đổi trạng thái Admin khác. |
+
+File liên quan: `backend/src/modules/admin/users.routes.ts`, `users.service.ts`, `users.repository.ts`; giao diện danh sách tại `frontend/app/admin/(dashboard)/nguoi-dung/page.tsx` và lời gọi API trong `frontend/lib/api/admin.ts`. Trạng thái hợp lệ hiện dùng là `ACTIVE` và `LOCKED`.
+
+## 16. Hồ sơ cá nhân và ảnh đại diện
+
+Trang hồ sơ lấy thông tin user từ API phiên đăng nhập, không còn giả lập lưu thành công ở trình duyệt.
+
+| API | Chức năng |
+|---|---|
+| `GET /api/auth/me` | Lấy user hiện tại từ database. |
+| `PATCH /api/auth/me` | Lưu họ tên, số điện thoại và ngày sinh vào `dbo.users`; email/role không nằm trong allowlist cập nhật. |
+| `POST /api/auth/me/avatar` | Tải ảnh JPG/PNG/WebP tối đa 5 MB lên; backend kiểm tra nội dung file, lưu ảnh và cập nhật đường dẫn trong database. |
+| `DELETE /api/auth/me/avatar` | Xóa ảnh đại diện hiện tại và xóa đường dẫn ảnh khỏi hồ sơ. |
+| `POST /api/auth/change-password` | Đổi mật khẩu theo flow có sẵn, yêu cầu mật khẩu hiện tại và mật khẩu mới/xác nhận. |
+
+Sau khi đổi mật khẩu thành công, backend thu hồi các refresh token và xóa cookie phiên hiện tại. Giao diện xóa user khỏi AuthContext rồi chuyển tới `/dang-nhap`, vì vậy người dùng phải đăng nhập lại bằng mật khẩu mới.
+
+Các route hồ sơ yêu cầu đăng nhập; cập nhật hồ sơ và ảnh cho role `USER` hoặc `PARTNER`. SQL Server đã có các cột `full_name`, `phone`, `date_of_birth`, `avatar_url` trong `dbo.users`, nên phần hồ sơ này **không cần migration**. File ảnh lưu trên máy backend tại `backend/uploads/avatars`; trường `avatar_url` chỉ lưu đường dẫn để hiển thị ảnh.
+
+File liên quan:
+
+- Backend: `backend/src/modules/auth/auth.routes.ts`, `auth.service.ts`, `auth.repository.ts`, `avatar-upload.ts` (mới), `backend/src/index.ts` (phục vụ file ảnh tĩnh).
+- Frontend: `frontend/components/profile/BasicInfoForm.tsx`, `AvatarUploader.tsx`, `ChangePasswordForm.tsx`, `frontend/lib/api/me.ts`, `frontend/lib/api/client.ts`, `frontend/components/layout/Navbar.tsx`.
+- Trong form đổi mật khẩu có nút hiện/ẩn riêng cho mật khẩu hiện tại, mật khẩu mới và ô xác nhận.
+
+### File sửa thêm cho luồng đăng nhập lại sau khi đổi mật khẩu
+
+| File | Thay đổi cụ thể |
+|---|---|
+| `backend/src/modules/auth/auth.service.ts` | Sau khi kiểm tra mật khẩu hiện tại và lưu hash mới, thu hồi toàn bộ refresh token thay vì giữ phiên đang dùng. |
+| `backend/src/modules/auth/auth.routes.ts` | Sau khi đổi mật khẩu thành công, xóa cookie access/refresh và trả thông báo yêu cầu đăng nhập lại. |
+| `frontend/contexts/AuthContext.tsx` | Thêm hàm `logoutTo(path)` để xóa user khỏi giao diện và điều hướng tới đường dẫn chỉ định; các nút đăng xuất cũ vẫn về trang chủ. |
+| `frontend/components/profile/ChangePasswordForm.tsx` | Khi API đổi mật khẩu báo thành công, gọi `logoutTo('/dang-nhap')`. |
+
+## 17. Cách chạy và kiểm tra nhanh
+
+Khởi động backend và frontend ở hai terminal:
+
+```powershell
+cd backend
+npm run dev
+```
+
+```powershell
+cd frontend
+npm run dev
+```
+
+Đăng nhập tài khoản phù hợp rồi mở `/admin/doi-tac`, `/admin/nguoi-dung` hoặc trang `/ca-nhan`. Thay đổi hồ sơ sẽ được ghi vào database; ảnh được lưu trên đĩa backend. Khi triển khai backend trên nhiều máy hoặc môi trường có ổ đĩa tạm, cần chuyển file ảnh sang dịch vụ lưu trữ dùng chung để ảnh tồn tại ổn định giữa các máy.

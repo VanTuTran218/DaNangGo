@@ -17,9 +17,12 @@ import {
   updatePassword,
   verifyEmail,
   resendCode,
+  updateCurrentUserAvatar,
+  updateCurrentUserProfile,
   type IssuedSession,
 } from './auth.service';
 import { requireAuth, requireRole } from '../../middleware/auth.middleware';
+import { parseAvatarUpload, removeStoredAvatar, saveAvatar } from './avatar-upload';
 
 const router = Router();
 const adminRouter = Router();
@@ -92,6 +95,15 @@ const changePasswordSchema = z.object({
 }).refine((input) => input.newPassword === input.confirmPassword, {
   path: ['confirmPassword'], message: 'Mật khẩu xác nhận không khớp.',
 });
+const profileBirthday = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Ngày sinh không hợp lệ.').refine((value) => {
+  const date = new Date(`${value}T00:00:00.000Z`);
+  return !Number.isNaN(date.valueOf()) && date.toISOString().slice(0, 10) === value;
+}, 'Ngày sinh không hợp lệ.');
+const updateProfileSchema = z.object({
+  name: z.string().trim().min(2, 'Há» tÃªn pháº£i cÃ³ Ã­t nháº¥t 2 kÃ½ tá»±.').max(50, 'Há» tÃªn tá»‘i Ä‘a 50 kÃ½ tá»±.'),
+  phone: z.string().trim().max(30, 'Sá»‘ Ä‘iá»‡n thoáº¡i khÃ´ng há»£p lá»‡.').nullable(),
+  birthday: profileBirthday.nullable(),
+}).strict();
 
 function clientMetadata(request: Request) {
   return { userAgent: request.get('user-agent') ?? null, ip: request.ip ?? null };
@@ -228,6 +240,42 @@ router.get('/me', requireAuth('USER'), requireRole('USER', 'PARTNER', 'ADMIN'), 
   res.json({ success: true, data: { user } });
 });
 
+router.patch('/me', requireAuth('USER'), requireRole('USER', 'PARTNER'), async (req, res) => {
+  const input = updateProfileSchema.parse(req.body);
+  const user = await updateCurrentUserProfile(res.locals.authUserId!, input);
+  res.json({ success: true, data: { user }, message: 'Đã cập nhật hồ sơ.' });
+});
+
+router.post('/me/avatar', requireAuth('USER'), requireRole('USER', 'PARTNER'), parseAvatarUpload, async (req, res) => {
+  if (!Buffer.isBuffer(req.body)) {
+    res.status(400).json({ success: false, message: 'Vui lòng gửi ảnh JPG, PNG hoặc WEBP.' });
+    return;
+  }
+  let avatarUrl: string;
+  try {
+    avatarUrl = await saveAvatar(req.body);
+  } catch (error) {
+    res.status(400).json({ success: false, message: error instanceof Error ? error.message : 'Ảnh không hợp lệ.' });
+    return;
+  }
+  try {
+    const oldUser = await getCurrentUser(res.locals.authUserId!);
+    const user = await updateCurrentUserAvatar(res.locals.authUserId!, avatarUrl);
+    await removeStoredAvatar(oldUser.avatarUrl).catch(() => undefined);
+    res.json({ success: true, data: { user }, message: 'Đã cập nhật ảnh đại diện.' });
+  } catch (error) {
+    await removeStoredAvatar(avatarUrl);
+    throw error;
+  }
+});
+
+router.delete('/me/avatar', requireAuth('USER'), requireRole('USER', 'PARTNER'), async (_req, res) => {
+  const oldUser = await getCurrentUser(res.locals.authUserId!);
+  const user = await updateCurrentUserAvatar(res.locals.authUserId!, null);
+  await removeStoredAvatar(oldUser.avatarUrl).catch(() => undefined);
+  res.json({ success: true, data: { user }, message: 'Đã xóa ảnh đại diện.' });
+});
+
 router.post('/forgot-password', forgotPasswordRateLimit, async (req, res) => {
   const { email } = forgotSchema.parse(req.body);
   await forgotPassword(email);
@@ -256,8 +304,9 @@ router.post('/reset-password', resetPasswordRateLimit, async (req, res) => {
 
 router.post('/change-password', requireAuth('USER'), requireRole('USER', 'PARTNER'), async (req, res) => {
   const input = changePasswordSchema.parse(req.body);
-  await updatePassword(res.locals.authUserId!, input.currentPassword, input.newPassword, req.cookies?.refresh_token);
-  res.json({ success: true, message: 'Đổi mật khẩu thành công.' });
+  await updatePassword(res.locals.authUserId!, input.currentPassword, input.newPassword);
+  clearSessionCookies(res, false);
+  res.json({ success: true, message: 'Đổi mật khẩu thành công. Vui lòng đăng nhập lại.' });
 });
 
 adminRouter.post('/login', loginRateLimit, async (req, res) => {

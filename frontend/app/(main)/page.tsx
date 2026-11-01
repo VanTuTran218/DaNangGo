@@ -31,6 +31,7 @@ import { getPlaces } from "@/lib/api/places";
 import { formatPriceRange } from "@/lib/mappers/place.mapper";
 import Reveal from "@/components/ui/Reveal";
 import AnimatedCounter from "@/components/ui/AnimatedCounter";
+import BudgetRecommendation from "@/components/home/BudgetRecommendation";
 
 
 // ============================================================
@@ -379,6 +380,8 @@ export default function HomePage() {
                 Tìm kiếm
               </button>
             </div>
+
+            <BudgetRecommendation />
 
             {/* Tags xu hướng */}
             <div

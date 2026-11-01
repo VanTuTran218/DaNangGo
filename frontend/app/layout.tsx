@@ -18,7 +18,7 @@ const beVietnamPro = Be_Vietnam_Pro({
 
 // ── Font body: Inter (nội dung, mô tả, badge, nút, input) ──
 const inter = Inter({
-  subsets: ["latin"],
+  subsets: ["latin", "vietnamese"],
   weight: ["400", "500", "600"],
   variable: "--font-body",
   display: "swap",

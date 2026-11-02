@@ -22,6 +22,7 @@ import {
 const MEAL_PERIODS: Array<{ period: MealPeriod; time: string; label: string }> = [
   { period: 'BREAKFAST', time: '08:00', label: 'Bữa sáng' },
   { period: 'LUNCH',     time: '12:00', label: 'Bữa trưa' },
+  { period: 'SNACK',     time: '15:30', label: 'Ăn vặt' },
   { period: 'DINNER',    time: '18:30', label: 'Bữa tối' },
 ];
 
@@ -147,6 +148,14 @@ export function generateItinerary(
   const foodsByPeriod = new Map<MealPeriod, ItineraryCatalogPlace[]>();
   if (needsFood) {
     for (const { period } of MEAL_PERIODS) {
+      if (period === 'SNACK') {
+        const options = catalog
+          .filter((place) => place.kind === 'FOOD' && (place.mealPeriod === 'SNACK' || place.price <= 50_000))
+          .sort((left, right) => left.price - right.price);
+        foodsByPeriod.set('SNACK', options.slice(0, MAX_FOOD_SUGGESTIONS_PER_PERIOD));
+        continue;
+      }
+
       const options = catalog
         .filter((place) => place.kind === 'FOOD' && place.mealPeriod === period)
         .sort((left, right) => {
@@ -165,24 +174,17 @@ export function generateItinerary(
     }
   }
 
-  /**
-   * Gợi ý ăn nhẹ (SNACK): Lấy từ các địa điểm FOOD có giá thấp (≤ 50.000đ),
-   * không phân biệt bữa — vì DB không có bữa SNACK riêng.
-   */
-  const snackOptions = needsFood
-    ? catalog
-        .filter((place) => place.kind === 'FOOD' && place.price <= 50_000)
-        .sort((left, right) => left.price - right.price)
-        .slice(0, MAX_FOOD_SUGGESTIONS_PER_PERIOD)
-    : [];
+  const snackOptions = foodsByPeriod.get('SNACK') ?? [];
 
   /**
    * Mỗi ngày chọn một món cho từng bữa (hoặc dùng lựa chọn của người dùng).
-   * Nếu không có lựa chọn (selectedFood), xoay vòng theo dayIndex.
+   * Nếu không có lựa chọn (selectedFood), xoay vòng theo dayIndex cho 3 bữa chính.
    */
   const foodChoices = Array.from({ length: input.days }, (_, dayIndex) =>
     MEAL_PERIODS.map(({ period }) => {
       if (!needsFood) return undefined;
+      // Khi không có selectedFood (tự động tạo lịch), mặc định chỉ tạo 3 bữa chính: BREAKFAST, LUNCH, DINNER
+      if (!selectedFood && period === 'SNACK') return undefined;
       const options = foodsByPeriod.get(period);
       if (!options || options.length === 0) return undefined;
       if (selectedFood) {
@@ -284,6 +286,8 @@ export function generateItinerary(
       const food = meals[mealIndex];
       if (!needsFood) return;
       if (!food) {
+        if (!selectedFood && period === 'SNACK') return;
+        if (selectedFood) return;
         skippedMealCount += 1;
         return;
       }
@@ -302,16 +306,12 @@ export function generateItinerary(
       });
     });
 
-    // Tham quan: tối đa 2 điểm/ngày, trong giới hạn ngân sách tham quan/ngày
+    // Tham quan: tối đa 2 điểm/ngày
     if (needsAttractions) {
       DAILY_ATTRACTION_TIMES.forEach((preferredTime, attractionIndex) => {
         const attraction = attractionPool.find((place) => {
           if (usedAttractionIds.has(place.id)) return false;
           if (!canScheduleVisit(place, preferredTime)) return false;
-          // Chỉ chọn nếu chi phí nằm trong hạn mức/ngày
-          if (dailyAttractionBudget > 0 && place.price * input.guestCount > dailyAttractionBudget) return false;
-          // Khi ngân sách = 0, chỉ chấp nhận địa điểm miễn phí
-          if (dailyAttractionBudget === 0 && place.price > 0) return false;
           return true;
         });
 
@@ -426,7 +426,7 @@ export function generateItinerary(
     notices.push(`Danh mục chưa có đủ địa điểm cho ${skippedMealCount} bữa; các bữa chưa tìm thấy được để trống trong bản nháp.`);
   }
   if (skippedAttractionSlots > 0) {
-    notices.push(`Còn thiếu ${skippedAttractionSlots} gợi ý tham quan (hạn mức: 2 điểm/ngày). Nguyên nhân có thể do ngân sách eo hẹp hoặc catalog chưa đủ địa điểm.`);
+    notices.push(`còn thiếu ${skippedAttractionSlots} gợi ý tham quan (hạn mức: 2 điểm/ngày). Nguyên nhân có thể do catalog chưa đủ địa điểm.`);
   }
   if (needsAttractions && catalog.some((place) =>
     place.kind === 'ATTRACTION' &&

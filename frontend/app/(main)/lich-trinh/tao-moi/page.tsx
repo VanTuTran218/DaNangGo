@@ -1,106 +1,218 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, Sparkles, RefreshCw, Calendar, MapPin, UtensilsCrossed, Navigation } from "lucide-react";
+import { Sparkles, Calendar, MapPin, UtensilsCrossed, Navigation } from "lucide-react";
+import { useRouter } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import AiTypewriterText from "@/components/itinerary/AiTypewriterText";
 import BudgetDonutChart from "@/components/itinerary/BudgetDonutChart";
-import ItineraryTimeline, { TimelineItem } from "@/components/itinerary/ItineraryTimeline";
+import ItineraryTimeline, { type TimelineItem } from "@/components/itinerary/ItineraryTimeline";
 import MapMiniPreview from "@/components/itinerary/MapMiniPreview";
-import RecommendationBlock, { RecommendationItem } from "@/components/itinerary/RecommendationBlock";
 import AnimatedCounter from "@/components/ui/AnimatedCounter";
 import AiWizardModal, { ItineraryForm } from "@/components/itinerary/AiWizardModal";
+import { getSavedItineraryPreferences, previewItinerary, saveItinerary } from "@/lib/api/itineraries";
+import type {
+  FoodSuggestion,
+  GeneratedItinerary,
+  ItineraryFoodSelection,
+  MealSlot,
+} from "@/types/itinerary";
 
-const STEPS = ["Ngân sách", "Lưu trú", "Gu trải nghiệm"];
+const MEAL_OPTIONS = [
+  { key: "breakfast", mealPeriod: "BREAKFAST", label: "Buổi sáng", time: "08:00" },
+  { key: "lunch", mealPeriod: "LUNCH", label: "Buổi trưa", time: "12:00" },
+  { key: "snack", mealPeriod: "SNACK", label: "Buổi chiều · Ăn nhẹ", time: "15:30" },
+  { key: "dinner", mealPeriod: "DINNER", label: "Buổi tối", time: "18:30" },
+] as const satisfies ReadonlyArray<{
+  key: "breakfast" | "lunch" | "snack" | "dinner";
+  mealPeriod: MealSlot;
+  label: string;
+  time: string;
+}>;
 
-const RAW_ITEMS: TimelineItem[] = [
-  { id: "1", time: "08:00", title: "Ăn sáng Bún chả cá Bà Phiến", description: "Thưởng thức bún chả cá chuẩn vị Đà Nẵng", type: "food", location: "63 Lê Hồng Phong", imageUrl: "https://images.unsplash.com/photo-1555126634-323283e090fa?auto=format&fit=crop&q=80&w=400" },
-  { id: "2", time: "09:30", title: "Tham quan Chùa Linh Ứng", description: "Viếng thăm ngôi chùa linh thiêng với tượng Phật Bà Quan Âm cao nhất Việt Nam.", type: "attraction", location: "Bán đảo Sơn Trà", imageUrl: "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&q=80&w=400" },
-  { id: "3", time: "12:00", title: "Ăn trưa Hải sản", description: "Hải sản tươi sống bên bờ biển", type: "food", location: "Biển Mỹ Khê" },
-  { id: "4", time: "15:00", title: "Tắm biển & Thể thao", description: "Các hoạt động giải trí trên biển", type: "attraction", location: "Biển Mỹ Khê", imageUrl: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&q=80&w=400" },
-  { id: "5", time: "19:00", title: "Cầu Rồng phun lửa", description: "Xem biểu diễn lúc 21:00 cuối tuần", type: "attraction", location: "Cầu Rồng" },
-  { id: "6", time: "08:30", title: "Khám phá Bà Nà Hills", description: "Làng Pháp, Cầu Vàng", type: "attraction", location: "Hòa Vang", imageUrl: "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&q=80&w=400" },
-  { id: "7", time: "18:00", title: "Dạo chợ đêm Helio", description: "Ẩm thực đường phố đa dạng", type: "food", location: "Chợ đêm Helio" },
-  { id: "8", time: "09:00", title: "Mua sắm Chợ Hàn", description: "Đặc sản làm quà", type: "attraction", location: "119 Trần Phú" }
-];
+type MealKey = (typeof MEAL_OPTIONS)[number]["key"];
+type FoodSelectionState = Record<number, Partial<Record<MealKey, number | null>>>;
 
-const MOCK_RECOMMENDATIONS: RecommendationItem[] = [
-  { id: "r1", title: "Mì Quảng Bà Mua", category: "Ẩm thực", price: 45000, imageUrl: "https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&q=80&w=200" },
-  { id: "r2", title: "Vé Bảo tàng Chăm", category: "Tham quan", price: 60000, imageUrl: "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&q=80&w=200" }
-];
+function calculateSelectedFoodCost(
+  suggestions: GeneratedItinerary["suggestions"],
+  selections: FoodSelectionState,
+  guestCount: number,
+): number {
+  return suggestions.reduce((total, day) => total + MEAL_OPTIONS.reduce((dayTotal, meal) => {
+    const placeId = selections[day.day]?.[meal.key];
+    const place = day[meal.key].find((suggestion) => suggestion.catalogPlaceId === placeId);
+    return dayTotal + (place?.price ?? 0) * guestCount;
+  }, 0), 0);
+}
 
 export default function CreateItineraryPage() {
+  const router = useRouter();
   const [wizardOpen, setWizardOpen] = useState(true);
   const [wizardStep, setWizardStep] = useState(0);
   
   const [formData, setFormData] = useState<ItineraryForm>({
     budget: 4500000,
     days: 3,
+    guestCount: 1,
+    startDate: new Date(Date.now() - new Date().getTimezoneOffset() * 60_000).toISOString().slice(0, 10),
+    needs: ["accommodation", "food", "attractions"],
     accType: "Khách sạn",
     stars: 4,
     prefs: ["Ẩm thực địa phương"]
   });
 
+  const [itinerary, setItinerary] = useState<GeneratedItinerary | null>(null);
+  const [foodSelections, setFoodSelections] = useState<FoodSelectionState>({});
   const [activeTab, setActiveTab] = useState("Ngày 1");
-  const [isOptimizing, setIsOptimizing] = useState(false);
-  const [budgetOffset, setBudgetOffset] = useState(0);
+  const [budgetNotice, setBudgetNotice] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const [saveError, setSaveError] = useState("");
   
   // Flag to know if user has completed wizard at least once
   const [hasCompletedWizard, setHasCompletedWizard] = useState(false);
   // Key to force re-render AiTypewriterText only when completion triggers
   const [aiKey, setAiKey] = useState(0);
 
-  const handleWizardComplete = () => {
+  useEffect(() => {
+    let active = true;
+    getSavedItineraryPreferences()
+      .then((preferences) => {
+        if (active && preferences.length > 0) {
+          setFormData((current) => ({ ...current, prefs: preferences }));
+        }
+      })
+      .catch((error: unknown) => {
+        console.error("Không thể tải sở thích đã lưu:", error);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const handleWizardComplete = async () => {
+    const generated = await previewItinerary(formData);
+    const initialSelections = generated.days.reduce<FoodSelectionState>((selections, { day }) => {
+      selections[day] = {};
+      return selections;
+    }, {});
+    setItinerary(generated);
+    setFoodSelections(initialSelections);
+    setIsSaved(false);
+    setSaveError("");
     setWizardOpen(false);
     setHasCompletedWizard(true);
     setAiKey(prev => prev + 1); // Trigger re-render of typewriter
-    setBudgetOffset(0);
+    setBudgetNotice("");
     setActiveTab("Ngày 1"); // reset to day 1
   };
 
-  // Generate dynamic itinerary data based on days
-  const getDynamicItinerary = () => {
-    const data: Record<string, TimelineItem[]> = {};
-    for (let i = 1; i <= formData.days; i++) {
-      // Pick pseudo-random items from RAW_ITEMS for each day
-      data[`Ngày ${i}`] = RAW_ITEMS.slice((i - 1) * 2, (i * 2) + (i % 2 === 0 ? 1 : 0));
-      if (data[`Ngày ${i}`].length === 0) data[`Ngày ${i}`] = [RAW_ITEMS[0]]; // fallback
-    }
-    return data;
-  };
-  
-  const dynamicItinerary = getDynamicItinerary();
-  const dayTabs = Object.keys(dynamicItinerary);
+  const handleSelectFood = (day: number, mealKey: MealKey, food: FoodSuggestion | null) => {
+    const nextSelections = {
+      ...foodSelections,
+      [day]: { ...foodSelections[day], [mealKey]: food?.catalogPlaceId ?? null },
+    };
+    setFoodSelections(nextSelections);
+    setIsSaved(false);
 
-  const baseTotal = formData.budget;
-  const currentTotal = baseTotal + budgetOffset;
+    const selectedCost = calculateSelectedFoodCost(itinerary?.suggestions ?? [], nextSelections, formData.guestCount);
+    const defaultFoodCost = (itinerary?.days ?? []).flatMap(({ items }) => items)
+      .filter((item) => item.type === "food")
+      .reduce((total, item) => total + item.estimatedCost, 0);
+    const nextTotal = (itinerary?.summary.estimatedTotal ?? 0) - defaultFoodCost + selectedCost;
+    setBudgetNotice(nextTotal > (itinerary?.summary.budget ?? 0)
+      ? `Lựa chọn hiện vượt ngân sách khoảng ${(nextTotal - (itinerary?.summary.budget ?? 0)).toLocaleString("vi-VN")}đ.`
+      : food ? `Đã chọn ${food.name} cho ${MEAL_OPTIONS.find(({ key }) => key === mealKey)?.label.toLowerCase()}.`
+        : "Đã bỏ chọn địa điểm ăn uống cho buổi này.");
+  };
+
+  const handleCreateItinerary = async () => {
+    if (!itinerary || isSaving || isSaved) return;
+    setIsSaving(true);
+    setSaveError("");
+    try {
+      const selections: ItineraryFoodSelection[] = Object.entries(foodSelections).flatMap(([day, daySelections]) =>
+        MEAL_OPTIONS.flatMap(({ key, mealPeriod }) => {
+          const catalogPlaceId = daySelections[key];
+          return typeof catalogPlaceId === "number"
+            ? [{ day: Number(day), mealPeriod, catalogPlaceId }]
+            : [];
+        }),
+      );
+      const saved = await saveItinerary(formData, selections);
+      if (saved.itineraryId === undefined) throw new Error("Không nhận được mã lịch trình đã lưu.");
+      setItinerary(saved);
+      setIsSaved(true);
+      router.push(`/lich-trinh/${saved.itineraryId}`);
+    } catch (error) {
+      console.error("Không thể lưu lịch trình đã chọn:", error);
+      setSaveError(error instanceof Error ? error.message : "Không thể lưu lịch trình lúc này.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const dynamicItinerary: Record<string, TimelineItem[]> = Object.fromEntries(
+    (itinerary?.days ?? []).map(({ day, items }) => {
+      const daySuggestions = itinerary?.suggestions.find((suggestion) => suggestion.day === day);
+      const selectedFoods: TimelineItem[] = formData.needs.includes("food")
+        ? MEAL_OPTIONS.map((meal) => {
+        const selectedId = foodSelections[day]?.[meal.key];
+        const food = daySuggestions?.[meal.key].find((suggestion) => suggestion.catalogPlaceId === selectedId);
+        const options = daySuggestions?.[meal.key] ?? [];
+        return {
+          id: `d${day}-${meal.key}`,
+          time: meal.time,
+          title: food ? `${meal.label}: ${food.name}` : `${meal.label}: Chưa chọn địa điểm`,
+          description: food
+            ? `${food.description} Chi phí tham khảo ${food.price.toLocaleString("vi-VN")}đ/người.`
+            : "Chọn một trong các địa điểm gợi ý để thêm vào lịch trình.",
+          type: "food" as const,
+          ...(food ? {
+            location: food.address,
+            imageUrl: food.imageUrl,
+            estimatedCost: food.price * formData.guestCount,
+          } : {}),
+          foodOptions: options,
+          selectedFoodId: food?.catalogPlaceId,
+          onFoodSelect: (selection: FoodSuggestion | null) => handleSelectFood(day, meal.key, selection),
+          foodSelectionDisabled: isSaving,
+        };
+      })
+        : [];
+      return [
+        `Ngày ${day}`,
+        [
+          ...items.filter((item) => item.type !== "food"),
+          ...selectedFoods,
+        ].sort((left, right) => left.time.localeCompare(right.time)),
+      ] as const;
+    }),
+  );
+  const dayTabs = Object.keys(dynamicItinerary);
+  const selectedFoodCost = calculateSelectedFoodCost(itinerary?.suggestions ?? [], foodSelections, formData.guestCount);
+  const defaultFoodCost = (itinerary?.days ?? []).flatMap(({ items }) => items)
+    .filter((item) => item.type === "food")
+    .reduce((total, item) => total + item.estimatedCost, 0);
+  const currentTotal = (itinerary?.summary.estimatedTotal ?? 0) - defaultFoodCost + selectedFoodCost;
+  const costs = itinerary?.summary.costs;
 
   const donutData = [
-    { label: "Lưu trú", value: currentTotal * 0.4, color: "#a855f7" },
-    { label: "Ăn uống", value: currentTotal * 0.3, color: "#f97316" },
-    { label: "Di chuyển", value: currentTotal * 0.15, color: "#3b82f6" },
-    { label: "Tham quan", value: currentTotal * 0.15, color: "#10b981" }
+    { label: "Lưu trú", value: costs?.accommodation ?? 0, color: "#a855f7" },
+    { label: "Ăn uống", value: selectedFoodCost, color: "#f97316" },
+    { label: "Di chuyển", value: costs?.transport ?? 0, color: "#3b82f6" },
+    { label: "Tham quan", value: costs?.attractions ?? 0, color: "#10b981" },
+    { label: "Dự phòng", value: costs?.contingency ?? 0, color: "#94a3b8" },
   ];
-
-  const handleOptimize = () => {
-    setIsOptimizing(true);
-    setTimeout(() => {
-      setIsOptimizing(false);
-      setBudgetOffset(prev => prev - 200000); // Simulate savings
-      setAiKey(prev => prev + 1); // Re-run typewriter
-    }, 1000);
-  };
-
-  const handleAddRecommendation = (item: RecommendationItem) => {
-    setBudgetOffset(prev => prev + item.price);
-  };
 
   const openWizardAt = (index: number) => {
     setWizardStep(index);
     setWizardOpen(true);
   };
+  const selectedMealCount = Object.values(foodSelections).reduce((total, daySelections) =>
+    total + Object.values(daySelections).filter((placeId) => typeof placeId === "number").length, 0);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -112,8 +224,26 @@ export default function CreateItineraryPage() {
         formData={formData}
         onChange={(data) => setFormData({ ...formData, ...data })}
         onComplete={handleWizardComplete}
-        onClose={() => hasCompletedWizard && setWizardOpen(false)} // Cannot close if not completed once
+        onClose={() => setWizardOpen(false)}
       />
+
+      {!hasCompletedWizard && !wizardOpen && (
+        <main className="flex-1 max-w-3xl mx-auto w-full px-4 py-16 mt-16 text-center">
+          <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8 sm:p-12">
+            <Sparkles className="w-10 h-10 text-orange-500 mx-auto mb-4" />
+            <h1 className="text-2xl font-bold text-gray-900 mb-3">Lịch trình chỉ để tham khảo</h1>
+            <p className="text-gray-600 mb-6">
+              Tạo gợi ý theo ngân sách và sở thích. Bạn có thể bỏ qua, sửa hoặc tự chọn hoạt động; không có đặt chỗ hay giao dịch nào được thực hiện.
+            </p>
+            <button
+              onClick={() => openWizardAt(0)}
+              className="px-6 py-3 rounded-xl font-bold text-white bg-[#0f2942] hover:bg-[#1a3f5c] transition-colors"
+            >
+              Tạo lịch trình tham khảo
+            </button>
+          </div>
+        </main>
+      )}
 
       {hasCompletedWizard && (
         <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-8 mt-16">
@@ -139,16 +269,20 @@ export default function CreateItineraryPage() {
                 {
                   i: 0, label: "Ngân sách", emoji: "💰",
                   value: `${(formData.budget / 1000000).toFixed(1)} triệu`,
-                  sub: `${formData.days} ngày ${formData.days - 1} đêm`,
+                  sub: `${formData.days} ngày · ${formData.guestCount} người · ${formData.startDate}`,
                   gradient: "from-amber-50 to-orange-50",
                   border: "border-orange-100",
                   dot: "bg-orange-400",
                   accent: "text-orange-600",
                 },
                 {
-                  i: 1, label: "Lưu trú", emoji: "🏨",
-                  value: formData.accType,
-                  sub: `${formData.stars} sao`,
+                  i: 1, label: "Nhu cầu", emoji: "🧭",
+                  value: formData.needs.map((need) => ({
+                    accommodation: "Lưu trú",
+                    food: "Ăn uống",
+                    attractions: "Tham quan",
+                  }[need])).join(", "),
+                  sub: formData.accType ? `${formData.accType} · ${formData.stars} sao` : "Các hạng mục đã chọn",
                   gradient: "from-sky-50 to-blue-50",
                   border: "border-blue-100",
                   dot: "bg-blue-400",
@@ -193,14 +327,16 @@ export default function CreateItineraryPage() {
                   {/* Sub value */}
                   <div className="flex items-center gap-1.5 mt-2">
                     <span className={`w-1.5 h-1.5 rounded-full ${dot}`} />
-                    <span className="text-[11px] text-gray-500">{sub}</span>
+                    <span className="text-[11px] text-gray-500">
+                      {i === 2 && formData.prefs.length === 0 ? "Không ưu tiên sở thích" : sub}
+                    </span>
                   </div>
                 </motion.button>
               ))}
             </div>
           </div>
 
-          {/* AI Concierge Block */}
+          {/* Budget-based itinerary summary */}
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -217,14 +353,12 @@ export default function CreateItineraryPage() {
 
             {/* Content */}
             <div className="relative z-10 p-6 flex gap-5 items-start">
-              {/* Pulsing AI orb */}
+              {/* Animated planning indicator */}
               <div className="flex-shrink-0 mt-0.5">
                 <div className="relative w-11 h-11">
                   <motion.div
-                    animate={isOptimizing
-                      ? { scale: [1, 1.5, 1], opacity: [0.4, 0.8, 0.4] }
-                      : { scale: [1, 1.25, 1], opacity: [0.3, 0.6, 0.3] }}
-                    transition={{ duration: isOptimizing ? 0.8 : 2.5, repeat: Infinity }}
+                    animate={{ scale: [1, 1.25, 1], opacity: [0.3, 0.6, 0.3] }}
+                    transition={{ duration: 2.5, repeat: Infinity }}
                     className="absolute inset-0 rounded-full bg-orange-400/40"
                   />
                   <div className="absolute inset-0 rounded-full bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center shadow-lg shadow-orange-500/30">
@@ -236,15 +370,13 @@ export default function CreateItineraryPage() {
               {/* Text */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-[10px] font-bold tracking-widest text-orange-300/80 uppercase">AI Concierge</span>
+                  <span className="text-[10px] font-bold tracking-widest text-orange-300/80 uppercase">Lập lịch theo ngân sách</span>
                   <span className="w-1 h-1 rounded-full bg-white/20" />
-                  <span className="text-[10px] text-white/40">DanangGo Intelligence</span>
+                  <span className="text-[10px] text-white/40">Ước tính cho {formData.guestCount} người</span>
                 </div>
                 <AiTypewriterText
                   key={aiKey}
-                  text={isOptimizing
-                    ? "Đang phân tích lại các lựa chọn tốt nhất cho hành trình của bạn..."
-                    : `Dựa trên ngân sách ${formData.budget.toLocaleString('vi-VN')}đ, ưu tiên ${formData.accType} ${formData.stars} sao và sở thích ${formData.prefs.join(', ')}, tôi đã thiết kế lịch trình ${formData.days} ngày tối ưu cho bạn.`}
+                  text={`Lịch trình ${formData.days} ngày cho ${formData.guestCount} người, bắt đầu ${formData.startDate}, là gợi ý theo ngân sách tổng ${formData.budget.toLocaleString('vi-VN')}đ${formData.prefs.length ? ` và sở thích ${formData.prefs.join(', ')}` : ''}. Bạn có thể tùy ý thay đổi; chi phí chỉ mang tính tham khảo.`}
                   className="text-white/85 text-sm leading-relaxed"
                 />
               </div>
@@ -256,7 +388,7 @@ export default function CreateItineraryPage() {
                   transition={{ duration: 1.8, repeat: Infinity }}
                   className="w-1.5 h-1.5 rounded-full bg-teal-400"
                 />
-                Giá thực tế đã khóa
+                Giá tham khảo
               </div>
             </div>
           </motion.div>
@@ -266,6 +398,13 @@ export default function CreateItineraryPage() {
             {/* Main Content (Left) */}
             <div className="lg:col-span-2 space-y-8">
               
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">Lịch trình tham khảo</h2>
+                <p className="mt-1 text-sm text-gray-500">
+                  Địa điểm tham quan được gợi ý sẵn. Chọn quán ăn ngay trong từng khung giờ ăn của lịch trình.
+                </p>
+              </div>
+
               {/* Tabs */}
               <div className="flex gap-2 p-1 bg-gray-100 rounded-lg overflow-x-auto hide-scrollbar">
                 {dayTabs.map(tab => (
@@ -302,15 +441,7 @@ export default function CreateItineraryPage() {
                   </motion.div>
                 </AnimatePresence>
               </div>
-
-              {/* Recommendations */}
-              <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                  <Sparkles className="w-5 h-5 text-orange-500 mr-2" />
-                  Có thể bạn muốn bổ sung cho {activeTab}
-                </h3>
-                <RecommendationBlock items={MOCK_RECOMMENDATIONS} onAdd={handleAddRecommendation} />
-              </div>
+              {budgetNotice && <p role="status" className="text-sm text-amber-700">{budgetNotice}</p>}
 
             </div>
 
@@ -319,18 +450,33 @@ export default function CreateItineraryPage() {
               
               {/* Map Mini Preview */}
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
-                <h3 className="text-lg font-bold text-gray-900 mb-4">Bản đồ tuyến {activeTab}</h3>
-                <MapMiniPreview key={activeTab} /> {/* Re-render map to redraw path on tab change */}
+                <h3 className="text-lg font-bold text-gray-900 mb-4">Địa điểm {activeTab}</h3>
+                <MapMiniPreview
+                  key={activeTab}
+                  locations={(dynamicItinerary[activeTab] ?? []).flatMap((item) => item.location ? [item.location] : [])}
+                />
               </div>
 
               {/* Budget Overview */}
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sticky top-24">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-lg font-bold text-gray-900">Cơ cấu ngân sách</h3>
-                  <div className="text-xs font-bold text-teal-600 bg-teal-50 px-2 py-1 rounded">
+                  <div className={`text-xs font-bold px-2 py-1 rounded ${
+                    currentTotal > (itinerary?.summary.budget ?? 0)
+                      ? "text-amber-700 bg-amber-50"
+                      : "text-teal-600 bg-teal-50"
+                  }`}>
                     Tổng: {currentTotal.toLocaleString('vi-VN')}đ
                   </div>
                 </div>
+
+                <p className="text-sm mb-4 text-gray-600">
+                  Ngân sách bạn nhập: {formData.budget.toLocaleString('vi-VN')}đ.
+                  {currentTotal > formData.budget
+                    ? ` Dự toán vượt khoảng ${(currentTotal - formData.budget).toLocaleString('vi-VN')}đ.`
+                    : ` Còn khoảng ${(formData.budget - currentTotal).toLocaleString('vi-VN')}đ theo dự toán.`}
+                  {" "}Bạn có thể bỏ qua cảnh báo và tự điều chỉnh.
+                </p>
                 
                 <div className="mb-6">
                   <BudgetDonutChart data={donutData} total={currentTotal} />
@@ -352,7 +498,7 @@ export default function CreateItineraryPage() {
                       <MapPin className="w-4 h-4" />
                     </div>
                     <div>
-                      <div className="text-lg font-bold text-gray-900 flex"><AnimatedCounter to={Object.values(dynamicItinerary).flat().length} /></div>
+                      <div className="text-lg font-bold text-gray-900 flex"><AnimatedCounter to={Object.values(dynamicItinerary).flat().filter(item => item.type === "attraction").length} /></div>
                       <div className="text-xs text-gray-500">Địa điểm</div>
                     </div>
                   </div>
@@ -361,7 +507,7 @@ export default function CreateItineraryPage() {
                       <UtensilsCrossed className="w-4 h-4" />
                     </div>
                     <div>
-                      <div className="text-lg font-bold text-gray-900 flex"><AnimatedCounter to={formData.days * 2} /></div>
+                      <div className="text-lg font-bold text-gray-900 flex"><AnimatedCounter to={selectedMealCount} /></div>
                       <div className="text-xs text-gray-500">Bữa ăn</div>
                     </div>
                   </div>
@@ -370,24 +516,34 @@ export default function CreateItineraryPage() {
                       <Navigation className="w-4 h-4" />
                     </div>
                     <div>
-                      <div className="text-lg font-bold text-gray-900 flex"><AnimatedCounter to={42} />km</div>
-                      <div className="text-xs text-gray-500">Tuyến đường</div>
+                      <div className="text-lg font-bold text-gray-900 flex"><AnimatedCounter to={costs?.transport ?? 0} /></div>
+                      <div className="text-xs text-gray-500">Đi lại dự kiến (đ)</div>
                     </div>
                   </div>
                 </div>
 
-                {/* Optimize Button */}
+                <ul className="space-y-2 text-xs text-gray-500">
+                  {itinerary?.notices.map((notice) => <li key={notice}>{notice}</li>)}
+                  <li>Quán ăn đã chọn sẽ được lưu cùng lịch trình khi bạn bấm “Tạo lịch”.</li>
+                  <li>Giá tham khảo được nhân theo {formData.guestCount} người; đi lại đang dự trù khoảng 80.000đ/người/ngày, chưa dùng dữ liệu tuyến đường thực tế.</li>
+                </ul>
+                <p className="text-xs text-gray-500 mt-3">
+                  Giá vé, dịch vụ và di chuyển có thể thay đổi.
+                </p>
+                {saveError && <p role="alert" className="mt-4 text-sm text-red-700">{saveError}</p>}
+                {isSaved && (
+                  <p role="status" className="mt-4 rounded-lg bg-teal-50 p-3 text-sm text-teal-800">
+                    Lịch đã được lưu dưới dạng bản nháp. Chức năng hiển thị và quản lý danh sách lịch trình sẽ được bổ sung sau.
+                  </p>
+                )}
                 <button
-                  onClick={handleOptimize}
-                  disabled={isOptimizing}
-                  className="w-full py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all bg-orange-50 text-orange-600 hover:bg-orange-100 disabled:opacity-70 disabled:cursor-not-allowed border border-orange-100"
+                  type="button"
+                  onClick={handleCreateItinerary}
+                  disabled={isSaving || isSaved}
+                  className="mt-5 w-full rounded-xl bg-[#0f2942] px-4 py-3 font-bold text-white transition-colors hover:bg-[#1a3f5c] disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  <motion.div animate={isOptimizing ? { rotate: 360 } : { rotate: 0 }} transition={{ repeat: isOptimizing ? Infinity : 0, duration: 1, ease: "linear" }}>
-                    <RefreshCw className="w-4 h-4" />
-                  </motion.div>
-                  {isOptimizing ? "Đang tính toán..." : "Tối ưu lại AI"}
+                  {isSaving ? "Đang lưu lịch..." : isSaved ? "Đã tạo lịch" : "Tạo lịch"}
                 </button>
-                
               </div>
             </div>
           </div>

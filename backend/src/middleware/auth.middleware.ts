@@ -121,6 +121,7 @@ export function requireAuth(sessionType: 'USER' | 'ADMIN' = 'USER'): RequestHand
         role: authDetails.role,
         ...(authDetails.partnerId ? { partner_id: authDetails.partnerId } : {}),
       };
+      req.authenticatedUser = { id: userId };
       next();
     } catch (error) {
       next(error);

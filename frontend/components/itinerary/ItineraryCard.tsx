@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Heart, MapPin, Calendar, Trash2, Clock, Users } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 import DeleteConfirmDialog from "./DeleteConfirmDialog";
 
@@ -15,6 +16,8 @@ export interface Itinerary {
   participants: number;
   status: "Sắp diễn ra" | "Đã hoàn thành" | "Bản nháp";
   images: string[];
+  budget?: number;
+  itemCount?: number;
 }
 
 interface ItineraryCardProps {
@@ -131,12 +134,20 @@ export default function ItineraryCard({ itinerary, onDelete, index }: ItineraryC
               <Users className="h-4 w-4 text-gray-400" />
               <span>{itinerary.participants} người tham gia</span>
             </div>
+            {itinerary.itemCount !== undefined && (
+              <div className="col-span-2 text-xs text-gray-500">{itinerary.itemCount} hoạt động trong lịch</div>
+            )}
+            {itinerary.budget !== undefined && (
+              <div className="col-span-2 text-sm font-semibold text-gray-700">
+                Dự toán: {itinerary.budget.toLocaleString("vi-VN")}đ
+              </div>
+            )}
           </div>
           
           <div className="mt-5 pt-4 border-t border-gray-100 flex items-center justify-between">
-            <button className="text-sm font-semibold text-emerald-600 hover:text-emerald-700 transition-colors">
+            <Link href={`/lich-trinh/${itinerary.id}`} className="text-sm font-semibold text-emerald-600 hover:text-emerald-700 transition-colors">
               Xem chi tiết
-            </button>
+            </Link>
             <button
               onClick={() => setIsDeleteDialogOpen(true)}
               className="flex items-center gap-1.5 text-sm font-medium text-gray-400 hover:text-red-600 transition-colors"

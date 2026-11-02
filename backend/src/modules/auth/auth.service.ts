@@ -169,7 +169,7 @@ function hashRefreshToken(value: string): string {
 }
 
 function authSecret(name: 'JWT_ACCESS_SECRET' | 'JWT_REFRESH_SECRET'): string {
-  const secret = process.env[name];
+  const secret = process.env[name] || (name === 'JWT_ACCESS_SECRET' ? process.env.JWT_SECRET : undefined);
   if (!secret || Buffer.byteLength(secret, 'utf8') < 32) {
     throw new AuthError(500, 'Máy chủ chưa được cấu hình khóa phiên an toàn.');
   }
@@ -555,6 +555,10 @@ export async function verifyAccessToken(token: string, expectedSession: 'USER' |
 
 export function getAccountRole(userId: number): Promise<AccountRole | null> {
   return findAccountByUserId(userId).then((account) => account ? mapRoleName(account.role_name) : null);
+}
+
+export function getAccountRecord(userId: number): Promise<AuthAccountRecord | null> {
+  return findAccountByUserId(userId);
 }
 
 export async function getAccountAuthDetails(userId: number): Promise<{

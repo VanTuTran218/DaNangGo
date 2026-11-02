@@ -18,8 +18,8 @@ export interface AuthAccountRecord {
   failed_login_count: number;
   locked_until: Date | null;
   created_at: Date;
-  partner_id?: number | null;
   approval_status: string | null;
+  partner_id?: number | null;
 }
 
 export interface ExistingAdminAccount {

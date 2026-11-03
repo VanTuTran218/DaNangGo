@@ -7,8 +7,6 @@ import { useAsyncData } from '@/hooks/useAsyncData';
 import { getPartnerPlaceById, getPartnerProfile } from '@/lib/api/partner';
 import PlaceForm from '@/components/partner/PlaceForm';
 import MenuManager from '@/components/partner/MenuManager';
-import AccommodationForm from '@/components/partner/AccommodationForm';
-import RoomManager from '@/components/partner/RoomManager';
 import PartnerPageHeader from '@/components/partner/PartnerPageHeader';
 import CtaBanner from '@/components/partner/CtaBanner';
 import ScrollToTop from '@/components/partner/ScrollToTop';
@@ -19,13 +17,14 @@ import {
   RefreshCw,
   Store,
   UtensilsCrossed,
-  Bed,
 } from 'lucide-react';
 import Link from 'next/link';
 
 function EditPlaceContent({ placeId }: { placeId: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const initialTab = searchParams.get('tab') === 'menu' ? 'menu' : 'info';
+  const [activeTab, setActiveTab] = useState<'info' | 'menu'>(initialTab);
 
   const { data: profile, loading: loadingProfile } = useAsyncData(getPartnerProfile);
   const { data: place, loading: loadingPlace, error, reload } = useAsyncData(
@@ -35,24 +34,16 @@ function EditPlaceContent({ placeId }: { placeId: string }) {
 
   const loading = loadingProfile || loadingPlace;
 
-  const isAccommodation = place?.category === 'luutru' || place?.placeType === 'ACCOMMODATION';
-  const paramTab = searchParams.get('tab');
-  const activeTab = paramTab === 'rooms' || paramTab === 'menu' ? paramTab : 'info';
-
-  const handleTabChange = (tab: 'info' | 'menu' | 'rooms') => {
-    router.replace(`/partner/co-so/${place?.id || placeId}/sua?tab=${tab}`, { scroll: false });
-  };
-
   if (loading) {
     return (
       <div className="p-16 text-center text-slate-500 font-semibold">
         <div className="w-9 h-9 border-3 border-teal-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-        Đang tải dữ liệu cơ sở dịch vụ...
+        Đang tải dữ liệu cơ sở ẩm thực...
       </div>
     );
   }
 
-  // Chặn sửa cơ sở nếu hồ sơ đối tác chưa được duyệt
+  // Chặn sửa cơ sở nếu hồ sơ đối tác chưa được duyệt (Cách của Tuấn)
   const isAccountLocked = profile?.status === 'PENDING' || profile?.status === 'REJECTED';
   if (isAccountLocked) {
     return (
@@ -91,7 +82,7 @@ function EditPlaceContent({ placeId }: { placeId: string }) {
         <div>
           <h2 className="text-lg font-bold text-slate-900">Không tìm thấy cơ sở</h2>
           <p className="text-xs text-rose-600 mt-1">
-            {error || 'Cơ sở này không tồn tại hoặc bạn không có quyền truy cập.'}
+            {error || 'Cơ sở ẩm thực này không tồn tại hoặc bạn không có quyền truy cập.'}
           </p>
         </div>
         <div className="pt-2 flex items-center justify-center gap-3">
@@ -112,8 +103,13 @@ function EditPlaceContent({ placeId }: { placeId: string }) {
     );
   }
 
+  const numericPlaceId = place.placeId ?? Number(place.id);
   const isPlaceLocked = place.status === 'LOCKED';
-  const numericPlaceId = place.placeId ? place.placeId : parseInt(place.id) || 1;
+
+  const handleTabChange = (tab: 'info' | 'menu') => {
+    setActiveTab(tab);
+    router.replace(`/partner/co-so/${place.id}/sua?tab=${tab}`, { scroll: false });
+  };
 
   return (
     <div className="space-y-8">
@@ -125,11 +121,7 @@ function EditPlaceContent({ placeId }: { placeId: string }) {
           { label: `Chỉnh sửa: ${place.name}` },
         ]}
         title={`Chỉnh sửa: ${place.name}`}
-        description={
-          isAccommodation
-            ? 'Quản lý thông tin chi tiết nơi lưu trú, tiện nghi và thiết lập bảng giá từng loại phòng.'
-            : 'Quản lý thông tin chi tiết, tọa độ bản đồ, và danh sách thực đơn món ăn tự động đồng bộ giá.'
-        }
+        description="Quản lý thông tin chi tiết, tọa độ bản đồ, và danh sách thực đơn món ăn tự động đồng bộ giá."
         action={{
           label: 'Quay lại danh sách',
           href: '/partner/co-so',
@@ -138,7 +130,7 @@ function EditPlaceContent({ placeId }: { placeId: string }) {
         }}
       />
 
-      {/* THANH ĐIỀU HƯỚNG TABS */}
+      {/* THANH ĐIỀU HƯỚNG TABS (Thông tin quán vs Thực đơn món ăn) */}
       <div className="bg-white rounded-3xl p-2 border border-slate-200/80 shadow-xs inline-flex items-center gap-1.5 max-w-full overflow-x-auto">
         <button
           onClick={() => handleTabChange('info')}
@@ -157,63 +149,36 @@ function EditPlaceContent({ placeId }: { placeId: string }) {
             />
           )}
           <Store className="w-4 h-4 relative z-10 text-teal-600" />
-          <span className="relative z-10">
-            {isAccommodation ? 'Thông tin nơi lưu trú' : 'Thông tin cơ sở ẩm thực'}
-          </span>
+          <span className="relative z-10">Thông tin cơ sở</span>
         </button>
 
-        {isAccommodation ? (
-          <button
-            onClick={() => handleTabChange('rooms')}
-            type="button"
-            className={`relative px-5 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 select-none ${
-              activeTab === 'rooms'
-                ? 'text-teal-950'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-            }`}
-          >
-            {activeTab === 'rooms' && (
-              <motion.div
-                layoutId="partnerEditActiveTab"
-                className="absolute inset-0 bg-teal-50 border border-teal-200 rounded-2xl shadow-xs"
-                transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-              />
-            )}
-            <Bed className="w-4 h-4 relative z-10 text-teal-600" />
-            <span className="relative z-10">Loại phòng & Bảng giá</span>
-          </button>
-        ) : (
-          <button
-            onClick={() => handleTabChange('menu')}
-            type="button"
-            className={`relative px-5 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 select-none ${
-              activeTab === 'menu'
-                ? 'text-teal-950'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-            }`}
-          >
-            {activeTab === 'menu' && (
-              <motion.div
-                layoutId="partnerEditActiveTab"
-                className="absolute inset-0 bg-teal-50 border border-teal-200 rounded-2xl shadow-xs"
-                transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-              />
-            )}
-            <UtensilsCrossed className="w-4 h-4 relative z-10 text-teal-600" />
-            <span className="relative z-10">Thực đơn món ăn</span>
-          </button>
-        )}
+        <button
+          onClick={() => handleTabChange('menu')}
+          type="button"
+          className={`relative px-5 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 select-none ${
+            activeTab === 'menu'
+              ? 'text-teal-950'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+          }`}
+        >
+          {activeTab === 'menu' && (
+            <motion.div
+              layoutId="partnerEditActiveTab"
+              className="absolute inset-0 bg-teal-50 border border-teal-200 rounded-2xl shadow-xs"
+              transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+            />
+          )}
+          <UtensilsCrossed className="w-4 h-4 relative z-10 text-teal-600" />
+          <span className="relative z-10">Thực đơn món ăn</span>
+          <span className="relative z-10 px-1.5 py-0.5 rounded-full text-[10px] bg-orange-100 text-orange-700 font-extrabold">
+            9.4
+          </span>
+        </button>
       </div>
 
       {/* NỘI DUNG THEO TAB ĐANG CHỌN */}
       {activeTab === 'info' ? (
-        isAccommodation ? (
-          <AccommodationForm initialData={place} />
-        ) : (
-          <PlaceForm initialData={place} />
-        )
-      ) : isAccommodation ? (
-        <RoomManager placeId={numericPlaceId} isLocked={isPlaceLocked} />
+        <PlaceForm initialData={place} />
       ) : (
         <MenuManager
           placeId={numericPlaceId}

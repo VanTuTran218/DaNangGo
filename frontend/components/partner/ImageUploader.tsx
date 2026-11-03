@@ -102,7 +102,7 @@ export default function ImageUploader({ images, onChange, error }: ImageUploader
                 transition={{ duration: 0.2 }}
                 className="relative group h-28 rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 shadow-xs"
               >
-                <Image src={url} alt={`Ảnh quán ${idx + 1}`} fill unoptimized className="object-cover" />
+                <Image src={url} alt={`Ảnh quán ${idx + 1}`} fill className="object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-2">
                   <button
                     type="button"

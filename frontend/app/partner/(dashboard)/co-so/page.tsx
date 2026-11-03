@@ -127,12 +127,12 @@ export default function PartnerPlacesPage() {
           { label: 'Partner', href: '/partner' },
           { label: 'Cơ sở của tôi' },
         ]}
-        title="Danh sách cơ sở của tôi"
-        description="Theo dõi hoạt động, quản lý hiển thị và cập nhật thông tin các cơ sở dịch vụ ẩm thực, lưu trú của bạn."
+        title="Danh sách quán của tôi"
+        description="Theo dõi hoạt động, quản lý hiển thị và cập nhật thông tin các quán ăn, nhà hàng của bạn."
         action={
           !isLocked
             ? {
-                label: '+ Thêm cơ sở mới',
+                label: '+ Thêm quán mới',
                 href: '/partner/co-so/tao-moi',
                 icon: <Plus className="w-4 h-4" />,
               }
@@ -156,7 +156,7 @@ export default function PartnerPlacesPage() {
             type="text"
             value={searchKeyword}
             onChange={(e) => setSearchKeyword(e.target.value)}
-            placeholder="Tìm kiếm theo tên cơ sở, địa chỉ..."
+            placeholder="Tìm kiếm theo tên quán, địa chỉ..."
             className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-2xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/25 focus:border-teal-500 transition-all"
           />
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -177,7 +177,6 @@ export default function PartnerPlacesPage() {
         error={error}
         onReload={reload}
         isAccountLocked={isLocked}
-        serviceType={profile?.serviceType}
         onSelectDetail={setSelectedPlace}
         onToggleStatus={openToggleConfirm}
       />
@@ -194,7 +193,7 @@ export default function PartnerPlacesPage() {
         onClose={() => setConfirmDialog({ isOpen: false, place: null, targetStatus: 'HIDDEN' })}
         onConfirm={handleConfirmToggleStatus}
         loading={actionLoading}
-        title={confirmDialog.targetStatus === 'HIDDEN' ? 'Ẩn cơ sở này' : 'Mở hiển thị cơ sở'}
+        title={confirmDialog.targetStatus === 'HIDDEN' ? 'Ẩn quán ăn này' : 'Mở hiển thị quán ăn'}
         description={
           confirmDialog.targetStatus === 'HIDDEN'
             ? `Bạn có chắc chắn muốn ẩn cơ sở "${confirmDialog.place?.name}"? Địa điểm này sẽ tạm ngừng xuất hiện trên các trang tìm kiếm công khai của du khách.`
@@ -283,7 +282,7 @@ export default function PartnerPlacesPage() {
                         key={idx}
                         className="relative h-20 rounded-xl overflow-hidden bg-slate-100 border border-slate-200"
                       >
-                        <Image src={url} alt={`Ảnh ${idx + 1}`} fill unoptimized className="object-cover" />
+                        <Image src={url} alt={`Ảnh ${idx + 1}`} fill className="object-cover" />
                       </div>
                     ))}
                   </div>

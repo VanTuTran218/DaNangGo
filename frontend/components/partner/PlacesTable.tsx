@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import type { PartnerPlace, ServiceType } from '@/types/partner';
+import type { PartnerPlace } from '@/types/partner';
 import StatusBadge from '@/components/ui/StatusBadge';
 import {
   Eye,
@@ -15,7 +15,6 @@ import {
   MapPin,
   Utensils,
   UtensilsCrossed,
-  Bed,
   Plus,
   RefreshCw,
   AlertCircle,
@@ -28,7 +27,6 @@ interface PlacesTableProps {
   error?: string | null;
   onReload?: () => void;
   isAccountLocked?: boolean;
-  serviceType?: ServiceType;
   onSelectDetail: (place: PartnerPlace) => void;
   onToggleStatus: (place: PartnerPlace, targetStatus: 'ACTIVE' | 'HIDDEN') => void;
 }
@@ -39,7 +37,6 @@ export default function PlacesTable({
   error = null,
   onReload,
   isAccountLocked = false,
-  serviceType = 'TABLE',
   onSelectDetail,
   onToggleStatus,
 }: PlacesTableProps) {
@@ -99,14 +96,12 @@ export default function PlacesTable({
     return (
       <div className="bg-white rounded-3xl border border-dashed border-slate-300 p-8 md:p-16 text-center shadow-xs space-y-4">
         <div className="w-16 h-16 rounded-3xl bg-teal-50 border border-teal-100 text-teal-600 flex items-center justify-center mx-auto">
-          {serviceType === 'STAY' ? <Bed className="w-8 h-8" /> : <Utensils className="w-8 h-8" />}
+          <Utensils className="w-8 h-8" />
         </div>
         <div className="max-w-md mx-auto">
-          <h3 className="text-lg font-bold text-slate-900">
-            {serviceType === 'STAY' ? 'Chưa có cơ sở lưu trú nào' : 'Chưa có quán ăn nào'}
-          </h3>
+          <h3 className="text-lg font-bold text-slate-900">Chưa có quán ăn nào</h3>
           <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
-            Bạn chưa đăng tải cơ sở nào trong danh mục hoặc trạng thái này. Hãy bắt đầu bằng cách thêm cơ sở đầu tiên để đón khách du lịch Đà Nẵng!
+            Bạn chưa đăng tải cơ sở nào trong danh mục hoặc trạng thái này. Hãy bắt đầu bằng cách thêm quán đầu tiên để đón khách du lịch Đà Nẵng!
           </p>
         </div>
         {!isAccountLocked && (
@@ -115,7 +110,7 @@ export default function PlacesTable({
               href="/partner/co-so/tao-moi"
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-teal-600/20 active:scale-95"
             >
-              <Plus className="w-4 h-4" /> {serviceType === 'STAY' ? 'Thêm cơ sở lưu trú đầu tiên' : 'Thêm quán đầu tiên'}
+              <Plus className="w-4 h-4" /> Thêm quán đầu tiên
             </Link>
           </div>
         )}
@@ -147,7 +142,7 @@ export default function PlacesTable({
                 <div className="flex items-start gap-3">
                   <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-slate-100 shrink-0 border border-slate-200/60">
                     {place.images && place.images[0] ? (
-                      <Image src={place.images[0]} alt={place.name} fill unoptimized className="object-cover" />
+                      <Image src={place.images[0]} alt={place.name} fill className="object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-teal-600 font-bold text-xs bg-teal-50">
                         IMG
@@ -208,18 +203,14 @@ export default function PlacesTable({
                       </Link>
                     )}
 
-                    {/* Quản lý thực đơn hoặc loại phòng */}
+                    {/* Quản lý thực đơn */}
                     {!isAccountLocked && (
                       <Link
-                        href={`/partner/co-so/${place.id}/sua?tab=${place.category === 'luutru' || place.placeType === 'ACCOMMODATION' ? 'rooms' : 'menu'}`}
-                        title={place.category === 'luutru' || place.placeType === 'ACCOMMODATION' ? 'Quản lý loại phòng & bảng giá' : 'Quản lý thực đơn món ăn'}
+                        href={`/partner/co-so/${place.id}/sua?tab=menu`}
+                        title="Quản lý thực đơn món ăn"
                         className="p-1.5 rounded-lg bg-teal-50 text-teal-600 hover:bg-teal-100 active:scale-95"
                       >
-                        {place.category === 'luutru' || place.placeType === 'ACCOMMODATION' ? (
-                          <Bed className="w-4 h-4" />
-                        ) : (
-                          <UtensilsCrossed className="w-4 h-4" />
-                        )}
+                        <UtensilsCrossed className="w-4 h-4" />
                       </Link>
                     )}
 
@@ -256,7 +247,7 @@ export default function PlacesTable({
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="border-b border-slate-200/80 bg-slate-50/60 text-slate-500 uppercase text-[11px] font-bold tracking-wider">
-              <th className="py-4 px-6">Tên cơ sở & Phân loại</th>
+              <th className="py-4 px-6">Tên cơ sở / Ẩm thực</th>
               <th className="py-4 px-4 text-center">Trạng thái</th>
               <th className="py-4 px-4 text-center">Lượt xem</th>
               <th className="py-4 px-6 text-right">Thao tác</th>
@@ -284,7 +275,7 @@ export default function PlacesTable({
                       <div className="flex items-center gap-3.5">
                         <div className="relative w-14 h-14 rounded-2xl overflow-hidden bg-slate-100 shrink-0 border border-slate-200/70 shadow-xs">
                           {place.images && place.images[0] ? (
-                            <Image src={place.images[0]} alt={place.name} fill unoptimized className="object-cover" />
+                            <Image src={place.images[0]} alt={place.name} fill className="object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-teal-600 font-bold text-xs bg-teal-50">
                               IMG
@@ -303,23 +294,11 @@ export default function PlacesTable({
                               ₫{place.priceMin?.toLocaleString('vi-VN') || 0}{' '}
                               {place.priceMax ? `- ₫${place.priceMax.toLocaleString('vi-VN')}` : ''}
                             </span>
-                            {place.cuisineName ? (
+                            {place.cuisineName && (
                               <span className="text-[11px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
                                 {place.cuisineName}
                               </span>
-                            ) : (place.category === 'luutru' || place.placeType === 'ACCOMMODATION') ? (
-                              <span className="text-[11px] font-medium text-teal-700 bg-teal-50 px-2 py-0.5 rounded-md border border-teal-100">
-                                {place.accommodationType === 'HOMESTAY'
-                                  ? 'Homestay'
-                                  : place.accommodationType === 'RESORT'
-                                  ? 'Resort'
-                                  : place.accommodationType === 'HOSTEL'
-                                  ? 'Hostel'
-                                  : place.accommodationType === 'APARTMENT'
-                                  ? 'Căn hộ'
-                                  : 'Khách sạn'}
-                              </span>
-                            ) : null}
+                            )}
                           </div>
                         </div>
                       </div>
@@ -390,25 +369,21 @@ export default function PlacesTable({
                         ) : (
                           <Link
                             href={`/partner/co-so/${place.id}/sua`}
-                            title="Chỉnh sửa cơ sở"
+                            title="Chỉnh sửa quán"
                             className="p-2 rounded-xl text-blue-600 hover:bg-blue-50 hover:text-blue-700 active:scale-95 transition-all"
                           >
                             <Edit3 className="w-4 h-4" />
                           </Link>
                         )}
 
-                        {/* Nút Quản lý thực đơn hoặc loại phòng */}
+                        {/* Nút Quản lý thực đơn */}
                         {!isAccountLocked && (
                           <Link
-                            href={`/partner/co-so/${place.id}/sua?tab=${place.category === 'luutru' || place.placeType === 'ACCOMMODATION' ? 'rooms' : 'menu'}`}
-                            title={place.category === 'luutru' || place.placeType === 'ACCOMMODATION' ? 'Quản lý loại phòng & bảng giá' : 'Quản lý thực đơn món ăn'}
+                            href={`/partner/co-so/${place.id}/sua?tab=menu`}
+                            title="Quản lý thực đơn món ăn (Tự động đồng bộ giá)"
                             className="p-2 rounded-xl text-teal-600 hover:bg-teal-50 hover:text-teal-700 active:scale-95 transition-all"
                           >
-                            {place.category === 'luutru' || place.placeType === 'ACCOMMODATION' ? (
-                              <Bed className="w-4 h-4" />
-                            ) : (
-                              <UtensilsCrossed className="w-4 h-4" />
-                            )}
+                            <UtensilsCrossed className="w-4 h-4" />
                           </Link>
                         )}
 
@@ -433,7 +408,7 @@ export default function PlacesTable({
                         ) : isActive ? (
                           <button
                             onClick={() => onToggleStatus(place, 'HIDDEN')}
-                            title="Ẩn cơ sở này khỏi website"
+                            title="Ẩn quán này khỏi website"
                             type="button"
                             className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-amber-50 text-amber-700 hover:bg-amber-100 font-bold text-xs transition-all active:scale-95"
                           >

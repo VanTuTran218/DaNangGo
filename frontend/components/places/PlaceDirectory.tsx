@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, MapPin, Search, Star } from "lucide-react";
 import { getPlaces, type PlaceListItem } from "@/lib/api/places";
+import HeartButton from "@/components/HeartButton";
 
 export default function PlaceDirectory() {
   const [places, setPlaces] = useState<PlaceListItem[]>([]);
@@ -110,6 +111,9 @@ export default function PlaceDirectory() {
               ) : null}
               <span className="absolute left-3 top-3 rounded-full border border-white/70 bg-white/90 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-teal-800 shadow-sm">
                 {place.place_type}
+              </span>
+              <span className="absolute right-3 top-3 z-10">
+                <HeartButton placeId={place.place_id} />
               </span>
             </Link>
             <div className="flex flex-1 flex-col p-5">

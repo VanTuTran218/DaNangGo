@@ -6,6 +6,7 @@ import LenisProvider from "@/providers/LenisProvider";
 import { HeroSlideProvider } from "@/contexts/HeroSlideContext";
 import { NavbarHeroProvider } from "@/contexts/NavbarHeroContext";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { FavoritesProvider } from "@/contexts/FavoritesContext";
 import { Be_Vietnam_Pro, Inter } from "next/font/google";
 
 // ── Font display: Be Vietnam Pro (tiêu đề H1/H2/H3, số liệu nổi bật) ──
@@ -45,6 +46,7 @@ export default function RootLayout({
   return (
     <html
       lang="vi"
+      data-scroll-behavior="smooth"
       className={`${beVietnamPro.variable} ${inter.variable}`}
     >
       <body className="bg-gray-50 text-gray-900 antialiased">
@@ -59,17 +61,19 @@ export default function RootLayout({
             HeroSlide: màu tint navbar theo slide đang active (trang chủ)
             NavbarHero: element hero/banner thực tế để đo ngưỡng scroll động */}
         <AuthProvider>
-          <HeroSlideProvider>
-            <NavbarHeroProvider>
-              <LenisProvider>
-                {/* Fixed Navbar */}
-                <Navbar />
+          <FavoritesProvider>
+            <HeroSlideProvider>
+              <NavbarHeroProvider>
+                <LenisProvider>
+                  {/* Fixed Navbar */}
+                  <Navbar />
 
-                {/* Page content */}
-                <main>{children}</main>
-              </LenisProvider>
-            </NavbarHeroProvider>
-          </HeroSlideProvider>
+                  {/* Page content */}
+                  <main>{children}</main>
+                </LenisProvider>
+              </NavbarHeroProvider>
+            </HeroSlideProvider>
+          </FavoritesProvider>
         </AuthProvider>
       </body>
     </html>

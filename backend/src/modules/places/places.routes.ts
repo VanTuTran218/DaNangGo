@@ -49,7 +49,6 @@ const optionalAuth: RequestHandler = async (req, res, next) => {
   next();
 };
 
-
 /**
  * GET /api/places
  * Tìm kiếm và lọc danh sách địa điểm (Công khai, hỗ trợ đa tiêu chí và phân trang)

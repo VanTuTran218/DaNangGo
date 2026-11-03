@@ -8,6 +8,7 @@ import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
 import AuthCardFrame from './AuthCardFrame';
 import { useAuth } from '@/contexts/AuthContext';
+import { getAuthRedirect } from '@/lib/auth-redirect';
 
 interface AuthCardProps {
   initialTab: 'login' | 'register';
@@ -33,14 +34,12 @@ function AuthCardContent({ initialTab, redirectTo }: AuthCardProps) {
   const [prefilledIdentifier, setPrefilledIdentifier] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
-  // Nếu đã đăng nhập → redirect về trang cần đến (hoặc trang chủ)
+  // Chuyển trang tập trung cho cả phiên có sẵn và đăng nhập vừa thành công.
   useEffect(() => {
     if (!loading && user) {
-      const safe = redirectTo && redirectTo.startsWith('/') && !redirectTo.startsWith('//')
-        ? redirectTo : '/';
-      router.replace(safe);
+      router.replace(getAuthRedirect(user.role, redirectTo, intent));
     }
-  }, [user, loading, redirectTo, router]);
+  }, [user, loading, redirectTo, intent, router]);
 
   const handleTabChange = (newTab: 'login' | 'register', registeredEmail?: string) => {
     if (newTab === activeTab && !registeredEmail) return;

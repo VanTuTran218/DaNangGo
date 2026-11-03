@@ -5,6 +5,56 @@ SET XACT_ABORT ON;
 BEGIN TRY
     BEGIN TRANSACTION;
 
+    -- 1. Ensure dbo.roles exists
+    IF OBJECT_ID(N'dbo.roles', N'U') IS NULL
+    BEGIN
+        CREATE TABLE dbo.roles (
+            role_id INT IDENTITY(1,1) NOT NULL CONSTRAINT PK_roles PRIMARY KEY,
+            role_name VARCHAR(30) NOT NULL CONSTRAINT UQ_roles_role_name UNIQUE
+        );
+    END;
+
+    -- 2. Seed missing roles
+    IF NOT EXISTS (SELECT 1 FROM dbo.roles WHERE UPPER(role_name) = 'USER')
+        INSERT INTO dbo.roles(role_name) VALUES ('User');
+    IF NOT EXISTS (SELECT 1 FROM dbo.roles WHERE UPPER(role_name) = 'PARTNER')
+        INSERT INTO dbo.roles(role_name) VALUES ('Partner');
+    IF NOT EXISTS (SELECT 1 FROM dbo.roles WHERE UPPER(role_name) = 'ADMIN')
+        INSERT INTO dbo.roles(role_name) VALUES ('Admin');
+
+    -- 3. Ensure dbo.users exists
+    IF OBJECT_ID(N'dbo.users', N'U') IS NULL
+    BEGIN
+        CREATE TABLE dbo.users (
+            user_id INT IDENTITY(1,1) NOT NULL CONSTRAINT PK_users PRIMARY KEY,
+            role_id INT NOT NULL CONSTRAINT FK_users_roles REFERENCES dbo.roles(role_id),
+            full_name NVARCHAR(100) NOT NULL,
+            email VARCHAR(150) NOT NULL CONSTRAINT UQ_users_email UNIQUE,
+            password_hash VARCHAR(255) NOT NULL,
+            phone VARCHAR(20) NULL,
+            date_of_birth DATE NULL,
+            avatar_url VARCHAR(255) NULL,
+            status VARCHAR(20) NOT NULL CONSTRAINT DF_users_status DEFAULT ('ACTIVE'),
+            created_at DATETIME2 NOT NULL CONSTRAINT DF_users_created_at DEFAULT (SYSUTCDATETIME()),
+            updated_at DATETIME2 NULL
+        );
+    END;
+
+    -- 4. Ensure dbo.partner_profiles exists
+    IF OBJECT_ID(N'dbo.partner_profiles', N'U') IS NULL
+    BEGIN
+        CREATE TABLE dbo.partner_profiles (
+            partner_id INT IDENTITY(1,1) NOT NULL CONSTRAINT PK_partner_profiles PRIMARY KEY,
+            user_id INT NOT NULL CONSTRAINT UQ_partner_profiles_user_id UNIQUE CONSTRAINT FK_partner_profiles_users REFERENCES dbo.users(user_id),
+            business_name NVARCHAR(150) NOT NULL,
+            contact_phone VARCHAR(20) NULL,
+            address NVARCHAR(255) NULL,
+            approval_status VARCHAR(20) NOT NULL CONSTRAINT DF_partner_profiles_approval DEFAULT ('PENDING'),
+            approved_by INT NULL,
+            approved_at DATETIME2 NULL
+        );
+    END;
+
     -- Existing users and their dependent foreign keys are preserved.
     IF COL_LENGTH('dbo.users', 'public_id') IS NULL
         ALTER TABLE dbo.users ADD public_id NVARCHAR(20) NULL;

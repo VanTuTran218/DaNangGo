@@ -67,8 +67,7 @@ export default function MapPicker({
           ]}
           selectedId={1}
           onSelect={() => {}}
-          zoomLevel={1}
-          radius={5}
+          zoomLevel={15}
         />
         <div className="absolute top-3 left-3 z-[1000] bg-white/90 backdrop-blur-xs px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm text-[11px] font-bold text-slate-700 flex items-center gap-1.5 pointer-events-none">
           <MapPin className="w-3.5 h-3.5 text-teal-600" />

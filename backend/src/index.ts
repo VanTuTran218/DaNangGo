@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import helmet from 'helmet';
 import { connectDB, closeDB } from './config/db';
+import itinerariesRouter from './modules/itineraries/itineraries.routes';
 import authRouter, { adminRouter } from './modules/auth/auth.routes';
 import placesRouter from './modules/places/places.routes';
 import adminPartnersRouter from './modules/admin/partners.routes';
@@ -54,6 +55,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(csrfProtection);
 
 // ==================== ROUTES ====================
+app.use('/api/itineraries', itinerariesRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/admin/auth', adminRouter);
 app.use('/api/admin/partners', adminPartnersRouter);

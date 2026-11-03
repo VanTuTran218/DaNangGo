@@ -22,12 +22,12 @@ import { PLACE_PLACEHOLDER, type MapLocation } from '@/lib/map-places';
 import { DANANG_CENTER, googleMapsDirections, haversineDistance, type Coordinates, type MapLayer } from '@/lib/map-navigation';
 import { getRouteDirections, type TravelOption, type TravelMode } from '@/lib/api/routes';
 
-const MAP_MODE_META: { mode: TravelMode; label: string; icon: typeof Car }[] = [
-  { mode: 'WALK', label: 'Đi bộ', icon: Footprints },
-  { mode: 'MOTORBIKE', label: 'Xe máy', icon: Bike },
-  { mode: 'CAR', label: 'Ô tô', icon: Car },
-  { mode: 'TAXI', label: 'Taxi', icon: Car },
-  { mode: 'BUS', label: 'Xe buýt', icon: Bus },
+const MAP_MODE_META: { mode: TravelMode; label: string; icon: typeof Car; googleMode: string }[] = [
+  { mode: 'WALK', label: 'Đi bộ', icon: Footprints, googleMode: 'walking' },
+  { mode: 'MOTORBIKE', label: 'Xe máy', icon: Bike, googleMode: 'two-wheeler' },
+  { mode: 'CAR', label: 'Ô tô', icon: Car, googleMode: 'driving' },
+  { mode: 'TAXI', label: 'Taxi', icon: Car, googleMode: 'driving' },
+  { mode: 'BUS', label: 'Xe buýt', icon: Bus, googleMode: 'transit' },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -170,6 +170,7 @@ export default function BanDoDuLichPage() {
     }
     let cancelled = false;
     getRouteDirections({
+      toPlaceId: routeTarget.id,
       from: `${filterCenter[0]},${filterCenter[1]}`,
       to: `${routeTarget.lat},${routeTarget.lng}`,
       modes: 'WALK,MOTORBIKE,CAR,TAXI,BUS',
@@ -188,13 +189,15 @@ export default function BanDoDuLichPage() {
   const effectiveTravelOptions: TravelOption[] = useMemo(() => {
     if (travelOptions.length > 0) return travelOptions;
     if (!route) return [];
-    const d = route.distanceKm;
+    const d = Math.round(route.distanceKm * 100) / 100;
+    const driveMin = route.durationMinutes;
+    const round1000 = (n: number) => Math.round(n / 1000) * 1000;
     return [
-      { mode: 'WALK', distanceKm: d, durationMinutes: Math.max(1, Math.round((d / 4.5) * 60)), estimatedCost: 0, cached: false },
-      { mode: 'MOTORBIKE', distanceKm: d, durationMinutes: Math.max(1, Math.round((d / 30) * 60)), estimatedCost: Math.round(d * 2500), cached: false },
-      { mode: 'CAR', distanceKm: d, durationMinutes: route.durationMinutes, estimatedCost: Math.round(d * 5000), cached: false },
-      { mode: 'TAXI', distanceKm: d, durationMinutes: route.durationMinutes, estimatedCost: Math.max(25000, Math.round(15000 + d * 14000)), cached: false },
-      { mode: 'BUS', distanceKm: d, durationMinutes: Math.max(5, Math.round((d / 20) * 60 + 10)), estimatedCost: 8000, cached: false },
+      { mode: 'WALK', distanceKm: d, durationMinutes: Math.max(1, Math.round((d / 5) * 60)), estimatedCost: 0, cached: false },
+      { mode: 'MOTORBIKE', distanceKm: d, durationMinutes: Math.max(1, Math.round(driveMin * 0.9)), estimatedCost: round1000(d * 3000), cached: false },
+      { mode: 'CAR', distanceKm: d, durationMinutes: Math.max(1, Math.round(driveMin)), estimatedCost: round1000(d * 6000), cached: false },
+      { mode: 'TAXI', distanceKm: d, durationMinutes: Math.max(1, Math.round(driveMin)), estimatedCost: round1000(d * 15000), cached: false },
+      { mode: 'BUS', distanceKm: d, durationMinutes: Math.max(1, Math.round(driveMin * 1.6 + 10)), estimatedCost: 7000, cached: false },
     ];
   }, [travelOptions, route]);
 

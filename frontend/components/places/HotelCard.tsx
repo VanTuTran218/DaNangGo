@@ -45,7 +45,6 @@ export default function HotelCard({ hotel, liked, onLike }: HotelCardProps) {
           src={hotel.img}
           alt={hotel.name}
           fill
-          unoptimized
           className="object-cover group-hover:scale-[1.08] transition-transform duration-500 ease-out"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           placeholder="blur"

@@ -1,8 +1,11 @@
 'use client';
 
+import { Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useAsyncData } from '@/hooks/useAsyncData';
 import { getPartnerProfile } from '@/lib/api/partner';
 import PlaceForm from '@/components/partner/PlaceForm';
+import AccommodationForm from '@/components/partner/AccommodationForm';
 import PartnerPageHeader from '@/components/partner/PartnerPageHeader';
 import CtaBanner from '@/components/partner/CtaBanner';
 import ScrollToTop from '@/components/partner/ScrollToTop';
@@ -11,8 +14,27 @@ import { Lock, ArrowLeft, AlertCircle, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
 export default function CreatePartnerPlacePage() {
+  return (
+    <Suspense fallback={<div className="p-12 text-center text-slate-500">Đang tải...</div>}>
+      <CreatePlaceContent />
+    </Suspense>
+  );
+}
+
+function CreatePlaceContent() {
+  const searchParams = useSearchParams();
   const { data: profile, loading } = useAsyncData(getPartnerProfile);
   const { data: subData } = useAsyncData(getCurrentSubscription);
+
+  const typeParam = searchParams.get('type');
+  const placeType: 'amthuc' | 'luutru' =
+    typeParam === 'luutru'
+      ? 'luutru'
+      : typeParam === 'amthuc'
+      ? 'amthuc'
+      : profile?.serviceType === 'STAY'
+      ? 'luutru'
+      : 'amthuc';
 
   if (loading) {
     return (
@@ -23,7 +45,7 @@ export default function CreatePartnerPlacePage() {
     );
   }
 
-  // Chặn tạo cơ sở nếu hồ sơ chưa được duyệt (Cách của Tuấn)
+  // Chặn tạo cơ sở nếu hồ sơ chưa được duyệt
   const isLocked = profile?.status === 'PENDING' || profile?.status === 'REJECTED';
   if (isLocked) {
     return (
@@ -59,10 +81,10 @@ export default function CreatePartnerPlacePage() {
         breadcrumbs={[
           { label: 'Partner', href: '/partner' },
           { label: 'Cơ sở của tôi', href: '/partner/co-so' },
-          { label: 'Thêm quán mới' },
+          { label: placeType === 'luutru' ? 'Thêm nơi lưu trú mới' : 'Thêm quán ăn mới' },
         ]}
-        title="Thêm cơ sở ẩm thực mới"
-        description="Điền đầy đủ các thông tin chi tiết của quán ăn, nhà hàng để gửi Ban quản trị tiếp nhận và phê duyệt hiển thị."
+        title={placeType === 'luutru' ? 'Đăng ký cơ sở Lưu trú mới' : 'Thêm cơ sở Ẩm thực mới'}
+        description="Điền đầy đủ các thông tin chi tiết của cơ sở để gửi Ban quản trị tiếp nhận và phê duyệt hiển thị trên DaNangGo."
         action={{
           label: 'Quay lại danh sách',
           href: '/partner/co-so',
@@ -91,7 +113,7 @@ export default function CreatePartnerPlacePage() {
         </div>
       )}
 
-      <PlaceForm />
+      {placeType === 'amthuc' ? <PlaceForm /> : <AccommodationForm />}
 
       <CtaBanner />
       <ScrollToTop />

@@ -81,9 +81,26 @@ export async function getPartnerPlaces(params?: {
     const query = new URLSearchParams();
     if (params?.status && params.status !== 'ALL') query.set('status', params.status);
     const url = `/api/partner/places${query.toString() ? `?${query.toString()}` : ''}`;
-    const res = await apiRequest<PartnerPlace[]>(url);
+    const [res, accRes] = await Promise.all([
+      apiRequest<PartnerPlace[]>(url),
+      // /api/partner/places trả cả lưu trú nhưng gắn nhãn 'amthuc' → dùng /mine để nhận diện
+      apiRequest<{ place_id: number; price_from: number | null }[]>('/api/accommodations/mine').catch(() => null),
+    ]);
     if (res.data) {
-      let result = res.data;
+      const accMap = new Map((accRes?.data ?? []).map((a) => [String(a.place_id), a]));
+      let result = res.data.map((p) => {
+        const acc = accMap.get(String(p.placeId ?? p.id));
+        if (!acc) return p;
+        return {
+          ...p,
+          category: 'luutru' as const,
+          placeType: 'ACCOMMODATION' as const,
+          cuisineName: undefined,
+          priceMin: Number(acc.price_from) || 0,
+          priceMax: undefined,
+          priceUnit: 'đêm',
+        };
+      });
       if (params?.category && params.category !== 'ALL') {
         result = result.filter((p) => p.category === params.category);
       }
@@ -108,6 +125,50 @@ export async function getPartnerPlaces(params?: {
 export async function getPartnerPlaceById(id: string): Promise<PartnerPlace | null> {
   const numericId = parseInt(id);
   if (!isNaN(numericId)) {
+    // 0. Cơ sở lưu trú: lấy chi tiết từ /api/places/:id (chủ sở hữu xem được cả khi HIDDEN/LOCKED)
+    try {
+      const detail = await apiRequest<any>(`/api/places/${numericId}`);
+      const p = detail.data;
+      if (p && p.place_type === 'ACCOMMODATION') {
+        const rooms = p.rooms ?? p.room_types ?? [];
+        return {
+          id: String(p.place_id),
+          placeId: p.place_id,
+          name: p.name,
+          category: 'luutru',
+          placeType: 'ACCOMMODATION',
+          description: p.description || '',
+          address: p.address || '',
+          area: p.district_name || 'Đà Nẵng',
+          districtId: p.district_id ?? undefined,
+          accommodationType: p.accommodation_type || 'HOTEL',
+          starRating: p.star_rating ?? undefined,
+          checkInTime: p.check_in_time ? String(p.check_in_time).slice(0, 5) : undefined,
+          checkOutTime: p.check_out_time ? String(p.check_out_time).slice(0, 5) : undefined,
+          priceMin: Number(p.price_min) || 0,
+          priceMax: p.price_max ? Number(p.price_max) : undefined,
+          priceUnit: 'đêm',
+          openHours: '24/7',
+          openDays: [],
+          amenities: (p.amenities ?? []).map((a: any) => a.name),
+          amenityIds: (p.amenities ?? []).map((a: any) => Number(a.amenity_id)),
+          images: (p.images ?? []).map((img: any) => (typeof img === 'string' ? img : img.image_url)),
+          lat: Number(p.latitude) || 16.0544,
+          lng: Number(p.longitude) || 108.2022,
+          status: p.status,
+          partnerId: p.partner_id ?? undefined,
+          viewCount: p.view_count || 0,
+          bookingUrl: p.booking_url || '',
+          phone: p.phone || '',
+          website: p.website || '',
+          roomCount: rooms.length,
+          createdAt: p.created_at ? new Date(p.created_at).toISOString() : new Date().toISOString(),
+        };
+      }
+    } catch {
+      // Không phải lưu trú hoặc lỗi mạng → thử nhánh nhà hàng bên dưới
+    }
+
     try {
       // 1. Thử gọi /api/restaurants/:id trước (Hỗ trợ cả Admin và Partner xem thông tin nhà hàng thực)
       const res = await apiRequest<any>(`/api/restaurants/${numericId}`);

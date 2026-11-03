@@ -148,18 +148,6 @@ function AdminPlacesContent() {
             </button>
           )}
 
-          {/* Nút mở khóa cho quán LOCKED */}
-          {p.status === 'LOCKED' && (
-            <button
-              onClick={() => handleUpdateStatus(p.id, 'APPROVED')}
-              disabled={actionLoading}
-              title="Mở khóa cơ sở"
-              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-colors"
-            >
-              <Unlock className="w-3.5 h-3.5" /> Mở khóa
-            </button>
-          )}
-
           {/* Xem chi tiết */}
           <button
             onClick={() => setSelectedPlace(p)}
@@ -197,17 +185,29 @@ function AdminPlacesContent() {
             >
               <Eye className="w-4 h-4" />
             </button>
+          ) : p.status === 'LOCKED' ? (
+            <button
+              disabled
+              title="Cơ sở đang bị khóa không thể ẩn/hiện"
+              className="p-1.5 rounded-lg text-gray-300 cursor-not-allowed"
+            >
+              <EyeOff className="w-4 h-4" />
+            </button>
           ) : null}
 
-                    {/* Khóa cơ sở vi phạm - chỉ Admin mới thấy khi cơ sở ACTIVE/APPROVED */}
-          {(p.status === 'APPROVED' || p.status === 'ACTIVE') && (
+          {/* Khóa / Mở khóa cơ sở vi phạm - cố định vị trí, không bị đảo lộn */}
+          {(p.status === 'APPROVED' || p.status === 'ACTIVE' || p.status === 'LOCKED') && (
             <button
-              onClick={() => handleUpdateStatus(p.id, 'LOCKED')}
+              onClick={() => handleUpdateStatus(p.id, p.status === 'LOCKED' ? 'APPROVED' : 'LOCKED')}
               disabled={actionLoading}
-              title="Khóa cơ sở vi phạm"
-              className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 transition-colors"
+              title={p.status === 'LOCKED' ? 'Mở khóa cơ sở' : 'Khóa cơ sở vi phạm'}
+              className={`p-1.5 rounded-lg transition-colors ${
+                p.status === 'LOCKED'
+                  ? 'text-emerald-600 hover:bg-emerald-50'
+                  : 'text-rose-600 hover:bg-rose-50'
+              }`}
             >
-              <Lock className="w-4 h-4" />
+              {p.status === 'LOCKED' ? <Unlock className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
             </button>
           )}
 

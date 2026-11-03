@@ -39,6 +39,13 @@ export interface PartnerPlace {
   website?: string;
   partnerId?: number;
   rejectReason?: string;
+  placeType?: 'RESTAURANT' | 'ACCOMMODATION' | 'ATTRACTION';
+  accommodationType?: 'HOTEL' | 'HOMESTAY' | 'RESORT' | 'HOSTEL' | 'APARTMENT';
+  starRating?: number;
+  checkInTime?: string;
+  checkOutTime?: string;
+  roomCount?: number;
+  amenityIds?: number[];
   createdAt: string;
 }
 

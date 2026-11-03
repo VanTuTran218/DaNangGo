@@ -190,7 +190,8 @@ export interface PaginatedPlacesResult {
  * GET /api/places
  */
 export async function getPlaces(
-  query: SearchPlacesQuery = {}
+  query: SearchPlacesQuery = {},
+  signal?: AbortSignal,
 ): Promise<PaginatedPlacesResult> {
   const params = new URLSearchParams();
 
@@ -209,7 +210,7 @@ export async function getPlaces(
   if (query.limit) params.append('limit', String(query.limit));
 
   const queryString = params.toString() ? `?${params.toString()}` : '';
-  const res = await apiRequest<PaginatedPlacesResult>(`/api/places${queryString}`);
+  const res = await apiRequest<PaginatedPlacesResult>(`/api/places${queryString}`, { signal });
 
   return res.data || {
     items: [],

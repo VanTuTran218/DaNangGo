@@ -135,6 +135,30 @@ Mở trình duyệt tại [http://localhost:3000](http://localhost:3000).
 
 > **Lưu ý:** Tạo file `.env.local` để cấu hình biến môi trường (thông tin kết nối database, API key...). Không đưa file này lên Git.
 
+### Bản đồ và chỉ đường trong web (`/bando`)
+
+- Địa điểm lấy từ `GET /api/places`, tải đủ các trang (50 bản ghi/trang), giữ ID thật và chỉ ghim địa điểm công khai có tọa độ hợp lệ. Không dùng danh sách mẫu khi API lỗi; giao diện có trạng thái tải, thông báo lỗi và nút thử lại. Ảnh trong `public/` dùng frontend, ảnh `/uploads/` dùng backend.
+- Đặt `NEXT_PUBLIC_API_URL` trong `frontend/.env.local` trỏ đến backend đang chạy. Cần SQL Server hoạt động trước khi khởi động backend. Những địa điểm chưa có tọa độ sẽ được đếm riêng; bổ sung tọa độ trong quản lý địa điểm để hiển thị lên bản đồ.
+- **Vị trí tôi**: xin quyền GPS sau khi bấm; bán kính 2/5/10 km tính theo vị trí này, hoặc tâm Đà Nẵng khi chưa định vị. Cần HTTPS khi triển khai (localhost vẫn dùng được).
+- Chọn ghim hoặc địa điểm trong danh sách, rồi bấm **Chỉ đường**: OSRM tính tuyến ô tô, quãng đường theo đường giao thông và thời gian dự kiến. Có nút đóng tuyến, thử lại và mở Google Maps. Đây là tuyến tham khảo, chưa có hướng dẫn rẽ từng chặng hoặc dữ liệu giao thông trực tiếp.
+- Bộ lọc bán kính dùng Haversine (đường chim bay); vòng tròn trên bản đồ dùng khoảng cách theo mét, không dùng kích thước pixel minh họa.
+- **Lớp bản đồ** chuyển giữa đường phố và ảnh vệ tinh Esri. Bản đồ đường phố ưu tiên CARTO Voyager khi có khóa; nếu chưa cấu hình khóa hoặc CARTO báo lỗi tải tile, dùng Esri World Street Map dự phòng.
+
+CARTO hiện yêu cầu API key cho raster tiles ([hướng dẫn chính thức](https://www.carto.com/basemaps/apikey/index.html)). Để bật Voyager, thêm vào `frontend/.env.local` rồi build lại:
+
+```dotenv
+NEXT_PUBLIC_CARTO_API_KEY=your_carto_basemap_key
+```
+
+Đây là khóa dùng trên trình duyệt; cấu hình giới hạn tên miền tại CARTO. Không dùng khóa quản trị hoặc khóa bí mật cho biến `NEXT_PUBLIC_*`. Chưa có khóa vẫn có thể dùng bản đồ đường phố dự phòng và lớp vệ tinh.
+
+Kiểm tra frontend từ thư mục `frontend/`:
+
+```bash
+npm test      # Node.js 22.18+ hoặc 24+, không cần cài thêm test runner
+npm run build
+```
+
 ---
 
 ## 🔮 Hướng phát triển

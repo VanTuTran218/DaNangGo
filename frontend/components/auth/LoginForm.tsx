@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import PasswordField from './PasswordField';
 import SocialButtons from './SocialButtons';
@@ -17,11 +16,8 @@ interface LoginFormProps {
   successMessage?: string;
 }
 
-export default function LoginForm({ onSwitchToRegister, redirectTo, initialIdentifier, successMessage }: LoginFormProps) {
-  const router = useRouter();
+export default function LoginForm({ onSwitchToRegister, initialIdentifier, successMessage }: LoginFormProps) {
   const { login: setAuthUser } = useAuth();
-  const searchParams = useSearchParams();
-  const intent = searchParams.get('intent');
   
   const [identifier, setIdentifier] = useState(initialIdentifier || '');
   const [password, setPassword] = useState('');
@@ -70,18 +66,7 @@ export default function LoginForm({ onSwitchToRegister, redirectTo, initialIdent
       if (res.success) {
         if (res.user) setAuthUser(res.user);
         setIsSuccess(true);
-        setTimeout(() => {
-          if (res.user?.role === 'PARTNER') {
-            router.push('/partner');
-          } else if (intent === 'vip') {
-            router.push('/vip?action=register-vip');
-          } else {
-            const safeRedirect = redirectTo && redirectTo.startsWith('/') && !redirectTo.startsWith('//') && !redirectTo.startsWith('/\\')
-              ? redirectTo
-              : '/';
-            router.push(safeRedirect);
-          }
-        }, 800);
+        // AuthCard chuyển trang theo vai trò; tránh timer tranh chấp với effect của cha.
       } else {
         // Nếu email chưa xác thực → chuyển sang bước OTP
         if (res.code === 'EMAIL_NOT_VERIFIED' && res.maskedEmail) {

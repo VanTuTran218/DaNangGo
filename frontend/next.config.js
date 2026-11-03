@@ -14,6 +14,14 @@ const nextConfig = {
         protocol: "https",
         hostname: "static.vinwonders.com",
       },
+      {
+        protocol: "https",
+        hostname: "**",
+      },
+      {
+        protocol: "http",
+        hostname: "**",
+      },
     ],
   },
 };

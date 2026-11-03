@@ -12,7 +12,7 @@ import { requireAuth, requireRole } from "../../middleware/auth.middleware";
 export const manageAuth: RequestHandler[] = [
   (req, res, next) => {
     const cookies = req.cookies as Record<string, string> | undefined;
-    requireAuth(cookies?.admin_access ? "ADMIN" : "USER")(req, res, next);
+    requireAuth(cookies?.access_token ? "USER" : cookies?.admin_access ? "ADMIN" : "USER")(req, res, next);
   },
   requireRole("PARTNER", "ADMIN"),
 ];

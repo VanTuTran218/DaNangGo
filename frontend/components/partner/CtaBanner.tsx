@@ -37,7 +37,7 @@ export default function CtaBanner() {
             Cần hỗ trợ đăng cơ sở hoặc giải đáp thắc mắc?
           </h3>
           <p className="text-xs sm:text-sm text-teal-50/90 leading-relaxed">
-            Đội ngũ quản trị viên DaNangGo luôn sẵn sàng hỗ trợ quý đối tác tối ưu hóa hồ sơ nhà hàng và tiếp cận hàng triệu du khách Đà Nẵng.
+            Đội ngũ quản trị viên DaNangGo luôn sẵn sàng hỗ trợ quý đối tác tối ưu hóa hồ sơ cơ sở dịch vụ và tiếp cận hàng triệu du khách Đà Nẵng.
           </p>
         </div>
 

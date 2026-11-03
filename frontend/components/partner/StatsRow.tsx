@@ -45,7 +45,7 @@ function Counter({ target }: { target: number }) {
 export default function StatsRow({ total, active, pending, locked }: StatsRowProps) {
   const items = [
     {
-      title: 'Tổng quán ăn',
+      title: 'Tổng cơ sở',
       value: total,
       desc: 'Cơ sở đã đăng ký',
       icon: Store,

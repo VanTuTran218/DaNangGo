@@ -106,7 +106,7 @@ export default function PlacesTable({
             {serviceType === 'STAY' ? 'Chưa có cơ sở lưu trú nào' : 'Chưa có quán ăn nào'}
           </h3>
           <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
-            Bạn chưa đăng tải cơ sở nào trong danh mục hoặc trạng thái này. Hãy bắt đầu bằng cách thêm quán đầu tiên để đón khách du lịch Đà Nẵng!
+            Bạn chưa đăng tải cơ sở nào trong danh mục hoặc trạng thái này. Hãy bắt đầu bằng cách thêm cơ sở đầu tiên để đón khách du lịch Đà Nẵng!
           </p>
         </div>
         {!isAccountLocked && (
@@ -147,7 +147,7 @@ export default function PlacesTable({
                 <div className="flex items-start gap-3">
                   <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-slate-100 shrink-0 border border-slate-200/60">
                     {place.images && place.images[0] ? (
-                      <Image src={place.images[0]} alt={place.name} fill className="object-cover" />
+                      <Image src={place.images[0]} alt={place.name} fill unoptimized className="object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-teal-600 font-bold text-xs bg-teal-50">
                         IMG
@@ -284,7 +284,7 @@ export default function PlacesTable({
                       <div className="flex items-center gap-3.5">
                         <div className="relative w-14 h-14 rounded-2xl overflow-hidden bg-slate-100 shrink-0 border border-slate-200/70 shadow-xs">
                           {place.images && place.images[0] ? (
-                            <Image src={place.images[0]} alt={place.name} fill className="object-cover" />
+                            <Image src={place.images[0]} alt={place.name} fill unoptimized className="object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-teal-600 font-bold text-xs bg-teal-50">
                               IMG
@@ -390,7 +390,7 @@ export default function PlacesTable({
                         ) : (
                           <Link
                             href={`/partner/co-so/${place.id}/sua`}
-                            title="Chỉnh sửa quán"
+                            title="Chỉnh sửa cơ sở"
                             className="p-2 rounded-xl text-blue-600 hover:bg-blue-50 hover:text-blue-700 active:scale-95 transition-all"
                           >
                             <Edit3 className="w-4 h-4" />
@@ -433,7 +433,7 @@ export default function PlacesTable({
                         ) : isActive ? (
                           <button
                             onClick={() => onToggleStatus(place, 'HIDDEN')}
-                            title="Ẩn quán này khỏi website"
+                            title="Ẩn cơ sở này khỏi website"
                             type="button"
                             className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-amber-50 text-amber-700 hover:bg-amber-100 font-bold text-xs transition-all active:scale-95"
                           >

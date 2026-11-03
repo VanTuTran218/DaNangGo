@@ -10,7 +10,7 @@ import {
   ChevronRight, Search, X, RefreshCw, MapPin, Star,
   Navigation, Calendar, Map as MapIcon, List, Layers, Plus, Minus,
   LocateFixed, ChevronUp, Sun, Car, LoaderCircle, ExternalLink,
-  ArrowRight, ChevronDown,
+  ArrowRight, ChevronDown, Footprints, Bike, Bus, Coins,
 } from 'lucide-react';
 import { useNavbarHero } from '@/contexts/NavbarHeroContext';
 import Footer from '@/components/layout/Footer';
@@ -20,6 +20,15 @@ import { useMapRouting } from '@/hooks/useMapRouting';
 import { useMapPlaces } from '@/hooks/useMapPlaces';
 import { PLACE_PLACEHOLDER, type MapLocation } from '@/lib/map-places';
 import { DANANG_CENTER, googleMapsDirections, haversineDistance, type Coordinates, type MapLayer } from '@/lib/map-navigation';
+import { getRouteDirections, type TravelOption, type TravelMode } from '@/lib/api/routes';
+
+const MAP_MODE_META: { mode: TravelMode; label: string; icon: typeof Car }[] = [
+  { mode: 'WALK', label: 'Đi bộ', icon: Footprints },
+  { mode: 'MOTORBIKE', label: 'Xe máy', icon: Bike },
+  { mode: 'CAR', label: 'Ô tô', icon: Car },
+  { mode: 'TAXI', label: 'Taxi', icon: Car },
+  { mode: 'BUS', label: 'Xe buýt', icon: Bus },
+];
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DATA
@@ -87,7 +96,7 @@ function MapPopup({ loc, onClose, onAddTrip, onNavigate }: { loc: MapLocation; o
         <div className="flex items-center gap-1 text-[10px] text-gray-400 mb-3"><MapPin size={10} /><span className="truncate body-text">{loc.address}</span></div>
         <div className="space-y-1 mb-3 text-[11px] text-gray-500">
           <p><span className="font-semibold text-[#0f2942]">{loc.distance}</span> đường chim bay từ tâm tìm kiếm</p>
-          <p className="flex items-center gap-1"><Car size={12} /> Xem quãng đường và thời gian đi ô tô thực tế.</p>
+          <p className="flex items-center gap-1"><Car size={12} /> Chọn 5 phương tiện di chuyển (Đi bộ, Xe máy, Ô tô, Taxi, Xe buýt).</p>
         </div>
         <div className="flex gap-2">
           <button onClick={onNavigate} className="group flex-1 flex items-center justify-center gap-1.5 bg-[#0f2942] hover:bg-[#1a3f5c] text-white text-[11px] font-bold px-3 py-2 rounded-xl transition-colors"><Navigation size={11} /> Chỉ đường<ArrowRight size={11} className="transition-transform duration-200 group-hover:translate-x-0.5" /></button>
@@ -146,11 +155,50 @@ export default function BanDoDuLichPage() {
   const [layersOpen, setLayersOpen] = useState(false);
   const [routeTarget, setRouteTarget] = useState<MapLocation | null>(null);
   const [routeAttempt, setRouteAttempt] = useState(0);
+  const [travelOptions, setTravelOptions] = useState<TravelOption[]>([]);
+  const [selectedMode, setSelectedMode] = useState<TravelMode>('MOTORBIKE');
   const mounted = useRef(false);
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
 
   const filterCenter = userPosition ?? DANANG_CENTER;
   const { route, loading: routeLoading, error: routeError } = useMapRouting(routeTarget, filterCenter, routeAttempt);
+
+  useEffect(() => {
+    if (!routeTarget) {
+      setTravelOptions([]);
+      return;
+    }
+    let cancelled = false;
+    getRouteDirections({
+      from: `${filterCenter[0]},${filterCenter[1]}`,
+      to: `${routeTarget.lat},${routeTarget.lng}`,
+      modes: 'WALK,MOTORBIKE,CAR,TAXI,BUS',
+    })
+      .then(opts => {
+        if (!cancelled) setTravelOptions(opts);
+      })
+      .catch(() => {
+        if (!cancelled) setTravelOptions([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [routeTarget, filterCenter, routeAttempt]);
+
+  const effectiveTravelOptions: TravelOption[] = useMemo(() => {
+    if (travelOptions.length > 0) return travelOptions;
+    if (!route) return [];
+    const d = route.distanceKm;
+    return [
+      { mode: 'WALK', distanceKm: d, durationMinutes: Math.max(1, Math.round((d / 4.5) * 60)), estimatedCost: 0, cached: false },
+      { mode: 'MOTORBIKE', distanceKm: d, durationMinutes: Math.max(1, Math.round((d / 30) * 60)), estimatedCost: Math.round(d * 2500), cached: false },
+      { mode: 'CAR', distanceKm: d, durationMinutes: route.durationMinutes, estimatedCost: Math.round(d * 5000), cached: false },
+      { mode: 'TAXI', distanceKm: d, durationMinutes: route.durationMinutes, estimatedCost: Math.max(25000, Math.round(15000 + d * 14000)), cached: false },
+      { mode: 'BUS', distanceKm: d, durationMinutes: Math.max(5, Math.round((d / 20) * 60 + 10)), estimatedCost: 8000, cached: false },
+    ];
+  }, [travelOptions, route]);
+
+  const activeTravelOption = effectiveTravelOptions.find(o => o.mode === selectedMode) ?? effectiveTravelOptions[0] ?? null;
   const locateUser = useCallback(() => {
     setGpsError(null);
     if (!navigator.geolocation) {
@@ -416,12 +464,58 @@ export default function BanDoDuLichPage() {
               {routeTarget && (
                 <div role="status" aria-live="polite" className="rounded-2xl border border-teal-100 bg-white/95 p-3 shadow-xl backdrop-blur-md">
                   <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0"><p className="text-[10px] font-bold uppercase tracking-wider text-teal-700">Chỉ đường ô tô</p><p className="mt-1 truncate text-sm font-bold text-[#0f2942]">{routeTarget.name}</p></div>
+                    <div className="min-w-0"><p className="text-[10px] font-bold uppercase tracking-wider text-teal-700">Chỉ đường & Phương tiện di chuyển</p><p className="mt-1 truncate text-sm font-bold text-[#0f2942]">{routeTarget.name}</p></div>
                     <button onClick={() => setRouteTarget(null)} aria-label="Đóng tuyến đường" className="rounded-full p-1 text-gray-500 hover:bg-gray-100"><X size={15} /></button>
                   </div>
                   <p className="mt-1 text-[11px] text-gray-500">Từ {userPosition ? 'vị trí GPS của bạn' : 'tâm Đà Nẵng (chưa có GPS)'}</p>
                   {routeLoading && <p className="mt-2 flex items-center gap-2 text-xs text-teal-700"><LoaderCircle size={14} className="animate-spin" /> Đang tìm tuyến đường…</p>}
-                  {route && <><p className="mt-2 text-base font-bold text-teal-700">{route.distanceKm.toLocaleString('vi-VN', { maximumFractionDigits: 1 })} km <span className="text-gray-300">·</span> khoảng {route.durationMinutes.toLocaleString('vi-VN')} phút</p><p className="mt-1 text-[10px] text-gray-500">Thời gian ước tính, chưa tính giao thông trực tiếp.</p></>}
+                  <div className="mt-2.5 grid grid-cols-5 gap-1">
+                    {MAP_MODE_META.map(({ mode, label, icon: Icon }) => {
+                      const active = selectedMode === mode;
+                      const opt = effectiveTravelOptions.find(o => o.mode === mode);
+                      return (
+                        <button
+                          key={mode}
+                          type="button"
+                          onClick={() => setSelectedMode(mode)}
+                          className={`flex flex-col items-center justify-center rounded-xl py-1.5 px-1 text-[10px] font-bold transition-all border ${
+                            active
+                              ? 'bg-teal-600 text-white border-teal-600 shadow-sm'
+                              : 'bg-gray-50 text-gray-600 border-gray-100 hover:bg-teal-50 hover:text-teal-700'
+                          }`}
+                        >
+                          <Icon size={13} className="mb-0.5" />
+                          <span className="truncate max-w-full">{label}</span>
+                          {opt && (
+                            <span className={`text-[9px] font-medium ${active ? 'text-teal-100' : 'text-gray-400'}`}>
+                              {opt.durationMinutes}p
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {activeTravelOption ? (
+                    <div className="mt-2.5 rounded-xl bg-teal-50/70 border border-teal-100 p-2.5">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-bold text-teal-800">
+                          {activeTravelOption.distanceKm.toLocaleString('vi-VN', { maximumFractionDigits: 1 })} km{' '}
+                          <span className="text-teal-300">·</span> khoảng {activeTravelOption.durationMinutes.toLocaleString('vi-VN')} phút
+                        </p>
+                        <span className="inline-flex items-center gap-1 rounded-full bg-white px-2 py-0.5 text-[11px] font-bold text-amber-700 border border-amber-200">
+                          <Coins size={11} />
+                          {activeTravelOption.estimatedCost === 0
+                            ? 'Miễn phí'
+                            : `~${activeTravelOption.estimatedCost.toLocaleString('vi-VN')}đ`}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-[10px] text-gray-500">
+                        Phương tiện: <span className="font-semibold text-[#0f2942]">{MAP_MODE_META.find(m => m.mode === selectedMode)?.label}</span> · Thời gian & chi phí ước tính.
+                      </p>
+                    </div>
+                  ) : (
+                    route && <><p className="mt-2 text-base font-bold text-teal-700">{route.distanceKm.toLocaleString('vi-VN', { maximumFractionDigits: 1 })} km <span className="text-gray-300">·</span> khoảng {route.durationMinutes.toLocaleString('vi-VN')} phút</p><p className="mt-1 text-[10px] text-gray-500">Thời gian ước tính, chưa tính giao thông trực tiếp.</p></>
+                  )}
                   {routeError && <><p className="mt-2 text-xs text-amber-700">{routeError}</p><button onClick={() => setRouteAttempt(value => value + 1)} className="mt-2 text-xs font-bold text-teal-700">Thử lại chỉ đường</button></>}
                   <div className="mt-2 flex flex-wrap gap-x-3 gap-y-2">
                     {!userPosition && <button onClick={locateUser} disabled={isLocating} className="text-[11px] font-semibold text-blue-700 disabled:opacity-50">Dùng vị trí của tôi</button>}

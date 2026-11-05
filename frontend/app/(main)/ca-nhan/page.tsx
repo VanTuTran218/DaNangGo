@@ -9,6 +9,7 @@ import AvatarUploader from "@/components/profile/AvatarUploader";
 import BasicInfoForm from "@/components/profile/BasicInfoForm";
 import ChangePasswordForm from "@/components/profile/ChangePasswordForm";
 import MyReviews from "@/components/profile/MyReviews";
+import FavoritePlacesTab from "@/components/profile/FavoritePlacesTab";
 
 // Mock confetti effect
 const Confetti = () => (
@@ -151,6 +152,7 @@ export default function ProfilePage() {
                 {[
                   { id: "info", label: "Thông tin cá nhân" },
                   { id: "saved", label: "Lịch trình đã lưu" },
+                  { id: "favorites", label: "Địa điểm đã lưu" },
                   { id: "reviews", label: "Lịch sử đánh giá" },
                   { id: "offers", label: "Ưu đãi thành viên" },
                 ].map((tab) => (
@@ -174,6 +176,7 @@ export default function ProfilePage() {
                   </div>
                 )}
                 {activeTab === "saved" && <div className="text-gray-500 text-center py-10">Chưa có lịch trình nào được lưu.</div>}
+                {activeTab === "favorites" && <FavoritePlacesTab />}
                 {activeTab === "reviews" && (user.role === "USER" ? <MyReviews /> : <div className="py-10 text-center text-gray-500">Lịch sử đánh giá chỉ dành cho tài khoản khách du lịch.</div>)}
                 {activeTab === "offers" && (
                   <div className="space-y-4">

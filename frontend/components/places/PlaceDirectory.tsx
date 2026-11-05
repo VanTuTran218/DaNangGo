@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import { ArrowRight, Compass, MapPin, Search, Star, TrendingUp, Utensils, Hotel, Landmark } from "lucide-react";
 import { getPlaces, getTopPlaces, type PlaceListItem, type PlaceType } from "@/lib/api/places";
+import HeartButton from "@/components/HeartButton";
 
 // ─── Cấu hình bộ lọc theo loại địa điểm ──────────────────────────────────────
 const DIRECTORY_MODES: { value: PlaceType | ""; label: string; icon: React.ReactNode; color: string }[] = [
@@ -107,6 +108,11 @@ function PlaceCard({ place, index }: { place: PlaceListItem; index: number }) {
                       uppercase tracking-wider shadow-sm backdrop-blur-sm ${badge.className}`}
         >
           {badge.label}
+        </span>
+
+        {/* Nút yêu thích */}
+        <span className="absolute right-3 top-3 z-10">
+          <HeartButton placeId={place.place_id} />
         </span>
       </Link>
 

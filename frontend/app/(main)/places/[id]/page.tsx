@@ -44,7 +44,6 @@ export default function PlaceDetailPage() {
   const [error, setError] = useState<string | null>(null);
 
   // States tương tác
-  const [isSaved, setIsSaved] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [isDirectionsOpen, setIsDirectionsOpen] = useState(false);
 
@@ -203,8 +202,6 @@ export default function PlaceDetailPage() {
       <PlaceHero
         place={place}
         images={galleryImages}
-        isSaved={isSaved}
-        onToggleSave={() => setIsSaved(!isSaved)}
         onShare={handleShare}
         copiedLink={copiedLink}
       />

@@ -54,7 +54,7 @@ export default function PlaceDetail({ id }: { id: string }) {
           {error}
         </p>
         <Link
-          href="/places"
+          href="/khampha"
           className="mt-5 inline-block text-teal-700 underline"
         >
           Quay lại danh sách địa điểm
@@ -89,7 +89,7 @@ export default function PlaceDetail({ id }: { id: string }) {
     <section className="mx-auto max-w-5xl px-5 pb-16 pt-28">
       <div className="flex items-center justify-between">
         <Link
-          href="/places"
+          href="/khampha"
           className="text-sm font-medium text-teal-700 hover:underline"
         >
           ← Tất cả địa điểm

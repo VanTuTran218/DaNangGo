@@ -76,6 +76,7 @@ export default function SiteFooter() {
             </h4>
             <ul className="space-y-2.5 text-xs sm:text-sm">
               {[
+                { name: 'Góp ý & khảo sát', href: '/khao-sat' },
                 { name: 'Gói thành viên VIP', href: '/vip' },
                 { name: 'Dành cho đối tác nhà hàng', href: '/partner' },
                 { name: 'Hướng dẫn sử dụng', href: '#' },

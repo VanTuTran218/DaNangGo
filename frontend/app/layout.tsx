@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import IntroOverlay from "@/components/layout/IntroOverlay";
+import ChatBox from "@/components/chat/ChatBox";
 import LenisProvider from "@/providers/LenisProvider";
 import { HeroSlideProvider } from "@/contexts/HeroSlideContext";
 import { NavbarHeroProvider } from "@/contexts/NavbarHeroContext";
@@ -67,6 +68,9 @@ export default function RootLayout({
 
                 {/* Page content */}
                 <main>{children}</main>
+
+                {/* Floating AI Chat Assistant */}
+                <ChatBox />
               </LenisProvider>
             </NavbarHeroProvider>
           </HeroSlideProvider>

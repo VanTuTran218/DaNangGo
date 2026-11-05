@@ -9,6 +9,8 @@ import Footer from "@/components/layout/Footer";
 import AnimatedCounter from "@/components/ui/AnimatedCounter";
 import ItineraryCard, { type Itinerary } from "@/components/itinerary/ItineraryCard";
 import { deleteManagedItinerary, getManagedItineraries, type ManagedItineraryListItem } from "@/lib/api/itineraries";
+import SurveyInviteCard from "@/components/survey/SurveyInviteCard";
+import SurveyQuickSheet from "@/components/survey/SurveyQuickSheet";
 
 const TABS = ["Tất cả", "Sắp diễn ra", "Đã hoàn thành", "Bản nháp"] as const;
 type TabType = typeof TABS[number];
@@ -47,6 +49,8 @@ export default function ItineraryPage() {
   const [activeTab, setActiveTab] = useState<TabType>("Tất cả");
   const [searchQuery, setSearchQuery] = useState("");
   const [itineraries, setItineraries] = useState<Itinerary[]>([]);
+  const [rawItineraries, setRawItineraries] = useState<ManagedItineraryListItem[]>([]);
+  const [quickSheetOpen, setQuickSheetOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -54,7 +58,10 @@ export default function ItineraryPage() {
     let active = true;
     getManagedItineraries()
       .then((saved) => {
-        if (active) setItineraries(saved.map(toCard));
+        if (active) {
+          setRawItineraries(saved);
+          setItineraries(saved.map(toCard));
+        }
       })
       .catch((loadError: unknown) => {
         if (active) setError(loadError instanceof Error ? loadError.message : "Không thể tải lịch trình.");
@@ -74,6 +81,15 @@ export default function ItineraryPage() {
       return matchTab && matchSearch;
     });
   }, [itineraries, activeTab, searchQuery]);
+
+  const completedItinerary = useMemo(() => {
+    return rawItineraries.find((item) => {
+      if (item.status === "DRAFT") return false;
+      const endDate = new Date(`${item.startDate}T00:00:00`);
+      endDate.setDate(endDate.getDate() + item.dayCount - 1);
+      return endDate.getTime() <= Date.now() - 24 * 60 * 60 * 1000;
+    });
+  }, [rawItineraries]);
 
   const handleDelete = async (id: string) => {
     try {
@@ -133,6 +149,16 @@ export default function ItineraryPage() {
           </div>
         </div>
 
+        {completedItinerary && (
+          <div className="mb-8">
+            <SurveyInviteCard
+              itineraryId={completedItinerary.id}
+              itineraryTitle={completedItinerary.title}
+              onOpenQuickSheet={() => setQuickSheetOpen(true)}
+            />
+          </div>
+        )}
+
         <motion.div custom={3} initial="hidden" animate="visible" variants={headerVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
           {stats.map((stat) => (
             <div key={stat.label} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
@@ -183,6 +209,15 @@ export default function ItineraryPage() {
           </motion.div>
         )}
       </main>
+
+      {completedItinerary && (
+        <SurveyQuickSheet
+          isOpen={quickSheetOpen}
+          onClose={() => setQuickSheetOpen(false)}
+          itineraryId={completedItinerary.id}
+        />
+      )}
+
       <Footer />
     </div>
   );

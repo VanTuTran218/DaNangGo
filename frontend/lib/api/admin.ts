@@ -20,7 +20,6 @@ import {
   mockAdminPartners,
   mockAdminPlaces,
   mockAdminReviews,
-  mockAdminSurveys,
   mockAdminTodos,
   mockDailyUserStats,
 } from "@/lib/mock/admin";
@@ -31,30 +30,33 @@ function delay(ms = 400) {
 // GET /api/admin/stats
 export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
   try {
-    const [places, partners, reviews] = await Promise.all([
+    const [places, partners, reviews, surveys] = await Promise.all([
       getAdminPlaces().catch(() => mockAdminPlaces),
       getAdminPartners().catch(() => mockAdminPartners),
       getAdminReviews().catch(() => [] as AdminReviewItem[]),
+      getAdminSurveys(),
     ]);
     return {
       totalUsers: mockAdminUsers.length,
       totalPartners: partners.length,
-      pendingPartners: partners.filter((p) => p.status === 'PENDING').length,
-      pendingPlaces: places.filter((p) => p.status === 'PENDING').length,
+      pendingPartners: partners.filter((p) => p.status === "PENDING").length,
+      pendingPlaces: places.filter((p) => p.status === "PENDING").length,
       totalPlaces: places.length,
       totalReviews: reviews.length,
-      totalSurveys: mockAdminSurveys.length,
+      totalSurveys: surveys.length,
     };
   } catch {
     await delay();
     return {
       totalUsers: mockAdminUsers.length,
       totalPartners: mockAdminPartners.length,
-      pendingPartners: mockAdminPartners.filter((p) => p.status === 'PENDING').length,
-      pendingPlaces: mockAdminPlaces.filter((p) => p.status === 'PENDING').length,
+      pendingPartners: mockAdminPartners.filter((p) => p.status === "PENDING")
+        .length,
+      pendingPlaces: mockAdminPlaces.filter((p) => p.status === "PENDING")
+        .length,
       totalPlaces: mockAdminPlaces.length,
       totalReviews: mockAdminReviews.length,
-      totalSurveys: mockAdminSurveys.length,
+      totalSurveys: 0,
     };
   }
 }
@@ -76,17 +78,18 @@ export async function getAdminUsers(params?: {
   role?: string;
   status?: string;
 }): Promise<AdminUserItem[]> {
-  const query = new URLSearchParams({ page: '1', limit: '100' });
-  if (params?.search) query.set('search', params.search);
-  if (params?.role && params.role !== 'ALL') query.set('role', params.role);
-  if (params?.status && params.status !== 'ALL') query.set('status', params.status);
+  const query = new URLSearchParams({ page: "1", limit: "100" });
+  if (params?.search) query.set("search", params.search);
+  if (params?.role && params.role !== "ALL") query.set("role", params.role);
+  if (params?.status && params.status !== "ALL")
+    query.set("status", params.status);
 
   type UserRecord = {
     id: number;
     name: string;
     email: string;
-    role: AdminUserItem['role'];
-    status: AdminUserItem['status'];
+    role: AdminUserItem["role"];
+    status: AdminUserItem["status"];
     createdAt: string;
   };
 
@@ -94,16 +97,18 @@ export async function getAdminUsers(params?: {
   let page = 1;
   let totalPages = 1;
   do {
-    query.set('page', String(page));
+    query.set("page", String(page));
     const response = await apiRequest<UserRecord[]>(
       `/api/admin/users?${query.toString()}`,
       {},
       { allowMissingSuccess: true },
     );
     if (!response.data || !response.pagination) {
-      throw new Error('Phản hồi danh sách người dùng không hợp lệ.');
+      throw new Error("Phản hồi danh sách người dùng không hợp lệ.");
     }
-    users.push(...response.data.map((user) => ({ ...user, id: String(user.id) })));
+    users.push(
+      ...response.data.map((user) => ({ ...user, id: String(user.id) })),
+    );
     totalPages = response.pagination.totalPages;
     page += 1;
   } while (page <= totalPages);
@@ -117,12 +122,15 @@ export async function updateAdminUserStatus(
 ): Promise<{ success: boolean; message: string }> {
   await apiRequest<{ id: number; status: UserAccountStatus }>(
     `/api/admin/users/${encodeURIComponent(userId)}/status`,
-    { method: 'PATCH', body: JSON.stringify({ status }) },
+    { method: "PATCH", body: JSON.stringify({ status }) },
     { allowMissingSuccess: true },
   );
   return {
     success: true,
-    message: status === 'LOCKED' ? 'Đã khóa tài khoản thành công.' : 'Đã mở khóa tài khoản.',
+    message:
+      status === "LOCKED"
+        ? "Đã khóa tài khoản thành công."
+        : "Đã mở khóa tài khoản.",
   };
 }
 // GET /api/admin/partners — REAL API
@@ -204,7 +212,8 @@ export async function getAdminPartners(params?: {
     serviceType: r.service_type as "STAY" | "TABLE" | "TICKET",
     taxCode: r.tax_code ?? "",
     address: r.address ?? "",
-    status: (r.approval_status === "PENDING_APPROVAL" || r.approval_status === "PENDING"
+    status: (r.approval_status === "PENDING_APPROVAL" ||
+    r.approval_status === "PENDING"
       ? "PENDING"
       : r.approval_status === "ACTIVE" || r.approval_status === "APPROVED"
         ? "APPROVED"
@@ -254,7 +263,10 @@ export async function rejectAdminPartner(
       `/api/admin/partners/${partnerId}/approval`,
       {
         method: "PATCH",
-        body: JSON.stringify({ status: "REJECTED", reason: reason || "Không đủ điều kiện" }),
+        body: JSON.stringify({
+          status: "REJECTED",
+          reason: reason || "Không đủ điều kiện",
+        }),
       },
     );
     return {
@@ -288,7 +300,9 @@ export async function updateAdminPartnerStatus(
   );
   return {
     success: true,
-    message: response.message ?? (isLock ? "Đã khóa tài khoản đối tác." : "Đã mở khóa tài khoản đối tác."),
+    message:
+      response.message ??
+      (isLock ? "Đã khóa tài khoản đối tác." : "Đã mở khóa tài khoản đối tác."),
   };
 }
 
@@ -300,10 +314,12 @@ export async function getAdminPlaces(params?: {
 }): Promise<AdminPlaceItem[]> {
   try {
     const query = new URLSearchParams();
-    if (params?.category && params.category !== 'ALL') query.set('category', params.category);
-    if (params?.status && params.status !== 'ALL') query.set('status', params.status);
-    if (params?.search) query.set('search', params.search);
-    const url = `/api/admin/places${query.toString() ? `?${query.toString()}` : ''}`;
+    if (params?.category && params.category !== "ALL")
+      query.set("category", params.category);
+    if (params?.status && params.status !== "ALL")
+      query.set("status", params.status);
+    if (params?.search) query.set("search", params.search);
+    const url = `/api/admin/places${query.toString() ? `?${query.toString()}` : ""}`;
     const res = await apiRequest<AdminPlaceItem[]>(url);
     if (res.data) {
       return res.data;
@@ -335,18 +351,21 @@ export async function updateAdminPlaceStatus(
   placeId: string,
   status: PlaceStatus,
 ): Promise<{ success: boolean; message: string }> {
-  const normalizedStatus = status === 'APPROVED' ? 'ACTIVE' : status;
+  const normalizedStatus = status === "APPROVED" ? "ACTIVE" : status;
   try {
     const res = await apiRequest<{ success: boolean; message: string }>(
       `/api/admin/places/${placeId}/status`,
       {
-        method: 'PATCH',
+        method: "PATCH",
         body: JSON.stringify({ status: normalizedStatus }),
-      }
+      },
     );
     const place = mockAdminPlaces.find((p) => p.id === placeId);
     if (place) place.status = status;
-    return { success: true, message: res.message || 'Cập nhật trạng thái địa điểm thành công.' };
+    return {
+      success: true,
+      message: res.message || "Cập nhật trạng thái địa điểm thành công.",
+    };
   } catch (err) {
     const place = mockAdminPlaces.find((p) => p.id === placeId);
     if (place) place.status = status;
@@ -355,21 +374,26 @@ export async function updateAdminPlaceStatus(
 }
 
 // DELETE /api/admin/places/:id — REAL API + mock fallback
-export async function deleteAdminPlace(placeId: string): Promise<{ success: boolean; message: string }> {
+export async function deleteAdminPlace(
+  placeId: string,
+): Promise<{ success: boolean; message: string }> {
   try {
     const res = await apiRequest<{ success: boolean; message: string }>(
       `/api/admin/places/${placeId}`,
-      { method: 'DELETE' }
+      { method: "DELETE" },
     );
     const index = mockAdminPlaces.findIndex((p) => p.id === placeId);
     if (index !== -1) mockAdminPlaces.splice(index, 1);
-    return { success: true, message: res.message || 'Đã xóa địa điểm khỏi hệ thống.' };
+    return {
+      success: true,
+      message: res.message || "Đã xóa địa điểm khỏi hệ thống.",
+    };
   } catch (err) {
     const index = mockAdminPlaces.findIndex((p) => p.id === placeId);
     if (index !== -1) {
       mockAdminPlaces.splice(index, 1);
     }
-    return { success: true, message: 'Đã xóa địa điểm khỏi hệ thống.' };
+    return { success: true, message: "Đã xóa địa điểm khỏi hệ thống." };
   }
 }
 
@@ -448,45 +472,42 @@ export async function deleteAdminReview(
   return { success: true, message: response.message ?? "Đã xóa đánh giá." };
 }
 
-// TODO: GET /api/admin/surveys
+// Real SQL-backed survey management; errors are never replaced with mock data.
 export async function getAdminSurveys(): Promise<AdminSurveyItem[]> {
-  await delay();
-  return [...mockAdminSurveys];
+  const response = await apiRequest<AdminSurveyItem[]>("/api/admin/surveys");
+  return response.data ?? [];
 }
-
-// TODO: POST /api/admin/surveys
 export async function createAdminSurvey(
   survey: Omit<AdminSurveyItem, "id" | "createdAt" | "responseCount">,
 ): Promise<AdminSurveyItem> {
-  await delay();
-  const newSurvey: AdminSurveyItem = {
-    ...survey,
-    id: `sur-${Date.now()}`,
-    createdAt: new Date().toISOString(),
-    responseCount: 0,
-  };
-  mockAdminSurveys.unshift(newSurvey);
-  return newSurvey;
+  const response = await apiPost<{ id: number }>("/api/admin/surveys", survey);
+  const result = (await getAdminSurveys()).find(
+    (item) => item.id === String(response.data?.id),
+  );
+  if (!result)
+    throw new Error(
+      "Đã gửi yêu cầu nhưng chưa tải được khảo sát. Hãy tải lại danh sách.",
+    );
+  return result;
 }
-
-// TODO: PUT /api/admin/surveys/:id
 export async function updateAdminSurvey(
   id: string,
   survey: Partial<AdminSurveyItem>,
 ): Promise<AdminSurveyItem> {
-  await delay();
-  const target = mockAdminSurveys.find((s) => s.id === id);
-  if (!target) throw new Error("Không tìm thấy khảo sát");
-  Object.assign(target, survey);
-  return target;
+  await apiRequest(`/api/admin/surveys/${encodeURIComponent(id)}`, {
+    method: "PUT",
+    body: JSON.stringify(survey),
+  });
+  const result = (await getAdminSurveys()).find((item) => item.id === id);
+  if (!result) throw new Error("Chưa tải được khảo sát sau cập nhật.");
+  return result;
 }
-
-// TODO: DELETE /api/admin/surveys/:id
 export async function deleteAdminSurvey(
   id: string,
 ): Promise<{ success: boolean; message: string }> {
-  await delay();
-  const index = mockAdminSurveys.findIndex((s) => s.id === id);
-  if (index !== -1) mockAdminSurveys.splice(index, 1);
-  return { success: true, message: "Đã xóa khảo sát thành công." };
+  const result = await apiRequest(
+    `/api/admin/surveys/${encodeURIComponent(id)}`,
+    { method: "DELETE" },
+  );
+  return { success: true, message: result.message ?? "Đã lưu trữ khảo sát." };
 }

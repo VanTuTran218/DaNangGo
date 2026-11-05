@@ -13,6 +13,7 @@ import DataTable, { Column } from "@/components/ui/DataTable";
 import StatusBadge from "@/components/ui/StatusBadge";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { Check, Eye, EyeOff, Pencil, Trash2, Star, X, XCircle } from "lucide-react";
+import { AiModeration } from "@/components/ai/AiTools";
 import ReviewPhotoGrid from "@/components/places/ReviewPhotoGrid";
 
 export default function AdminReviewsPage() {
@@ -224,6 +225,8 @@ export default function AdminReviewsPage() {
           địa điểm.
         </p>
       </div>
+
+      <AiModeration key={(reviews ?? []).map(r => r.id).join(",")} ids={(reviews ?? []).map(review => Number(review.id)).filter(id => Number.isSafeInteger(id) && id > 0)} />
 
       {toast && (
         <div

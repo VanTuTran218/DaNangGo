@@ -1,0 +1,108 @@
+[
+  {
+    "key": "furama-resort-danang",
+    "hours": {
+      "checkIn": "14:00",
+      "checkOut": "11:00",
+      "sourceUrl": "https://furamavietnam.com/rack-rate-public-rate/",
+      "checkedOn": "2026-11-05"
+    },
+    "rooms": [],
+    "publicRates": [
+      {
+        "roomName": "Garden Superior",
+        "nightlyVnd": 8186000,
+        "includedGuests": 2,
+        "validFrom": "2026-01-01",
+        "validTo": "2026-12-31",
+        "conditions": "Giá niêm yết VND/phòng/đêm gồm phí phục vụ 5% và VAT; có thể có ngày không áp dụng, phụ thu và bữa tối bắt buộc dịp lễ. Số khách gồm trong giá không phải sức chứa tối đa. Chưa xác nhận phòng trống hoặc báo giá theo ngày ở.",
+        "sourceUrl": "https://furamavietnam.com/rack-rate-public-rate/",
+        "checkedOn": "2026-11-05"
+      }
+    ],
+    "notices": [
+      "Giá niêm yết công khai không phải báo giá đặt phòng; cần xác nhận theo ngày ở, số khách và phụ thu."
+    ]
+  },
+  {
+    "key": "hilton-da-nang",
+    "coordinates": {
+      "latitude": 16.07259,
+      "longitude": 108.22441,
+      "note": "Vị trí tòa nhà tham khảo từ OpenStreetMap qua Mapcarta; không xác nhận cổng đón khách.",
+      "sourceUrl": "https://mapcarta.com/36332298",
+      "checkedOn": "2026-11-05"
+    },
+    "hours": {
+      "checkIn": "15:00",
+      "checkOut": "12:00",
+      "sourceUrl": "https://www.hilton.com/en/hotels/daddvhi-hilton-da-nang/",
+      "checkedOn": "2026-11-05"
+    },
+    "rooms": [],
+    "publicRates": [],
+    "notices": [
+      "Giá phòng cần tra theo ngày ở và số khách; chưa tích hợp tồn phòng trực tiếp."
+    ]
+  },
+  {
+    "key": "hyatt-regency-danang",
+    "coordinates": {
+      "latitude": 16.01261,
+      "longitude": 108.26374,
+      "note": "Vị trí khu nghỉ dưỡng tham khảo từ OpenStreetMap qua Mapcarta; không xác nhận cổng đón khách.",
+      "sourceUrl": "https://mapcarta.com/32900158",
+      "checkedOn": "2026-11-05"
+    },
+    "rooms": [
+      {
+        "name": "Phòng khách sạn tiêu chuẩn",
+        "occupancyText": "Tiêu chuẩn 2 người lớn và 1 trẻ dưới 12 tuổi; gia đình 4 người được khuyến nghị 2 phòng hoặc căn hộ 2 phòng ngủ. Không quy đổi trẻ em thành người lớn.",
+        "sourceUrl": "https://www.hyatt.com/hyatt-regency/en-US/danhr-hyatt-regency-danang-resort-and-spa/faqs",
+        "checkedOn": "2026-11-05"
+      }
+    ],
+    "publicRates": [],
+    "notices": [
+      "Giá và khả năng kê giường phụ phải xác nhận theo hạng phòng; không suy ra sức chứa từ số giường."
+    ]
+  },
+  {
+    "key": "haian-beach-hotel-spa",
+    "coordinates": {
+      "latitude": 16.0530442,
+      "longitude": 108.2475282,
+      "note": "Tọa độ ghim địa điểm trong liên kết Google Maps do website khách sạn công bố; không dùng tâm khung bản đồ.",
+      "sourceUrl": "https://haianbeachhotelspa.com/vi/khach-san-view-bien/",
+      "checkedOn": "2026-11-05"
+    },
+    "rooms": [],
+    "publicRates": [],
+    "notices": [
+      "Nguồn công bố giờ nhận/trả phòng có mâu thuẫn; cần xác nhận trực tiếp với khách sạn trước khi lên lịch.",
+      "Chưa xác minh giá phòng và sức chứa từng hạng phòng."
+    ]
+  },
+  {
+    "key": "sala-danang-beach",
+    "rooms": [
+      {
+        "name": "Superior Partial Sea View",
+        "occupancyText": "Tối đa 2 khách; không mặc định có giường phụ.",
+        "sourceUrl": "https://salahotelgroup.com/rooms/superior-partial-sea-view/",
+        "checkedOn": "2026-11-05"
+      },
+      {
+        "name": "Family Suite Panaromic View",
+        "occupancyText": "Tối đa 4 khách; gồm 1 giường đôi và 2 giường đơn.",
+        "sourceUrl": "https://salahotelgroup.com/rooms/family-suite-panaromic-view/",
+        "checkedOn": "2026-11-05"
+      }
+    ],
+    "publicRates": [],
+    "notices": [
+      "Chưa đủ nguồn xác nhận tọa độ ghim và giờ nhận/trả phòng.",
+      "Giá và phòng trống chỉ được xác nhận sau khi cơ sở kiểm tra yêu cầu đặt phòng."
+    ]
+  }
+]

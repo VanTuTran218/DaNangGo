@@ -25,3 +25,11 @@ Backend hiện sử dụng Microsoft SQL Server (`mssql`). Các migration trong 
 
 ## Xác thực và lưu trữ lịch trình
 Hệ thống xác thực đã hoàn thiện với JWT HS256 (`sub` là numeric ID người dùng). Khi người dùng đã đăng nhập, API tạo lịch (`POST /api/itineraries`) và tải sở thích (`GET /api/itineraries/preferences`) tự động nhận diện người dùng qua HTTP cookie `access_token` hoặc header `Authorization: Bearer <token>`, lưu bản nháp và liên kết trực tiếp với `user_id` trong cơ sở dữ liệu.
+
+
+## Lịch sử AI và tương thích lưu lịch trình
+
+Chạy `npm run migrate:ai` trong `backend` để thêm cột DTO hội thoại và thực thi `013_chat_planner_storage.sql` và `014_planner_catalog_preferences.sql`. Migration giữ nguyên schema lịch trình gốc. Kho bản nháp web dùng namespace `planner`; nếu các bảng `dbo` đã có đúng cấu trúc web thì namespace này dùng view trỏ tới dữ liệu đó. Nếu `dbo.itineraries` vẫn có khóa `itinerary_id` của schema gốc thì tạo bảng bản nháp mới trong `planner`, không đổi tên/xóa hay tự chuyển dữ liệu cũ. Không chạy seed mẫu trong thao tác này.
+
+
+Migration khảo sát: chạy `npm run migrate:surveys` trong backend để áp dụng `015_survey_submission.sql` và khởi tạo hai bộ câu hỏi hệ thống. Script không tạo phiếu/câu trả lời giả; giữ nguyên dữ liệu có sẵn. Xem `docs/SURVEYS.md` để biết cách lưu ẩn danh, đa lựa chọn và thang điểm riêng.

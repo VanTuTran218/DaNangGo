@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { TIER_CONFIG } from "@/lib/constants/tiers";
 
@@ -15,16 +15,14 @@ const NAV_LINKS = [
   { href: "/amthuc", label: "Ẩm thực" },
   { href: "/diemdulich", label: "Điểm du lịch" },
   { href: "/bando", label: "Bản đồ" },
+  { href: "/chat", label: "Trợ lý AI" },
 ];
 
 
 export default function Navbar() {
   const pathname = usePathname();
-  const router = useRouter();
-  const [stickySearchText, setStickySearchText] = useState("");
   const [isAtTop, setIsAtTop] = useState(false);
   const [initialized, setInitialized] = useState(false);
-  const [showStickySearch, setShowStickySearch] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [exploreOpen, setExploreOpen] = useState(false);
   const [avatarDropdownOpen, setAvatarDropdownOpen] = useState(false);
@@ -45,7 +43,6 @@ export default function Navbar() {
         }
       }
       setIsAtTop(found);
-      setShowStickySearch(window.scrollY > window.innerHeight * 0.75);
       if (!initialized) setInitialized(true);
     }
     checkOverlay();
@@ -114,11 +111,11 @@ export default function Navbar() {
         aria-hidden="true"
       />
 
-      {/* ── CONTENT: grid 3 cột ── */}
-      <div className="relative z-10 max-w-7xl mx-auto px-6 w-full grid grid-cols-[1fr_auto_1fr] items-center">
+      {/* Logo, điều hướng và nhóm thao tác có khoảng cách riêng */}
+      <div className="relative z-10 mx-auto flex w-full max-w-[1440px] items-center gap-6 px-4 sm:px-6 xl:gap-8">
 
-        {/* ══ CỘT TRÁI: Logo + Sticky Search ══ */}
-        <div className="justify-self-start flex items-center gap-3 min-w-0">
+        {/* ══ LOGO ══ */}
+        <div className="flex shrink-0 items-center">
           <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
             <div className={`w-9 h-9 rounded-full bg-gradient-to-br from-cyan-400 to-teal-600 flex items-center justify-center shadow-md ${isAtTop ? "shadow-black/20" : "shadow-teal-500/30"}`}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
@@ -139,87 +136,27 @@ export default function Navbar() {
             </span>
           </Link>
 
-          {/* Sticky search — slide in sau vùng hero */}
-          <AnimatePresence>
-            {showStickySearch && (
-              <motion.div
-                initial={{ y: -16, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: -16, opacity: 0 }}
-                transition={{ duration: 0.22, ease: "easeOut" }}
-                className="hidden lg:flex w-44 xl:w-56 flex-shrink-0"
-              >
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    const query = stickySearchText.trim();
-                    if (!query) return;
 
-                    if (pathname === '/amthuc' || pathname === '/diemdulich') {
-                      router.push(`${pathname}?q=${encodeURIComponent(query)}`);
-                      return;
-                    }
-
-                    router.push(`/tim-kiem?q=${encodeURIComponent(query)}`);
-                  }}
-                  className="relative w-full"
-                >
-                  <input
-                    type="text"
-                    value={stickySearchText}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      setStickySearchText(val);
-                      if (pathname === '/diemdulich' || pathname === '/amthuc') {
-                        const url = val.trim() ? `${pathname}?q=${encodeURIComponent(val.trim())}` : pathname;
-                        router.replace(url, { scroll: false });
-                      }
-                    }}
-                    placeholder="Tìm điểm đến..."
-                    name="q"
-                    aria-label="Tìm điểm đến"
-                    className={`w-full border text-sm rounded-full px-4 py-1.5 focus:outline-none transition-colors ${
-                      isAtTop
-                        ? "bg-white/20 border-white/30 text-white placeholder-white/70 focus:border-white shadow-sm"
-                        : "bg-gray-100 border-gray-200 text-gray-700 placeholder-gray-400 focus:border-teal-400"
-                    }`}
-                  />
-                  <button
-                    type="submit"
-                    aria-label="Tìm kiếm"
-                    className={`absolute right-3 top-1/2 -translate-y-1/2 transition-colors ${
-                      isAtTop ? "text-white/70 hover:text-white" : "text-gray-400 hover:text-gray-600"
-                    }`}
-                    title="Tìm kiếm"
-                  >
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
-                    </svg>
-                  </button>
-                </form>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
 
-        {/* ══ CỘT GIỮA: Menu ngang (md+) ══ */}
+        {/* ══ ĐIỀU HƯỚNG: chia đều khoảng trống giữa các mục ══ */}
         <nav
-          className="justify-self-center hidden md:flex items-center gap-1 lg:gap-2 flex-shrink-0"
+          className="hidden min-w-0 flex-1 items-center justify-evenly gap-1 lg:flex xl:gap-2"
           aria-label="Main navigation"
         >
-          {/* Render 5 mục, ẩn 2 mục cuối trên màn hình nhỏ (chỉ hiện trên lg) */}
+          {/* Gộp các mục cuối vào Khám phá trên màn hình tablet ngang */}
           {NAV_LINKS.map((link, index) => {
             const isActive = link.href === "/" 
               ? pathname === "/" 
               : pathname?.startsWith(link.href);
             
-            const displayClass = index >= 3 ? "hidden lg:block" : "";
+            const displayClass = index >= 3 ? "hidden xl:block" : "";
 
             return (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`relative px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-300 group ${displayClass} ${
+                className={`relative shrink-0 whitespace-nowrap px-2 py-2 text-sm font-medium rounded-lg transition-colors duration-300 group xl:px-3 ${displayClass} ${
                   isActive ? textColor : `${subTextColor} ${hoverTextColor}`
                 }`}
               >
@@ -227,13 +164,13 @@ export default function Navbar() {
                 {isActive && (
                   <motion.span
                     layoutId="nav-underline"
-                    className={`absolute bottom-1 left-3 right-3 h-0.5 rounded-full ${isAtTop ? "bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]" : "bg-orange-400"}`}
+                    className={`absolute bottom-1 left-2 right-2 xl:left-3 xl:right-3 h-0.5 rounded-full ${isAtTop ? "bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]" : "bg-orange-400"}`}
                     transition={{ type: "spring", stiffness: 500, damping: 35 }}
                   />
                 )}
                 {!isActive && (
                   <span
-                    className={`absolute bottom-1 left-3 right-3 h-0.5 rounded-full scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left ${
+                    className={`absolute bottom-1 left-2 right-2 xl:left-3 xl:right-3 h-0.5 rounded-full scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left ${
                       isAtTop ? "bg-white/60" : "bg-gray-300"
                     }`}
                   />
@@ -242,8 +179,8 @@ export default function Navbar() {
             );
           })}
 
-          {/* Dropdown "Khám phá" — hiện trên md..lg khi "Điểm du lịch" và "Bản đồ" bị gộp */}
-          <div ref={exploreRef} className="relative lg:hidden">
+          {/* Dropdown Khám phá cho các mục được gộp trên tablet ngang */}
+          <div ref={exploreRef} className="relative shrink-0 xl:hidden">
             <button
               onClick={() => setExploreOpen(!exploreOpen)}
               className={`relative flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-300 ${subTextColor} ${hoverTextColor}`}
@@ -267,8 +204,10 @@ export default function Navbar() {
                   className="absolute top-full left-1/2 -translate-x-1/2 mt-1.5 w-44 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 overflow-hidden"
                 >
                   {[
+                    { href: "/amthuc", label: "Ẩm thực", icon: "🍜" },
                     { href: "/diemdulich", label: "Điểm du lịch", icon: "🏛️" },
                     { href: "/bando", label: "Bản đồ tương tác", icon: "🗺️" },
+                    { href: "/chat", label: "Trợ lý AI", icon: "✨" },
                   ].map((item) => (
                     <Link
                       key={item.href}
@@ -287,10 +226,10 @@ export default function Navbar() {
         </nav>
 
         {/* ══ CỘT PHẢI: CTA Desktop + Hamburger Mobile ══ */}
-        <div className="justify-self-end flex items-center gap-2.5">
+        <div className="ml-auto flex shrink-0 items-center gap-3">
 
           {/* Desktop CTA */}
-          <div className="hidden md:flex items-center gap-2.5">
+          <div className="hidden items-center gap-3 lg:flex">
             {/* Thêm lịch trình — nút chính */}
             <Link
               href="/lich-trinh/tao-moi"
@@ -404,6 +343,7 @@ export default function Navbar() {
                             <Link href="/ca-nhan?tab=offers" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-teal-600 transition-colors" onClick={() => setAvatarDropdownOpen(false)}>Ưu đãi thành viên VIP</Link>
                             <Link href="/lich-trinh" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-teal-600 transition-colors" onClick={() => setAvatarDropdownOpen(false)}>Lịch trình của tôi</Link>
                             <Link href="/ca-nhan?tab=reviews" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-teal-600 transition-colors" onClick={() => setAvatarDropdownOpen(false)}>Lịch sử đánh giá</Link>
+                            <Link href="/khao-sat" className="block px-4 py-2 text-sm font-semibold text-teal-700 hover:bg-teal-50 hover:text-teal-800 transition-colors" onClick={() => setAvatarDropdownOpen(false)}>Góp ý &amp; khảo sát</Link>
                             <Link href="/ca-nhan?tab=settings" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-teal-600 transition-colors" onClick={() => setAvatarDropdownOpen(false)}>Cài đặt tài khoản</Link>
                           </div>
                         </>
@@ -459,6 +399,7 @@ export default function Navbar() {
                             <Link href="/ca-nhan" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-teal-600 transition-colors" onClick={() => setAvatarDropdownOpen(false)}>Trang cá nhân</Link>
                             <Link href="/lich-trinh" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-teal-600 transition-colors" onClick={() => setAvatarDropdownOpen(false)}>Lịch trình của tôi</Link>
                             <Link href="/ca-nhan?tab=reviews" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-teal-600 transition-colors" onClick={() => setAvatarDropdownOpen(false)}>Lịch sử đánh giá</Link>
+                            <Link href="/khao-sat" className="block px-4 py-2 text-sm font-semibold text-teal-700 hover:bg-teal-50 hover:text-teal-800 transition-colors" onClick={() => setAvatarDropdownOpen(false)}>Góp ý &amp; khảo sát</Link>
                             <Link href="/ca-nhan?tab=settings" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-teal-600 transition-colors" onClick={() => setAvatarDropdownOpen(false)}>Cài đặt tài khoản</Link>
                           </div>
                         </>
@@ -476,9 +417,10 @@ export default function Navbar() {
 
           {/* Mobile: Hamburger only */}
           <button
-            className="flex md:hidden p-2"
+            className="flex lg:hidden p-2"
             onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label="Toggle menu"
+            aria-label="Mở menu điều hướng"
+            aria-expanded={mobileOpen}
           >
             <div className="flex flex-col justify-center w-5 h-5 gap-[5px]">
               <div
@@ -509,7 +451,7 @@ export default function Navbar() {
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.22 }}
-            className="relative z-10 md:hidden bg-white border-t border-gray-100 overflow-hidden shadow-xl"
+            className="relative z-10 lg:hidden bg-white border-t border-gray-100 overflow-hidden shadow-xl"
           >
             <nav className="flex flex-col px-5 py-4 gap-1">
               {NAV_LINKS.map((link) => {

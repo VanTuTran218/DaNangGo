@@ -1,9 +1,19 @@
-export type UserAccountStatus = 'ACTIVE' | 'LOCKED';
-export type PartnerApprovalStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'LOCKED';
-export type PlaceCategory = 'luutru' | 'amthuc' | 'diemdulich';
-export type PlaceStatus = 'PENDING' | 'APPROVED' | 'ACTIVE' | 'REJECTED' | 'HIDDEN' | 'LOCKED';
-export type ReviewStatus = 'PENDING' | 'APPROVED' | 'HIDDEN';
-export type QuestionType = 'STAR' | 'TEXT';
+export type UserAccountStatus = "ACTIVE" | "LOCKED";
+export type PartnerApprovalStatus =
+  | "PENDING"
+  | "APPROVED"
+  | "REJECTED"
+  | "LOCKED";
+export type PlaceCategory = "luutru" | "amthuc" | "diemdulich";
+export type PlaceStatus =
+  | "PENDING"
+  | "APPROVED"
+  | "ACTIVE"
+  | "REJECTED"
+  | "HIDDEN"
+  | "LOCKED";
+export type ReviewStatus = "PENDING" | "APPROVED" | "HIDDEN";
+export type QuestionType = "STAR" | "TEXT" | "CHOICE" | "NUMBER";
 
 export interface AdminDashboardStats {
   totalUsers: number;
@@ -79,6 +89,7 @@ export interface SurveyQuestion {
 export interface SurveySummary {
   questionId: string;
   averageStar?: number;
+  numericAverage?: number;
   totalAnswers: number;
   sampleResponses?: string[];
 }
@@ -87,6 +98,7 @@ export interface AdminSurveyItem {
   id: string;
   title: string;
   description: string;
+  isSystem?: boolean;
   questions: SurveyQuestion[];
   isActive: boolean;
   responseCount: number;

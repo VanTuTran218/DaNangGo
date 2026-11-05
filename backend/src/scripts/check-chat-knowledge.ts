@@ -1,0 +1,70 @@
+import assert from "node:assert/strict";
+import { randomUUID } from "node:crypto";
+import { connectDB, closeDB } from "../config/db";
+import { processUserMessage } from "../modules/chat/chat.service";
+import { conversationMessages } from "../modules/chat/chat.history";
+import type { ChatMessageDto } from "../modules/chat/chat.types";
+
+async function main() {
+  process.env.GEMINI_API_KEY = "";
+  await connectDB();
+  const results: { question: string; answer: string; hasPlan: boolean; cards: number; elapsedMs: number }[] = [];
+  try {
+    const guestId = randomUUID();
+    let sessionId: number | undefined;
+    const ask = async (question: string): Promise<ChatMessageDto> => {
+      const start = Date.now();
+      const response = await processUserMessage({ message: question, guestId, sessionId });
+      sessionId = response.sessionId;
+      results.push({ question, answer: response.message.content, hasPlan: Boolean(response.message.travelPlan), cards: response.message.places?.length ?? 0, elapsedMs: Date.now() - start });
+      return response.message;
+    };
+    const first = await ask("Có 3 triệu đi 1 ngày, ăn ngon, chụp ảnh, có chỗ nghỉ");
+    assert.equal(first.travelPlan, undefined);
+    assert.match(first.content, /tổng cho cả nhóm/);
+    const confirmed = await ask("2 người, tổng 3 triệu, không qua đêm");
+    assert.equal(confirmed.travelPlan?.budget, 3_000_000);
+    assert.equal(confirmed.travelPlan?.guestCount, 2);
+    assert.equal(confirmed.travelPlan?.costs.accommodation, 0);
+    assert.ok(!confirmed.travelPlan?.groups.some(group => group.title.startsWith("Lưu trú")));
+    const reserved = await ask("Giữ lại 500k dự phòng");
+    assert.equal(reserved.travelPlan?.budget, 3_000_000);
+    assert.equal(reserved.travelPlan?.costs.contingencyAllowance, 500_000);
+    assert.equal(reserved.travelPlan?.costs.remaining, 2_500_000 - (reserved.travelPlan?.costs.knownSubtotal ?? 0));
+    const taxi = await ask("Đi taxi");
+    assert.equal(taxi.travelPlan?.preferences?.transport, "taxi");
+    assert.equal(taxi.travelPlan?.costs.contingencyAllowance, 500_000);
+    const removed = await ask("Bỏ Cầu Rồng");
+    assert.ok(removed.travelPlan);
+    assert.ok(!JSON.stringify(removed.travelPlan?.groups).includes('"name":"Cầu Rồng"'));
+    for (let i = 0; i < 10; i++) await ask("Ưu tiên điểm check-in chụp hình");
+    const retained = await ask("Đổi giờ đến 10h");
+    assert.equal(retained.travelPlan?.costs.contingencyAllowance, 500_000);
+    assert.equal(retained.travelPlan?.budget, 3_000_000);
+    assert.equal(retained.travelPlan?.guestCount, 2);
+    assert.ok(!JSON.stringify(retained.travelPlan?.groups).includes('"name":"Cầu Rồng"'));
+    await ask("Bắt đầu lại");
+    const newTrip = await ask("Đi 2 ngày cho 1 người, tổng 2 triệu, khởi hành ngày mai");
+    assert.equal(newTrip.travelPlan?.costs.contingencyAllowance, 160_000);
+    assert.equal(newTrip.travelPlan?.preferences?.transport, undefined);
+    await ask("Tôi đã đặt khách sạn rồi");
+    const booked = await ask("Đi taxi");
+    assert.ok(booked.travelPlan);
+    assert.equal(booked.travelPlan?.costs.accommodation, 0);
+    assert.ok(!booked.travelPlan?.groups.some(group => group.title.startsWith("Lưu trú")));
+    const allergy = await ask("Tôi dị ứng đậu phộng, tìm quán Mì Quảng");
+    assert.equal(allergy.places, undefined);
+    assert.match(allergy.content, /chưa đưa thẻ/);
+    const again = await ask("Quán ăn ở Hải Châu");
+    assert.equal(again.places, undefined);
+    assert.match(again.content, /chưa xác minh/);
+    await ask("Bắt đầu lại");
+    const cleared = await ask("Quán ăn ở Hải Châu");
+    assert.ok(cleared.places?.length);
+    assert.ok(!cleared.content.includes("chưa đưa thẻ"));
+    const history = await conversationMessages(sessionId!, { guestId });
+    assert.ok(!JSON.stringify(history).includes("DANANGGO_ADVISOR"));
+    console.log(JSON.stringify({ status: "PASS", provider: "disabled", database: "read-only real catalog", persistence: "guest memory only; no seeded reviews/surveys", turns: results.length, results }, null, 2));
+  } finally { await closeDB(); }
+}
+main().catch(error => { console.error(error); process.exitCode = 1; });

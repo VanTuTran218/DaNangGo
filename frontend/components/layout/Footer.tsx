@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function Footer() {
   return (
     <footer className="bg-[#071a2e] text-white/70 pt-14 pb-8">
@@ -32,6 +34,7 @@ export default function Footer() {
           <div>
             <h4 className="text-white font-semibold text-sm mb-4">Tiện ích</h4>
             <ul className="space-y-2.5">
+              <li><Link href="/khao-sat" className="text-sm hover:text-white transition-colors">Góp ý & khảo sát</Link></li>
               {['Tạo lịch trình','Bản đồ thành phố','Thời tiết','Đặt vé online','Hỏi đáp'].map(l => (
                 <li key={l}><a href="#" className="text-sm hover:text-white transition-colors">{l}</a></li>
               ))}

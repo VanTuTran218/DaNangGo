@@ -1,0 +1,558 @@
+{
+  "createdAt": "2026-11-04T13:12:12.667Z",
+  "environment": "SQL local, tạm guest, không gửi phản hồi/đặt dịch vụ/lưu lịch trình",
+  "metrics": {
+    "model": "gemini-3-flash-preview",
+    "keyConfigured": true,
+    "activeRequests": 0,
+    "cooldownSeconds": 28,
+    "embeddingCooldownSeconds": 0,
+    "tasks": {
+      "chat": {
+        "calls": 5,
+        "success": 5,
+        "fallback": 0,
+        "retries": 0,
+        "cacheHits": 0,
+        "durationMs": 9355
+      },
+      "intent": {
+        "calls": 1,
+        "success": 1,
+        "fallback": 0,
+        "retries": 0,
+        "cacheHits": 0,
+        "durationMs": 1083
+      },
+      "rewrite": {
+        "calls": 1,
+        "success": 1,
+        "fallback": 0,
+        "retries": 1,
+        "cacheHits": 0,
+        "durationMs": 2082
+      },
+      "itinerary": {
+        "calls": 1,
+        "success": 0,
+        "fallback": 1,
+        "retries": 0,
+        "cacheHits": 0,
+        "durationMs": 0
+      },
+      "description": {
+        "calls": 1,
+        "success": 0,
+        "fallback": 1,
+        "retries": 0,
+        "cacheHits": 0,
+        "durationMs": 0
+      },
+      "embedding": {
+        "calls": 1,
+        "success": 1,
+        "fallback": 0,
+        "retries": 0,
+        "cacheHits": 0,
+        "durationMs": 412
+      }
+    },
+    "cacheEntries": 2
+  },
+  "rows": [
+    {
+      "id": 1,
+      "name": "Tham quan miễn phí",
+      "input": "Gợi ý các điểm tham quan miễn phí ở Đà Nẵng",
+      "status": "PASS",
+      "ms": 2464,
+      "result": {
+        "text": "Mình chọn 3 điểm tham quan có giá vé 0đ trong dữ liệu DaNangGo. Miễn phí vé không có nghĩa là miễn phí gửi xe hoặc các dịch vụ phát sinh.\n\nNếu muốn chụp hình, mình gợi ý dành buổi sáng hoặc cuối chiều và chừa thời gian nghỉ trưa. Đây là cách sắp xếp thời gian, không phải xác nhận giờ hoạt động của từng điểm.\n\nBạn muốn đi nửa ngày hay cả ngày, và di chuyển bằng xe máy hay ô tô?",
+        "places": [
+          {
+            "id": 102,
+            "name": "Bãi Biển Mỹ Khê",
+            "type": "ATTRACTION",
+            "price": "Miễn phí"
+          },
+          {
+            "id": 98,
+            "name": "Bán Đảo Sơn Trà & Chùa Linh Ứng",
+            "type": "ATTRACTION",
+            "price": "Miễn phí"
+          },
+          {
+            "id": 100,
+            "name": "Cầu Rồng & Cầu Tình Yêu Đà Nẵng",
+            "type": "ATTRACTION",
+            "price": "Miễn phí"
+          }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "name": "Ẩm thực/quận/giá",
+      "input": "Quán hải sản Sơn Trà dưới 300k",
+      "status": "PASS",
+      "ms": 1559,
+      "result": {
+        "text": "Mình chọn 1 quán ăn để bạn dễ so sánh ở Sơn Trà.\n\nBạn xem giá món ở từng quán trước; tổng hóa đơn còn tùy số món và số người. Nếu có món kiêng hoặc dị ứng, bạn nên trao đổi trực tiếp với quán.\n\nBạn đi mấy người và muốn dành khoảng bao nhiêu cho một bữa?",
+        "places": [
+          {
+            "id": 96,
+            "name": "Hải Sản Bé Mặn",
+            "type": "RESTAURANT",
+            "price": "70.000–180.000đ/món"
+          }
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "name": "Khẩu vị",
+      "input": "Gợi ý món ăn thanh đạm",
+      "status": "PASS",
+      "ms": 1838,
+      "result": {
+        "text": "Mình chọn 2 quán ăn để bạn dễ so sánh.\n\nBạn xem giá món ở từng quán trước; tổng hóa đơn còn tùy số món và số người. Nếu có món kiêng hoặc dị ứng, bạn nên trao đổi trực tiếp với quán.\n\nBạn đi mấy người và muốn dành khoảng bao nhiêu cho một bữa?\n\nKhẩu vị: Thanh đạm (theo nhãn món ăn trong dữ liệu). Bạn nên xác nhận cách nêm nếm với quán trước khi gọi món.",
+        "places": [
+          {
+            "id": 95,
+            "name": "Bún Chả Cá Hờn",
+            "type": "RESTAURANT",
+            "price": "40.000–45.000đ/món"
+          },
+          {
+            "id": 94,
+            "name": "Cơm Niêu Nhà Đỏ Đà Nẵng",
+            "type": "RESTAURANT",
+            "price": "35.000–95.000đ/món"
+          }
+        ]
+      }
+    },
+    {
+      "id": 4,
+      "name": "Khách sạn",
+      "input": "Khách sạn gần biển Mỹ Khê",
+      "status": "PASS",
+      "ms": 1883,
+      "result": {
+        "text": "Mình chọn 1 chỗ ở để bạn dễ so sánh ở Sơn Trà.\n\nGiá hiển thị là giá phòng trong dữ liệu, chưa xác nhận phòng trống hoặc phụ thu theo ngày. Nên ưu tiên khu vực gần những điểm bạn dự định đi để tiện di chuyển.\n\nBạn nhận phòng ngày nào, ở mấy đêm và có bao nhiêu khách?",
+        "places": [
+          {
+            "id": 330,
+            "name": "[Mẫu] Khách sạn Biển Xanh",
+            "type": "ACCOMMODATION",
+            "price": "Từ 630.000đ/đêm",
+            "distanceKm": 1.538313425321142
+          }
+        ]
+      }
+    },
+    {
+      "id": 5,
+      "name": "Lịch trình đầy đủ",
+      "input": "Đi 3N2Đ cùng bạn gái, thích biển và hải sản, tổng ngân sách 5tr5, khởi hành ngày mai.",
+      "status": "PASS",
+      "ms": 105,
+      "result": {
+        "text": "Mình lên trước lịch 3 ngày cho 2 người, tổng ngân sách bạn đưa ra 5.500.000đ. Lịch bên dưới chia sáng, trưa, chiều và tối, xen kẽ tham quan, ăn uống và nghỉ ngơi.\n\nBạn có thể nhắn “đổi sang điểm miễn phí”, “thêm check-in” hoặc “đổi khách sạn” để mình điều chỉnh trong cuộc trò chuyện này.",
+        "plan": {
+          "days": 3,
+          "guests": 2,
+          "budget": 5500000,
+          "date": "2026-11-05",
+          "periods": [
+            [
+              "Sáng",
+              "Trưa",
+              "Chiều",
+              "Tối"
+            ],
+            [
+              "Sáng",
+              "Trưa",
+              "Chiều",
+              "Tối"
+            ],
+            [
+              "Sáng",
+              "Trưa",
+              "Chiều",
+              "Tối"
+            ]
+          ],
+          "costs": {
+            "accommodation": 1800000,
+            "tickets": 200000,
+            "knownSubtotal": 2000000,
+            "foodAllowance": 1920000,
+            "remaining": 3500000,
+            "roomNote": "1 phòng × 2 đêm, tính theo loại phòng có tổng tiền phù hợp số khách, sức chứa 2 khách/phòng trong dữ liệu; chưa xác nhận phòng trống."
+          }
+        }
+      }
+    },
+    {
+      "id": 6,
+      "name": "Đổi khách sạn giữ ngữ cảnh",
+      "input": "Đổi khách sạn tiết kiệm hơn",
+      "status": "PASS",
+      "ms": 16,
+      "result": {
+        "text": "Mình lên trước lịch 3 ngày cho 2 người, tổng ngân sách bạn đưa ra 5.500.000đ. Lịch bên dưới chia sáng, trưa, chiều và tối, xen kẽ tham quan, ăn uống và nghỉ ngơi.\n\nBạn có thể nhắn “đổi sang điểm miễn phí”, “thêm check-in” hoặc “đổi khách sạn” để mình điều chỉnh trong cuộc trò chuyện này.",
+        "plan": {
+          "days": 3,
+          "guests": 2,
+          "budget": 5500000,
+          "date": "2026-11-05",
+          "periods": [
+            [
+              "Sáng",
+              "Trưa",
+              "Chiều",
+              "Tối"
+            ],
+            [
+              "Sáng",
+              "Trưa",
+              "Chiều",
+              "Tối"
+            ],
+            [
+              "Sáng",
+              "Trưa",
+              "Chiều",
+              "Tối"
+            ]
+          ],
+          "costs": {
+            "accommodation": 600000,
+            "tickets": 200000,
+            "knownSubtotal": 800000,
+            "foodAllowance": 1920000,
+            "remaining": 4700000,
+            "roomNote": "1 phòng × 2 đêm, tính theo loại phòng có tổng tiền phù hợp số khách, sức chứa 2 khách/phòng trong dữ liệu; chưa xác nhận phòng trống."
+          }
+        }
+      }
+    },
+    {
+      "id": 7,
+      "name": "Nhớ lịch trình sau nhiều lượt",
+      "input": "8 lần điều chỉnh liên tiếp rồi đổi khách sạn",
+      "status": "PASS",
+      "ms": 50,
+      "result": {
+        "text": "Mình lên trước lịch 3 ngày cho 2 người, tổng ngân sách bạn đưa ra 5.500.000đ. Lịch bên dưới chia sáng, trưa, chiều và tối, xen kẽ tham quan, ăn uống và nghỉ ngơi.\n\nBạn có thể nhắn “đổi sang điểm miễn phí”, “thêm check-in” hoặc “đổi khách sạn” để mình điều chỉnh trong cuộc trò chuyện này.",
+        "plan": {
+          "days": 3,
+          "guests": 2,
+          "budget": 5500000,
+          "date": "2026-11-05",
+          "periods": [
+            [
+              "Sáng",
+              "Trưa",
+              "Chiều",
+              "Tối"
+            ],
+            [
+              "Sáng",
+              "Trưa",
+              "Chiều",
+              "Tối"
+            ],
+            [
+              "Sáng",
+              "Trưa",
+              "Chiều",
+              "Tối"
+            ]
+          ],
+          "costs": {
+            "accommodation": 1800000,
+            "tickets": 200000,
+            "knownSubtotal": 2000000,
+            "foodAllowance": 1920000,
+            "remaining": 3500000,
+            "roomNote": "1 phòng × 2 đêm, tính theo loại phòng có tổng tiền phù hợp số khách, sức chứa 2 khách/phòng trong dữ liệu; chưa xác nhận phòng trống."
+          }
+        }
+      }
+    },
+    {
+      "id": 8,
+      "name": "Lịch thiếu thông tin",
+      "input": "Tôi muốn đi biển 2 ngày",
+      "status": "PASS",
+      "ms": 3,
+      "result": {
+        "text": "Mình lên trước lịch 2 ngày. Lịch bên dưới chia sáng, trưa, chiều và tối, xen kẽ tham quan, ăn uống và nghỉ ngơi.\n\nBạn bổ sung giúp mình những thông tin còn thiếu để chốt lịch sát hơn nhé.",
+        "plan": {
+          "days": 2,
+          "guests": null,
+          "budget": null,
+          "date": null,
+          "periods": [
+            [
+              "Sáng",
+              "Trưa",
+              "Chiều",
+              "Tối"
+            ],
+            [
+              "Sáng",
+              "Trưa",
+              "Chiều",
+              "Tối"
+            ]
+          ],
+          "costs": {
+            "accommodation": null,
+            "tickets": null,
+            "knownSubtotal": null,
+            "foodAllowance": null,
+            "remaining": null,
+            "roomNote": "Chưa đủ thông tin khách, giá phòng hoặc sức chứa để tính tiền lưu trú."
+          }
+        }
+      }
+    },
+    {
+      "id": 9,
+      "name": "Vượt phạm vi 3 ngày",
+      "input": "Lên lịch trình 7 ngày cho 2 người",
+      "status": "PASS",
+      "ms": 1,
+      "result": {
+        "text": "Gô hiện hỗ trợ lịch trình từ 1 đến 3 ngày. Bạn muốn lên trước lịch 3 ngày, hay chọn 1–2 ngày? Mình chưa tạo lịch cho yêu cầu vượt phạm vi này."
+      }
+    },
+    {
+      "id": 10,
+      "name": "GPS chưa cấp",
+      "input": "Quán ăn quanh vị trí tôi",
+      "status": "PASS",
+      "ms": 0,
+      "result": {
+        "text": "Bạn bấm Quanh vị trí tôi và cho phép truy cập vị trí để Gô tìm địa điểm gần bạn nhé. Bạn cũng có thể cho Gô biết quận muốn đến."
+      }
+    },
+    {
+      "id": 11,
+      "name": "GPS dùng tọa độ công khai",
+      "input": "Quán ăn quanh vị trí tôi, tâm Đà Nẵng, 2km",
+      "status": "PASS",
+      "ms": 1942,
+      "result": {
+        "text": "Mình chọn 4 quán ăn để bạn dễ so sánh.\n\nBạn xem giá món ở từng quán trước; tổng hóa đơn còn tùy số món và số người. Nếu có món kiêng hoặc dị ứng, bạn nên trao đổi trực tiếp với quán.\n\nBạn đi mấy người và muốn dành khoảng bao nhiêu cho một bữa?",
+        "places": [
+          {
+            "id": 92,
+            "name": "Bánh Xèo Bà Dưỡng",
+            "type": "RESTAURANT",
+            "price": "60.000–75.000đ/món",
+            "distanceKm": 1.8018062352516406
+          },
+          {
+            "id": 2,
+            "name": "Bánh Xèo Bà Ba",
+            "type": "RESTAURANT",
+            "price": null,
+            "distanceKm": 1.9153962684043002
+          },
+          {
+            "id": 94,
+            "name": "Cơm Niêu Nhà Đỏ Đà Nẵng",
+            "type": "RESTAURANT",
+            "price": "35.000–95.000đ/món",
+            "distanceKm": 1.1444342506104814
+          },
+          {
+            "id": 4,
+            "name": "Mì Hoành Thánh Tàu Bay",
+            "type": "RESTAURANT",
+            "price": null,
+            "distanceKm": 1.822348337345319
+          }
+        ]
+      }
+    },
+    {
+      "id": 12,
+      "name": "Ngoài chủ đề",
+      "input": "Viết hàm Python giải Dijkstra",
+      "status": "PASS",
+      "ms": 0,
+      "result": {
+        "text": "Mình chỉ hỗ trợ các câu hỏi về du lịch, ăn uống và lưu trú tại Đà Nẵng nhé. Bạn muốn tìm quán ăn, chỗ ở hay điểm tham quan nào?"
+      }
+    },
+    {
+      "id": 13,
+      "name": "Không bịa dữ liệu trực tiếp",
+      "input": "Thời tiết Đà Nẵng hôm nay thế nào?",
+      "status": "PASS",
+      "ms": 1086,
+      "result": {
+        "text": "Gô chưa tích hợp dữ liệu thời tiết trực tiếp nên chưa thể xác nhận dự báo hôm nay. Bạn nên kiểm tra dự báo địa phương trước khi đi. Nếu muốn, mình có thể gợi ý lịch có điểm trong nhà để bạn dự phòng khi trời mưa."
+      }
+    },
+    {
+      "id": 14,
+      "name": "Hiểu lại từ khóa",
+      "input": "homstay Mỹ Khê dưới 500k",
+      "status": "PASS",
+      "ms": 2085,
+      "result": {
+        "mode": "ai",
+        "original": "homstay Mỹ Khê dưới 500k",
+        "query": "homestay Mỹ Khê dưới 500k",
+        "notice": "Chỉ thay từ khóa khi bạn bấm sử dụng gợi ý; bộ lọc khác được giữ nguyên."
+      }
+    },
+    {
+      "id": 15,
+      "name": "Wizard điền lịch trình",
+      "input": "Đi 3N2Đ cùng bạn gái, ngân sách 5tr5 ngày mai",
+      "status": "PASS",
+      "ms": 3,
+      "result": {
+        "mode": "fallback",
+        "request": {
+          "days": 3,
+          "guests": 2,
+          "budget": 5500000,
+          "start_date": "2026-11-05",
+          "needs": [],
+          "interests": [],
+          "missing": [],
+          "off_topic": false
+        },
+        "notice": "Kiểm tra và xác nhận các trường đã điền. Hệ thống hỗ trợ tối đa 3 ngày; AI chưa tạo hoặc lưu lịch trình."
+      }
+    },
+    {
+      "id": 16,
+      "name": "Nháp mô tả",
+      "input": "Quán kiểm thử, bán mì Quảng, không gian nhỏ, có chỗ ngồi trong nhà.",
+      "status": "PASS",
+      "ms": 1,
+      "result": {
+        "mode": "fallback",
+        "description": "Bán mì Quảng. Không gian nhỏ. Có chỗ ngồi trong nhà.",
+        "missingInfo": [
+          "Kiểm tra thông tin trước khi gửi duyệt."
+        ],
+        "notice": "Bản nháp chưa được lưu. Chỉ áp dụng khi bạn xác nhận."
+      }
+    },
+    {
+      "id": 17,
+      "name": "Tổng hợp đánh giá",
+      "input": "Địa điểm #331",
+      "status": "LIMITED",
+      "ms": 23,
+      "result": {
+        "mode": "insufficient",
+        "totalReviews": 0,
+        "sampleCount": 0,
+        "summary": "Cần ít nhất 5 đánh giá đã duyệt để tổng hợp.",
+        "strengths": [],
+        "weaknesses": [],
+        "sentiment": {
+          "positive": 0,
+          "neutral": 0,
+          "negative": 0
+        },
+        "limited": "Chưa có ít nhất 5 đánh giá đã duyệt để kiểm tra tổng hợp thật"
+      }
+    },
+    {
+      "id": 18,
+      "name": "Địa điểm tương tự",
+      "input": "Địa điểm #331",
+      "status": "PASS",
+      "ms": 22,
+      "result": {
+        "method": "catalog",
+        "items": [
+          {
+            "id": 334,
+            "name": "[Mẫu] Homestay Hòa Vang",
+            "type": "ACCOMMODATION"
+          },
+          {
+            "id": 330,
+            "name": "[Mẫu] Khách sạn Biển Xanh",
+            "type": "ACCOMMODATION"
+          },
+          {
+            "id": 332,
+            "name": "[Mẫu] Resort Ngũ Hành Sơn",
+            "type": "ACCOMMODATION"
+          },
+          {
+            "id": 333,
+            "name": "[Mẫu] Khách sạn Thanh Khê",
+            "type": "ACCOMMODATION"
+          }
+        ]
+      }
+    },
+    {
+      "id": 19,
+      "name": "Nháp trả lời đối tác",
+      "input": "Đọc đánh giá thuộc đối tác, không gửi phản hồi",
+      "status": "LIMITED",
+      "ms": 0,
+      "result": {
+        "limited": "Không có đánh giá gắn đối tác để thử dữ liệu thật"
+      }
+    },
+    {
+      "id": 20,
+      "name": "Kiểm duyệt không tự đổi trạng thái",
+      "input": "Phân tích 1 đánh giá có sẵn",
+      "status": "LIMITED",
+      "ms": 0,
+      "result": {
+        "limited": "Chưa có dữ liệu đánh giá gắn đối tác"
+      }
+    },
+    {
+      "id": 21,
+      "name": "Khảo sát thật",
+      "input": "Đọc danh sách và báo cáo khảo sát",
+      "status": "LIMITED",
+      "ms": 13,
+      "result": {
+        "limited": "Không có khảo sát SQL để phân tích"
+      }
+    },
+    {
+      "id": 22,
+      "name": "Embedding nhà cung cấp",
+      "input": "Một văn bản công khai, không lưu vector SQL",
+      "status": "PASS",
+      "ms": 412,
+      "result": {
+        "dimensions": 768
+      }
+    },
+    {
+      "id": 23,
+      "name": "Lịch sử khách cách ly",
+      "input": "Người khác không đọc được phiên thử",
+      "status": "PASS",
+      "ms": 0,
+      "result": {
+        "ownConversations": 1,
+        "otherConversations": 0
+      }
+    }
+  ]
+}

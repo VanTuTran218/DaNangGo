@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { AiDescriptionAssistant } from '@/components/ai/AiTools';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { PartnerPlace, PartnerPlaceStatus } from '@/types/partner';
@@ -490,6 +491,7 @@ export default function PlaceForm({
                   placeholder="Giới thiệu không gian phục vụ, các món ăn đặc sắc làm nên thương hiệu, không gian biển, máy lạnh..."
                   className="w-full px-4 py-3 text-sm bg-slate-50 border border-slate-300 rounded-2xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/25 focus:border-teal-500 transition-all leading-relaxed"
                 />
+                {!isPlaceLocked && <AiDescriptionAssistant key={name} name={name} type={initialData?.category === 'luutru' ? 'stay' : initialData?.category === 'diemdulich' ? 'sight' : 'food'} admin={isAdminMode} onApply={setDescription} />}
               </div>
             </div>
           </FormSection>

@@ -27,6 +27,7 @@ import PlaceInfo from '@/components/places/PlaceInfo';
 import MenuSection from '@/components/places/MenuSection';
 import BookingSidebar from '@/components/places/BookingSidebar';
 import ReviewSection from '@/components/places/ReviewSection';
+import { AiReviewSummary } from '@/components/ai/AiTools';
 import SimilarPlacesSection from '@/components/places/SimilarPlacesSection';
 import PlaceCTA from '@/components/places/PlaceCTA';
 import SiteFooter from '@/components/places/SiteFooter';
@@ -441,6 +442,8 @@ export default function PlaceDetailPage() {
               placeName={place.name}
               imageUrl={galleryImages[0] || place.cover_image || ''}
             />
+
+            <AiReviewSummary key={place.place_id} placeId={place.place_id} />
 
             {/* 4.8. Carousel quán gần đây / quán tương tự */}
             <SimilarPlacesSection currentId={place.place_id} />

@@ -32,6 +32,10 @@ import { formatPriceRange } from "@/lib/mappers/place.mapper";
 import Reveal from "@/components/ui/Reveal";
 import AnimatedCounter from "@/components/ui/AnimatedCounter";
 import BudgetRecommendation from "@/components/home/BudgetRecommendation";
+import { useAuth } from "@/contexts/AuthContext";
+import { getManagedItineraries, type ManagedItineraryListItem } from "@/lib/api/itineraries";
+import SurveyInviteCard from "@/components/survey/SurveyInviteCard";
+import SurveyQuickSheet from "@/components/survey/SurveyQuickSheet";
 
 
 // ============================================================
@@ -226,6 +230,9 @@ type PlanKey = keyof typeof ITINERARY_PLANS;
 // ============================================================
 
 export default function HomePage() {
+  const { user } = useAuth();
+  const [completedItinerary, setCompletedItinerary] = useState<ManagedItineraryListItem | null>(null);
+  const [quickSheetOpen, setQuickSheetOpen] = useState(false);
   const [popularCards, setPopularCards] = useState(POPULAR_CARDS);
   const [likedCards, setLikedCards] = useState<Set<number>>(new Set());
   const [selectedPlan, setSelectedPlan] = useState<PlanKey>("3N2D");
@@ -269,6 +276,26 @@ export default function HomePage() {
       isMounted = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    let isMounted = true;
+    getManagedItineraries()
+      .then((items) => {
+        if (!isMounted) return;
+        const found = items.find((item) => {
+          if (item.status === 'DRAFT') return false;
+          const endDate = new Date(`${item.startDate}T00:00:00`);
+          endDate.setDate(endDate.getDate() + item.dayCount - 1);
+          return endDate.getTime() <= Date.now() - 24 * 60 * 60 * 1000;
+        });
+        if (found) setCompletedItinerary(found);
+      })
+      .catch(() => {});
+    return () => {
+      isMounted = false;
+    };
+  }, [user]);
 
   useEffect(() => {
     const handler = () => setShowScrollTop(window.scrollY > 400);
@@ -476,6 +503,18 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Lời mời khảo sát cho du khách đã có lịch trình hoàn thành */}
+      {completedItinerary && (
+        <section className="bg-gray-50 pt-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <SurveyInviteCard
+              itineraryId={completedItinerary.id}
+              itineraryTitle={completedItinerary.title}
+              onOpenQuickSheet={() => setQuickSheetOpen(true)}
+            />
+          </div>
+        </section>
+      )}
 
       {/* ============================================================
           3. POPULAR — "Được xem nhiều nhất tuần qua"
@@ -896,15 +935,23 @@ export default function HomePage() {
             exit={{ opacity: 0, y: 20, scale: 0.8 }}
             transition={{ duration: 0.25 }}
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            className="fixed bottom-8 right-8 z-40 w-12 h-12 bg-[#0f2942] hover:bg-[#1a3f5c] text-white rounded-full shadow-xl flex items-center justify-center hover:scale-110 active:scale-95 transition-transform"
+            className="fixed bottom-24 right-6 z-30 w-11 h-11 bg-[#0f2942]/90 hover:bg-[#1a3f5c] text-white rounded-full shadow-lg flex items-center justify-center hover:scale-110 active:scale-95 transition-all backdrop-blur-xs"
             aria-label="Lên đầu trang"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <path d="m18 15-6-6-6 6" />
             </svg>
           </motion.button>
         )}
       </AnimatePresence>
+
+      {completedItinerary && (
+        <SurveyQuickSheet
+          isOpen={quickSheetOpen}
+          onClose={() => setQuickSheetOpen(false)}
+          itineraryId={completedItinerary.id}
+        />
+      )}
     </>
   );
 }

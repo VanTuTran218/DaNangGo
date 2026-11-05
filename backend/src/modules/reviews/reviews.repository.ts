@@ -4,6 +4,7 @@ import type { ReviewImageUpload } from "./reviews.upload";
 export interface ReviewRow {
   review_id: number;
   reviewer_name: string;
+  partner_reply?: string | null;
   rating: number;
   comment: string;
   created_at: Date;
@@ -27,6 +28,7 @@ export interface AdminReviewRow {
   place_id: number;
   place_name: string;
   user_name: string;
+  partner_reply?: string | null;
   rating: number;
   comment: string | null;
   status: "PENDING" | "APPROVED" | "HIDDEN";
@@ -97,10 +99,12 @@ export async function findApprovedReviews(
     .input("place_id", sql.Int, placeId)
     .input("offset", sql.Int, offset)
     .input("limit", sql.Int, limit).query(`
-      SELECT r.review_id, u.full_name AS reviewer_name, r.rating, r.comment, r.created_at
+      SELECT r.review_id, u.full_name AS reviewer_name, r.rating, r.comment, r.created_at, rr.reply_text AS partner_reply
       FROM reviews r
       INNER JOIN users u ON u.user_id = r.user_id
-      WHERE r.place_id = @place_id AND r.status = 'APPROVED'
+      INNER JOIN places p ON p.place_id = r.place_id
+      LEFT JOIN dbo.partner_review_replies rr ON rr.review_id=r.review_id AND rr.partner_id=p.partner_id
+      WHERE p.status='ACTIVE' AND r.place_id = @place_id AND r.status = 'APPROVED'
       ORDER BY r.created_at DESC, r.review_id DESC
       OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY
     `);
@@ -245,10 +249,11 @@ export async function findUserReviews(
   const result = await getPool().request().input("user_id", sql.Int, userId)
     .query(`
       SELECT r.review_id, r.place_id, p.name AS place_name,
-        u.full_name AS user_name, r.rating, r.comment, r.status, r.created_at
+        u.full_name AS user_name, r.rating, r.comment, r.status, r.created_at, rr.reply_text AS partner_reply
       FROM reviews r
       INNER JOIN places p ON p.place_id = r.place_id
       INNER JOIN users u ON u.user_id = r.user_id
+      LEFT JOIN dbo.partner_review_replies rr ON rr.review_id=r.review_id AND rr.partner_id=p.partner_id
       WHERE r.user_id = @user_id
       ORDER BY r.created_at DESC, r.review_id DESC
     `);
@@ -421,6 +426,10 @@ export async function deleteReviewTx(
         "SELECT place_id FROM places WITH (UPDLOCK, HOLDLOCK) WHERE place_id = @place_id",
       );
 
+    await transaction.request().input("review_id", sql.Int, reviewId).query(`
+      IF OBJECT_ID('dbo.partner_review_replies','U') IS NOT NULL
+        DELETE FROM dbo.partner_review_replies WHERE review_id=@review_id;
+    `);
     const result = await transaction
       .request()
       .input("review_id", sql.Int, reviewId).query(`

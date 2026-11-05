@@ -13,6 +13,7 @@ import {
   Star,
   ArrowUpDown,
   Wallet,
+  Users,
   Shield,
   Clock,
   Headphones,
@@ -22,7 +23,13 @@ import {
 import Reveal from '@/components/ui/Reveal';
 import AnimatedCounter from '@/components/ui/AnimatedCounter';
 import HotelCard, { HotelData } from '@/components/places/HotelCard';
-import { getPlaces } from '@/lib/api/places';
+import {
+  getPlaces,
+  getDistricts,
+  getAmenities,
+  type MasterCategoryItem,
+  type PlaceSortOption,
+} from '@/lib/api/places';
 import SkeletonCard from '@/components/ui/SkeletonCard';
 import PriceRangeSlider from '@/components/ui/PriceRangeSlider';
 
@@ -61,8 +68,24 @@ const HOTELS: HotelData[] = [
 ];
 
 const TOTAL_DISPLAY = 128; // Số hiển thị trên UI (thực tế demo 24 card)
-const AREAS = ['Tất cả', 'Biển Mỹ Khê', 'Sơn Trà', 'Trung tâm', 'Non Nước', 'Hải Châu'];
-const AMENITY_OPTIONS = ['Gần biển', 'Hồ bơi vô cực', 'Spa', 'Bao gồm bữa sáng', 'Rooftop bar', 'Pet friendly'];
+const DEFAULT_DISTRICTS: MasterCategoryItem[] = [
+  { id: 1, name: 'Hải Châu' },
+  { id: 2, name: 'Sơn Trà' },
+  { id: 3, name: 'Ngũ Hành Sơn' },
+  { id: 4, name: 'Thanh Khê' },
+  { id: 5, name: 'Liên Chiểu' },
+  { id: 6, name: 'Cẩm Lệ' },
+  { id: 7, name: 'Hòa Vang' },
+];
+const DEFAULT_AMENITIES: MasterCategoryItem[] = [
+  { id: 1, name: 'Wi-Fi miễn phí' },
+  { id: 2, name: 'Hồ bơi' },
+  { id: 3, name: 'Bữa sáng' },
+  { id: 4, name: 'Điều hòa' },
+  { id: 5, name: 'Đưa đón sân bay' },
+  { id: 6, name: 'Chỗ đậu xe' },
+  { id: 7, name: 'Gần biển' },
+];
 const HOTELS_PER_PAGE = 6;
 
 const TRUST_BADGES = [
@@ -91,60 +114,124 @@ function SpinnerDots() {
 export default function LuuTruPage() {
   const prefersReduced = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const [likedHotels, setLikedHotels] = useState<Set<number>>(new Set());
-  const [filterArea, setFilterArea] = useState('Tất cả');
-  const [filterRating, setFilterRating] = useState(0);
+  const [districts, setDistricts] = useState<MasterCategoryItem[]>(DEFAULT_DISTRICTS);
+  const [amenitiesList, setAmenitiesList] = useState<MasterCategoryItem[]>(DEFAULT_AMENITIES);
+  const [filterDistrictId, setFilterDistrictId] = useState<number>(0);
+  const [filterRating, setFilterRating] = useState<number>(0);
+  const [filterCapacity, setFilterCapacity] = useState<number>(0);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000000]);
-  const [filterAmenities, setFilterAmenities] = useState<string[]>([]);
+  const [filterAmenityIds, setFilterAmenityIds] = useState<number[]>([]);
   const [sortBy, setSortBy] = useState<'recommended' | 'price_asc' | 'price_desc' | 'rating'>('recommended');
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [liveHotels, setLiveHotels] = useState<HotelData[]>([]);
 
-  // Gọi API Backend lấy danh sách lưu trú thật
+  // Tải danh mục Quận và Tiện nghi từ Backend
   useEffect(() => {
     let isMounted = true;
-    setIsLoading(true);
-    getPlaces({ type: 'ACCOMMODATION', limit: 50 })
-      .then((res) => {
-        if (!isMounted || !res?.items?.length) return;
-        const live: HotelData[] = res.items.map((item: any) => ({
-          id: item.place_id,
-          name: item.name,
-          category:
-            item.accommodation_type === 'RESORT'
-              ? 'KHU NGHỈ DƯỠNG'
-              : item.accommodation_type === 'HOMESTAY'
-              ? 'BOUTIQUE HOMESTAY'
-              : 'KHÁCH SẠN',
-          badgeColor:
-            item.accommodation_type === 'RESORT'
-              ? 'bg-purple-600'
-              : item.accommodation_type === 'HOMESTAY'
-              ? 'bg-pink-500'
-              : 'bg-blue-500',
-          badgePulse: (item.avg_rating ?? 0) >= 4.8,
-          location: item.district_name
-            ? item.district_name + ', Đà Nẵng'
-            : item.address || 'Đà Nẵng',
-          rating: item.avg_rating ?? 4.5,
-          reviews: item.review_count ?? 0,
-          pricePerNight: item.price_min ?? 500000,
-          originalPrice: item.price_max ?? 800000,
-          img:
-            item.cover_image ||
-            'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=600&q=80',
-          amenities: ['Tiện nghi đầy đủ', 'WiFi miễn phí'],
-          amenityIcon: '🏨',
-          tags: [item.district_name || 'Đà Nẵng'],
-          isLiked: false,
-        }));
-        // Merge: ưu tiên dữ liệu thật, giữ lại mock chưa có trong live
-        const liveIds = new Set(live.map((h) => h.id));
-        const extra = HOTELS.filter((h) => !liveIds.has(h.id));
-        setLiveHotels([...live, ...extra]);
+    getDistricts()
+      .then((list) => {
+        if (isMounted && list.length > 0) setDistricts(list);
       })
-      .catch((e) => {
-        // Fallback: dùng toàn bộ HOTELS mẫu, không báo lỗi UI
+      .catch(() => {});
+    getAmenities()
+      .then((list) => {
+        if (isMounted && list.length > 0) setAmenitiesList(list);
+      })
+      .catch(() => {});
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Gọi API Backend GET /api/places?type=ACCOMMODATION với đầy đủ tham số lọc
+  useEffect(() => {
+    const controller = new AbortController();
+    let isMounted = true;
+    setIsLoading(true);
+
+    const sortParam: PlaceSortOption =
+      sortBy === 'price_asc'
+        ? 'price_asc'
+        : sortBy === 'price_desc'
+        ? 'price_desc'
+        : sortBy === 'rating'
+        ? 'rating_desc'
+        : 'newest';
+
+    getPlaces(
+      {
+        type: 'ACCOMMODATION',
+        district_id: filterDistrictId > 0 ? filterDistrictId : undefined,
+        min_rating: filterRating > 0 ? filterRating : undefined,
+        min_price: priceRange[0] > 0 ? priceRange[0] : undefined,
+        max_price: priceRange[1] < 10000000 ? priceRange[1] : undefined,
+        capacity: filterCapacity > 0 ? filterCapacity : undefined,
+        amenity_ids: filterAmenityIds.length > 0 ? filterAmenityIds : undefined,
+        sort: sortParam,
+        page: 1,
+        limit: 50,
+      },
+      controller.signal,
+    )
+      .then((res) => {
+        if (!isMounted) return;
+        const live: HotelData[] = (res.items || []).map((item) => {
+          const priceMin = item.price_min ?? 500000;
+          const origPrice =
+            item.original_price && item.original_price >= priceMin
+              ? item.original_price
+              : item.price_max && item.price_max > priceMin
+              ? item.price_max
+              : Math.round(priceMin * 1.2);
+          const itemAmenities =
+            item.amenity_names && item.amenity_names.length > 0
+              ? item.amenity_names
+              : ['Wi-Fi miễn phí', 'Điều hòa'];
+          return {
+            id: item.place_id,
+            name: item.name,
+            category:
+              item.accommodation_type === 'RESORT'
+                ? 'KHU NGHỈ DƯỠNG'
+                : item.accommodation_type === 'HOMESTAY'
+                ? 'BOUTIQUE HOMESTAY'
+                : item.accommodation_type === 'HOSTEL'
+                ? 'HOSTEL'
+                : item.accommodation_type === 'APARTMENT'
+                ? 'CĂN HỘ NGHỈ DƯỠNG'
+                : 'KHÁCH SẠN',
+            badgeColor:
+              item.accommodation_type === 'RESORT'
+                ? 'bg-purple-600'
+                : item.accommodation_type === 'HOMESTAY'
+                ? 'bg-pink-500'
+                : item.accommodation_type === 'HOSTEL'
+                ? 'bg-teal-500'
+                : item.accommodation_type === 'APARTMENT'
+                ? 'bg-orange-500'
+                : 'bg-blue-500',
+            badgePulse: (item.avg_rating ?? 0) >= 4.8,
+            location: item.district_name
+              ? item.district_name + ', Đà Nẵng'
+              : item.address || 'Đà Nẵng',
+            rating: Number((item.avg_rating ?? 4.5).toFixed(1)),
+            reviews: item.review_count ?? 0,
+            pricePerNight: priceMin,
+            originalPrice: origPrice,
+            img:
+              item.cover_image ||
+              'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=600&q=80',
+            amenities: itemAmenities,
+            amenityIcon: '🏨',
+            tags: [item.district_name || 'Đà Nẵng', ...itemAmenities],
+            isLiked: false,
+          };
+        });
+        setLiveHotels(live);
+      })
+      .catch((e: any) => {
+        if (e?.name === 'AbortError') return;
         console.error(e);
       })
       .finally(() => {
@@ -152,10 +239,12 @@ export default function LuuTruPage() {
           setIsLoading(false);
         }
       });
+
     return () => {
       isMounted = false;
+      controller.abort();
     };
-  }, []);
+  }, [filterDistrictId, filterRating, filterCapacity, priceRange, filterAmenityIds, sortBy]);
   const [aiBudget, setAiBudget] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
   const [showAiSuggestion, setShowAiSuggestion] = useState(false);
@@ -164,13 +253,9 @@ export default function LuuTruPage() {
   const { scrollYProgress } = useScroll({ target: bannerRef, offset: ['start start', 'end start'] });
   const yImage = useTransform(scrollYProgress, [0, 1], ['0%', '30%']);
 
-
-
   const applyFilter = useCallback((fn: () => void) => {
-    setIsLoading(true);
     fn();
     setCurrentPage(1);
-    setTimeout(() => setIsLoading(false), 600);
   }, []);
 
   const toggleLike = (id: number) => {
@@ -181,60 +266,92 @@ export default function LuuTruPage() {
     });
   };
 
-  const toggleAmenity = (a: string) => {
+  const toggleAmenity = (amenityId: number) => {
     applyFilter(() => {
-      setFilterAmenities((prev) =>
-        prev.includes(a) ? prev.filter((x) => x !== a) : [...prev, a]
+      setFilterAmenityIds((prev) =>
+        prev.includes(amenityId) ? prev.filter((x) => x !== amenityId) : [...prev, amenityId]
       );
     });
   };
 
   const clearFilters = () => {
     applyFilter(() => {
-      setFilterArea('Tất cả');
+      setFilterDistrictId(0);
       setFilterRating(0);
+      setFilterCapacity(0);
       setPriceRange([0, 10000000]);
-      setFilterAmenities([]);
+      setFilterAmenityIds([]);
       setSortBy('recommended');
     });
   };
 
-  // ── Filtering + sorting ──────────────────────────────────────────────────────
-  let filtered = (liveHotels.length > 0 ? liveHotels : HOTELS).filter((h) => {
-    if (filterArea !== 'Tất cả' && !h.location.includes(filterArea)) return false;
+  // ── Gộp dữ liệu từ API (đã lọc qua SQL Server) + danh sách mẫu HOTELS chưa trùng tên ──
+  const selectedDistrictName = districts.find((d) => d.id === filterDistrictId)?.name || '';
+  const selectedAmenityNames = amenitiesList
+    .filter((a) => filterAmenityIds.includes(a.id))
+    .map((a) => a.name);
+
+  const liveNameSet = new Set(liveHotels.map((h) => h.name.trim().toLowerCase()));
+  const liveIdSet = new Set(liveHotels.map((h) => h.id));
+
+  const matchStaticHotel = (h: HotelData): boolean => {
+    if (selectedDistrictName) {
+      const loc = h.location.toLowerCase();
+      const dName = selectedDistrictName.toLowerCase();
+      const matchDistrict =
+        loc.includes(dName) ||
+        (dName === 'hải châu' && loc.includes('trung tâm')) ||
+        (dName === 'sơn trà' && loc.includes('mỹ khê')) ||
+        (dName === 'ngũ hành sơn' && (loc.includes('non nước') || loc.includes('mỹ khê')));
+      if (!matchDistrict) return false;
+    }
     if (filterRating > 0 && h.rating < filterRating) return false;
     if (h.pricePerNight < priceRange[0] || h.pricePerNight > priceRange[1]) return false;
-    if (filterAmenities.length > 0) {
-      const hasAny = filterAmenities.some((a) =>
-        h.tags.some((t) => t.toLowerCase().includes(a.toLowerCase()))
-      );
-      if (!hasAny) return false;
+    if (filterCapacity >= 6 && !h.category.includes('NGHỈ DƯỠNG')) return false;
+    if (selectedAmenityNames.length > 0) {
+      const textPool = [...h.amenities, ...h.tags, h.category, h.location].join(' ').toLowerCase();
+      const hasAll = selectedAmenityNames.every((aName) => {
+        const lower = aName.toLowerCase();
+        if (lower.includes('wi-fi') || lower.includes('điều hòa')) return true;
+        if (lower.includes('hồ bơi')) return textPool.includes('hồ bơi') || textPool.includes('pool');
+        if (lower.includes('bữa sáng')) return textPool.includes('bữa sáng') || textPool.includes('breakfast') || textPool.includes('buffet');
+        if (lower.includes('gần biển')) return textPool.includes('biển') || textPool.includes('mỹ khê') || textPool.includes('non nước');
+        if (lower.includes('sân bay')) return h.pricePerNight >= 1500000 || textPool.includes('đưa đón');
+        if (lower.includes('đậu xe')) return !h.category.includes('HOMESTAY');
+        return textPool.includes(lower);
+      });
+      if (!hasAll) return false;
     }
     return true;
-  });
+  };
+
+  const extraStaticHotels = HOTELS.filter(
+    (h) => !liveNameSet.has(h.name.trim().toLowerCase()) && matchStaticHotel(h)
+  );
+
+  let combinedHotels = [...liveHotels, ...extraStaticHotels];
 
   if (sortBy === 'price_asc')
-    filtered = [...filtered].sort((a, b) => a.pricePerNight - b.pricePerNight);
+    combinedHotels = [...combinedHotels].sort((a, b) => a.pricePerNight - b.pricePerNight);
   else if (sortBy === 'price_desc')
-    filtered = [...filtered].sort((a, b) => b.pricePerNight - a.pricePerNight);
+    combinedHotels = [...combinedHotels].sort((a, b) => b.pricePerNight - a.pricePerNight);
   else if (sortBy === 'rating')
-    filtered = [...filtered].sort((a, b) => b.rating - a.rating);
+    combinedHotels = [...combinedHotels].sort((a, b) => b.rating - a.rating);
 
-  const totalPages = Math.ceil(filtered.length / HOTELS_PER_PAGE);
-  const paginated = filtered.slice(
+  const totalResults = combinedHotels.length;
+  const totalPages = Math.max(1, Math.ceil(totalResults / HOTELS_PER_PAGE));
+  const paginated = combinedHotels.slice(
     (currentPage - 1) * HOTELS_PER_PAGE,
     currentPage * HOTELS_PER_PAGE
   );
 
   const changePage = (p: number) => {
-    setIsLoading(true);
     setCurrentPage(p);
     setTimeout(() => {
-      setIsLoading(false);
       document
         .getElementById('hotel-grid')
         ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 400);
+    }, 100);
   };
 
   const handleAI = () => {
@@ -247,9 +364,10 @@ export default function LuuTruPage() {
   };
 
   const hasActiveFilters =
-    filterArea !== 'Tất cả' ||
+    filterDistrictId > 0 ||
     filterRating > 0 ||
-    filterAmenities.length > 0 ||
+    filterCapacity > 0 ||
+    filterAmenityIds.length > 0 ||
     priceRange[0] > 0 ||
     priceRange[1] < 10000000;
 
@@ -343,21 +461,22 @@ export default function LuuTruPage() {
         <Reveal delay={0.1}>
           <div className="bg-white rounded-2xl shadow-xl p-5 sm:p-6 border border-gray-100">
             {/* Row 1: dropdowns + slider */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-5">
 
-              {/* Khu vực */}
+              {/* Quận / Khu vực */}
               <div>
                 <label className="flex items-center gap-1.5 text-xs font-medium text-gray-700 mb-1.5">
                   <MapPin size={12} className="text-teal-500" />
-                  Khu vực
+                  Quận / Khu vực
                 </label>
                 <select
-                  value={filterArea}
-                  onChange={(e) => applyFilter(() => setFilterArea(e.target.value))}
+                  value={filterDistrictId}
+                  onChange={(e) => applyFilter(() => setFilterDistrictId(Number(e.target.value)))}
                   className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400 transition-all bg-gray-50"
                 >
-                  {AREAS.map((a) => (
-                    <option key={a} value={a}>{a}</option>
+                  <option value={0}>Tất cả quận</option>
+                  {districts.map((d) => (
+                    <option key={d.id} value={d.id}>{d.name}</option>
                   ))}
                 </select>
               </div>
@@ -366,7 +485,7 @@ export default function LuuTruPage() {
               <div>
                 <label className="flex items-center gap-1.5 text-xs font-medium text-gray-700 mb-1.5">
                   <Star size={12} className="text-yellow-500" />
-                  Hạng đánh giá
+                  Đánh giá tối thiểu
                 </label>
                 <select
                   value={filterRating}
@@ -374,9 +493,29 @@ export default function LuuTruPage() {
                   className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400 transition-all bg-gray-50"
                 >
                   <option value={0}>Tất cả</option>
+                  <option value={3.5}>3.5+</option>
                   <option value={4}>4.0+</option>
                   <option value={4.5}>4.5+</option>
                   <option value={4.8}>4.8+</option>
+                </select>
+              </div>
+
+              {/* Sức chứa phòng */}
+              <div>
+                <label className="flex items-center gap-1.5 text-xs font-medium text-gray-700 mb-1.5">
+                  <Users size={12} className="text-cyan-600" />
+                  Sức chứa phòng
+                </label>
+                <select
+                  value={filterCapacity}
+                  onChange={(e) => applyFilter(() => setFilterCapacity(Number(e.target.value)))}
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400 transition-all bg-gray-50"
+                >
+                  <option value={0}>Tất cả sức chứa</option>
+                  <option value={1}>Từ 1 khách/phòng</option>
+                  <option value={2}>Từ 2 khách/phòng</option>
+                  <option value={4}>Từ 4 khách/phòng (Gia đình)</option>
+                  <option value={6}>Từ 6 khách/phòng (Nhóm)</option>
                 </select>
               </div>
 
@@ -391,7 +530,7 @@ export default function LuuTruPage() {
                   onChange={(e) => applyFilter(() => setSortBy(e.target.value as typeof sortBy))}
                   className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400 transition-all bg-gray-50"
                 >
-                  <option value="recommended">Đề xuất</option>
+                  <option value="recommended">Mới nhất / Đề xuất</option>
                   <option value="price_asc">Giá thấp đến cao</option>
                   <option value="price_desc">Giá cao đến thấp</option>
                   <option value="rating">Đánh giá cao nhất</option>
@@ -418,14 +557,14 @@ export default function LuuTruPage() {
 
             {/* Row 2: amenity chips */}
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-medium text-gray-500 mr-1">Tiện ích ưu tiên:</span>
+              <span className="text-xs font-medium text-gray-500 mr-1">Tiện nghi:</span>
               <LayoutGroup>
-                {AMENITY_OPTIONS.map((a) => {
-                  const isActive = filterAmenities.includes(a);
+                {amenitiesList.map((a) => {
+                  const isActive = filterAmenityIds.includes(a.id);
                   return (
                     <button
-                      key={a}
-                      onClick={() => toggleAmenity(a)}
+                      key={a.id}
+                      onClick={() => toggleAmenity(a.id)}
                       className={`relative text-xs px-3 py-1.5 rounded-full font-medium transition-all duration-200 border ${
                         isActive
                           ? 'text-white border-teal-500 shadow-sm'
@@ -434,12 +573,12 @@ export default function LuuTruPage() {
                     >
                       {isActive && (
                         <motion.div
-                          layoutId="active-filter-luutru"
+                          layoutId={`active-filter-luutru-${a.id}`}
                           className="absolute inset-0 rounded-[inherit] bg-teal-500"
                           transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                         />
                       )}
-                      <span className="relative z-10">{a}</span>
+                      <span className="relative z-10">{a.name}</span>
                     </button>
                   );
                 })}
@@ -534,8 +673,8 @@ export default function LuuTruPage() {
         {/* Results bar */}
         <div className="flex items-center justify-between mb-4">
           <p className="text-sm text-gray-500">
-            {filtered.length > 0
-              ? `Hiển thị ${(currentPage - 1) * HOTELS_PER_PAGE + 1}–${Math.min(currentPage * HOTELS_PER_PAGE, filtered.length)} trong ${filtered.length} kết quả`
+            {totalResults > 0
+              ? `Hiển thị ${(currentPage - 1) * HOTELS_PER_PAGE + 1}–${Math.min(currentPage * HOTELS_PER_PAGE, totalResults)} trong ${totalResults} kết quả`
               : 'Không có kết quả'}
           </p>
           {hasActiveFilters && (
@@ -561,7 +700,7 @@ export default function LuuTruPage() {
                   <SkeletonCard key={i} />
                 ))}
               </motion.div>
-            ) : filtered.length === 0 ? (
+            ) : paginated.length === 0 ? (
               <motion.div key="empty" className="text-center py-20">
                 <p className="text-gray-400 text-lg mb-2">Không tìm thấy khách sạn phù hợp</p>
                 <button
@@ -573,7 +712,7 @@ export default function LuuTruPage() {
               </motion.div>
             ) : (
               <motion.div
-                key={`page-${currentPage}-${filterArea}-${sortBy}-${filterRating}`}
+                key={`page-${currentPage}-${filterDistrictId}-${filterCapacity}-${sortBy}-${filterRating}-${filterAmenityIds.join(',')}`}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -582,7 +721,7 @@ export default function LuuTruPage() {
               >
                 {paginated.map((hotel, i) => (
                   <motion.div
-                    key={hotel.id}
+                    key={`${hotel.id}-${hotel.name}`}
                     initial={{ opacity: 0, y: 24 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: prefersReduced ? 0 : i * 0.07, ease: [0.25, 0.46, 0.45, 0.94] }}

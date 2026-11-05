@@ -23,6 +23,16 @@ export const ALLOWED_SORT_OPTIONS: PlaceSortOption[] = [
   'newest',
 ];
 
+export type AccommodationType = 'HOTEL' | 'HOMESTAY' | 'RESORT' | 'HOSTEL' | 'APARTMENT';
+
+export const ALLOWED_ACCOMMODATION_TYPES: AccommodationType[] = [
+  'HOTEL',
+  'HOMESTAY',
+  'RESORT',
+  'HOSTEL',
+  'APARTMENT',
+];
+
 export interface SearchPlacesQuery {
   q?: string;
   type?: PlaceType;
@@ -34,6 +44,10 @@ export interface SearchPlacesQuery {
   taste_id?: number;
   category_id?: number;
   open_now?: boolean;
+  // Các điều kiện lọc riêng của Lưu trú (ACCOMMODATION - phần Tín phụ trách)
+  capacity?: number;
+  amenity_ids?: string;
+  accommodation_type?: AccommodationType;
   sort?: PlaceSortOption;
   page: number;
   limit: number;
@@ -214,6 +228,62 @@ export function validateSearchPlacesQuery(
     } else {
       return { error: 'open_now phải là giá trị boolean (true/false hoặc 1/0)' };
     }
+  }
+
+  // 9a. Sức chứa phòng lưu trú (capacity - dành cho ACCOMMODATION)
+  if (
+    query['capacity'] !== undefined &&
+    query['capacity'] !== null &&
+    String(query['capacity']).trim() !== ''
+  ) {
+    const capacity = Number(query['capacity']);
+    if (isNaN(capacity) || capacity < 1 || !Number.isInteger(capacity)) {
+      return { error: 'capacity phải là số nguyên dương (>= 1)' };
+    }
+    result.capacity = capacity;
+  }
+
+  // 9b. Danh sách tiện nghi lưu trú (amenity_ids - phân cách bằng dấu phẩy, ví dụ: "1,2,3")
+  if (
+    query['amenity_ids'] !== undefined &&
+    query['amenity_ids'] !== null &&
+    String(query['amenity_ids']).trim() !== ''
+  ) {
+    const rawAmenityIds = Array.isArray(query['amenity_ids'])
+      ? query['amenity_ids'].join(',')
+      : String(query['amenity_ids']).trim();
+    const parts = rawAmenityIds
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const parsedIds: number[] = [];
+    for (const part of parts) {
+      const id = Number(part);
+      if (isNaN(id) || id <= 0 || !Number.isInteger(id)) {
+        return { error: 'amenity_ids phải là danh sách ID số nguyên dương phân cách bằng dấu phẩy' };
+      }
+      if (!parsedIds.includes(id)) {
+        parsedIds.push(id);
+      }
+    }
+    if (parsedIds.length > 0) {
+      result.amenity_ids = parsedIds.join(',');
+    }
+  }
+
+  // 9c. Loại hình lưu trú (accommodation_type: HOTEL | HOMESTAY | RESORT | HOSTEL | APARTMENT)
+  if (
+    query['accommodation_type'] !== undefined &&
+    query['accommodation_type'] !== null &&
+    String(query['accommodation_type']).trim() !== ''
+  ) {
+    const rawAccType = String(query['accommodation_type']).trim().toUpperCase();
+    if (!ALLOWED_ACCOMMODATION_TYPES.includes(rawAccType as AccommodationType)) {
+      return {
+        error: `accommodation_type không hợp lệ (chỉ chấp nhận: ${ALLOWED_ACCOMMODATION_TYPES.join(', ')})`,
+      };
+    }
+    result.accommodation_type = rawAccType as AccommodationType;
   }
 
   // 10. Sắp xếp (sort)

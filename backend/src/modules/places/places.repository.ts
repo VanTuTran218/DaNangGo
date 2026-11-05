@@ -1,4 +1,5 @@
 import { getPool, sql } from '../../config/db';
+import { applyAccommodationFilter } from '../accommodations/accommodations.service';
 import type {
   SearchPlacesQuery,
   PlaceType,
@@ -52,6 +53,9 @@ export interface PlaceSearchItem {
   category_name_attraction?: string | null;
   accommodation_type?: string | null;
   star_rating?: number | null;
+  original_price?: number | null;
+  max_capacity?: number | null;
+  amenity_names?: string[];
 }
 
 export interface SearchPlacesResult {
@@ -73,7 +77,20 @@ export type AccommodationFilterHook = (
   filters: SearchPlacesQuery
 ) => void;
 
-let accommodationFilterHook: AccommodationFilterHook | null = null;
+const defaultAccommodationFilterHook: AccommodationFilterHook = (req, whereClauses, filters) => {
+  const hasAccommodationSpecificFilter =
+    filters.type === 'ACCOMMODATION' ||
+    filters.capacity !== undefined ||
+    Boolean(filters.amenity_ids) ||
+    Boolean(filters.accommodation_type);
+
+  if (!hasAccommodationSpecificFilter) return;
+
+  const extraConds = applyAccommodationFilter(req, filters);
+  whereClauses.push(...extraConds);
+};
+
+let accommodationFilterHook: AccommodationFilterHook | null = defaultAccommodationFilterHook;
 
 export function setAccommodationFilterHook(hook: AccommodationFilterHook | null): void {
   accommodationFilterHook = hook;
@@ -254,12 +271,13 @@ export async function searchPlaces(
   const countReq = pool.request();
   bindParameters(countReq);
 
-  // Hook riêng cho Lưu trú nếu có đăng ký
+  // Hook riêng cho Lưu trú nếu có đăng ký (dùng bản sao mảng điều kiện để tránh nhân đôi giữa count và data)
+  const countWhereClauses = [...whereClauses];
   if (accommodationFilterHook) {
-    accommodationFilterHook(countReq, whereClauses, filters);
+    accommodationFilterHook(countReq, countWhereClauses, filters);
   }
 
-  const whereSql = whereClauses.length > 0 ? `WHERE ${whereClauses.join(' AND ')}` : '';
+  const countWhereSql = countWhereClauses.length > 0 ? `WHERE ${countWhereClauses.join(' AND ')}` : '';
 
   const countQuery = `
     SELECT COUNT(DISTINCT p.place_id) AS total
@@ -270,7 +288,7 @@ export async function searchPlaces(
     LEFT JOIN attractions a ON a.place_id = p.place_id
     LEFT JOIN attraction_categories ac ON ac.category_id = a.category_id
     LEFT JOIN accommodations acc ON acc.place_id = p.place_id
-    ${whereSql}
+    ${countWhereSql}
   `;
 
   const countRes = await countReq.query<{ total: number }>(countQuery);
@@ -282,9 +300,12 @@ export async function searchPlaces(
   dataReq.input('offset', sql.Int, offset);
   dataReq.input('limit', sql.Int, limit);
 
+  const dataWhereClauses = [...whereClauses];
   if (accommodationFilterHook) {
-    accommodationFilterHook(dataReq, whereClauses, filters);
+    accommodationFilterHook(dataReq, dataWhereClauses, filters);
   }
+
+  const whereSql = dataWhereClauses.length > 0 ? `WHERE ${dataWhereClauses.join(' AND ')}` : '';
 
   const dataQuery = `
     SELECT
@@ -317,6 +338,12 @@ export async function searchPlaces(
       acc.star_rating,
       CAST(COALESCE(r.price_min, a.ticket_price, (SELECT MIN(price_per_night) FROM room_types rt WHERE rt.place_id = p.place_id AND rt.status = 'ACTIVE')) AS float) AS price_min,
       CAST(COALESCE(r.price_max, a.ticket_price, (SELECT MAX(price_per_night) FROM room_types rt WHERE rt.place_id = p.place_id AND rt.status = 'ACTIVE')) AS float) AS price_max,
+      CAST((SELECT MAX(original_price) FROM room_types rt WHERE rt.place_id = p.place_id AND rt.status = 'ACTIVE') AS float) AS original_price,
+      (SELECT MAX(capacity) FROM room_types rt WHERE rt.place_id = p.place_id AND rt.status = 'ACTIVE') AS max_capacity,
+      (SELECT STRING_AGG(am.name, N'||') WITHIN GROUP (ORDER BY am.amenity_id ASC)
+       FROM accommodation_amenities aa
+       JOIN amenities am ON am.amenity_id = aa.amenity_id
+       WHERE aa.place_id = p.place_id) AS amenity_names_concat,
       CAST(a.ticket_price AS float) AS ticket_price,
       (SELECT TOP 1 CONVERT(varchar(5), open_time, 108) + ' - ' + CONVERT(varchar(5), close_time, 108) 
        FROM opening_hours WHERE place_id = p.place_id AND day_of_week = DATEPART(dw, GETDATE())) AS today_hours,
@@ -376,7 +403,10 @@ export async function searchPlaces(
     category_id: row.category_id ?? null,
     category_name_attraction: row.category_name_attraction ?? null,
     accommodation_type: row.accommodation_type ?? null,
-    star_rating: row.star_rating !== null ? Number(row.star_rating) : null,
+    star_rating: row.star_rating !== null && row.star_rating !== undefined ? Number(row.star_rating) : null,
+    original_price: row.original_price !== null && row.original_price !== undefined ? Number(row.original_price) : null,
+    max_capacity: row.max_capacity !== null && row.max_capacity !== undefined ? Number(row.max_capacity) : null,
+    amenity_names: row.amenity_names_concat ? String(row.amenity_names_concat).split('||').filter(Boolean) : [],
   }));
 
   const total_pages = Math.ceil(total / limit) || 1;

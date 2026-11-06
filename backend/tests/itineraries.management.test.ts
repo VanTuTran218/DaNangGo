@@ -134,7 +134,7 @@ test('rejects management updates with invalid day, time, type, or price data', (
   }), null);
   assert.equal(parseManagedItineraryUpdate({
     ...validUpdate,
-    items: [{ ...validUpdate.items[0], imageUrl: 'javascript:alert(1)' }],
+    items: [{ ...validUpdate.items[0], catalogPlaceId: undefined, imageUrl: 'javascript:alert(1)' }],
   }), null);
 });
 
@@ -166,7 +166,7 @@ test('replaces attraction details and price with the selected catalog place data
   });
 });
 
-test('preserves a valid custom image URL for a selected catalog place', () => {
+test('uses the catalog image instead of a stale custom image for a linked place', () => {
   const customImageUrl = 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=800&q=80';
   const update = parseManagedItineraryUpdate({
     ...validUpdate,
@@ -175,7 +175,7 @@ test('preserves a valid custom image URL for a selected catalog place', () => {
   assert.ok(update);
 
   const normalized = applyCatalogPlaceDetails(update, attractionCatalog);
-  assert.equal(normalized?.items[0]?.imageUrl, customImageUrl);
+  assert.equal(normalized?.items[0]?.imageUrl, attractionCatalog[0]?.imageUrl);
 });
 
 test('rejects attraction selections missing from the active catalog', () => {
@@ -208,4 +208,23 @@ test('normalizes food, hotel, and entertainment activities from their matching c
     { title: 'Khách sạn thử nghiệm', unitPrice: 500_000, quantity: 2, estimatedCost: 1_000_000 },
     { title: 'Khu vui chơi thử nghiệm', unitPrice: 100_000, quantity: 3, estimatedCost: 300_000 },
   ]);
+});
+
+
+test('discards an unsafe submitted image when linked details are replaced by catalog data', () => {
+  const update = parseManagedItineraryUpdate({
+    ...validUpdate,
+    items: [{ ...validUpdate.items[0], imageUrl: 'javascript:alert(1)' }],
+  });
+  assert.ok(update);
+  const normalized = applyCatalogPlaceDetails(update, attractionCatalog);
+  assert.equal(normalized?.items[0]?.imageUrl, attractionCatalog[0]?.imageUrl);
+});
+
+test('transport images cannot bypass validation by submitting a catalog id', () => {
+  const update = parseManagedItineraryUpdate({
+    ...validUpdate,
+    items: [{ ...validUpdate.items[0], type: 'transport', catalogPlaceId: 5, imageUrl: 'javascript:alert(1)' }],
+  });
+  assert.equal(update, null);
 });

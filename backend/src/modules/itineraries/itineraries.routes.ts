@@ -394,7 +394,7 @@ export function parseManagedItineraryUpdate(value: unknown): ManagedItineraryUpd
       || (imageUrl !== undefined && (
         typeof imageUrl !== 'string'
         || imageUrl.length > 1000
-        || (catalogPlaceId === undefined && imageUrl.length > 0 && !isAllowedItineraryImage(imageUrl))
+        || ((catalogPlaceId === undefined || type === 'transport') && imageUrl.length > 0 && !isAllowedItineraryImage(imageUrl))
       ))
       || typeof unitPrice !== 'number'
       || !Number.isSafeInteger(unitPrice)

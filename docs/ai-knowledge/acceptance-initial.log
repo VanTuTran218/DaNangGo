@@ -1,0 +1,573 @@
+
+> backend@1.0.0 test:acceptance
+> tsx src/scripts/check-go-acceptance.ts
+
+◇ injected env (20) from .env
+✅ Kết nối SQL Server thành công: localhost:1433 / DaNangGo
+G01-001 PASS Đà Nẵng có gì vui?
+G01-002 PASS Đà Nẵng nên đi đâu?
+[ChatService] Dùng phương án dự phòng
+G01-003 PASS Lần đầu đến Đà Nẵng nên tham quan gì?
+[ChatService] Dùng phương án dự phòng
+G01-004 PASS Đà Nẵng có địa điểm nào nổi tiếng?
+[ChatService] Dùng phương án dự phòng
+G01-005 PASS Địa điểm nào phù hợp đi cùng gia đình?
+[ChatService] Dùng phương án dự phòng
+G01-006 PASS Địa điểm nào phù hợp cho cặp đôi?
+[ChatService] Dùng phương án dự phòng
+G01-007 PASS Địa điểm nào phù hợp đi một mình?
+[ChatService] Dùng phương án dự phòng
+G01-008 PASS Địa điểm nào phù hợp cho trẻ em?
+[ChatService] Dùng phương án dự phòng
+G01-009 PASS Địa điểm nào phù hợp cho người lớn tuổi?
+G01-010 GAP Đà Nẵng có gì miễn phí? → Chưa nhận ra nhu cầu rõ ràng, trả lời chào chung.
+[ChatService] Dùng phương án dự phòng
+G01-011 PASS Địa điểm nào đẹp để chụp ảnh?
+[ChatService] Dùng phương án dự phòng
+G01-012 PASS Địa điểm nào yên tĩnh?
+[ChatService] Dùng phương án dự phòng
+G01-013 PASS Địa điểm nào đông vui về đêm?
+[ChatService] Dùng phương án dự phòng
+G01-014 PASS Đà Nẵng có địa điểm nào trong nhà không?
+G01-015 GAP Trời mưa ở Đà Nẵng thì đi đâu? → Chưa nhận ra nhu cầu rõ ràng, trả lời chào chung.
+G01-016 GAP Đà Nẵng có gì đặc biệt vào cuối tuần? → Chưa nhận ra nhu cầu rõ ràng, trả lời chào chung.
+G01-017 GAP Nên đi Đà Nẵng vào tháng nào? → Chưa nhận ra nhu cầu rõ ràng, trả lời chào chung.
+G01-018 GAP Mùa nào đi Đà Nẵng đẹp nhất? → Chưa nhận ra nhu cầu rõ ràng, trả lời chào chung.
+G01-019 PASS Đà Nẵng có phù hợp cho chuyến đi ngắn không?
+G01-020 PASS Có thể đi Đà Nẵng trong một ngày không?
+[ChatService] Dùng phương án dự phòng
+G02-001 PASS Gợi ý điểm tham quan ở Đà Nẵng.
+[ChatService] Dùng phương án dự phòng
+G02-002 PASS Tìm địa điểm tham quan gần biển.
+[ChatService] Dùng phương án dự phòng
+G02-003 PASS Tìm địa điểm tham quan ở Sơn Trà.
+[ChatService] Dùng phương án dự phòng
+G02-004 PASS Tìm địa điểm tham quan ở Hải Châu.
+[ChatService] Dùng phương án dự phòng
+G02-005 PASS Tìm địa điểm tham quan ở Ngũ Hành Sơn.
+[ChatService] Dùng phương án dự phòng
+G02-006 PASS Tìm địa điểm tham quan miễn phí.
+G02-007 PASS Tìm nơi có vé dưới 100.000 đồng.
+[ChatService] Dùng phương án dự phòng
+G02-008 PASS Tìm điểm tham quan phù hợp ngân sách thấp.
+G02-009 GAP Tìm nơi có thể đi buổi tối. → Chưa nhận ra nhu cầu rõ ràng, trả lời chào chung.
+G02-010 GAP Tìm nơi mở cửa vào sáng sớm. → Chưa nhận ra nhu cầu rõ ràng, trả lời chào chung.
+G02-011 GAP Tìm nơi phù hợp đi lúc trời nắng. → Chưa nhận ra nhu cầu rõ ràng, trả lời chào chung.
+G02-012 GAP Tìm nơi có mái che khi trời mưa. → Chưa nhận ra nhu cầu rõ ràng, trả lời chào chung.
+G02-013 GAP Tìm nơi ít phải đi bộ. → Chưa nhận ra nhu cầu rõ ràng, trả lời chào chung.
+G02-014 GAP Tìm nơi có chỗ đậu xe. → Chưa nhận ra nhu cầu rõ ràng, trả lời chào chung.
+[ChatService] Dùng phương án dự phòng
+G02-015 GAP Tìm điểm tham quan gần khách sạn của tôi. → Sai nhóm địa điểm so với nhu cầu của câu hỏi.
+[ChatService] Dùng phương án dự phòng
+G02-016 PASS Điểm nào gần cầu Rồng?
+[ChatService] Dùng phương án dự phòng
+G02-017 PASS Điểm nào gần biển Mỹ Khê?
+G02-018 GAP Điểm nào gần sân bay Đà Nẵng? → Chưa nhận ra nhu cầu rõ ràng, trả lời chào chung.
+G02-019 GAP Điểm nào gần trung tâm thành phố? → Chưa nhận ra nhu cầu rõ ràng, trả lời chào chung.
+G02-020 PASS Điểm nào gần bán đảo Sơn Trà?
+[ChatService] Dùng phương án dự phòng
+G02-021 PASS Địa điểm nào có thể đi trong hai tiếng?
+[ChatService] Dùng phương án dự phòng
+G02-022 PASS Địa điểm nào nên dành cả ngày?
+[ChatService] Dùng phương án dự phòng
+G02-023 PASS Địa điểm nào phù hợp ngắm hoàng hôn?
+[ChatService] Dùng phương án dự phòng
+G02-024 PASS Địa điểm nào phù hợp ngắm bình minh?
+[ChatService] Dùng phương án dự phòng
+G02-025 PASS Địa điểm nào phù hợp ngắm cảnh đêm?
+[ChatService] Dùng phương án dự phòng
+G02-026 PASS Địa điểm nào có cảnh đẹp tự nhiên?
+[ChatService] Dùng phương án dự phòng
+G02-027 PASS Địa điểm nào có yếu tố văn hóa, lịch sử?
+[ChatService] Dùng phương án dự phòng
+G02-028 PASS Địa điểm nào phù hợp chụp ảnh cưới?
+[ChatService] Dùng phương án dự phòng
+G02-029 PASS Địa điểm nào phù hợp check-in?
+[ChatService] Dùng phương án dự phòng
+G02-030 PASS Địa điểm nào không quá đông khách?
+[ChatService] Dùng phương án dự phòng
+G03-001 PASS Bãi biển nào đẹp nhất Đà Nẵng?
+[ChatService] Dùng phương án dự phòng
+G03-002 PASS Bãi biển nào gần trung tâm?
+[ChatService] Dùng phương án dự phòng
+G03-003 PASS Bãi biển nào yên tĩnh?
+[ChatService] Dùng phương án dự phòng
+G03-004 PASS Bãi biển nào phù hợp cho trẻ em?
+[ChatService] Dùng phương án dự phòng
+G03-005 PASS Bãi biển nào có thể ngắm bình minh?
+[ChatService] Dùng phương án dự phòng
+G03-006 PASS Gần biển có quán ăn nào ngon?
+[ChatService] Dùng phương án dự phòng
+G03-007 PASS Gần biển có khách sạn nào giá rẻ?
+[ChatService] Dùng phương án dự phòng
+G03-008 PASS Gần biển có homestay nào đẹp?
+[ChatService] Dùng phương án dự phòng
+G03-009 PASS Đi biển Đà Nẵng buổi tối có được không?
+[ChatService] Dùng phương án dự phòng
+G03-010 PASS Bãi biển nào có chỗ gửi xe?
+[ChatService] Dùng phương án dự phòng
+G03-011 PASS Bãi biển nào ít đông hơn Mỹ Khê?
+[ChatService] Dùng phương án dự phòng
+G03-012 PASS Sơn Trà có địa điểm nào đáng đi?
+G03-013 PASS Có thể đi Sơn Trà trong nửa ngày không?
+[ChatService] Dùng phương án dự phòng
+G03-014 PASS Địa điểm thiên nhiên nào gần trung tâm?
+[ChatService] Dùng phương án dự phòng
+G03-015 PASS Có nơi nào ngắm núi và biển cùng lúc không?
+[ChatService] Dùng phương án dự phòng
+G03-016 PASS Địa điểm nào có nhiều cây xanh?
+[ChatService] Dùng phương án dự phòng
+G03-017 PASS Địa điểm nào phù hợp đi dạo nhẹ nhàng?
+[ChatService] Dùng phương án dự phòng
+G03-018 PASS Địa điểm nào phù hợp người không thích leo núi?
+[ChatService] Dùng phương án dự phòng
+G03-019 PASS Có nơi nào gần biển nhưng không cần tắm biển không?
+G03-020 PASS Có thể kết hợp biển với ăn hải sản ở đâu?
+G04-001 GAP Đà Nẵng có món gì ngon? → Chưa nhận ra nhu cầu rõ ràng, trả lời chào chung.
+G04-002 GAP Đặc sản Đà Nẵng gồm những món nào? → Chưa nhận ra nhu cầu rõ ràng, trả lời chào chung.
+G04-003 PASS Nên ăn gì trong chuyến đi đầu tiên?
+[ChatService] Dùng phương án dự phòng
+G04-004 PASS Tìm quán ăn ngon ở Hải Châu.
+G04-005 PASS Tìm quán ăn ngon ở Sơn Trà.
+[ChatService] Dùng phương án dự phòng
+G04-006 PASS Tìm quán ăn gần biển Mỹ Khê.
+[ChatService] Dùng phương án dự phòng
+G04-007 PASS Tìm quán ăn gần cầu Rồng.
+[ChatService] Dùng phương án dự phòng
+G04-008 GAP Tìm quán ăn gần khách sạn của tôi. → Sai nhóm địa điểm so với nhu cầu của câu hỏi.
+[ChatService] Dùng phương án dự phòng
+G04-009 PASS Tìm quán ăn mở buổi sáng.
+[ChatService] Dùng phương án dự phòng
+G04-010 PASS Tìm quán ăn mở khuya.
+[ChatService] Dùng phương án dự phòng
+G04-011 PASS Tìm quán ăn cho bữa trưa.
+[ChatService] Dùng phương án dự phòng
+G04-012 PASS Tìm quán ăn cho bữa tối.
+G04-013 PASS Tìm quán ăn nhanh dưới 100.000 đồng.
+[ChatService] Dùng phương án dự phòng
+G04-014 PASS Tìm quán ăn cho gia đình.
+[ChatService] Dùng phương án dự phòng
+G04-015 PASS Tìm quán ăn lãng mạn cho hai người.
+[ChatService] Dùng phương án dự phòng
+G04-016 PASS Tìm quán ăn có không gian đẹp.
+[ChatService] Dùng phương án dự phòng
+G04-017 PASS Tìm quán ăn có phòng riêng.
+[ChatService] Dùng phương án dự phòng
+G04-018 PASS Tìm quán ăn có chỗ đậu ô tô.
+[ChatService] Dùng phương án dự phòng
+G04-019 PASS Tìm quán ăn sạch sẽ.
+[ChatService] Dùng phương án dự phòng
+G04-020 PASS Tìm quán ăn được nhiều người đánh giá tốt.
+[ChatService] Dùng phương án dự phòng
+G04-021 PASS Tìm quán ăn không quá đông.
+G04-022 PASS Tìm quán ăn gần địa điểm tham quan.
+[ChatService] Dùng phương án dự phòng
+G04-023 PASS Ăn gì gần biển?
+[ChatService] Dùng phương án dự phòng
+G04-024 PASS Ăn gì gần sân bay?
+[ChatService] Dùng phương án dự phòng
+G04-025 PASS Ăn gì gần chợ Hàn?
+[ChatService] Dùng phương án dự phòng
+G04-026 PASS Ăn gì gần Ngũ Hành Sơn?
+G04-027 PASS Ăn gì trước khi đi Bà Nà?
+G04-028 PASS Ăn gì sau khi tham quan Sơn Trà?
+[ChatService] Dùng phương án dự phòng
+G04-029 PASS Ăn gì vào ban đêm ở Đà Nẵng?
+[ChatService] Dùng phương án dự phòng
+G04-030 GAP Địa điểm nào bán đặc sản làm quà? → Sai nhóm địa điểm so với nhu cầu của câu hỏi.
+[ChatService] Dùng phương án dự phòng
+G05-001 PASS Tìm quán mì Quảng.
+G05-002 PASS Tìm mì Quảng dưới 100.000 đồng.
+[ChatService] Dùng phương án dự phòng
+G05-003 PASS Tìm quán bún chả cá.
+[ChatService] Dùng phương án dự phòng
+G05-004 PASS Tìm quán bánh xèo.
+[ChatService] Dùng phương án dự phòng
+G05-005 PASS Tìm quán bánh tráng cuốn thịt heo.
+G05-006 PASS Tìm quán cơm niêu.
+[ChatService] Dùng phương án dự phòng
+G05-007 PASS Tìm quán hải sản.
+G05-008 PASS Tìm quán ốc.
+G05-009 GAP Tìm quán thịt nướng. → Chưa nhận ra nhu cầu rõ ràng, trả lời chào chung.
+G05-010 PASS Tìm quán lẩu.
+G05-011 PASS Tìm quán bún bò.
+[ChatService] Dùng phương án dự phòng
+G05-012 PASS Tìm quán bánh bèo, nậm, lọc.
+[ChatService] Dùng phương án dự phòng
+G05-013 PASS Tìm quán ăn vặt.
+[ChatService] Dùng phương án dự phòng
+G05-014 PASS Tìm quán cà phê đẹp.
+[ChatService] Dùng phương án dự phòng
+G05-015 PASS Tìm quán cà phê gần biển.
+[ChatService] Dùng phương án dự phòng
+G05-016 PASS Tìm quán cà phê có view cao.
+G05-017 GAP Tìm quán bán chè. → Chưa nhận ra nhu cầu rõ ràng, trả lời chào chung.
+G05-018 GAP Tìm quán bán kem. → Chưa nhận ra nhu cầu rõ ràng, trả lời chào chung.
+[ChatService] Dùng phương án dự phòng
+G05-019 PASS Tìm quán ăn sáng kiểu địa phương.
+G05-020 GAP Tìm quán phục vụ đồ ăn đêm. → Chưa nhận ra nhu cầu rõ ràng, trả lời chào chung.
+G06-001 PASS Tôi thích ăn cay, tìm món phù hợp cho tôi.
+G06-002 DATA_LIMIT Tôi không ăn cay, tìm quán phù hợp.
+G06-003 PASS Tôi thích món đậm vị.
+G06-004 PASS Tôi thích món thanh đạm.
+G06-005 PASS Tôi thích đồ ăn miền Trung.
+[ChatService] Dùng phương án dự phòng
+G06-006 PASS Tôi thích hải sản.
+G06-007 DATA_LIMIT Tôi không ăn hải sản.
+G06-008 DATA_LIMIT Tôi ăn chay.
+G06-009 DATA_LIMIT Tôi ăn thuần chay.
+G06-010 PASS Tôi không ăn thịt bò.
+G06-011 DATA_LIMIT Tôi không ăn thịt heo.
+G06-012 DATA_LIMIT Tôi không ăn thịt gà.
+G06-013 DATA_LIMIT Tôi không ăn trứng.
+G06-014 PASS Tôi không uống sữa.
+G06-015 DATA_LIMIT Tôi bị dị ứng đậu phộng.
+G06-016 DATA_LIMIT Tôi bị dị ứng hải sản.
+G06-017 DATA_LIMIT Tôi bị dị ứng tôm.
+G06-018 DATA_LIMIT Tôi bị dị ứng cua.
+G06-019 DATA_LIMIT Tôi bị dị ứng sữa.
+G06-020 DATA_LIMIT Tôi bị dị ứng trứng.
+G06-021 PASS Tôi cần món không chứa gluten.
+G06-022 PASS Tôi cần món ít dầu mỡ.
+G06-023 PASS Tôi cần món ít muối.
+G06-024 PASS Tôi cần món không đường.
+G06-025 PASS Tôi muốn ăn món tốt cho sức khỏe.
+G06-026 PASS Tôi muốn ăn món dưới 50.000 đồng.
+G06-027 PASS Tôi muốn ăn món dưới 100.000 đồng.
+G06-028 PASS Tôi muốn tìm quán có nhiều lựa chọn cho trẻ em.
+G06-029 PASS Tôi muốn tìm quán có món cho người ăn kiêng.
+G06-030 PASS Thành phần món này có gì?
+G06-031 PASS Quán này có xác nhận món chay không?
+G06-032 PASS Quán này có thể giảm cay không?
+G06-033 PASS Quán này có thể làm món không đậu phộng không?
+G06-034 PASS Quán này có nguy cơ dùng chung dầu chiên không?
+G06-035 DATA_LIMIT Tôi nên hỏi quán những gì về dị ứng?
+[ChatService] Dùng phương án dự phòng
+G06-036 PASS Tìm món cay gần biển.
+[ChatService] Dùng phương án dự phòng
+G06-037 PASS Tìm món chay gần khách sạn.
+G06-038 PASS Tìm hải sản gần địa điểm tham quan.
+[ChatService] Dùng phương án dự phòng
+G06-039 PASS Tìm món ăn thanh đạm gần trung tâm.
+G06-040 DATA_LIMIT Tìm quán vừa có món cay vừa có món không cay.
+[ChatService] Dùng phương án dự phòng
+G07-001 PASS Tìm khách sạn ở Đà Nẵng.
+[ChatService] Dùng phương án dự phòng
+G07-002 PASS Tìm khách sạn gần biển.
+[ChatService] Dùng phương án dự phòng
+G07-003 PASS Tìm khách sạn gần Mỹ Khê.
+[ChatService] Dùng phương án dự phòng
+G07-004 PASS Tìm khách sạn gần cầu Rồng.
+[ChatService] Dùng phương án dự phòng
+G07-005 PASS Tìm khách sạn gần sân bay.
+[ChatService] Dùng phương án dự phòng
+G07-006 PASS Tìm khách sạn ở trung tâm.
+[ChatService] Dùng phương án dự phòng
+G07-007 PASS Tìm homestay giá rẻ.
+[ChatService] Dùng phương án dự phòng
+G07-008 PASS Tìm resort gần biển.
+[ChatService] Dùng phương án dự phòng
+G07-009 PASS Tìm khách sạn 3 sao.
+[ChatService] Dùng phương án dự phòng
+G07-010 PASS Tìm khách sạn 4 sao.
+[ChatService] Dùng phương án dự phòng
+G07-011 PASS Tìm khách sạn 5 sao.
+G07-012 GAP Tìm nơi ở cho hai người. → Chưa nhận ra nhu cầu rõ ràng, trả lời chào chung.
+G07-013 GAP Tìm nơi ở cho gia đình. → Chưa nhận ra nhu cầu rõ ràng, trả lời chào chung.
+G07-014 GAP Tìm nơi ở cho nhóm bạn. → Chưa nhận ra nhu cầu rõ ràng, trả lời chào chung.
+G07-015 GAP Tìm nơi ở có phòng gia đình. → Chưa nhận ra nhu cầu rõ ràng, trả lời chào chung.
+G07-016 GAP Tìm phòng có sức chứa bốn người. → Chưa nhận ra nhu cầu rõ ràng, trả lời chào chung.
+G07-017 GAP Tìm phòng có ban công. → Chưa nhận ra nhu cầu rõ ràng, trả lời chào chung.
+G07-018 GAP Tìm phòng có hồ bơi. → Chưa nhận ra nhu cầu rõ ràng, trả lời chào chung.
+G07-019 GAP Tìm nơi có bữa sáng. → Chưa nhận ra nhu cầu rõ ràng, trả lời chào chung.
+G07-020 GAP Tìm nơi có chỗ đậu ô tô. → Chưa nhận ra nhu cầu rõ ràng, trả lời chào chung.
+G07-021 GAP Tìm nơi có thang máy. → Chưa nhận ra nhu cầu rõ ràng, trả lời chào chung.
+G07-022 GAP Tìm nơi phù hợp người lớn tuổi. → Chưa nhận ra nhu cầu rõ ràng, trả lời chào chung.
+[ChatService] Dùng phương án dự phòng
+G07-023 GAP Tìm nơi gần nhà hàng. → Sai nhóm địa điểm so với nhu cầu của câu hỏi.
+[ChatService] Dùng phương án dự phòng
+G07-024 GAP Tìm nơi gần biển và gần quán ăn. → Sai nhóm địa điểm so với nhu cầu của câu hỏi.
+[ChatService] Dùng phương án dự phòng
+G07-025 PASS Tìm khách sạn yên tĩnh.
+[ChatService] Dùng phương án dự phòng
+G07-026 GAP Tìm nơi có view biển. → Sai nhóm địa điểm so với nhu cầu của câu hỏi.
+G07-027 PASS Tìm phòng dưới 500.000 đồng một đêm.
+[ChatService] Dùng phương án dự phòng
+G07-028 PASS Tìm khách sạn dưới 1.000.000 đồng một đêm.
+[ChatService] Dùng phương án dự phòng
+G07-029 PASS Tìm nơi tiết kiệm hơn khách sạn hiện tại.
+[ChatService] Dùng phương án dự phòng
+G07-030 PASS Có khách sạn nào gần địa điểm tôi muốn đi không?
+[ChatService] Dùng phương án dự phòng
+G07-031 PASS Khách sạn này có những loại phòng nào?
+G07-032 GAP Phòng này ở được bao nhiêu người? → Chưa nhận ra nhu cầu rõ ràng, trả lời chào chung.
+G07-033 GAP Giá phòng có bao gồm bao nhiêu khách? → Chưa nhận ra nhu cầu rõ ràng, trả lời chào chung.
+G07-034 GAP Giờ nhận phòng là mấy giờ? → Chưa nhận ra nhu cầu rõ ràng, trả lời chào chung.
+G07-035 GAP Giờ trả phòng là mấy giờ? → Chưa nhận ra nhu cầu rõ ràng, trả lời chào chung.
+G07-036 PASS Có thể nhận phòng sớm không?
+G07-037 PASS Có thể trả phòng muộn không?
+G07-038 PASS Có thể gửi hành lý không?
+G07-039 GAP Có thể nhận phòng sau nửa đêm không? → Chưa nhận ra nhu cầu rõ ràng, trả lời chào chung.
+G07-040 GAP Giá này đã bao gồm thuế chưa? → Chưa nhận ra nhu cầu rõ ràng, trả lời chào chung.
+G07-041 GAP Có phụ phí trẻ em không? → Chưa nhận ra nhu cầu rõ ràng, trả lời chào chung.
+G07-042 GAP Có phòng cho người khuyết tật không? → Chưa nhận ra nhu cầu rõ ràng, trả lời chào chung.
+G07-043 DATA_LIMIT Có còn phòng vào ngày tôi đi không?
+G07-044 DATA_LIMIT Giá này có phải giá hiện tại không?
+[ChatService] Dùng phương án dự phòng
+G07-045 PASS Khách sạn có cho phép mang thú cưng không?
+[ChatService] Dùng phương án dự phòng
+G07-046 PASS Có thể đặt phòng trực tiếp ở đâu?
+G08-001 DATA_LIMIT So sánh Bà Nà Hills và Sơn Trà.
+G08-002 DATA_LIMIT So sánh Mỹ Khê và Non Nước.
+G08-003 DATA_LIMIT So sánh hai khách sạn này.
+G08-004 DATA_LIMIT So sánh hai quán hải sản.
+G08-005 DATA_LIMIT So sánh hai quán mì Quảng.
+[ChatService] Dùng phương án dự phòng
+G08-006 PASS Nơi nào rẻ hơn?
+[ChatService] Dùng phương án dự phòng
+G08-007 PASS Nơi nào gần biển hơn?
+[ChatService] Dùng phương án dự phòng
+G08-008 PASS Nơi nào phù hợp trẻ em hơn?
+[ChatService] Dùng phương án dự phòng
+G08-009 PASS Nơi nào ít phải đi bộ hơn?
+[ChatService] Dùng phương án dự phòng
+G08-010 PASS Nơi nào phù hợp người lớn tuổi hơn?
+G08-011 GAP Nơi nào có nhiều đánh giá hơn? → Chưa xử lý yêu cầu so sánh.
+G08-012 GAP Nơi nào có giá phòng tốt hơn? → Chưa xử lý yêu cầu so sánh.
+G08-013 GAP Nơi nào có view đẹp hơn? → Chưa xử lý yêu cầu so sánh.
+G08-014 GAP Nơi nào yên tĩnh hơn? → Chưa xử lý yêu cầu so sánh.
+G08-015 GAP Nơi nào gần trung tâm hơn? → Chưa xử lý yêu cầu so sánh.
+G08-016 GAP Nơi nào phù hợp đi buổi tối hơn? → Chưa xử lý yêu cầu so sánh.
+[ChatService] Dùng phương án dự phòng
+G08-017 PASS Tôi ưu tiên giá, hãy giúp tôi chọn.
+[ChatService] Dùng phương án dự phòng
+G08-018 PASS Tôi ưu tiên vị trí, hãy giúp tôi chọn.
+[ChatService] Dùng phương án dự phòng
+G08-019 PASS Tôi ưu tiên trải nghiệm, hãy giúp tôi chọn.
+G08-020 PASS Hãy cho tôi bảng so sánh, không cần tự quyết định.
+G09-001 PASS Lên lịch trình Đà Nẵng một ngày.
+G09-002 PASS Lên lịch trình Đà Nẵng hai ngày.
+G09-003 PASS Lên lịch trình Đà Nẵng ba ngày hai đêm.
+G09-004 PASS Lên lịch trình Đà Nẵng bốn ngày.
+G09-005 GAP Tôi đi Đà Nẵng với ngân sách 5 triệu. → Không có lịch hoặc câu hỏi làm rõ lập lịch.
+G09-006 PASS Lên lịch trình cho hai người.
+G09-007 PASS Lên lịch trình cho gia đình có trẻ nhỏ.
+G09-008 PASS Lên lịch trình cho nhóm sáu người.
+G09-009 PASS Lên lịch trình cho người lớn tuổi.
+G09-010 PASS Lên lịch trình nhẹ nhàng, không đi nhiều.
+G09-011 PASS Lên lịch trình năng động.
+G09-012 PASS Lên lịch trình tập trung vào biển.
+G09-013 PASS Lên lịch trình tập trung vào ẩm thực.
+G09-014 PASS Lên lịch trình tập trung vào chụp ảnh.
+G09-015 PASS Lên lịch trình tập trung vào văn hóa.
+G09-016 PASS Lên lịch trình tiết kiệm.
+G09-017 PASS Lên lịch trình cao cấp.
+G09-018 PASS Lên lịch trình gần trung tâm.
+G09-019 PASS Lên lịch trình gần biển.
+G09-020 PASS Lên lịch trình không cần thuê xe.
+G09-021 PASS Lên lịch trình đi bằng taxi.
+G09-022 PASS Lên lịch trình đi bằng xe máy.
+G09-023 PASS Lên lịch trình có điểm tham quan miễn phí.
+G09-024 PASS Lên lịch trình tránh nơi quá đông.
+G09-025 PASS Lên lịch trình khi trời mưa.
+G09-026 PASS Lên lịch trình có thời gian nghỉ trưa.
+G09-027 PASS Lên lịch trình có nhà hàng gần từng điểm.
+G09-028 PASS Lên lịch trình có khách sạn gần biển.
+G09-029 PASS Lên lịch trình ngày đầu gần sân bay.
+G09-030 PASS Lên lịch trình ngày cuối gần sân bay.
+G09-031 PASS Tôi đến lúc 18 giờ, hãy xếp lịch phù hợp.
+G09-032 PASS Tôi rời Đà Nẵng lúc 9 giờ sáng, hãy bỏ các điểm buổi sáng.
+G09-033 PASS Tôi có trẻ sáu tuổi, hãy xếp lịch nhẹ.
+G09-034 PASS Tôi không muốn đi bộ nhiều.
+G09-035 PASS Tôi muốn mỗi ngày chỉ đi ba điểm.
+[ChatService] Dùng phương án dự phòng
+G09-036 PASS Tôi muốn có thời gian nghỉ ở khách sạn.
+[ChatService] Dùng phương án dự phòng
+G09-037 PASS Tôi muốn ăn hải sản mỗi tối.
+[ChatService] Dùng phương án dự phòng
+G09-038 PASS Tôi muốn mỗi ngày có một quán ăn địa phương.
+G09-039 PASS Tôi muốn kết hợp biển, núi và ẩm thực.
+G09-040 PASS Tôi muốn đi Sơn Trà và ăn gần đó.
+[ChatService] Dùng phương án dự phòng
+G09-041 GAP Tôi muốn đi Ngũ Hành Sơn rồi tìm quán gần đó. → Không có lịch hoặc câu hỏi làm rõ lập lịch.
+G09-042 PASS Tôi muốn đi biển buổi sáng và ăn hải sản buổi trưa.
+[ChatService] Dùng phương án dự phòng
+G09-043 PASS Tôi muốn đi Cầu Rồng buổi tối.
+[ChatService] Dùng phương án dự phòng
+G09-044 PASS Tôi muốn ngắm hoàng hôn rồi ăn tối gần đó.
+G10-001 PASS Đổi khách sạn tiết kiệm hơn.
+G10-002 PASS Đổi khách sạn gần biển hơn.
+G10-003 PASS Thay quán ăn này bằng quán khác.
+G10-004 PASS Thay điểm tham quan này bằng điểm miễn phí.
+G10-005 PASS Bỏ Bà Nà khỏi lịch trình.
+G10-006 PASS Bỏ địa điểm ngày hai.
+G10-007 PASS Chuyển điểm này sang ngày hai.
+G10-008 PASS Chuyển điểm này sang buổi chiều.
+G10-009 PASS Đổi điểm tham quan buổi sáng sang buổi tối.
+G10-010 PASS Thêm một quán hải sản vào ngày hai.
+G10-011 PASS Thêm thời gian nghỉ trưa.
+G10-012 PASS Giữ nguyên ngày một, chỉ sửa ngày hai.
+G10-013 PASS Giữ nguyên khách sạn, đổi các điểm tham quan.
+G10-014 PASS Giữ nguyên ngân sách nhưng đổi địa điểm.
+G10-015 PASS Giữ nguyên lịch trình, giảm chi phí.
+G10-016 PASS Đổi sang các điểm gần nhau hơn.
+G10-017 PASS Đổi sang lịch trình ít đi bộ hơn.
+G10-018 PASS Đổi sang lịch trình phù hợp trẻ em.
+G10-019 PASS Đổi sang các điểm không mất vé.
+G10-020 PASS Đổi sang quán có món chay.
+G10-021 PASS Bỏ những nơi quá xa.
+G10-022 PASS Không gợi ý lại địa điểm tôi đã bỏ.
+G10-023 PASS Tôi đổi ý, muốn đi biển nhiều hơn.
+G10-024 PASS Tôi muốn thêm một ngày nghỉ.
+G10-025 PASS Tôi muốn đổi phương tiện sang taxi.
+G10-026 PASS Tôi muốn chuyển bữa tối sang gần khách sạn.
+G10-027 PASS Ngày cuối đừng xếp điểm quá xa sân bay.
+G10-028 PASS Buổi sáng ngày đầu tôi chưa đến nơi, hãy bỏ hoạt động.
+G10-029 PASS Buổi tối ngày cuối tôi đã rời Đà Nẵng, hãy bỏ hoạt động.
+G11-001 PASS Tổng chuyến đi này khoảng bao nhiêu tiền?
+G11-002 PASS Ngân sách 3 triệu cho hai người có đủ không?
+G11-003 PASS Ngân sách này là cho cả nhóm hay mỗi người?
+G11-004 PASS Tính chi phí cho hai người.
+G11-005 PASS Tính chi phí cho gia đình bốn người.
+G11-006 PASS Tính riêng tiền phòng.
+G11-007 PASS Tính riêng tiền vé.
+G11-008 PASS Tính tiền ăn dự kiến.
+G11-009 PASS Tính tiền di chuyển dự kiến.
+G11-010 PASS Giữ lại 500.000 đồng dự phòng.
+G11-011 PASS Không tính tiền máy bay.
+G11-012 PASS Không tính tiền ăn.
+[ChatService] Dùng phương án dự phòng
+G11-013 PASS Không tính tiền khách sạn.
+G11-014 PASS Tôi muốn tiết kiệm 20%.
+G11-015 PASS Tìm các điểm miễn phí để giảm chi phí.
+[ChatService] Dùng phương án dự phòng
+G11-016 PASS Tìm khách sạn rẻ hơn.
+[ChatService] Dùng phương án dự phòng
+G11-017 PASS Tìm quán ăn dưới 100.000 đồng một người.
+G11-018 PASS Chi phí nào đã có dữ liệu?
+G11-019 PASS Chi phí nào chưa xác định?
+G11-020 PASS Giá này tính theo người hay theo món?
+G11-021 PASS Giá phòng tính theo đêm hay theo người?
+G11-022 PASS Có khoản phụ phí nào chưa tính không?
+G11-023 PASS Nếu vượt ngân sách thì giảm mục nào trước?
+G11-024 PASS Có thể đổi sang địa điểm miễn phí không?
+[ChatService] Dùng phương án dự phòng
+G12-001 PASS Từ sân bay đến khách sạn đi thế nào?
+G12-002 PASS Từ khách sạn đến biển Mỹ Khê bao xa?
+[ChatService] Dùng phương án dự phòng
+G12-003 PASS Từ địa điểm này đến địa điểm kia mất bao lâu?
+G12-004 PASS Đi taxi hay xe máy tiện hơn?
+G12-005 PASS Có nên thuê xe máy không?
+[ChatService] Dùng phương án dự phòng
+G12-006 PASS Địa điểm nào có thể đi bộ?
+[ChatService] Dùng phương án dự phòng
+G12-007 PASS Địa điểm nào cần taxi?
+G12-008 PASS Tìm các điểm gần nhau để đi cùng ngày.
+G12-009 DATA_LIMIT Chỉ đường đến địa điểm này.
+G12-010 PASS Tìm tuyến đường ngắn nhất.
+[ChatService] Dùng phương án dự phòng
+G12-011 PASS Tìm địa điểm trong bán kính 2 km.
+[ChatService] Dùng phương án dự phòng
+G12-012 PASS Tìm quán ăn trong bán kính 5 km.
+G12-013 PASS Tìm khách sạn gần vị trí tôi.
+G12-014 DATA_LIMIT Tôi không muốn cấp GPS, tìm theo quận giúp tôi.
+G12-015 PASS Tôi đang ở gần Mỹ Khê, có gì quanh đây?
+G12-016 PASS Tôi đang ở Hải Châu, ăn gì gần đây?
+G12-017 PASS Có bãi đậu xe không?
+[ChatService] Dùng phương án dự phòng
+G12-018 PASS Đường đến địa điểm có khó đi không?
+G12-019 PASS Có phù hợp đi xe lăn không?
+G12-020 PASS Có cần leo dốc hoặc leo bậc thang không?
+G12-021 PASS Tuyến này có phù hợp trẻ nhỏ không?
+G12-022 PASS Thời gian trên bản đồ có phải thời gian giao thông thực tế không?
+G12-023 PASS Có thể mở tuyến đường trên Google Maps không?
+G13-001 DATA_LIMIT Hôm nay Đà Nẵng có mưa không?
+[ChatService] Dùng phương án dự phòng
+G13-002 PASS Ngày mai có phù hợp đi biển không?
+G13-003 DATA_LIMIT Cuối tuần này thời tiết thế nào?
+G13-004 DATA_LIMIT Nhiệt độ hôm nay bao nhiêu?
+G13-005 GAP Có nên đi Sơn Trà khi trời mưa không? → Chưa nêu giới hạn nguồn trực tiếp.
+G13-006 GAP Nếu trời mưa thì nên đi đâu? → Chưa nêu giới hạn nguồn trực tiếp.
+[ChatService] Dùng phương án dự phòng
+G13-007 PASS Có nên đi Bà Nà hôm nay không?
+G13-008 DATA_LIMIT Thời tiết buổi tối thế nào?
+[ChatService] Dùng phương án dự phòng
+G13-009 PASS Có gió mạnh ở biển không?
+G13-010 GAP Ngày mai có nắng không? → Chưa nêu giới hạn nguồn trực tiếp.
+G13-011 PASS Cầu Rồng tối nay có phun lửa không?
+G13-012 PASS Cuối tuần có lễ hội gì không?
+G13-013 PASS Đà Nẵng hôm nay có sự kiện nào?
+G13-014 GAP Có chương trình biểu diễn nào tối nay không? → Chưa nêu giới hạn nguồn trực tiếp.
+G13-015 GAP Có chợ đêm hoặc hoạt động đêm nào không? → Chưa nêu giới hạn nguồn trực tiếp.
+G13-016 DATA_LIMIT Địa điểm này đang mở cửa không?
+G13-017 DATA_LIMIT Quán này hiện có đông không?
+G13-018 DATA_LIMIT Khách sạn này còn phòng không?
+G13-019 DATA_LIMIT Bà Nà còn vé không?
+G13-020 DATA_LIMIT Giá hôm nay có thay đổi không?
+[ChatService] Dùng phương án dự phòng
+G14-001 PASS Địa điểm này có bao nhiêu đánh giá?
+G14-002 GAP Đánh giá này có được duyệt không? → Chưa xử lý nguồn/đánh giá/báo sai.
+G14-003 GAP Có thể tóm tắt đánh giá không? → Chưa xử lý nguồn/đánh giá/báo sai.
+G14-004 DATA_LIMIT Du khách thường khen điểm gì?
+G14-005 GAP Du khách thường phàn nàn điểm gì? → Chưa xử lý nguồn/đánh giá/báo sai.
+[ChatService] Dùng phương án dự phòng
+G14-006 PASS Địa điểm này có phù hợp gia đình không?
+G14-007 DATA_LIMIT Có đủ đánh giá để kết luận chưa?
+G14-008 PASS Các đánh giá có phải của khách thật không?
+G14-009 DATA_LIMIT Thông tin này được cập nhật khi nào?
+G14-010 GAP Giá này lấy từ nguồn nào? → Chưa xử lý nguồn/đánh giá/báo sai.
+G14-011 GAP Địa chỉ này có được xác minh không? → Chưa xử lý nguồn/đánh giá/báo sai.
+G14-012 DATA_LIMIT Tôi muốn báo thông tin sai.
+G14-013 GAP Giờ mở cửa trên trang có vẻ không đúng. → Chưa xử lý nguồn/đánh giá/báo sai.
+G14-014 GAP Giá trên trang không đúng với thực tế. → Chưa xử lý nguồn/đánh giá/báo sai.
+[ChatService] Dùng phương án dự phòng
+G14-015 PASS Tôi muốn gửi nguồn mới cho địa điểm.
+[ChatService] Dùng phương án dự phòng
+G14-016 PASS Tôi muốn báo địa điểm đã đóng cửa.
+G14-017 GAP Tôi muốn báo địa điểm chuyển địa chỉ. → Chưa xử lý nguồn/đánh giá/báo sai.
+[ChatService] Dùng phương án dự phòng
+G14-018 PASS Tôi muốn báo ảnh không đúng địa điểm.
+G15-001 PASS Gô có nhớ tôi thích ăn cay không?
+G15-002 PASS Gô có nhớ tôi không ăn hải sản không?
+G15-003 PASS Hãy lưu tôi thích đi gần biển.
+G15-004 PASS Hãy lưu tôi không thích đi bộ nhiều.
+G15-005 PASS Hãy lưu tôi thường đi cùng trẻ em.
+G15-006 PASS Hãy lưu tôi thích khách sạn tiết kiệm.
+G15-007 PASS Hãy lưu tôi thích quán yên tĩnh.
+G15-008 PASS Đừng lưu sở thích này.
+G15-009 PASS Xóa sở thích ăn cay của tôi.
+G15-010 PASS Cho tôi xem các sở thích Gô đã lưu.
+G15-011 PASS Tôi muốn đổi sở thích từ tiết kiệm sang cao cấp.
+G15-012 PASS Sử dụng sở thích của tôi để gợi ý chuyến này.
+G15-013 PASS Không dùng sở thích cũ cho chuyến này.
+G15-014 PASS Bắt đầu một chuyến mới.
+G15-015 PASS Xóa điều kiện của chuyến trước.
+G15-016 PASS Tại sao Gô lại gợi ý quán cay cho tôi?
+G15-017 PASS Tôi thích ăn cay nhưng hôm nay muốn ăn thanh đạm.
+G15-018 DATA_LIMIT Tôi bị dị ứng đậu phộng, hãy luôn nhắc tôi kiểm tra thành phần.
+G15-019 PASS Tôi đi cùng trẻ em trong chuyến này nhưng không muốn lưu thông tin đó.
+[ChatService] Dùng phương án dự phòng
+G16-001 PASS Tôi thích ăn cay, hãy tìm quán gần biển Mỹ Khê.
+G16-002 PASS Tôi ăn chay, tìm quán gần khách sạn ở Sơn Trà.
+G16-003 DATA_LIMIT Tôi bị dị ứng hải sản, tìm nhà hàng có món phù hợp gần trung tâm.
+G16-004 PASS Tôi thích hải sản và muốn ngắm biển, hãy lập lịch một ngày.
+[ChatService] Dùng phương án dự phòng
+G16-005 PASS Tôi không đi bộ nhiều, muốn ăn gần các điểm tham quan.
+[ChatService] Dùng phương án dự phòng
+G16-006 PASS Tôi đi cùng trẻ sáu tuổi, muốn ở gần biển và có quán ăn gia đình.
+G16-007 PASS Tôi có người lớn tuổi, hãy tìm nơi ít leo cầu thang.
+G16-008 PASS Tôi muốn khách sạn gần biển, gần quán ăn và dưới 1 triệu đồng.
+G16-009 PASS Tôi muốn lịch trình tiết kiệm, nhiều điểm miễn phí và có món ăn địa phương.
+G16-010 PASS Tôi muốn đi ba ngày, mỗi ngày có biển, tham quan và ăn ngon.
+G16-011 PASS Tôi muốn ngày đầu gần sân bay, ngày hai đi Sơn Trà, ngày cuối gần trung tâm.
+G16-012 PASS Tôi đến Đà Nẵng lúc 18 giờ, thích ăn cay và muốn đi nhẹ nhàng.
+G16-013 PASS Tôi đi hai người, ngân sách 5 triệu, thích biển và hải sản.
+G16-014 PASS Tôi đi gia đình bốn người, có một bé sáu tuổi, không muốn di chuyển xa.
+G16-015 PASS Tôi muốn vừa tham quan vừa tìm quán ăn trong bán kính gần nhau.
+G16-016 PASS Tôi thích chụp ảnh, không thích nơi quá đông, hãy lập lịch trình hai ngày.
+G16-017 PASS Tôi muốn đi biển sáng, ăn hải sản trưa, nghỉ chiều và đi Cầu Rồng buổi tối.
+G16-018 PASS Tôi muốn đổi khách sạn nhưng giữ nguyên các quán ăn trong lịch.
+G16-019 PASS Tôi muốn bỏ các điểm xa và thay bằng điểm gần biển.
+G16-020 PASS Tôi muốn lịch trình dự phòng nếu ngày mai trời mưa.
+{"total":423,"counts":{"PASS":319,"GAP":65,"DATA_LIMIT":39}}
+🔌 Đã đóng kết nối SQL Server.

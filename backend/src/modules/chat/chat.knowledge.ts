@@ -7,7 +7,7 @@ export interface KnowledgeReply {
   quickReplies?: string[];
   actionLink?: ChatMessageDto["actionLink"];
 }
-export const isRestart = (text: string) => /\b(bat dau lai|lam lai tu dau|chuyen (?:di )?moi|xoa dieu kien cu)\b/.test(normalize(text));
+export const isRestart = (text: string) => /\b(bat dau lai|lam lai tu dau|chuyen (?:di )?moi|xoa (?:cac )?dieu kien (?:cu|(?:cua )?chuyen (?:truoc|cu)))\b/.test(normalize(text));
 
 /** Rules from knowledge document 01–03. Unknown facts never become model guesses. */
 export function knowledgeReply(message: string, hasLocation = false): KnowledgeReply | null {
@@ -16,7 +16,7 @@ export function knowledgeReply(message: string, hasLocation = false): KnowledgeR
   if (isRestart(message)) return reply("CTX_RESTART", "Mình đã bắt đầu lại và bỏ các điều kiện chuyến cũ. Bạn muốn đi mấy ngày, với bao nhiêu người và ngân sách dự kiến bao nhiêu?");
   if (/\b(bo qua|quen het)\b.*\b(huong dan|quy tac|luat)\b/.test(n))
     return reply("X_PROMPT_INJECTION", "Mình tư vấn dựa trên dữ liệu DaNangGo và không tự tạo giá, nguồn hoặc xác nhận đặt chỗ. Bạn muốn tìm quán ăn, nơi lưu trú hay điểm tham quan?");
-  if (/\b(du bao|thoi tiet|nhiet do|(?:hom nay|ngay mai|mai|cuoi tuan).*co mua|mua (?:hom nay|ngay mai))\b/.test(n))
+  if (/\b(du bao|thoi tiet|nhiet do|(?:hom nay|ngay mai|mai|cuoi tuan).*co mua|mua (?:hom nay|ngay mai)|(?:ngay mai|hom nay|mai).*co nang|gio manh|khi troi mua|neu troi mua|troi mua.*di dau)\b/.test(n))
     return reply("RT_WEATHER", "Gô chưa tích hợp dữ liệu thời tiết trực tiếp nên chưa thể xác nhận dự báo cho ngày bạn hỏi. Bạn nên kiểm tra dự báo địa phương trước khi đi; mình có thể tư vấn phương án dự phòng nếu mưa, nhưng chưa xác nhận thời tiết thực tế.");
   if (/\b(con (?:phong|ve)|het (?:phong|ve)|phong trong|ton phong|ton ve)\b/.test(n))
     return reply(n.includes("ve") && !/phong/.test(n) ? "RT_TICKET_AVAIL" : "RT_ROOM_AVAIL", "Gô chưa có dữ liệu phòng trống hoặc tồn vé theo thời gian thực. Giá niêm yết và sức chứa không xác nhận còn chỗ; bạn cần kiểm tra đúng ngày, số khách và loại phòng/vé qua kênh chính thức của cơ sở.");
@@ -24,7 +24,7 @@ export function knowledgeReply(message: string, hasLocation = false): KnowledgeR
     return reply("RT_TRAFFIC", "Gô chưa có dữ liệu giao thông trực tiếp. Thời gian trên bản đồ là ước tính của dịch vụ định tuyến, chưa phản ánh tình trạng kẹt xe hiện tại.", { text: "Mở bản đồ trong DaNangGo", url: "/bando" });
   if (/\b(?:gio nay|bay gio|hien tai).*\b(?:dong khach|co dong|dong khong)|\b(?:dong khach|co dong).*\b(?:khong|hien tai)\b/.test(n))
     return reply("RT_CROWD", "Mình chưa có dữ liệu lượng khách hiện tại nên không thể xác nhận nơi đó đang đông hay vắng. Bạn nên hỏi trực tiếp cơ sở; mình có thể giúp cân nhắc điểm thay thế.");
-  if (/\b(le hoi|su kien|lich bieu dien|may gio.*bieu dien|phun lua|phun nuoc)\b/.test(n))
+  if (/\b(le hoi|su kien|cuoi tuan.*co gi|co gi.*cuoi tuan|chuong trinh bieu dien|cho dem|hoat dong dem|lich bieu dien|may gio.*bieu dien|phun lua|phun nuoc)\b/.test(n))
     return reply("RT_EVENT", "Gô chưa có lịch sự kiện hoặc biểu diễn theo ngày đã được đối chiếu. Mình chưa thể xác nhận giờ diễn; bạn hãy kiểm tra thông báo chính thức của đơn vị tổ chức cho đúng ngày đi.");
   if (/\b(gia (?:hom nay|hien tai|bay gio)|gia ngay mai)\b/.test(n))
     return reply("RT_PRICE_NOW", "Mình chưa có báo giá trực tiếp theo ngày. Giá trong dữ liệu hoặc bảng giá niêm yết có điều kiện áp dụng và ngày đối chiếu riêng, không phải xác nhận giá hôm nay. Bạn muốn kiểm tra cơ sở nào?");
@@ -40,20 +40,26 @@ export function knowledgeReply(message: string, hasLocation = false): KnowledgeR
     return reply("STAY_DAYUSE", "Dữ liệu hiện chưa xác minh cơ sở nhận khách nghỉ ban ngày hoặc giá phòng theo giờ. Mình không dùng giá qua đêm thay cho nhu cầu này. Bạn cần liên hệ cơ sở để xác nhận thời gian nhận/trả, giá và phụ thu.");
   if (/\b(chi duong|duong di|khong ra duong|khong tim (?:duoc )?tuyen|khong (?:muon )?cap gps)\b/.test(n))
     return reply("MOVE_DIRECTIONS_IN_SITE", "Bạn mở Bản đồ trong DaNangGo, chọn địa điểm rồi bấm Chỉ đường để xem tuyến ngay trong web. Nếu không cấp GPS, bạn cho Gô biết điểm xuất phát để làm rõ yêu cầu. Bản đồ có thể dùng tâm thành phố làm điểm dự phòng; đó không phải vị trí thật của bạn. Tuyến và thời gian là ước tính, chưa xác nhận giá cước hoặc tình trạng giao thông.", { text: "Mở bản đồ trong DaNangGo", url: "/bando" });
-  if (!hasLocation && /\b(gan toi|gan day|quanh day|quanh vi tri|gan khach san (?:toi|minh)|quanh khach san)\b/.test(n))
+  if (!hasLocation && /\b(gan toi|gan day|quanh day|quanh vi tri|gan khach san (?:cua )?(?:toi|minh)|quanh khach san)\b/.test(n))
     return reply("MOVE_NO_GPS", "Mình chưa biết điểm xuất phát của bạn. Bạn có thể dùng Quanh vị trí tôi và cấp quyền vị trí, hoặc cho biết tên khách sạn/địa điểm hay khu vực. Mình không tự coi tâm Đà Nẵng là vị trí của bạn.");
   if (/\b(gop y|lam khao sat|phan hoi trai nghiem)\b/.test(n))
     return reply("TRUST_FEEDBACK", "Bạn có thể làm khảo sát để góp ý chuyến đi tổng thể. Nếu muốn đánh giá một cơ sở, hãy mở đúng trang địa điểm và viết đánh giá tại đó; hai loại phản hồi được lưu riêng.", { text: "Góp ý qua khảo sát", url: "/khao-sat?mode=quick" });
   if (/\b(review|danh gia)\b.*\b(nguoi that|that khong|that ko|xac thuc)\b/.test(n))
     return reply("TRUST_VERIFIED_USER", "DaNangGo có kiểm duyệt nội dung đánh giá. Việc đánh giá được duyệt không chứng minh danh tính hay việc người viết đã sử dụng dịch vụ; Gô không khẳng định tất cả là khách đã được xác thực.");
-  if (/\b(danh gia the nao|khach.*khen|khach.*che|du danh gia|diem cao.*it (?:review|danh gia))\b/.test(n))
+  if (/\b(danh gia the nao|khach.*khen|khach.*che|phan nan|tom tat danh gia|danh gia.*duyet|co bao nhieu danh gia|du danh gia|diem cao.*it (?:review|danh gia))\b/.test(n))
     return reply("TRUST_RATING_SUMMARY", "Bạn muốn xem đánh giá của địa điểm nào? Trên trang chi tiết, Tóm tắt đánh giá chỉ dùng các đánh giá đã duyệt của đúng cơ sở và cần ít nhất 5 mẫu; khi chưa đủ, Gô sẽ báo thiếu dữ liệu.");
-  if (/\b(bao (?:sai|loi)|thong tin.*sai|gio mo cua sai)\b/.test(n))
+  if (/\b(bao (?:sai|loi)|thong tin.*sai|gio mo cua sai|gio mo cua.*khong dung|gia.*khong dung|bao.*(?:dia diem|anh)|gui nguon moi)\b/.test(n))
     return reply("TRUST_REPORT_WRONG_INFO", "Bạn cho biết địa điểm, trường thông tin bị sai và nguồn đối chiếu nhé. Chat chưa có luồng gửi báo lỗi dữ liệu cho quản trị viên; mình chưa ghi nhận thành phiếu hay tự sửa thông tin cơ sở.");
+  if (/\b(nguon nao|cap nhat khi nao|dia chi.*xac minh|gia.*lay tu)\b/.test(n))
+    return reply("TRUST_SOURCE", "Bạn muốn kiểm tra nguồn của địa điểm và trường thông tin nào? Gô chỉ hiển thị nguồn/ngày đối chiếu khi hệ thống có lưu; chưa có nguồn thì chưa xác minh, không tự tạo dẫn chứng.");
+  if (/\b(thang nao|mua nao).*\b(da nang|du lich|di)|\bdi da nang.*thang nao\b/.test(n))
+    return reply("TRAVEL_SEASON", "Bạn dự định đi tháng nào và thích biển, tham quan hay nghỉ dưỡng? Gô chưa có bộ dữ liệu khí hậu theo tháng đã đối chiếu hoặc dự báo trực tiếp, nên chưa xếp hạng mùa đẹp nhất; bạn cần kiểm tra điều kiện thời tiết cho đúng ngày đi.");
+  if (/\b(ban cong|ho boi|thang may|dau (?:xe|o to)|do xe|phong rieng|thu cung|phu phi|bao gom thue|khuyet tat|xe lan|co bua sang|nhan phong sau nua dem|gui hanh ly)\b/.test(n))
+    return reply("FACILITY_UNVERIFIED", "Gô chưa có dữ liệu đã xác minh đầy đủ cho tiện nghi hoặc chính sách bạn hỏi, nên chưa xác nhận cơ sở nào đáp ứng. Bạn muốn kiểm tra cơ sở nào và tiện nghi cụ thể nào? Hãy đối chiếu trực tiếp với cơ sở trước khi đặt dịch vụ; không suy tiện nghi từ hạng sao hoặc tên nơi ở.");
   if (/\b(so sanh)\b/.test(n))
-    return reply("COMPARE_TWO", "Bạn muốn so sánh chính xác hai cơ sở/điểm nào và ưu tiên giá, khu vực hay tiện ích? Hiện chat chưa có bảng so sánh tự động; bạn có thể mở trang chi tiết từng nơi. Trường chưa có dữ liệu cần giữ là chưa biết.");
+    return reply("COMPARE_TWO", "Bạn muốn so sánh chính xác hai cơ sở/điểm nào? Ví dụ: So sánh Hilton với Furama. Mình dựng bảng từ dữ liệu DaNangGo; trường chưa có dữ liệu vẫn giữ là chưa biết và không tự xếp hạng nơi nào tốt hơn.");
   if (/\b(chuyen .*sang ngay|giu ngay .*sua|chi sua ngay|chuyen .*sang buoi)\b/.test(n))
-    return reply("COMPARE_PARTIAL_EDIT", "Chat hiện chưa hỗ trợ chuyển hoặc sửa riêng từng mục theo ngày/buổi. Bạn có thể lưu bản nháp rồi chỉnh trong công cụ lịch trình; mình chưa thay đổi toàn bộ lịch để tránh làm mất phần bạn muốn giữ.", { text: "Mở lịch trình của bạn", url: "/lich-trinh" });
+    return reply("COMPARE_PARTIAL_EDIT", "Mình sửa riêng từng mục khi bạn nêu tên địa điểm (hoặc mã mục), ngày và buổi; các phần còn lại được giữ nguyên. Hội thoại này chưa có lịch trình để chỉnh, nên bạn cho mình số ngày, số khách và ngân sách để lập bản nháp trước nhé.", { text: "Mở lịch trình của bạn", url: "/lich-trinh" });
   if (/^\s*(re hon|gan hon|cho khac|bo cai do|bo cho do)[.!?\s]*$/.test(n))
     return reply("CTX_SHORT_REFINE", "Bạn muốn điều chỉnh quán ăn, chỗ ở hay điểm tham quan nào? Cho mình tên cụ thể để giữ các phần còn lại và tránh đổi nhầm.");
   return null;

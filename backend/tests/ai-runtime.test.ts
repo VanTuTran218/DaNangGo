@@ -18,7 +18,7 @@ test("Quota model chat không chặn embedding; model đang cooldown không bị
     embeddings = 0;
   t.mock.method(client.models, "generateContent", async () => {
     calls++;
-    throw new Error("429 RESOURCE_EXHAUSTED");
+    throw new Error("429 RESOURCE_EXHAUSTED PRIVATE_DIAGNOSTIC_TEST");
   });
   t.mock.method(client.models, "embedContent", async () => {
     embeddings++;
@@ -30,6 +30,8 @@ test("Quota model chat không chặn embedding; model đang cooldown không bị
       null,
     );
     assert.ok(aiMetrics().cooldownSeconds > 0);
+    assert.equal(aiMetrics().lastProviderIssue?.code, "RATE_LIMITED");
+    assert.ok(!JSON.stringify(aiMetrics()).includes("PRIVATE_DIAGNOSTIC_TEST"));
     const r = await runEmbedding("embedding-independent", ["Du lịch Đà Nẵng"]);
     assert.equal(r?.embeddings?.[0]?.values?.length, 768);
     assert.equal(embeddings, 1);

@@ -19,6 +19,7 @@ import {
 import { motion } from "framer-motion";
 import type { ChatPlaceCard, ChatTravelPlan } from "@/types/chat";
 import styles from "./ChatPage.module.css";
+import { MenuItems } from "../ResponseDetails";
 import StayFacts from "./StayFacts";
 import TripPreferencesSummary from "../TripPreferencesSummary";
 
@@ -86,6 +87,7 @@ export function PlanPlace({ place }: { place: ChatPlaceCard }) {
             Chỉ đường
           </Link>
         </div>
+        <MenuItems place={place} />
         <StayFacts place={place} />
       </div>
     </div>

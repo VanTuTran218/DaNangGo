@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { dialogueSchema } from "./chat.contract";
 
 const marker = "\n\u001eDANANGGO_ADVISOR:";
 const schema = z
@@ -8,6 +9,7 @@ const schema = z
     excludedStayIds: z.array(z.number().int().positive()).max(60),
     dietaryRestricted: z.boolean().optional(),
     excludedNames: z.array(z.string().max(100)).max(60).optional(),
+    dialogue: dialogueSchema.optional(),
   })
   .strict();
 export type AdvisorState = z.infer<typeof schema>;

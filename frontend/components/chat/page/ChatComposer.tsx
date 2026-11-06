@@ -24,7 +24,7 @@ export function SuggestionChips({
           onClick={() => onSend(text)}
         >
           <Sparkles size={12} />
-          {text}
+          <span>{text}</span>
         </motion.button>
       ))}
     </div>
@@ -98,8 +98,11 @@ export default function ChatComposer({
         </motion.button>
       </form>
       <div className={styles.composerFooter}>
-        <p>Gô có thể sai sót · Hãy kiểm tra lại giờ mở cửa trước khi đến</p>
-        <span aria-label={`${value.length} trên 500 ký tự`}>
+        <p>
+          <span className={styles.safetyDot} />
+          Gô có thể sai sót · Hãy kiểm tra lại giờ mở cửa trước khi đến
+        </p>
+        <span className={styles.charCounter} aria-label={`${value.length} trên 500 ký tự`}>
           {value.length}/500
         </span>
       </div>

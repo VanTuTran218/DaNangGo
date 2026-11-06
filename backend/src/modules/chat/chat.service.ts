@@ -27,6 +27,7 @@ import {
 import {
   searchPlacesForChat,
   findChatAnchor,
+  chatMenus,
   type PlaceSearchRow,
 } from "./chat.repository";
 import { openChatConversation } from "./chat.sessions";
@@ -48,6 +49,13 @@ import { normalize } from "../ai/ai.rules";
 import { knowledgeReply, dietaryConcern, dietaryNotice, isRestart } from "./chat.knowledge";
 import { excludedNames, isExcluded } from "./chat.exclusions";
 import { tripBudget } from "./chat.budget";
+import { understand, planningText } from "./chat.understanding";
+import { conversationalText } from "./chat.language";
+import { readProfile, explicitPreferences, profileSuggestions } from "./chat.profile";
+import { profileCommand } from "./chat.profile-command";
+import { multiNeedReply } from "./chat.multineed";
+import type { PreferenceKey, ResponseMetadata } from "./chat.contract";
+import { preferenceContext } from "./chat.trip-preferences";
 import { advancedReply } from "./chat.advanced";
 import { attachPlanCosts } from "./chat.plan-edit";
 import {
@@ -231,6 +239,7 @@ export async function processUserMessage(
   const conversation = await openChatConversation(input);
   const sessionId = conversation.id;
   const rawMsg = sanitizeText(input.message, MAX_USER_MESSAGE);
+  const analysisText = conversationalText(rawMsg);
   let advisorState: AdvisorState | undefined;
   const history: ChatTurn[] = (await conversation.history()).map((m) => {
     if (m.sender === "AI") {
@@ -250,21 +259,33 @@ export async function processUserMessage(
     previousUserMessages.unshift(advisorState.tripContext);
   const resetAt = previousUserMessages.map(isRestart).lastIndexOf(true);
   if (resetAt >= 0) previousUserMessages.splice(0, resetAt + 1);
+  let savedPreferences: PreferenceKey[] = [];
+  const metadataWarnings: string[] = [];
+  if (input.userId) {
+    try { savedPreferences = await readProfile(input.userId); }
+    catch { metadataWarnings.push("Chưa tải được sở thích đã lưu; Gô chỉ dùng điều kiện trong phiên, chưa xác nhận dữ liệu ghi nhớ lâu dài."); }
+  }
+  const dialogue = understand(rawMsg, isRestart(rawMsg) ? undefined : advisorState?.dialogue, savedPreferences);
+  const profileAnswer = await profileCommand(rawMsg, input.userId, dialogue, savedPreferences, metadataWarnings.length === 0);
   let knowledge = knowledgeReply(rawMsg, Boolean(input.location));
+  // A live-data limitation does not discard a separate, answerable request.
+  const liveNotice = knowledge?.intentKey.startsWith("RT_") && dialogue.needs.length > 0 && /\b(goi y|tim|len lich|lap lich|len ke hoach)\b/.test(analysisText) ? knowledge : null;
+  if (liveNotice) { metadataWarnings.push(liveNotice.content); knowledge = null; }
   if (isRestart(rawMsg)) advisorState = {
     stayId: null,
     excludedStayIds: [],
     dietaryRestricted: false,
     excludedNames: [],
   };
-  const request = resolveChatRequest(rawMsg, previousUserMessages);
+  const request = resolveChatRequest(analysisText, previousUserMessages);
   if (dietaryConcern(rawMsg)) advisorState = {
     ...advisorState,
     stayId: advisorState?.stayId ?? null,
     excludedStayIds: advisorState?.excludedStayIds ?? [],
     dietaryRestricted: true,
   };
-  const dietRestricted = Boolean(advisorState?.dietaryRestricted) || dietaryConcern(request.text);
+  const priorUnknownDiet = Boolean(advisorState?.dietaryRestricted && !advisorState?.dialogue?.context.dietaryRestrictions.length && !profileAnswer);
+  const dietRestricted = dialogue.context.dietaryRestrictions.length > 0 || priorUnknownDiet || dietaryConcern(rawMsg);
   const exclusions = excludedNames([rawMsg], advisorState?.excludedNames);
   if (exclusions.length) advisorState = {
     ...advisorState,
@@ -272,15 +293,16 @@ export async function processUserMessage(
     excludedStayIds: advisorState?.excludedStayIds ?? [],
     excludedNames: exclusions,
   };
-  const advanced = await advancedReply(rawMsg, sessionId, input, {
+  dialogue.context.excludedPlaces = exclusions;
+  const advanced = !knowledge || ["COMPARE_TWO", "COMPARE_PARTIAL_EDIT"].includes(knowledge.intentKey) ? await advancedReply(rawMsg, sessionId, input, {
     dietaryRestricted: dietRestricted,
     excludedNames: exclusions,
     excludedIds: advisorState?.excludedStayIds,
-  });
+  }) : null;
   if (advanced) knowledge = null;
   const localIntent = request.intent;
   const analyzed =
-    advanced || knowledge || localIntent.category !== "other" || request.trip
+    profileAnswer || advanced || knowledge || localIntent.category !== "other" && (dialogue.needs.length > 1 || !/\b(va|vua|ket hop|dong thoi)\b/.test(analysisText)) || request.trip
       ? localIntent
       : await analyzeIntent(request.text, deadline);
   const intent: Intent = {
@@ -297,7 +319,13 @@ export async function processUserMessage(
     party_size: localIntent.party_size ?? analyzed.party_size,
     budget_scope: localIntent.budget !== null ? localIntent.budget_scope : analyzed.budget_scope,
   };
+  if (analyzed.categories?.length && !profileAnswer && !knowledge) dialogue.needs = [...new Set([...dialogue.needs, ...analyzed.categories])];
+  const multiple = dialogue.needs.length > 1 && !profileAnswer && !knowledge && !advanced && intent.category !== "off_topic";
+  const multiPlanning = multiple && !dialogue.pendingQuestions.length && dialogue.context.days !== null && dialogue.context.guests !== null && dialogue.context.budget !== null && (["total", "perPerson", "perDay"].includes(dialogue.context.budgetScope ?? "") || dialogue.context.guests === 1 && dialogue.context.days === 1);
+  if (multiPlanning) request.trip = true;
   let travelPlan: ChatMessageDto["travelPlan"];
+  let recommendationGroups: ChatMessageDto["recommendationGroups"];
+  let responseQuestions: string[] = [];
 
   let replyContent: string = FALLBACK_MESSAGES.noResult;
   let locationNotice = "";
@@ -307,10 +335,12 @@ export async function processUserMessage(
   const missingLocation =
     /quanh|gần đây|gần tôi|gần vị trí|lân cận/i.test(rawMsg) && !input.location;
   const unsupportedDays = request.trip && unsupportedTripDays(rawMsg);
-  const weather = /thoi tiet|du bao|nhiet do|mua hom nay/.test(
+  const weather = !liveNotice && /thoi tiet|du bao|nhiet do|mua hom nay/.test(
     normalize(rawMsg),
   );
-  if (advanced) {
+  if (profileAnswer) {
+    replyContent = profileAnswer.content;
+  } else if (advanced) {
     replyContent = advanced.content;
     travelPlan = advanced.travelPlan;
   } else if (knowledge) {
@@ -327,12 +357,30 @@ export async function processUserMessage(
   } else if (intent.category === "off_topic") {
     // Câu hỏi ngoài phạm vi → từ chối cố định, không gọi LLM thêm
     replyContent = FALLBACK_MESSAGES.refuse;
+  } else if (multiple && !multiPlanning) {
+    const result = dialogue.pendingQuestions.length ? { content: `Gô sẽ phối hợp ${dialogue.needs.map(need => ({ food: "ăn uống", sight: "tham quan", stay: "lưu trú" })[need]).join(", ")}. Để gợi ý đúng ngân sách và thời gian, bạn xác nhận giúp Gô:\n${dialogue.pendingQuestions.map(question => "• " + question.replace("tổng cả nhóm", "tổng cho cả nhóm")).join("\n")}`, groups: [], questions: dialogue.pendingQuestions, warnings: [] } : await multiNeedReply(dialogue, rawMsg, input.location);
+    replyContent = result.content;
+    recommendationGroups = result.groups;
+    responseQuestions = result.questions;
+    metadataWarnings.push(...result.warnings);
   } else if (request.trip) {
     onProgress?.({
       type: "status",
       text: "Gô đang ghép lịch sáng–trưa–chiều–tối và đối chiếu giá, địa điểm…",
     });
-    const brief = tripBrief(rawMsg, previousUserMessages);
+    const originalBrief = tripBrief(analysisText, previousUserMessages);
+    // Parse the canonical facts once: repeating a child's age in the same text
+    // would incorrectly count the child twice. Raw wording is retained for search.
+    const brief = multiPlanning
+      ? tripBrief(planningText(dialogue) + ". " + preferenceContext(originalBrief.preferences), previousUserMessages)
+      : originalBrief;
+    if (multiPlanning) {
+      brief.fresh = originalBrief.fresh;
+      brief.freeOnly = originalBrief.freeOnly;
+      brief.issues = [...new Set([...brief.issues, ...originalBrief.issues])];
+      brief.request.interests = originalBrief.request.interests;
+      brief.text += ". " + analysisText;
+    }
     advisorState = {
       stayId: brief.fresh ? null : advisorState?.stayId ?? null,
       excludedStayIds: brief.fresh ? [] : advisorState?.excludedStayIds ?? [],
@@ -346,6 +394,7 @@ export async function processUserMessage(
         brief.issues.join("\n\n") +
         "\n\nMình chưa tạo lịch mới để tránh xếp sai điều kiện của chuyến đi.";
     } else if (brief.questions.length) {
+      responseQuestions = brief.questions;
       planningIssue = true;
       replyContent = "Để không hiểu sai ngân sách hoặc tính nhầm đêm lưu trú, bạn xác nhận giúp mình:\n" + brief.questions.map(q => "• " + q).join("\n");
     } else {
@@ -415,7 +464,7 @@ export async function processUserMessage(
     replyContent = dietaryNotice;
   } else if (intent.budget !== null && intent.budget > 0 && intent.budget_scope === null && intent.party_size !== 1) {
     planningIssue = true;
-    replyContent = "Số tiền bạn nêu là cho mỗi người, mỗi phòng mỗi đêm hay tổng cả nhóm? Bạn cho biết số người và phạm vi giá để mình lọc đúng nhé.";
+    replyContent = "Ngân sách bạn nêu là cho mỗi người, mỗi phòng mỗi đêm hay tổng cả nhóm? Bạn cho biết số người và phạm vi giá để Gô lọc đúng nhé.";
   } else if (intent.category === "other") {
     replyContent =
       "👋 Mình là Gô, trợ lý du lịch DaNangGo. Bạn muốn tìm quán ăn, chỗ ở hay điểm tham quan? Hãy cho mình biết khu vực và ngân sách nhé!";
@@ -541,6 +590,7 @@ export async function processUserMessage(
 
   if (
     !planningIssue &&
+    !profileAnswer && !recommendationGroups &&
     !advanced &&
     !knowledge &&
     !unsupportedDays &&
@@ -564,6 +614,7 @@ export async function processUserMessage(
     );
   } else if (
     !planningIssue &&
+    !profileAnswer && !recommendationGroups &&
     !advanced &&
     !knowledge &&
     !unsupportedDays &&
@@ -582,6 +633,8 @@ export async function processUserMessage(
     );
   }
   replyContent += locationNotice;
+  if (liveNotice) replyContent = liveNotice.content + "\n\n" + replyContent;
+  replyContent = replyContent.replace(/mình/gi, "Gô");
   if (!missingLocation && intent.category === "food" && intent.tastes.length)
     replyContent += `\n\nKhẩu vị: ${intent.tastes.join(", ")} (theo nhãn món ăn trong dữ liệu). Bạn nên xác nhận cách nêm nếm với quán trước khi gọi món.`;
   if (
@@ -591,7 +644,9 @@ export async function processUserMessage(
     replyContent +=
       "\n\nDữ liệu chưa xác minh đầy đủ thành phần, dị ứng hoặc mức cay. Bạn cần hỏi trực tiếp quán; Gô chưa thể bảo đảm các tiêu chí này.";
   const meta = getCategoryMeta(intent.category);
-  const quickReplies = advanced && !travelPlan
+  const quickReplies = profileAnswer ? [] : recommendationGroups
+    ? responseQuestions.length ? [] : dialogue.needs.flatMap(need => need === "food" ? ["Gợi ý món ăn địa phương"] : need === "sight" ? ["Ưu tiên điểm tham quan miễn phí"] : ["Tìm lưu trú gần biển"])
+    : advanced && !travelPlan
     ? []
     : knowledge
     ? knowledge.quickReplies ?? []
@@ -612,15 +667,37 @@ export async function processUserMessage(
     ? { text: "Mở công cụ tạo và lưu lịch trình", url: "/lich-trinh/tao-moi" }
     : meta.actionLink;
 
+  if (!responseQuestions.length && travelPlan?.questions?.length) responseQuestions = travelPlan.questions.slice(0, 3);
+  if (!responseQuestions.length && !recommendationGroups) responseQuestions = (replyContent.match(/[^\n.!?]+\?/g) ?? []).map(question => question.trim()).filter(question => question.length <= 250).slice(0, 3);
+  const newlyStated = explicitPreferences(rawMsg);
+  const suggestions = !profileAnswer && input.userId && responseQuestions.length < 3
+    ? profileSuggestions(newlyStated.filter(key => !savedPreferences.includes(key))) : [];
+  if (suggestions.length) dialogue.profilePending = suggestions.map(item => item.key);
+  const kind: ResponseMetadata["intent"] = profileAnswer ? "PROFILE" : advanced?.comparison ? "COMPARE" : advanced?.travelPlan ? "MODIFY_ITINERARY"
+    : knowledge?.intentKey === "RT_WEATHER" ? "WEATHER" : knowledge?.intentKey === "RT_EVENT" ? "EVENT" : knowledge?.intentKey.startsWith("MOVE_") ? "DIRECTIONS"
+    : intent.category === "off_topic" ? "OFF_TOPIC" : request.trip || multiple && dialogue.context.budget !== null ? "ITINERARY" : "SEARCH";
+  const allCards = [...cards, ...(recommendationGroups?.flatMap(group => group.places) ?? []), ...(travelPlan?.groups.flatMap(group => group.places) ?? []), ...(travelPlan?.days.flatMap(day => day.periods.flatMap(period => period.items.flatMap(item => item.place ? [item.place] : []))) ?? []), ...(advanced?.comparison?.places ?? [])];
+  const foodIds = allCards.filter(card => card.placeType === "RESTAURANT").map(card => card.placeId);
+  if (foodIds.length) {
+    try { const menus = await chatMenus(foodIds); for (const card of allCards) if (card.placeType === "RESTAURANT") card.menuItems = menus.get(card.placeId) ?? []; }
+    catch { metadataWarnings.push("Chưa tải được tên món trong menu; Gô không tự tạo món hoặc giá món."); }
+  }
+  const sources = allCards.flatMap(card => [card.stayFacts?.hours, ...(card.stayFacts?.rooms ?? []), ...(card.stayFacts?.publicRates ?? [])].flatMap(fact => fact ? [{ url: fact.sourceUrl, checkedOn: fact.checkedOn, label: card.name, scope: "Thông tin lưu trú công bố; chưa xác nhận giá hoặc phòng theo ngày" }] : []));
+  const metadata: ResponseMetadata = { intent: kind, secondaryIntents: [...dialogue.needs.map(need => ({ food: "FOOD", sight: "SIGHT", stay: "STAY" })[need]), ...(liveNotice ? [liveNotice.intentKey === "RT_WEATHER" ? "WEATHER" : liveNotice.intentKey === "RT_EVENT" ? "EVENT" : "LIVE_DATA"] : [])], needsClarification: responseQuestions.length > 0, questions: responseQuestions,
+    confirmedContext: dialogue.context, profileSuggestions: suggestions, sources: [...new Map(sources.map(source => [source.url + source.checkedOn, source])).values()], warnings: metadataWarnings };
+  advisorState = { stayId: null, excludedStayIds: [], ...advisorState, dietaryRestricted: dietRestricted, dialogue };
+
   const aiMessage: ChatMessageDto = {
     id: `ai_${randomUUID()}`,
     sender: "AI",
     content: replyContent!,
+    ...metadata,
     places: cards.length > 0 ? cards : undefined,
     travelPlan,
+    ...(recommendationGroups ? { recommendationGroups } : {}),
     ...(advanced?.comparison ? { comparison: advanced.comparison } : {}),
     quickReplies,
-    actionLink: intent.category === "off_topic" ? undefined : actionLink,
+    actionLink: intent.category === "off_topic" || recommendationGroups || profileAnswer ? undefined : actionLink,
     createdAt: new Date().toISOString(),
   };
 

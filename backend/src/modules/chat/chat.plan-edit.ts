@@ -1,6 +1,6 @@
 import { createHash, randomUUID } from "node:crypto";
 import { normalize } from "../ai/ai.rules";
-import { clock, minutes } from "./chat.trip-preferences";
+import { clock, minutes, tripPreferences, preferenceContext, transportLabels } from "./chat.trip-preferences";
 import { placeCard } from "./chat.advisor";
 import { resolvePlaceName } from "./chat.compare";
 import type { PlaceSearchRow } from "./chat.repository";
@@ -14,9 +14,17 @@ const dayNumber = (text: string) => {
 };
 const slotNumber = (text: string) => {
   const n = normalize(text);
-  return ["sang", "trua", "chieu", "toi"].findIndex(name => new RegExp(`\\b(?:buoi |vao )?${name}\\b`).test(n.replace(/\btoi muon\b/g, "")));
+  return ["sang", "trua", "chieu", "toi"].findIndex(name => new RegExp(`\\b(?:buoi |vao )?${name}\\b`).test(n.replace(/\b(?:toi muon|cho toi|giup toi)\b/g, "")));
 };
-export const isPlanEdit = (text: string) => /\b(bo|xoa|chuyen|thay|doi|them|chi sua|giu ngay)\b/.test(normalize(text));
+// Unaccented “đi bộ” contains “bo”, but it is a transport preference, not “bỏ”.
+const commandText = (text: string) => normalize(text).replace(/\bdi bo\b/g, "di __");
+export const isPlanEdit = (text: string) => /\b(bo|xoa|chuyen|thay|doi|them|chi sua|giu ngay)\b/.test(commandText(text));
+function mentionedPlaces(text: string, catalog: PlaceSearchRow[]) {
+  return catalog.filter(row => {
+    if (text.includes(normalize(row.name))) return true;
+    return ["ba na", "my khe", "cau rong", "son tra", "ngu hanh son"].some(alias => new RegExp(`\\b${alias}\\b`).test(text) && resolvePlaceName(alias, [row]).length > 0);
+  });
+}
 
 export function withPlanItemIds(plan: ChatTravelPlan): ChatTravelPlan {
   const output = structuredClone(plan);
@@ -48,7 +56,20 @@ function windowFor(plan: ChatTravelPlan, day: number, slot: number) {
     end: Math.min(range[1]!, day === plan.dayCount && plan.preferences?.departureTime ? minutes(plan.preferences.departureTime) - 90 : 1440),
   };
 }
+function durationOf(item: ChatPlanItem) {
+  return item.durationMinutes ?? (item.kind === "rest" || item.place?.placeType === "ATTRACTION" ? 90 : 60);
+}
+function gapStart(items: ChatPlanItem[], window: { start: number; end: number }, duration: number) {
+  let start = window.start;
+  for (const item of [...items].sort((a, b) => a.title.localeCompare(b.title))) {
+    const at = minutes(item.title.slice(0, 5));
+    if (start + duration <= at) return start;
+    if (start < at + durationOf(item)) start = at + durationOf(item) + 30;
+  }
+  return start + duration <= window.end ? start : null;
+}
 function recompute(plan: ChatTravelPlan, affected: Set<number>) {
+  plan.revision = (plan.revision ?? 0) + 1;
   const all = plan.days.flatMap(day => day.periods.flatMap(period => period.items));
   const attractions = [...new Map(all.filter(item => item.place?.placeType === "ATTRACTION").map(item => [item.place!.placeId, item])).values()];
   const tickets = attractions.every(item => item.estimatedCost !== null && item.estimatedCost !== undefined)
@@ -77,6 +98,44 @@ function recompute(plan: ChatTravelPlan, affected: Set<number>) {
   return plan;
 }
 
+/** Keep manual edits when the next turn only changes transport or arrival/departure. */
+export function updateEditedPlanPreferences(original: ChatTravelPlan, message: string): PlanEditResult {
+  const parsed = tripPreferences([original.preferences ? preferenceContext(original.preferences) : "", message]);
+  if (parsed.issues.length) return { content: parsed.issues.join("\n") + " Mình giữ nguyên lịch vừa chỉnh." };
+  const plan = structuredClone(original);
+  const old = plan.preferences;
+  plan.preferences = parsed.value;
+  if (plan.dayCount === 1 && plan.preferences.arrivalTime && plan.preferences.departureTime && plan.preferences.arrivalTime >= plan.preferences.departureTime)
+    return { content: "Giờ về phải sau giờ đến trong chuyến một ngày. Mình giữ nguyên lịch trước khi bạn xác nhận lại." };
+  const affected = new Set<number>();
+  if (old?.arrivalTime !== plan.preferences.arrivalTime) affected.add(1);
+  if (old?.departureTime !== plan.preferences.departureTime) affected.add(plan.dayCount);
+  const removed: string[] = [];
+  for (const day of plan.days.filter(day => affected.has(day.day))) {
+    day.periods.forEach((period, pi) => {
+      const window = windowFor(plan, day.day, pi);
+      period.items = period.items.filter(item => {
+        if (item.kind === "arrival" || item.kind === "departure") return false;
+        const at = minutes(item.title.slice(0, 5));
+        const fits = at >= window.start && at + durationOf(item) <= window.end;
+        if (!fits && item.place) removed.push(item.place.name);
+        return fits;
+      });
+    });
+    const index = (time: string) => minutes(time) < 720 ? 0 : minutes(time) < 900 ? 1 : minutes(time) < 1080 ? 2 : 3;
+    if (day.day === 1 && plan.preferences.arrivalTime) day.periods[index(plan.preferences.arrivalTime)]!.items.push({ id: `item_arrival_${day.day}`, kind: "arrival", title: `${plan.preferences.arrivalTime} · Đến Đà Nẵng`, detail: "Chừa dự kiến 60 phút cho thủ tục và di chuyển, chưa phải thời gian tuyến thực tế." });
+    if (day.day === plan.dayCount && plan.preferences.departureTime) {
+      const time = clock(Math.max(0, minutes(plan.preferences.departureTime) - 90));
+      day.periods[index(time)]!.items.push({ id: `item_departure_${day.day}`, kind: "departure", title: `${time} · Chuẩn bị rời Đà Nẵng`, detail: `Giờ về ${plan.preferences.departureTime}; chừa dự kiến 90 phút, cần kiểm tra với nhà vận chuyển.` });
+    }
+  }
+  if (plan.preferences.transport) {
+    plan.notes = plan.notes.filter(note => !note.startsWith("Phương tiện dự kiến:"));
+    plan.notes.push(`Phương tiện dự kiến: ${transportLabels[plan.preferences.transport]}. Chưa xác nhận thời gian tuyến, giá cước hoặc giao thông; các mục đã chỉnh vẫn được giữ.`);
+  }
+  return { content: `Đã cập nhật giờ/phương tiện và giữ các chỉnh sửa trước đó.${removed.length ? ` Các mục không còn vừa khung giờ mới đã được bỏ: ${[...new Set(removed)].join(", ")}.` : ""} Chưa tự thêm điểm để lấp giờ trống.`, plan: recompute(plan, affected) };
+}
+
 export type PlanEditResult = { content: string; plan?: ChatTravelPlan };
 /** Copy-on-write: only the explicitly selected day/slot/items change. */
 export function editTravelPlan(
@@ -85,31 +144,29 @@ export function editTravelPlan(
   catalog: PlaceSearchRow[],
   options: { dietaryRestricted?: boolean; excludedIds?: number[]; excludedNames?: string[] } = {},
 ): PlanEditResult {
-  const n = normalize(message);
-  const action = /\b(chuyen)\b/.test(n) ? "move" : /\b(thay|doi)\b/.test(n) ? "replace" : /\b(bo|xoa)\b/.test(n) ? "remove" : /\bthem\b/.test(n) ? "add" : null;
+  let n = normalize(message);
+  const command = commandText(message);
+  const action = /\b(chuyen)\b/.test(command) ? "move" : /\b(thay|doi)\b/.test(command) ? "replace" : /\b(bo|xoa)\b/.test(command) ? "remove" : /\bthem\b/.test(command) ? "add" : null;
   if (!action) return { content: "Bạn muốn sửa mục nào ở ngày nào: thêm, bỏ, thay hay chuyển sang buổi khác? Mình sẽ giữ nguyên những phần bạn không yêu cầu đổi." };
+  if ([...command.matchAll(/\b(chuyen|thay|doi|bo|xoa|them)\b/g)].length > 1) return { content: "Bạn gửi mỗi lượt một thao tác thêm, bỏ, thay hoặc chuyển nhé để mình xác nhận chính xác từng thay đổi; lịch hiện tại được giữ nguyên." };
+  n = n.slice(command.search(/\b(chuyen|thay|doi|bo|xoa|them)\b/));
   const plan = withPlanItemIds(original);
-  const split = n.split(/\bsang\s+(?=ngay|buoi|sang|trua|chieu|toi)/);
-  const targetText = action === "move" ? split[split.length - 1]! : n;
-  const sourceText = action === "move" ? split[0]! : n.split(/\bbang\b/)[0]!;
+  const separator = n.match(/\bsang\s+(?=ngay|buoi|sang|trua|chieu|toi)/);
+  const targetText = action === "move" && separator ? n.slice(separator.index! + separator[0].length) : n;
+  const sourceText = action === "move" && separator ? n.slice(0, separator.index) : n.split(/\bbang\b/)[0]!;
   const sourceDay = dayNumber(sourceText);
   const sourceSlot = slotNumber(sourceText);
   const targetDay = dayNumber(targetText) ?? (action === "move" ? sourceDay : undefined);
   const targetSlot = slotNumber(targetText);
-  const named = catalog.filter(row => {
-    const name = normalize(row.name);
-    if (sourceText.includes(name)) return true;
-    for (const alias of ["ba na", "my khe", "cau rong", "son tra", "ngu hanh son"])
-      if (new RegExp(`\\b${alias}\\b`).test(sourceText) && resolvePlaceName(alias, [row]).length) return true;
-    return false;
-  });
+  if (sourceDay !== undefined && (sourceDay < 1 || sourceDay > plan.dayCount)) return { content: `Lịch hiện có ${plan.dayCount} ngày; ngày cần sửa chưa hợp lệ. Mình giữ nguyên lịch.` };
+  const named = mentionedPlaces(sourceText, catalog);
   const entries = plan.days.flatMap(day => day.periods.flatMap((period, pi) => period.items.map(item => ({ day, pi, period, item }))));
   const id = message.match(/\bitem_[a-zA-Z0-9_-]+\b/)?.[0];
   const type = /\b(quan an|an sang|an trua|an toi|mon an|bua an)\b/.test(sourceText) ? "RESTAURANT" : /\b(diem|tham quan|check.in)\b/.test(sourceText) ? "ATTRACTION" : null;
-  let matches = entries.filter(entry => (!sourceDay || entry.day.day === sourceDay) && (sourceSlot < 0 || entry.pi === sourceSlot)
+  const matches = entries.filter(entry => (sourceDay === undefined || entry.day.day === sourceDay) && (sourceSlot < 0 || entry.pi === sourceSlot)
     && (id ? entry.item.id === id : named.length ? named.some(row => row.placeId === entry.item.place?.placeId) : type ? entry.item.place?.placeType === type : false));
   if (action !== "add" && !matches.length) return { content: "Mình chưa xác định được mục trong lịch cần sửa. Bạn nêu tên địa điểm (hoặc mã mục), ngày và buổi nhé; lịch hiện tại được giữ nguyên." };
-  if (action !== "add" && new Set(matches.map(entry => entry.item.place?.placeId ?? entry.item.id)).size > 1 || action === "move" && matches.length > 1)
+  if ((action !== "add" && new Set(matches.map(entry => entry.item.place?.placeId ?? entry.item.id)).size > 1) || (action === "move" && matches.length > 1))
     return { content: "Có nhiều mục khớp yêu cầu. Bạn chỉ rõ tên địa điểm, ngày và buổi để mình sửa đúng một mục nhé." };
   const affected = new Set<number>();
   if (action === "remove") {
@@ -130,10 +187,9 @@ export function editTravelPlan(
   if (action === "move") {
     const entry = matches[0]!;
     if (entry.day.day === dayNo && entry.pi === slotNo) return { content: "Mục này đã ở đúng ngày và buổi bạn yêu cầu; mình giữ nguyên lịch." };
-    const duration = entry.item.durationMinutes ?? (entry.item.place?.placeType === "ATTRACTION" ? 90 : 60);
-    const occupied = period.items.filter(item => item.kind !== "rest");
-    const start = Math.max(window.start, ...occupied.map(item => minutes(item.title.slice(0, 5)) + (item.durationMinutes ?? 60) + 30));
-    if (start + duration > window.end) return { content: "Buổi đích không đủ thời gian trống để chuyển mục này. Mình giữ nguyên lịch; bạn có thể chọn buổi khác hoặc bỏ một mục trước." };
+    const duration = durationOf(entry.item);
+    const start = gapStart(period.items, window, duration);
+    if (start === null) return { content: "Buổi đích không đủ thời gian trống để chuyển mục này. Mình giữ nguyên lịch; bạn có thể chọn buổi khác hoặc bỏ một mục trước." };
     if (entry.item.place?.placeType === "ATTRACTION" && (plan.preferences?.pace === "gentle" || plan.preferences?.avoidWalking || plan.preferences?.hasChildren || plan.preferences?.seniors)
       && day.periods.some(period => period.items.some(item => item.place?.placeType === "ATTRACTION" && item.id !== entry.item.id))) return { content: "Ngày đích đã có điểm tham quan chính. Mình giữ giới hạn lịch nhẹ của nhóm, chưa chuyển thêm điểm." };
     entry.period.items = entry.period.items.filter(item => item.id !== entry.item.id);
@@ -146,16 +202,23 @@ export function editTravelPlan(
   if (requestedType === "RESTAURANT" && options.dietaryRestricted) return { content: "Nhóm có điều kiện ăn kiêng/dị ứng đang được giữ. Mình chưa thay hoặc thêm quán khi chưa có xác minh thành phần phù hợp; các mục còn lại giữ nguyên." };
   const used = new Set(entries.flatMap(entry => entry.item.place ? [entry.item.place.placeId] : []));
   const replacementText = action === "replace" ? message.split(/\s+bằng\s+|\s+bang\s+/i)[1] : undefined;
-  const explicitReplacement = replacementText && !/\b(diem|quan|mien phi|khac|re hon)\b/.test(normalize(replacementText)) ? resolvePlaceName(replacementText, catalog) : [];
-  if (replacementText && !/\b(diem|quan|mien phi|khac|re hon)\b/.test(normalize(replacementText)) && explicitReplacement.length !== 1)
+  const explicitReplacement = replacementText ? mentionedPlaces(normalize(replacementText), catalog) : [];
+  if (explicitReplacement.length > 1 || (replacementText && !/\b(diem mien phi|quan khac|diem khac|re hon|mien phi)\b/.test(normalize(replacementText)) && explicitReplacement.length !== 1))
     return { content: "Tên địa điểm thay thế chưa khớp duy nhất với dữ liệu công khai. Bạn nêu tên cụ thể hoặc mở trang chi tiết để xác nhận nhé." };
   const namedAdd = action === "add" && named.length ? named : null;
+  if (action === "add" && !namedAdd && !/\b(diem (?:check.in|chup|tham quan|mien phi|khac)|quan an|bua an)\b/.test(n)) return { content: "Tên địa điểm muốn thêm chưa khớp dữ liệu công khai. Bạn nêu tên cụ thể hoặc yêu cầu một điểm tham quan/quán ăn, kèm ngày và buổi nhé." };
   const availableRows = explicitReplacement.length ? explicitReplacement : namedAdd ?? catalog;
-  const start = originalItem ? minutes(originalItem.title.slice(0, 5)) : Math.max(window.start, ...period.items.filter(item => item.kind !== "rest").map(item => minutes(item.title.slice(0, 5)) + (item.durationMinutes ?? 60) + 30));
+  const originalStart = originalItem ? minutes(originalItem.title.slice(0, 5)) : null;
+  const candidateStart = (row: PlaceSearchRow) => {
+    const duration = row.placeType === "ATTRACTION" ? row.visitDurationMinutes ?? 90 : 60;
+    if (originalStart === null) return gapStart(period.items, window, duration);
+    if (originalStart < window.start || originalStart + duration > window.end) return null;
+    return period.items.some(item => item.id !== originalItem?.id && originalStart < minutes(item.title.slice(0, 5)) + durationOf(item) && originalStart + duration > minutes(item.title.slice(0, 5))) ? null : originalStart;
+  };
   let candidates = availableRows.filter(row => row.placeType === requestedType && !used.has(row.placeId)
     && !options.excludedIds?.includes(row.placeId) && !options.excludedNames?.some(term => normalize(row.name).includes(normalize(term)))
     && (!/mien phi/.test(n) || row.priceMin === 0)
-    && start + (row.placeType === "ATTRACTION" ? row.visitDurationMinutes ?? 90 : 60) <= window.end);
+    && candidateStart(row) !== null);
   if (plan.preferences?.avoidWalking || plan.preferences?.pace === "gentle" || plan.preferences?.seniors || plan.preferences?.hasChildren) {
     candidates = candidates.filter(row => (row.visitDurationMinutes ?? 90) < 240 && !/bac thang|leo nui|trekking|duong doc/.test(normalize(`${row.name} ${row.description ?? ""}`)));
     if (action === "add" && requestedType === "ATTRACTION" && day.periods.some(period => period.items.some(item => item.place?.placeType === "ATTRACTION"))) return { content: "Ngày này đã có điểm tham quan chính; mình giữ nhịp nhẹ của nhóm, chưa thêm điểm." };
@@ -163,6 +226,7 @@ export function editTravelPlan(
   if (!candidates.length) return { content: "Chưa có địa điểm thay thế/thêm mới đúng loại, điều kiện loại trừ và thời gian trống. Mình giữ nguyên lịch; bạn có thể chọn buổi khác hoặc nới điều kiện cụ thể." };
   if (matches.length > 1) return { content: "Địa điểm này kéo dài qua nhiều buổi. Bạn chỉ rõ buổi cần thay; mình chưa sửa để tránh giữ lại nửa lịch ở điểm cũ." };
   const selected = candidates[0]!;
+  const start = candidateStart(selected)!;
   const newItem: ChatPlanItem = {
     id: originalItem?.id ?? `item_${randomUUID()}`,
     title: originalItem?.title ?? `${clock(start)} · ${requestedType === "RESTAURANT" ? "Ăn uống" : "Tham quan & check-in"}`,

@@ -23,6 +23,7 @@ async function main() {
       "014_planner_catalog_preferences.sql",
       "016_public_place_provenance.sql",
       "017_public_stay_details.sql",
+      "018_ai_user_preferences.sql",
     ]) {
       const migration = readFileSync(
         resolve(__dirname, "../../../database/migrations", file),

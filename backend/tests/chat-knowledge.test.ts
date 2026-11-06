@@ -119,6 +119,8 @@ test("Không xếp lại điểm tham quan buổi chiều thành điểm dạo t
 test("Handler dùng quy tắc khi không có key, không gọi DB/LLM để đoán dữ liệu trực tiếp", async () => {
   const guestId = randomUUID();
   for (const [message] of cases) {
+    // Named comparison now retrieves SQL facts; covered by chat-advanced integration.
+    if (knowledgeReply(message)?.intentKey === "COMPARE_TWO") continue;
     const events: string[] = [];
     const result = await processUserMessage({ message, guestId }, event => events.push(event.type));
     assert.ok(result.message.content);

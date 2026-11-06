@@ -15,6 +15,8 @@ import {
 } from "./chat.middleware";
 import { ChatSessionError } from "./chat.sessions";
 import { z } from "zod";
+import { readProfile, writeProfile, deleteProfile, profileWriteSchema } from "./chat.profile";
+import { preferenceKeySchema, preferenceLabels } from "./chat.contract";
 
 export const chatInputSchema = z
   .object({
@@ -41,6 +43,26 @@ const chatRouter = Router();
 chatRouter.use((_req, res, next) => {
   res.set("Cache-Control", "no-store");
   next();
+});
+
+chatRouter.get("/profile", createChatRateLimit(60), chatIdentity, async (req, res, next) => {
+  if (!req.user?.user_id) { res.status(401).json({ error: "Bạn đăng nhập để quản lý sở thích lưu lâu dài nhé." }); return; }
+  try { const keys = await readProfile(req.user.user_id); res.json({ preferences: keys.map(key => ({ key, label: preferenceLabels[key], sensitive: key.startsWith("allergy_") })) }); }
+  catch (error) { next(error); }
+});
+chatRouter.patch("/profile", createChatRateLimit(30), chatIdentity, async (req, res, next) => {
+  if (!req.user?.user_id) { res.status(401).json({ error: "Phiên khách chỉ dùng bộ nhớ tạm; bạn đăng nhập để lưu lâu dài." }); return; }
+  const body = profileWriteSchema.safeParse(req.body);
+  if (!body.success) { res.status(400).json({ error: "Chỉ lưu các ưu tiên được chọn khi có xác nhận đồng ý; không nhận thông tin tài khoản trong nội dung yêu cầu." }); return; }
+  try { await writeProfile(req.user.user_id, body.data.keys, "UI_CONFIRM"); const keys = await readProfile(req.user.user_id); res.json({ preferences: keys.map(key => ({ key, label: preferenceLabels[key], sensitive: key.startsWith("allergy_") })) }); }
+  catch (error) { next(error); }
+});
+chatRouter.delete("/profile", createChatRateLimit(30), chatIdentity, async (req, res, next) => {
+  if (!req.user?.user_id) { res.status(401).json({ error: "Bạn đăng nhập để xóa sở thích của tài khoản nhé." }); return; }
+  const body = z.union([z.object({ keys: z.array(preferenceKeySchema).min(1).max(30) }).strict(), z.object({ all: z.literal(true) }).strict()]).safeParse(req.body);
+  if (!body.success) { res.status(400).json({ error: "Bạn chọn đúng sở thích cần xóa hoặc xác nhận xóa tất cả." }); return; }
+  try { await deleteProfile(req.user.user_id, "keys" in body.data ? body.data.keys : undefined); res.json({ message: "Đã xóa sở thích được chọn của tài khoản này." }); }
+  catch (error) { next(error); }
 });
 
 // Gửi tin nhắn đến AI Assistant

@@ -1,5 +1,6 @@
 import { Menu, PanelRightClose, PanelRightOpen, RotateCcw } from "lucide-react";
 import { useReducedMotion } from "framer-motion";
+import ProfileMemory from "../ProfileMemory";
 import BotLogo from "../BotLogo";
 import styles from "./ChatPage.module.css";
 
@@ -33,11 +34,11 @@ export default function ChatHeader({
       </button>
       <div className={styles.headerAvatar}>
         <BotLogo size={42} animated={!reduce} />
-        <span />
+        <span className={styles.onlineBadge} />
       </div>
       <div className={styles.headerTitle}>
         <h1>
-          Gô <span>AI BOT</span>
+          Gô <span>AI CONCIERGE</span>
         </h1>
         <p>
           {loading ? (
@@ -45,12 +46,13 @@ export default function ChatHeader({
           ) : (
             <>
               <i />
-              Trợ lý du lịch Đà Nẵng · Trực tuyến
+              Trợ lý du lịch Đà Nẵng · Trực tuyến 24/7
             </>
           )}
         </p>
       </div>
       <div className={styles.headerActions}>
+        <ProfileMemory />
         <button
           type="button"
           className={styles.headerButton}

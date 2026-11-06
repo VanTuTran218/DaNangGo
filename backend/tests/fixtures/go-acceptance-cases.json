@@ -1,0 +1,4276 @@
+[
+  {
+    "id": "G01-001",
+    "group": 1,
+    "groupTitle": "Hỏi chung về Đà Nẵng",
+    "sourceLine": 6,
+    "input": "Đà Nẵng có gì vui?",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G01-002",
+    "group": 1,
+    "groupTitle": "Hỏi chung về Đà Nẵng",
+    "sourceLine": 7,
+    "input": "Đà Nẵng nên đi đâu?",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G01-003",
+    "group": 1,
+    "groupTitle": "Hỏi chung về Đà Nẵng",
+    "sourceLine": 8,
+    "input": "Lần đầu đến Đà Nẵng nên tham quan gì?",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G01-004",
+    "group": 1,
+    "groupTitle": "Hỏi chung về Đà Nẵng",
+    "sourceLine": 9,
+    "input": "Đà Nẵng có địa điểm nào nổi tiếng?",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G01-005",
+    "group": 1,
+    "groupTitle": "Hỏi chung về Đà Nẵng",
+    "sourceLine": 10,
+    "input": "Địa điểm nào phù hợp đi cùng gia đình?",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G01-006",
+    "group": 1,
+    "groupTitle": "Hỏi chung về Đà Nẵng",
+    "sourceLine": 11,
+    "input": "Địa điểm nào phù hợp cho cặp đôi?",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G01-007",
+    "group": 1,
+    "groupTitle": "Hỏi chung về Đà Nẵng",
+    "sourceLine": 12,
+    "input": "Địa điểm nào phù hợp đi một mình?",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G01-008",
+    "group": 1,
+    "groupTitle": "Hỏi chung về Đà Nẵng",
+    "sourceLine": 13,
+    "input": "Địa điểm nào phù hợp cho trẻ em?",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G01-009",
+    "group": 1,
+    "groupTitle": "Hỏi chung về Đà Nẵng",
+    "sourceLine": 14,
+    "input": "Địa điểm nào phù hợp cho người lớn tuổi?",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G01-010",
+    "group": 1,
+    "groupTitle": "Hỏi chung về Đà Nẵng",
+    "sourceLine": 15,
+    "input": "Đà Nẵng có gì miễn phí?",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G01-011",
+    "group": 1,
+    "groupTitle": "Hỏi chung về Đà Nẵng",
+    "sourceLine": 16,
+    "input": "Địa điểm nào đẹp để chụp ảnh?",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G01-012",
+    "group": 1,
+    "groupTitle": "Hỏi chung về Đà Nẵng",
+    "sourceLine": 17,
+    "input": "Địa điểm nào yên tĩnh?",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G01-013",
+    "group": 1,
+    "groupTitle": "Hỏi chung về Đà Nẵng",
+    "sourceLine": 18,
+    "input": "Địa điểm nào đông vui về đêm?",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G01-014",
+    "group": 1,
+    "groupTitle": "Hỏi chung về Đà Nẵng",
+    "sourceLine": 19,
+    "input": "Đà Nẵng có địa điểm nào trong nhà không?",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G01-015",
+    "group": 1,
+    "groupTitle": "Hỏi chung về Đà Nẵng",
+    "sourceLine": 20,
+    "input": "Trời mưa ở Đà Nẵng thì đi đâu?",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G01-016",
+    "group": 1,
+    "groupTitle": "Hỏi chung về Đà Nẵng",
+    "sourceLine": 21,
+    "input": "Đà Nẵng có gì đặc biệt vào cuối tuần?",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G01-017",
+    "group": 1,
+    "groupTitle": "Hỏi chung về Đà Nẵng",
+    "sourceLine": 22,
+    "input": "Nên đi Đà Nẵng vào tháng nào?",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G01-018",
+    "group": 1,
+    "groupTitle": "Hỏi chung về Đà Nẵng",
+    "sourceLine": 23,
+    "input": "Mùa nào đi Đà Nẵng đẹp nhất?",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G01-019",
+    "group": 1,
+    "groupTitle": "Hỏi chung về Đà Nẵng",
+    "sourceLine": 24,
+    "input": "Đà Nẵng có phù hợp cho chuyến đi ngắn không?",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G01-020",
+    "group": 1,
+    "groupTitle": "Hỏi chung về Đà Nẵng",
+    "sourceLine": 25,
+    "input": "Có thể đi Đà Nẵng trong một ngày không?",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G02-001",
+    "group": 2,
+    "groupTitle": "Tìm địa điểm tham quan",
+    "sourceLine": 27,
+    "input": "Gợi ý điểm tham quan ở Đà Nẵng.",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G02-002",
+    "group": 2,
+    "groupTitle": "Tìm địa điểm tham quan",
+    "sourceLine": 28,
+    "input": "Tìm địa điểm tham quan gần biển.",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G02-003",
+    "group": 2,
+    "groupTitle": "Tìm địa điểm tham quan",
+    "sourceLine": 29,
+    "input": "Tìm địa điểm tham quan ở Sơn Trà.",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G02-004",
+    "group": 2,
+    "groupTitle": "Tìm địa điểm tham quan",
+    "sourceLine": 30,
+    "input": "Tìm địa điểm tham quan ở Hải Châu.",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G02-005",
+    "group": 2,
+    "groupTitle": "Tìm địa điểm tham quan",
+    "sourceLine": 31,
+    "input": "Tìm địa điểm tham quan ở Ngũ Hành Sơn.",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G02-006",
+    "group": 2,
+    "groupTitle": "Tìm địa điểm tham quan",
+    "sourceLine": 32,
+    "input": "Tìm địa điểm tham quan miễn phí.",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G02-007",
+    "group": 2,
+    "groupTitle": "Tìm địa điểm tham quan",
+    "sourceLine": 33,
+    "input": "Tìm nơi có vé dưới 100.000 đồng.",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G02-008",
+    "group": 2,
+    "groupTitle": "Tìm địa điểm tham quan",
+    "sourceLine": 34,
+    "input": "Tìm điểm tham quan phù hợp ngân sách thấp.",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G02-009",
+    "group": 2,
+    "groupTitle": "Tìm địa điểm tham quan",
+    "sourceLine": 35,
+    "input": "Tìm nơi có thể đi buổi tối.",
+    "kind": "sight",
+    "setup": "Gợi ý điểm tham quan ở Đà Nẵng.",
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G02-010",
+    "group": 2,
+    "groupTitle": "Tìm địa điểm tham quan",
+    "sourceLine": 36,
+    "input": "Tìm nơi mở cửa vào sáng sớm.",
+    "kind": "sight",
+    "setup": "Gợi ý điểm tham quan ở Đà Nẵng.",
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G02-011",
+    "group": 2,
+    "groupTitle": "Tìm địa điểm tham quan",
+    "sourceLine": 37,
+    "input": "Tìm nơi phù hợp đi lúc trời nắng.",
+    "kind": "sight",
+    "setup": "Gợi ý điểm tham quan ở Đà Nẵng.",
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G02-012",
+    "group": 2,
+    "groupTitle": "Tìm địa điểm tham quan",
+    "sourceLine": 38,
+    "input": "Tìm nơi có mái che khi trời mưa.",
+    "kind": "sight",
+    "setup": "Gợi ý điểm tham quan ở Đà Nẵng.",
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G02-013",
+    "group": 2,
+    "groupTitle": "Tìm địa điểm tham quan",
+    "sourceLine": 39,
+    "input": "Tìm nơi ít phải đi bộ.",
+    "kind": "sight",
+    "setup": "Gợi ý điểm tham quan ở Đà Nẵng.",
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G02-014",
+    "group": 2,
+    "groupTitle": "Tìm địa điểm tham quan",
+    "sourceLine": 40,
+    "input": "Tìm nơi có chỗ đậu xe.",
+    "kind": "sight",
+    "setup": "Gợi ý điểm tham quan ở Đà Nẵng.",
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G02-015",
+    "group": 2,
+    "groupTitle": "Tìm địa điểm tham quan",
+    "sourceLine": 41,
+    "input": "Tìm điểm tham quan gần khách sạn của tôi.",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G02-016",
+    "group": 2,
+    "groupTitle": "Tìm địa điểm tham quan",
+    "sourceLine": 42,
+    "input": "Điểm nào gần cầu Rồng?",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G02-017",
+    "group": 2,
+    "groupTitle": "Tìm địa điểm tham quan",
+    "sourceLine": 43,
+    "input": "Điểm nào gần biển Mỹ Khê?",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G02-018",
+    "group": 2,
+    "groupTitle": "Tìm địa điểm tham quan",
+    "sourceLine": 44,
+    "input": "Điểm nào gần sân bay Đà Nẵng?",
+    "kind": "sight",
+    "setup": "Gợi ý điểm tham quan ở Đà Nẵng.",
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G02-019",
+    "group": 2,
+    "groupTitle": "Tìm địa điểm tham quan",
+    "sourceLine": 45,
+    "input": "Điểm nào gần trung tâm thành phố?",
+    "kind": "sight",
+    "setup": "Gợi ý điểm tham quan ở Đà Nẵng.",
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G02-020",
+    "group": 2,
+    "groupTitle": "Tìm địa điểm tham quan",
+    "sourceLine": 46,
+    "input": "Điểm nào gần bán đảo Sơn Trà?",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G02-021",
+    "group": 2,
+    "groupTitle": "Tìm địa điểm tham quan",
+    "sourceLine": 47,
+    "input": "Địa điểm nào có thể đi trong hai tiếng?",
+    "kind": "sight",
+    "setup": "Gợi ý điểm tham quan ở Đà Nẵng.",
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G02-022",
+    "group": 2,
+    "groupTitle": "Tìm địa điểm tham quan",
+    "sourceLine": 48,
+    "input": "Địa điểm nào nên dành cả ngày?",
+    "kind": "sight",
+    "setup": "Gợi ý điểm tham quan ở Đà Nẵng.",
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G02-023",
+    "group": 2,
+    "groupTitle": "Tìm địa điểm tham quan",
+    "sourceLine": 49,
+    "input": "Địa điểm nào phù hợp ngắm hoàng hôn?",
+    "kind": "sight",
+    "setup": "Gợi ý điểm tham quan ở Đà Nẵng.",
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G02-024",
+    "group": 2,
+    "groupTitle": "Tìm địa điểm tham quan",
+    "sourceLine": 50,
+    "input": "Địa điểm nào phù hợp ngắm bình minh?",
+    "kind": "sight",
+    "setup": "Gợi ý điểm tham quan ở Đà Nẵng.",
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G02-025",
+    "group": 2,
+    "groupTitle": "Tìm địa điểm tham quan",
+    "sourceLine": 51,
+    "input": "Địa điểm nào phù hợp ngắm cảnh đêm?",
+    "kind": "sight",
+    "setup": "Gợi ý điểm tham quan ở Đà Nẵng.",
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G02-026",
+    "group": 2,
+    "groupTitle": "Tìm địa điểm tham quan",
+    "sourceLine": 52,
+    "input": "Địa điểm nào có cảnh đẹp tự nhiên?",
+    "kind": "sight",
+    "setup": "Gợi ý điểm tham quan ở Đà Nẵng.",
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G02-027",
+    "group": 2,
+    "groupTitle": "Tìm địa điểm tham quan",
+    "sourceLine": 53,
+    "input": "Địa điểm nào có yếu tố văn hóa, lịch sử?",
+    "kind": "sight",
+    "setup": "Gợi ý điểm tham quan ở Đà Nẵng.",
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G02-028",
+    "group": 2,
+    "groupTitle": "Tìm địa điểm tham quan",
+    "sourceLine": 54,
+    "input": "Địa điểm nào phù hợp chụp ảnh cưới?",
+    "kind": "sight",
+    "setup": "Gợi ý điểm tham quan ở Đà Nẵng.",
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G02-029",
+    "group": 2,
+    "groupTitle": "Tìm địa điểm tham quan",
+    "sourceLine": 55,
+    "input": "Địa điểm nào phù hợp check-in?",
+    "kind": "sight",
+    "setup": "Gợi ý điểm tham quan ở Đà Nẵng.",
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G02-030",
+    "group": 2,
+    "groupTitle": "Tìm địa điểm tham quan",
+    "sourceLine": 56,
+    "input": "Địa điểm nào không quá đông khách?",
+    "kind": "sight",
+    "setup": "Gợi ý điểm tham quan ở Đà Nẵng.",
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G03-001",
+    "group": 3,
+    "groupTitle": "Hỏi về biển và thiên nhiên",
+    "sourceLine": 58,
+    "input": "Bãi biển nào đẹp nhất Đà Nẵng?",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G03-002",
+    "group": 3,
+    "groupTitle": "Hỏi về biển và thiên nhiên",
+    "sourceLine": 59,
+    "input": "Bãi biển nào gần trung tâm?",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G03-003",
+    "group": 3,
+    "groupTitle": "Hỏi về biển và thiên nhiên",
+    "sourceLine": 60,
+    "input": "Bãi biển nào yên tĩnh?",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G03-004",
+    "group": 3,
+    "groupTitle": "Hỏi về biển và thiên nhiên",
+    "sourceLine": 61,
+    "input": "Bãi biển nào phù hợp cho trẻ em?",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G03-005",
+    "group": 3,
+    "groupTitle": "Hỏi về biển và thiên nhiên",
+    "sourceLine": 62,
+    "input": "Bãi biển nào có thể ngắm bình minh?",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G03-006",
+    "group": 3,
+    "groupTitle": "Hỏi về biển và thiên nhiên",
+    "sourceLine": 63,
+    "input": "Gần biển có quán ăn nào ngon?",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có."
+  },
+  {
+    "id": "G03-007",
+    "group": 3,
+    "groupTitle": "Hỏi về biển và thiên nhiên",
+    "sourceLine": 64,
+    "input": "Gần biển có khách sạn nào giá rẻ?",
+    "kind": "stay",
+    "setup": null,
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G03-008",
+    "group": 3,
+    "groupTitle": "Hỏi về biển và thiên nhiên",
+    "sourceLine": 65,
+    "input": "Gần biển có homestay nào đẹp?",
+    "kind": "stay",
+    "setup": null,
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G03-009",
+    "group": 3,
+    "groupTitle": "Hỏi về biển và thiên nhiên",
+    "sourceLine": 66,
+    "input": "Đi biển Đà Nẵng buổi tối có được không?",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G03-010",
+    "group": 3,
+    "groupTitle": "Hỏi về biển và thiên nhiên",
+    "sourceLine": 67,
+    "input": "Bãi biển nào có chỗ gửi xe?",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G03-011",
+    "group": 3,
+    "groupTitle": "Hỏi về biển và thiên nhiên",
+    "sourceLine": 68,
+    "input": "Bãi biển nào ít đông hơn Mỹ Khê?",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G03-012",
+    "group": 3,
+    "groupTitle": "Hỏi về biển và thiên nhiên",
+    "sourceLine": 69,
+    "input": "Sơn Trà có địa điểm nào đáng đi?",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G03-013",
+    "group": 3,
+    "groupTitle": "Hỏi về biển và thiên nhiên",
+    "sourceLine": 70,
+    "input": "Có thể đi Sơn Trà trong nửa ngày không?",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G03-014",
+    "group": 3,
+    "groupTitle": "Hỏi về biển và thiên nhiên",
+    "sourceLine": 71,
+    "input": "Địa điểm thiên nhiên nào gần trung tâm?",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G03-015",
+    "group": 3,
+    "groupTitle": "Hỏi về biển và thiên nhiên",
+    "sourceLine": 72,
+    "input": "Có nơi nào ngắm núi và biển cùng lúc không?",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G03-016",
+    "group": 3,
+    "groupTitle": "Hỏi về biển và thiên nhiên",
+    "sourceLine": 73,
+    "input": "Địa điểm nào có nhiều cây xanh?",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G03-017",
+    "group": 3,
+    "groupTitle": "Hỏi về biển và thiên nhiên",
+    "sourceLine": 74,
+    "input": "Địa điểm nào phù hợp đi dạo nhẹ nhàng?",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G03-018",
+    "group": 3,
+    "groupTitle": "Hỏi về biển và thiên nhiên",
+    "sourceLine": 75,
+    "input": "Địa điểm nào phù hợp người không thích leo núi?",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G03-019",
+    "group": 3,
+    "groupTitle": "Hỏi về biển và thiên nhiên",
+    "sourceLine": 76,
+    "input": "Có nơi nào gần biển nhưng không cần tắm biển không?",
+    "kind": "sight",
+    "setup": null,
+    "expected": "Tham quan đúng loại, hoặc làm rõ điều kiện cụ thể; không trả nhầm quán ăn/khách sạn."
+  },
+  {
+    "id": "G03-020",
+    "group": 3,
+    "groupTitle": "Hỏi về biển và thiên nhiên",
+    "sourceLine": 77,
+    "input": "Có thể kết hợp biển với ăn hải sản ở đâu?",
+    "kind": "mixed",
+    "setup": null,
+    "expected": "Giữ đủ nhu cầu; hỏi tối đa 3 câu khi thiếu điều kiện; không khẳng định tiêu chí chưa xác minh."
+  },
+  {
+    "id": "G04-001",
+    "group": 4,
+    "groupTitle": "Hỏi về ẩm thực Đà Nẵng",
+    "sourceLine": 79,
+    "input": "Đà Nẵng có món gì ngon?",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có."
+  },
+  {
+    "id": "G04-002",
+    "group": 4,
+    "groupTitle": "Hỏi về ẩm thực Đà Nẵng",
+    "sourceLine": 80,
+    "input": "Đặc sản Đà Nẵng gồm những món nào?",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có."
+  },
+  {
+    "id": "G04-003",
+    "group": 4,
+    "groupTitle": "Hỏi về ẩm thực Đà Nẵng",
+    "sourceLine": 81,
+    "input": "Nên ăn gì trong chuyến đi đầu tiên?",
+    "kind": "food",
+    "setup": "Tìm quán ăn ở Đà Nẵng.",
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có."
+  },
+  {
+    "id": "G04-004",
+    "group": 4,
+    "groupTitle": "Hỏi về ẩm thực Đà Nẵng",
+    "sourceLine": 82,
+    "input": "Tìm quán ăn ngon ở Hải Châu.",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có."
+  },
+  {
+    "id": "G04-005",
+    "group": 4,
+    "groupTitle": "Hỏi về ẩm thực Đà Nẵng",
+    "sourceLine": 83,
+    "input": "Tìm quán ăn ngon ở Sơn Trà.",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có."
+  },
+  {
+    "id": "G04-006",
+    "group": 4,
+    "groupTitle": "Hỏi về ẩm thực Đà Nẵng",
+    "sourceLine": 84,
+    "input": "Tìm quán ăn gần biển Mỹ Khê.",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có."
+  },
+  {
+    "id": "G04-007",
+    "group": 4,
+    "groupTitle": "Hỏi về ẩm thực Đà Nẵng",
+    "sourceLine": 85,
+    "input": "Tìm quán ăn gần cầu Rồng.",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có."
+  },
+  {
+    "id": "G04-008",
+    "group": 4,
+    "groupTitle": "Hỏi về ẩm thực Đà Nẵng",
+    "sourceLine": 86,
+    "input": "Tìm quán ăn gần khách sạn của tôi.",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có."
+  },
+  {
+    "id": "G04-009",
+    "group": 4,
+    "groupTitle": "Hỏi về ẩm thực Đà Nẵng",
+    "sourceLine": 87,
+    "input": "Tìm quán ăn mở buổi sáng.",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có."
+  },
+  {
+    "id": "G04-010",
+    "group": 4,
+    "groupTitle": "Hỏi về ẩm thực Đà Nẵng",
+    "sourceLine": 88,
+    "input": "Tìm quán ăn mở khuya.",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có."
+  },
+  {
+    "id": "G04-011",
+    "group": 4,
+    "groupTitle": "Hỏi về ẩm thực Đà Nẵng",
+    "sourceLine": 89,
+    "input": "Tìm quán ăn cho bữa trưa.",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có."
+  },
+  {
+    "id": "G04-012",
+    "group": 4,
+    "groupTitle": "Hỏi về ẩm thực Đà Nẵng",
+    "sourceLine": 90,
+    "input": "Tìm quán ăn cho bữa tối.",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có."
+  },
+  {
+    "id": "G04-013",
+    "group": 4,
+    "groupTitle": "Hỏi về ẩm thực Đà Nẵng",
+    "sourceLine": 91,
+    "input": "Tìm quán ăn nhanh dưới 100.000 đồng.",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có."
+  },
+  {
+    "id": "G04-014",
+    "group": 4,
+    "groupTitle": "Hỏi về ẩm thực Đà Nẵng",
+    "sourceLine": 92,
+    "input": "Tìm quán ăn cho gia đình.",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có."
+  },
+  {
+    "id": "G04-015",
+    "group": 4,
+    "groupTitle": "Hỏi về ẩm thực Đà Nẵng",
+    "sourceLine": 93,
+    "input": "Tìm quán ăn lãng mạn cho hai người.",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có."
+  },
+  {
+    "id": "G04-016",
+    "group": 4,
+    "groupTitle": "Hỏi về ẩm thực Đà Nẵng",
+    "sourceLine": 94,
+    "input": "Tìm quán ăn có không gian đẹp.",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có."
+  },
+  {
+    "id": "G04-017",
+    "group": 4,
+    "groupTitle": "Hỏi về ẩm thực Đà Nẵng",
+    "sourceLine": 95,
+    "input": "Tìm quán ăn có phòng riêng.",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có."
+  },
+  {
+    "id": "G04-018",
+    "group": 4,
+    "groupTitle": "Hỏi về ẩm thực Đà Nẵng",
+    "sourceLine": 96,
+    "input": "Tìm quán ăn có chỗ đậu ô tô.",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có."
+  },
+  {
+    "id": "G04-019",
+    "group": 4,
+    "groupTitle": "Hỏi về ẩm thực Đà Nẵng",
+    "sourceLine": 97,
+    "input": "Tìm quán ăn sạch sẽ.",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có."
+  },
+  {
+    "id": "G04-020",
+    "group": 4,
+    "groupTitle": "Hỏi về ẩm thực Đà Nẵng",
+    "sourceLine": 98,
+    "input": "Tìm quán ăn được nhiều người đánh giá tốt.",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có."
+  },
+  {
+    "id": "G04-021",
+    "group": 4,
+    "groupTitle": "Hỏi về ẩm thực Đà Nẵng",
+    "sourceLine": 99,
+    "input": "Tìm quán ăn không quá đông.",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có."
+  },
+  {
+    "id": "G04-022",
+    "group": 4,
+    "groupTitle": "Hỏi về ẩm thực Đà Nẵng",
+    "sourceLine": 100,
+    "input": "Tìm quán ăn gần địa điểm tham quan.",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có."
+  },
+  {
+    "id": "G04-023",
+    "group": 4,
+    "groupTitle": "Hỏi về ẩm thực Đà Nẵng",
+    "sourceLine": 101,
+    "input": "Ăn gì gần biển?",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có."
+  },
+  {
+    "id": "G04-024",
+    "group": 4,
+    "groupTitle": "Hỏi về ẩm thực Đà Nẵng",
+    "sourceLine": 102,
+    "input": "Ăn gì gần sân bay?",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có."
+  },
+  {
+    "id": "G04-025",
+    "group": 4,
+    "groupTitle": "Hỏi về ẩm thực Đà Nẵng",
+    "sourceLine": 103,
+    "input": "Ăn gì gần chợ Hàn?",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có."
+  },
+  {
+    "id": "G04-026",
+    "group": 4,
+    "groupTitle": "Hỏi về ẩm thực Đà Nẵng",
+    "sourceLine": 104,
+    "input": "Ăn gì gần Ngũ Hành Sơn?",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có."
+  },
+  {
+    "id": "G04-027",
+    "group": 4,
+    "groupTitle": "Hỏi về ẩm thực Đà Nẵng",
+    "sourceLine": 105,
+    "input": "Ăn gì trước khi đi Bà Nà?",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có."
+  },
+  {
+    "id": "G04-028",
+    "group": 4,
+    "groupTitle": "Hỏi về ẩm thực Đà Nẵng",
+    "sourceLine": 106,
+    "input": "Ăn gì sau khi tham quan Sơn Trà?",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có."
+  },
+  {
+    "id": "G04-029",
+    "group": 4,
+    "groupTitle": "Hỏi về ẩm thực Đà Nẵng",
+    "sourceLine": 107,
+    "input": "Ăn gì vào ban đêm ở Đà Nẵng?",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có."
+  },
+  {
+    "id": "G04-030",
+    "group": 4,
+    "groupTitle": "Hỏi về ẩm thực Đà Nẵng",
+    "sourceLine": 108,
+    "input": "Địa điểm nào bán đặc sản làm quà?",
+    "kind": "food",
+    "setup": "Tìm quán ăn ở Đà Nẵng.",
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có."
+  },
+  {
+    "id": "G05-001",
+    "group": 5,
+    "groupTitle": "Món ăn cụ thể",
+    "sourceLine": 110,
+    "input": "Tìm quán mì Quảng.",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có.",
+    "expectedFoodTerms": [
+      "mì quảng"
+    ]
+  },
+  {
+    "id": "G05-002",
+    "group": 5,
+    "groupTitle": "Món ăn cụ thể",
+    "sourceLine": 111,
+    "input": "Tìm mì Quảng dưới 100.000 đồng.",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có.",
+    "expectedFoodTerms": [
+      "mì quảng"
+    ]
+  },
+  {
+    "id": "G05-003",
+    "group": 5,
+    "groupTitle": "Món ăn cụ thể",
+    "sourceLine": 112,
+    "input": "Tìm quán bún chả cá.",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có.",
+    "expectedFoodTerms": [
+      "bún chả cá"
+    ]
+  },
+  {
+    "id": "G05-004",
+    "group": 5,
+    "groupTitle": "Món ăn cụ thể",
+    "sourceLine": 113,
+    "input": "Tìm quán bánh xèo.",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có.",
+    "expectedFoodTerms": [
+      "bánh xèo"
+    ]
+  },
+  {
+    "id": "G05-005",
+    "group": 5,
+    "groupTitle": "Món ăn cụ thể",
+    "sourceLine": 114,
+    "input": "Tìm quán bánh tráng cuốn thịt heo.",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có.",
+    "expectedFoodTerms": [
+      "bánh tráng cuốn thịt heo"
+    ]
+  },
+  {
+    "id": "G05-006",
+    "group": 5,
+    "groupTitle": "Món ăn cụ thể",
+    "sourceLine": 115,
+    "input": "Tìm quán cơm niêu.",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có.",
+    "expectedFoodTerms": [
+      "cơm niêu"
+    ]
+  },
+  {
+    "id": "G05-007",
+    "group": 5,
+    "groupTitle": "Món ăn cụ thể",
+    "sourceLine": 116,
+    "input": "Tìm quán hải sản.",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có.",
+    "expectedFoodTerms": [
+      "hải sản"
+    ]
+  },
+  {
+    "id": "G05-008",
+    "group": 5,
+    "groupTitle": "Món ăn cụ thể",
+    "sourceLine": 117,
+    "input": "Tìm quán ốc.",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có.",
+    "expectedFoodTerms": [
+      "ốc"
+    ]
+  },
+  {
+    "id": "G05-009",
+    "group": 5,
+    "groupTitle": "Món ăn cụ thể",
+    "sourceLine": 118,
+    "input": "Tìm quán thịt nướng.",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có.",
+    "expectedFoodTerms": [
+      "thịt nướng"
+    ]
+  },
+  {
+    "id": "G05-010",
+    "group": 5,
+    "groupTitle": "Món ăn cụ thể",
+    "sourceLine": 119,
+    "input": "Tìm quán lẩu.",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có.",
+    "expectedFoodTerms": [
+      "lẩu"
+    ]
+  },
+  {
+    "id": "G05-011",
+    "group": 5,
+    "groupTitle": "Món ăn cụ thể",
+    "sourceLine": 120,
+    "input": "Tìm quán bún bò.",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có.",
+    "expectedFoodTerms": [
+      "bún bò"
+    ]
+  },
+  {
+    "id": "G05-012",
+    "group": 5,
+    "groupTitle": "Món ăn cụ thể",
+    "sourceLine": 121,
+    "input": "Tìm quán bánh bèo, nậm, lọc.",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có.",
+    "expectedFoodTerms": [
+      "bánh bèo",
+      "nậm",
+      "lọc"
+    ]
+  },
+  {
+    "id": "G05-013",
+    "group": 5,
+    "groupTitle": "Món ăn cụ thể",
+    "sourceLine": 122,
+    "input": "Tìm quán ăn vặt.",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có."
+  },
+  {
+    "id": "G05-014",
+    "group": 5,
+    "groupTitle": "Món ăn cụ thể",
+    "sourceLine": 123,
+    "input": "Tìm quán cà phê đẹp.",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có."
+  },
+  {
+    "id": "G05-015",
+    "group": 5,
+    "groupTitle": "Món ăn cụ thể",
+    "sourceLine": 124,
+    "input": "Tìm quán cà phê gần biển.",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có."
+  },
+  {
+    "id": "G05-016",
+    "group": 5,
+    "groupTitle": "Món ăn cụ thể",
+    "sourceLine": 125,
+    "input": "Tìm quán cà phê có view cao.",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có."
+  },
+  {
+    "id": "G05-017",
+    "group": 5,
+    "groupTitle": "Món ăn cụ thể",
+    "sourceLine": 126,
+    "input": "Tìm quán bán chè.",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có.",
+    "expectedFoodTerms": [
+      "chè"
+    ]
+  },
+  {
+    "id": "G05-018",
+    "group": 5,
+    "groupTitle": "Món ăn cụ thể",
+    "sourceLine": 127,
+    "input": "Tìm quán bán kem.",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có.",
+    "expectedFoodTerms": [
+      "kem"
+    ]
+  },
+  {
+    "id": "G05-019",
+    "group": 5,
+    "groupTitle": "Món ăn cụ thể",
+    "sourceLine": 128,
+    "input": "Tìm quán ăn sáng kiểu địa phương.",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có."
+  },
+  {
+    "id": "G05-020",
+    "group": 5,
+    "groupTitle": "Món ăn cụ thể",
+    "sourceLine": 129,
+    "input": "Tìm quán phục vụ đồ ăn đêm.",
+    "kind": "food",
+    "setup": null,
+    "expected": "Nhà hàng/món ăn đúng nhu cầu; thiếu menu hoặc tiêu chí phải nói rõ, không gán tiện nghi chưa có."
+  },
+  {
+    "id": "G06-001",
+    "group": 6,
+    "groupTitle": "Sở thích ăn uống",
+    "sourceLine": 131,
+    "input": "Tôi thích ăn cay, tìm món phù hợp cho tôi.",
+    "kind": "diet",
+    "setup": null,
+    "expected": "Không suy thành phần/mức cay/phù hợp sức khỏe từ tên; nói rõ điều chưa xác minh hoặc hỏi lại."
+  },
+  {
+    "id": "G06-002",
+    "group": 6,
+    "groupTitle": "Sở thích ăn uống",
+    "sourceLine": 132,
+    "input": "Tôi không ăn cay, tìm quán phù hợp.",
+    "kind": "diet",
+    "setup": null,
+    "expected": "Không suy thành phần/mức cay/phù hợp sức khỏe từ tên; nói rõ điều chưa xác minh hoặc hỏi lại."
+  },
+  {
+    "id": "G06-003",
+    "group": 6,
+    "groupTitle": "Sở thích ăn uống",
+    "sourceLine": 133,
+    "input": "Tôi thích món đậm vị.",
+    "kind": "diet",
+    "setup": null,
+    "expected": "Không suy thành phần/mức cay/phù hợp sức khỏe từ tên; nói rõ điều chưa xác minh hoặc hỏi lại."
+  },
+  {
+    "id": "G06-004",
+    "group": 6,
+    "groupTitle": "Sở thích ăn uống",
+    "sourceLine": 134,
+    "input": "Tôi thích món thanh đạm.",
+    "kind": "diet",
+    "setup": null,
+    "expected": "Không suy thành phần/mức cay/phù hợp sức khỏe từ tên; nói rõ điều chưa xác minh hoặc hỏi lại."
+  },
+  {
+    "id": "G06-005",
+    "group": 6,
+    "groupTitle": "Sở thích ăn uống",
+    "sourceLine": 135,
+    "input": "Tôi thích đồ ăn miền Trung.",
+    "kind": "diet",
+    "setup": null,
+    "expected": "Không suy thành phần/mức cay/phù hợp sức khỏe từ tên; nói rõ điều chưa xác minh hoặc hỏi lại."
+  },
+  {
+    "id": "G06-006",
+    "group": 6,
+    "groupTitle": "Sở thích ăn uống",
+    "sourceLine": 136,
+    "input": "Tôi thích hải sản.",
+    "kind": "diet",
+    "setup": null,
+    "expected": "Không suy thành phần/mức cay/phù hợp sức khỏe từ tên; nói rõ điều chưa xác minh hoặc hỏi lại."
+  },
+  {
+    "id": "G06-007",
+    "group": 6,
+    "groupTitle": "Sở thích ăn uống",
+    "sourceLine": 137,
+    "input": "Tôi không ăn hải sản.",
+    "kind": "diet",
+    "setup": null,
+    "expected": "Không suy thành phần/mức cay/phù hợp sức khỏe từ tên; nói rõ điều chưa xác minh hoặc hỏi lại."
+  },
+  {
+    "id": "G06-008",
+    "group": 6,
+    "groupTitle": "Sở thích ăn uống",
+    "sourceLine": 138,
+    "input": "Tôi ăn chay.",
+    "kind": "diet",
+    "setup": null,
+    "expected": "Không suy thành phần/mức cay/phù hợp sức khỏe từ tên; nói rõ điều chưa xác minh hoặc hỏi lại."
+  },
+  {
+    "id": "G06-009",
+    "group": 6,
+    "groupTitle": "Sở thích ăn uống",
+    "sourceLine": 139,
+    "input": "Tôi ăn thuần chay.",
+    "kind": "diet",
+    "setup": null,
+    "expected": "Không suy thành phần/mức cay/phù hợp sức khỏe từ tên; nói rõ điều chưa xác minh hoặc hỏi lại."
+  },
+  {
+    "id": "G06-010",
+    "group": 6,
+    "groupTitle": "Sở thích ăn uống",
+    "sourceLine": 140,
+    "input": "Tôi không ăn thịt bò.",
+    "kind": "diet",
+    "setup": null,
+    "expected": "Không suy thành phần/mức cay/phù hợp sức khỏe từ tên; nói rõ điều chưa xác minh hoặc hỏi lại."
+  },
+  {
+    "id": "G06-011",
+    "group": 6,
+    "groupTitle": "Sở thích ăn uống",
+    "sourceLine": 141,
+    "input": "Tôi không ăn thịt heo.",
+    "kind": "diet",
+    "setup": null,
+    "expected": "Không suy thành phần/mức cay/phù hợp sức khỏe từ tên; nói rõ điều chưa xác minh hoặc hỏi lại."
+  },
+  {
+    "id": "G06-012",
+    "group": 6,
+    "groupTitle": "Sở thích ăn uống",
+    "sourceLine": 142,
+    "input": "Tôi không ăn thịt gà.",
+    "kind": "diet",
+    "setup": null,
+    "expected": "Không suy thành phần/mức cay/phù hợp sức khỏe từ tên; nói rõ điều chưa xác minh hoặc hỏi lại."
+  },
+  {
+    "id": "G06-013",
+    "group": 6,
+    "groupTitle": "Sở thích ăn uống",
+    "sourceLine": 143,
+    "input": "Tôi không ăn trứng.",
+    "kind": "diet",
+    "setup": null,
+    "expected": "Không suy thành phần/mức cay/phù hợp sức khỏe từ tên; nói rõ điều chưa xác minh hoặc hỏi lại."
+  },
+  {
+    "id": "G06-014",
+    "group": 6,
+    "groupTitle": "Sở thích ăn uống",
+    "sourceLine": 144,
+    "input": "Tôi không uống sữa.",
+    "kind": "diet",
+    "setup": null,
+    "expected": "Không suy thành phần/mức cay/phù hợp sức khỏe từ tên; nói rõ điều chưa xác minh hoặc hỏi lại."
+  },
+  {
+    "id": "G06-015",
+    "group": 6,
+    "groupTitle": "Sở thích ăn uống",
+    "sourceLine": 145,
+    "input": "Tôi bị dị ứng đậu phộng.",
+    "kind": "allergy",
+    "setup": null,
+    "expected": "Không đưa thẻ khẳng định an toàn dị ứng; nêu thành phần và nguy cơ lẫn nguyên liệu cần cơ sở xác nhận."
+  },
+  {
+    "id": "G06-016",
+    "group": 6,
+    "groupTitle": "Sở thích ăn uống",
+    "sourceLine": 146,
+    "input": "Tôi bị dị ứng hải sản.",
+    "kind": "allergy",
+    "setup": null,
+    "expected": "Không đưa thẻ khẳng định an toàn dị ứng; nêu thành phần và nguy cơ lẫn nguyên liệu cần cơ sở xác nhận."
+  },
+  {
+    "id": "G06-017",
+    "group": 6,
+    "groupTitle": "Sở thích ăn uống",
+    "sourceLine": 147,
+    "input": "Tôi bị dị ứng tôm.",
+    "kind": "allergy",
+    "setup": null,
+    "expected": "Không đưa thẻ khẳng định an toàn dị ứng; nêu thành phần và nguy cơ lẫn nguyên liệu cần cơ sở xác nhận."
+  },
+  {
+    "id": "G06-018",
+    "group": 6,
+    "groupTitle": "Sở thích ăn uống",
+    "sourceLine": 148,
+    "input": "Tôi bị dị ứng cua.",
+    "kind": "allergy",
+    "setup": null,
+    "expected": "Không đưa thẻ khẳng định an toàn dị ứng; nêu thành phần và nguy cơ lẫn nguyên liệu cần cơ sở xác nhận."
+  },
+  {
+    "id": "G06-019",
+    "group": 6,
+    "groupTitle": "Sở thích ăn uống",
+    "sourceLine": 149,
+    "input": "Tôi bị dị ứng sữa.",
+    "kind": "allergy",
+    "setup": null,
+    "expected": "Không đưa thẻ khẳng định an toàn dị ứng; nêu thành phần và nguy cơ lẫn nguyên liệu cần cơ sở xác nhận."
+  },
+  {
+    "id": "G06-020",
+    "group": 6,
+    "groupTitle": "Sở thích ăn uống",
+    "sourceLine": 150,
+    "input": "Tôi bị dị ứng trứng.",
+    "kind": "allergy",
+    "setup": null,
+    "expected": "Không đưa thẻ khẳng định an toàn dị ứng; nêu thành phần và nguy cơ lẫn nguyên liệu cần cơ sở xác nhận."
+  },
+  {
+    "id": "G06-021",
+    "group": 6,
+    "groupTitle": "Sở thích ăn uống",
+    "sourceLine": 151,
+    "input": "Tôi cần món không chứa gluten.",
+    "kind": "diet",
+    "setup": null,
+    "expected": "Không suy thành phần/mức cay/phù hợp sức khỏe từ tên; nói rõ điều chưa xác minh hoặc hỏi lại."
+  },
+  {
+    "id": "G06-022",
+    "group": 6,
+    "groupTitle": "Sở thích ăn uống",
+    "sourceLine": 152,
+    "input": "Tôi cần món ít dầu mỡ.",
+    "kind": "diet",
+    "setup": null,
+    "expected": "Không suy thành phần/mức cay/phù hợp sức khỏe từ tên; nói rõ điều chưa xác minh hoặc hỏi lại."
+  },
+  {
+    "id": "G06-023",
+    "group": 6,
+    "groupTitle": "Sở thích ăn uống",
+    "sourceLine": 153,
+    "input": "Tôi cần món ít muối.",
+    "kind": "diet",
+    "setup": null,
+    "expected": "Không suy thành phần/mức cay/phù hợp sức khỏe từ tên; nói rõ điều chưa xác minh hoặc hỏi lại."
+  },
+  {
+    "id": "G06-024",
+    "group": 6,
+    "groupTitle": "Sở thích ăn uống",
+    "sourceLine": 154,
+    "input": "Tôi cần món không đường.",
+    "kind": "diet",
+    "setup": null,
+    "expected": "Không suy thành phần/mức cay/phù hợp sức khỏe từ tên; nói rõ điều chưa xác minh hoặc hỏi lại."
+  },
+  {
+    "id": "G06-025",
+    "group": 6,
+    "groupTitle": "Sở thích ăn uống",
+    "sourceLine": 155,
+    "input": "Tôi muốn ăn món tốt cho sức khỏe.",
+    "kind": "diet",
+    "setup": null,
+    "expected": "Không suy thành phần/mức cay/phù hợp sức khỏe từ tên; nói rõ điều chưa xác minh hoặc hỏi lại."
+  },
+  {
+    "id": "G06-026",
+    "group": 6,
+    "groupTitle": "Sở thích ăn uống",
+    "sourceLine": 156,
+    "input": "Tôi muốn ăn món dưới 50.000 đồng.",
+    "kind": "diet",
+    "setup": null,
+    "expected": "Không suy thành phần/mức cay/phù hợp sức khỏe từ tên; nói rõ điều chưa xác minh hoặc hỏi lại."
+  },
+  {
+    "id": "G06-027",
+    "group": 6,
+    "groupTitle": "Sở thích ăn uống",
+    "sourceLine": 157,
+    "input": "Tôi muốn ăn món dưới 100.000 đồng.",
+    "kind": "diet",
+    "setup": null,
+    "expected": "Không suy thành phần/mức cay/phù hợp sức khỏe từ tên; nói rõ điều chưa xác minh hoặc hỏi lại."
+  },
+  {
+    "id": "G06-028",
+    "group": 6,
+    "groupTitle": "Sở thích ăn uống",
+    "sourceLine": 158,
+    "input": "Tôi muốn tìm quán có nhiều lựa chọn cho trẻ em.",
+    "kind": "diet",
+    "setup": null,
+    "expected": "Không suy thành phần/mức cay/phù hợp sức khỏe từ tên; nói rõ điều chưa xác minh hoặc hỏi lại."
+  },
+  {
+    "id": "G06-029",
+    "group": 6,
+    "groupTitle": "Sở thích ăn uống",
+    "sourceLine": 159,
+    "input": "Tôi muốn tìm quán có món cho người ăn kiêng.",
+    "kind": "diet",
+    "setup": null,
+    "expected": "Không suy thành phần/mức cay/phù hợp sức khỏe từ tên; nói rõ điều chưa xác minh hoặc hỏi lại."
+  },
+  {
+    "id": "G06-030",
+    "group": 6,
+    "groupTitle": "Sở thích ăn uống",
+    "sourceLine": 160,
+    "input": "Thành phần món này có gì?",
+    "kind": "diet",
+    "setup": null,
+    "expected": "Không suy thành phần/mức cay/phù hợp sức khỏe từ tên; nói rõ điều chưa xác minh hoặc hỏi lại."
+  },
+  {
+    "id": "G06-031",
+    "group": 6,
+    "groupTitle": "Sở thích ăn uống",
+    "sourceLine": 161,
+    "input": "Quán này có xác nhận món chay không?",
+    "kind": "diet",
+    "setup": null,
+    "expected": "Không suy thành phần/mức cay/phù hợp sức khỏe từ tên; nói rõ điều chưa xác minh hoặc hỏi lại."
+  },
+  {
+    "id": "G06-032",
+    "group": 6,
+    "groupTitle": "Sở thích ăn uống",
+    "sourceLine": 162,
+    "input": "Quán này có thể giảm cay không?",
+    "kind": "diet",
+    "setup": null,
+    "expected": "Không suy thành phần/mức cay/phù hợp sức khỏe từ tên; nói rõ điều chưa xác minh hoặc hỏi lại."
+  },
+  {
+    "id": "G06-033",
+    "group": 6,
+    "groupTitle": "Sở thích ăn uống",
+    "sourceLine": 163,
+    "input": "Quán này có thể làm món không đậu phộng không?",
+    "kind": "diet",
+    "setup": null,
+    "expected": "Không suy thành phần/mức cay/phù hợp sức khỏe từ tên; nói rõ điều chưa xác minh hoặc hỏi lại."
+  },
+  {
+    "id": "G06-034",
+    "group": 6,
+    "groupTitle": "Sở thích ăn uống",
+    "sourceLine": 164,
+    "input": "Quán này có nguy cơ dùng chung dầu chiên không?",
+    "kind": "diet",
+    "setup": null,
+    "expected": "Không suy thành phần/mức cay/phù hợp sức khỏe từ tên; nói rõ điều chưa xác minh hoặc hỏi lại."
+  },
+  {
+    "id": "G06-035",
+    "group": 6,
+    "groupTitle": "Sở thích ăn uống",
+    "sourceLine": 165,
+    "input": "Tôi nên hỏi quán những gì về dị ứng?",
+    "kind": "diet",
+    "setup": null,
+    "expected": "Không suy thành phần/mức cay/phù hợp sức khỏe từ tên; nói rõ điều chưa xác minh hoặc hỏi lại."
+  },
+  {
+    "id": "G06-036",
+    "group": 6,
+    "groupTitle": "Sở thích ăn uống",
+    "sourceLine": 166,
+    "input": "Tìm món cay gần biển.",
+    "kind": "diet",
+    "setup": null,
+    "expected": "Không suy thành phần/mức cay/phù hợp sức khỏe từ tên; nói rõ điều chưa xác minh hoặc hỏi lại."
+  },
+  {
+    "id": "G06-037",
+    "group": 6,
+    "groupTitle": "Sở thích ăn uống",
+    "sourceLine": 167,
+    "input": "Tìm món chay gần khách sạn.",
+    "kind": "diet",
+    "setup": null,
+    "expected": "Không suy thành phần/mức cay/phù hợp sức khỏe từ tên; nói rõ điều chưa xác minh hoặc hỏi lại."
+  },
+  {
+    "id": "G06-038",
+    "group": 6,
+    "groupTitle": "Sở thích ăn uống",
+    "sourceLine": 168,
+    "input": "Tìm hải sản gần địa điểm tham quan.",
+    "kind": "diet",
+    "setup": null,
+    "expected": "Không suy thành phần/mức cay/phù hợp sức khỏe từ tên; nói rõ điều chưa xác minh hoặc hỏi lại."
+  },
+  {
+    "id": "G06-039",
+    "group": 6,
+    "groupTitle": "Sở thích ăn uống",
+    "sourceLine": 169,
+    "input": "Tìm món ăn thanh đạm gần trung tâm.",
+    "kind": "diet",
+    "setup": null,
+    "expected": "Không suy thành phần/mức cay/phù hợp sức khỏe từ tên; nói rõ điều chưa xác minh hoặc hỏi lại."
+  },
+  {
+    "id": "G06-040",
+    "group": 6,
+    "groupTitle": "Sở thích ăn uống",
+    "sourceLine": 170,
+    "input": "Tìm quán vừa có món cay vừa có món không cay.",
+    "kind": "diet",
+    "setup": null,
+    "expected": "Không suy thành phần/mức cay/phù hợp sức khỏe từ tên; nói rõ điều chưa xác minh hoặc hỏi lại."
+  },
+  {
+    "id": "G07-001",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 173,
+    "input": "Tìm khách sạn ở Đà Nẵng.",
+    "kind": "stay",
+    "setup": null,
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G07-002",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 174,
+    "input": "Tìm khách sạn gần biển.",
+    "kind": "stay",
+    "setup": null,
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G07-003",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 175,
+    "input": "Tìm khách sạn gần Mỹ Khê.",
+    "kind": "stay",
+    "setup": null,
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G07-004",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 176,
+    "input": "Tìm khách sạn gần cầu Rồng.",
+    "kind": "stay",
+    "setup": null,
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G07-005",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 177,
+    "input": "Tìm khách sạn gần sân bay.",
+    "kind": "stay",
+    "setup": null,
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G07-006",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 178,
+    "input": "Tìm khách sạn ở trung tâm.",
+    "kind": "stay",
+    "setup": null,
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G07-007",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 179,
+    "input": "Tìm homestay giá rẻ.",
+    "kind": "stay",
+    "setup": null,
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G07-008",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 180,
+    "input": "Tìm resort gần biển.",
+    "kind": "stay",
+    "setup": null,
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G07-009",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 181,
+    "input": "Tìm khách sạn 3 sao.",
+    "kind": "stay",
+    "setup": null,
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G07-010",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 182,
+    "input": "Tìm khách sạn 4 sao.",
+    "kind": "stay",
+    "setup": null,
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G07-011",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 183,
+    "input": "Tìm khách sạn 5 sao.",
+    "kind": "stay",
+    "setup": null,
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G07-012",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 184,
+    "input": "Tìm nơi ở cho hai người.",
+    "kind": "stay",
+    "setup": "Tìm khách sạn Hilton Đà Nẵng.",
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G07-013",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 185,
+    "input": "Tìm nơi ở cho gia đình.",
+    "kind": "stay",
+    "setup": "Tìm khách sạn Hilton Đà Nẵng.",
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G07-014",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 186,
+    "input": "Tìm nơi ở cho nhóm bạn.",
+    "kind": "stay",
+    "setup": "Tìm khách sạn Hilton Đà Nẵng.",
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G07-015",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 187,
+    "input": "Tìm nơi ở có phòng gia đình.",
+    "kind": "stay",
+    "setup": "Tìm khách sạn Hilton Đà Nẵng.",
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G07-016",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 188,
+    "input": "Tìm phòng có sức chứa bốn người.",
+    "kind": "stay",
+    "setup": "Tìm khách sạn Hilton Đà Nẵng.",
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G07-017",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 189,
+    "input": "Tìm phòng có ban công.",
+    "kind": "stay",
+    "setup": "Tìm khách sạn Hilton Đà Nẵng.",
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G07-018",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 190,
+    "input": "Tìm phòng có hồ bơi.",
+    "kind": "stay",
+    "setup": "Tìm khách sạn Hilton Đà Nẵng.",
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G07-019",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 191,
+    "input": "Tìm nơi có bữa sáng.",
+    "kind": "stay",
+    "setup": "Tìm khách sạn Hilton Đà Nẵng.",
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G07-020",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 192,
+    "input": "Tìm nơi có chỗ đậu ô tô.",
+    "kind": "stay",
+    "setup": "Tìm khách sạn Hilton Đà Nẵng.",
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G07-021",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 193,
+    "input": "Tìm nơi có thang máy.",
+    "kind": "stay",
+    "setup": "Tìm khách sạn Hilton Đà Nẵng.",
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G07-022",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 194,
+    "input": "Tìm nơi phù hợp người lớn tuổi.",
+    "kind": "stay",
+    "setup": "Tìm khách sạn Hilton Đà Nẵng.",
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G07-023",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 195,
+    "input": "Tìm nơi gần nhà hàng.",
+    "kind": "stay",
+    "setup": "Tìm khách sạn Hilton Đà Nẵng.",
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G07-024",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 196,
+    "input": "Tìm nơi gần biển và gần quán ăn.",
+    "kind": "stay",
+    "setup": "Tìm khách sạn Hilton Đà Nẵng.",
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G07-025",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 197,
+    "input": "Tìm khách sạn yên tĩnh.",
+    "kind": "stay",
+    "setup": "Tìm khách sạn Hilton Đà Nẵng.",
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G07-026",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 198,
+    "input": "Tìm nơi có view biển.",
+    "kind": "stay",
+    "setup": "Tìm khách sạn Hilton Đà Nẵng.",
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G07-027",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 199,
+    "input": "Tìm phòng dưới 500.000 đồng một đêm.",
+    "kind": "stay",
+    "setup": "Tìm khách sạn Hilton Đà Nẵng.",
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G07-028",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 200,
+    "input": "Tìm khách sạn dưới 1.000.000 đồng một đêm.",
+    "kind": "stay",
+    "setup": "Tìm khách sạn Hilton Đà Nẵng.",
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G07-029",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 201,
+    "input": "Tìm nơi tiết kiệm hơn khách sạn hiện tại.",
+    "kind": "stay",
+    "setup": "Tìm khách sạn Hilton Đà Nẵng.",
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G07-030",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 202,
+    "input": "Có khách sạn nào gần địa điểm tôi muốn đi không?",
+    "kind": "stay",
+    "setup": "Tìm khách sạn Hilton Đà Nẵng.",
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G07-031",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 203,
+    "input": "Khách sạn này có những loại phòng nào?",
+    "kind": "stay",
+    "setup": "Tìm khách sạn Hilton Đà Nẵng.",
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G07-032",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 204,
+    "input": "Phòng này ở được bao nhiêu người?",
+    "kind": "stay",
+    "setup": "Tìm khách sạn Hilton Đà Nẵng.",
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G07-033",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 205,
+    "input": "Giá phòng có bao gồm bao nhiêu khách?",
+    "kind": "stay",
+    "setup": "Tìm khách sạn Hilton Đà Nẵng.",
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G07-034",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 206,
+    "input": "Giờ nhận phòng là mấy giờ?",
+    "kind": "stay",
+    "setup": "Tìm khách sạn Hilton Đà Nẵng.",
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G07-035",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 207,
+    "input": "Giờ trả phòng là mấy giờ?",
+    "kind": "stay",
+    "setup": "Tìm khách sạn Hilton Đà Nẵng.",
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G07-036",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 208,
+    "input": "Có thể nhận phòng sớm không?",
+    "kind": "stay",
+    "setup": "Tìm khách sạn Hilton Đà Nẵng.",
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G07-037",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 209,
+    "input": "Có thể trả phòng muộn không?",
+    "kind": "stay",
+    "setup": "Tìm khách sạn Hilton Đà Nẵng.",
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G07-038",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 210,
+    "input": "Có thể gửi hành lý không?",
+    "kind": "stay",
+    "setup": "Tìm khách sạn Hilton Đà Nẵng.",
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G07-039",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 211,
+    "input": "Có thể nhận phòng sau nửa đêm không?",
+    "kind": "stay",
+    "setup": "Tìm khách sạn Hilton Đà Nẵng.",
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G07-040",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 212,
+    "input": "Giá này đã bao gồm thuế chưa?",
+    "kind": "stay",
+    "setup": "Tìm khách sạn Hilton Đà Nẵng.",
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G07-041",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 213,
+    "input": "Có phụ phí trẻ em không?",
+    "kind": "stay",
+    "setup": "Tìm khách sạn Hilton Đà Nẵng.",
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G07-042",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 214,
+    "input": "Có phòng cho người khuyết tật không?",
+    "kind": "stay",
+    "setup": "Tìm khách sạn Hilton Đà Nẵng.",
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G07-043",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 215,
+    "input": "Có còn phòng vào ngày tôi đi không?",
+    "kind": "live",
+    "setup": null,
+    "expected": "Nêu rõ chưa có nguồn trực tiếp; không bịa thời tiết/sự kiện/tồn phòng/tồn vé."
+  },
+  {
+    "id": "G07-044",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 216,
+    "input": "Giá này có phải giá hiện tại không?",
+    "kind": "live",
+    "setup": null,
+    "expected": "Nêu rõ chưa có nguồn trực tiếp; không bịa thời tiết/sự kiện/tồn phòng/tồn vé."
+  },
+  {
+    "id": "G07-045",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 217,
+    "input": "Khách sạn có cho phép mang thú cưng không?",
+    "kind": "stay",
+    "setup": "Tìm khách sạn Hilton Đà Nẵng.",
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G07-046",
+    "group": 7,
+    "groupTitle": "Lưu trú",
+    "sourceLine": 218,
+    "input": "Có thể đặt phòng trực tiếp ở đâu?",
+    "kind": "stay",
+    "setup": "Tìm khách sạn Hilton Đà Nẵng.",
+    "expected": "Lưu trú đúng loại; không khẳng định phòng trống/giá theo ngày/tiện nghi khi chưa có nguồn."
+  },
+  {
+    "id": "G08-001",
+    "group": 8,
+    "groupTitle": "So sánh địa điểm",
+    "sourceLine": 221,
+    "input": "So sánh Bà Nà Hills và Sơn Trà.",
+    "kind": "comparison",
+    "setup": "So sánh Hilton với Furama",
+    "expected": "Bảng so sánh đúng hai nơi có trong DB hoặc hỏi đối tượng/tiêu chí còn thiếu; không tự xếp hạng."
+  },
+  {
+    "id": "G08-002",
+    "group": 8,
+    "groupTitle": "So sánh địa điểm",
+    "sourceLine": 222,
+    "input": "So sánh Mỹ Khê và Non Nước.",
+    "kind": "comparison",
+    "setup": "So sánh Hilton với Furama",
+    "expected": "Bảng so sánh đúng hai nơi có trong DB hoặc hỏi đối tượng/tiêu chí còn thiếu; không tự xếp hạng."
+  },
+  {
+    "id": "G08-003",
+    "group": 8,
+    "groupTitle": "So sánh địa điểm",
+    "sourceLine": 223,
+    "input": "So sánh hai khách sạn này.",
+    "kind": "comparison",
+    "setup": "So sánh Hilton với Furama",
+    "expected": "Bảng so sánh đúng hai nơi có trong DB hoặc hỏi đối tượng/tiêu chí còn thiếu; không tự xếp hạng."
+  },
+  {
+    "id": "G08-004",
+    "group": 8,
+    "groupTitle": "So sánh địa điểm",
+    "sourceLine": 224,
+    "input": "So sánh hai quán hải sản.",
+    "kind": "comparison",
+    "setup": "So sánh Hilton với Furama",
+    "expected": "Bảng so sánh đúng hai nơi có trong DB hoặc hỏi đối tượng/tiêu chí còn thiếu; không tự xếp hạng."
+  },
+  {
+    "id": "G08-005",
+    "group": 8,
+    "groupTitle": "So sánh địa điểm",
+    "sourceLine": 225,
+    "input": "So sánh hai quán mì Quảng.",
+    "kind": "comparison",
+    "setup": "So sánh Hilton với Furama",
+    "expected": "Bảng so sánh đúng hai nơi có trong DB hoặc hỏi đối tượng/tiêu chí còn thiếu; không tự xếp hạng."
+  },
+  {
+    "id": "G08-006",
+    "group": 8,
+    "groupTitle": "So sánh địa điểm",
+    "sourceLine": 226,
+    "input": "Nơi nào rẻ hơn?",
+    "kind": "comparison",
+    "setup": "So sánh Hilton với Furama",
+    "expected": "Bảng so sánh đúng hai nơi có trong DB hoặc hỏi đối tượng/tiêu chí còn thiếu; không tự xếp hạng."
+  },
+  {
+    "id": "G08-007",
+    "group": 8,
+    "groupTitle": "So sánh địa điểm",
+    "sourceLine": 227,
+    "input": "Nơi nào gần biển hơn?",
+    "kind": "comparison",
+    "setup": "So sánh Hilton với Furama",
+    "expected": "Bảng so sánh đúng hai nơi có trong DB hoặc hỏi đối tượng/tiêu chí còn thiếu; không tự xếp hạng."
+  },
+  {
+    "id": "G08-008",
+    "group": 8,
+    "groupTitle": "So sánh địa điểm",
+    "sourceLine": 228,
+    "input": "Nơi nào phù hợp trẻ em hơn?",
+    "kind": "comparison",
+    "setup": "So sánh Hilton với Furama",
+    "expected": "Bảng so sánh đúng hai nơi có trong DB hoặc hỏi đối tượng/tiêu chí còn thiếu; không tự xếp hạng."
+  },
+  {
+    "id": "G08-009",
+    "group": 8,
+    "groupTitle": "So sánh địa điểm",
+    "sourceLine": 229,
+    "input": "Nơi nào ít phải đi bộ hơn?",
+    "kind": "comparison",
+    "setup": "So sánh Hilton với Furama",
+    "expected": "Bảng so sánh đúng hai nơi có trong DB hoặc hỏi đối tượng/tiêu chí còn thiếu; không tự xếp hạng."
+  },
+  {
+    "id": "G08-010",
+    "group": 8,
+    "groupTitle": "So sánh địa điểm",
+    "sourceLine": 230,
+    "input": "Nơi nào phù hợp người lớn tuổi hơn?",
+    "kind": "comparison",
+    "setup": "So sánh Hilton với Furama",
+    "expected": "Bảng so sánh đúng hai nơi có trong DB hoặc hỏi đối tượng/tiêu chí còn thiếu; không tự xếp hạng."
+  },
+  {
+    "id": "G08-011",
+    "group": 8,
+    "groupTitle": "So sánh địa điểm",
+    "sourceLine": 231,
+    "input": "Nơi nào có nhiều đánh giá hơn?",
+    "kind": "comparison",
+    "setup": "So sánh Hilton với Furama",
+    "expected": "Bảng so sánh đúng hai nơi có trong DB hoặc hỏi đối tượng/tiêu chí còn thiếu; không tự xếp hạng."
+  },
+  {
+    "id": "G08-012",
+    "group": 8,
+    "groupTitle": "So sánh địa điểm",
+    "sourceLine": 232,
+    "input": "Nơi nào có giá phòng tốt hơn?",
+    "kind": "comparison",
+    "setup": "So sánh Hilton với Furama",
+    "expected": "Bảng so sánh đúng hai nơi có trong DB hoặc hỏi đối tượng/tiêu chí còn thiếu; không tự xếp hạng."
+  },
+  {
+    "id": "G08-013",
+    "group": 8,
+    "groupTitle": "So sánh địa điểm",
+    "sourceLine": 233,
+    "input": "Nơi nào có view đẹp hơn?",
+    "kind": "comparison",
+    "setup": "So sánh Hilton với Furama",
+    "expected": "Bảng so sánh đúng hai nơi có trong DB hoặc hỏi đối tượng/tiêu chí còn thiếu; không tự xếp hạng."
+  },
+  {
+    "id": "G08-014",
+    "group": 8,
+    "groupTitle": "So sánh địa điểm",
+    "sourceLine": 234,
+    "input": "Nơi nào yên tĩnh hơn?",
+    "kind": "comparison",
+    "setup": "So sánh Hilton với Furama",
+    "expected": "Bảng so sánh đúng hai nơi có trong DB hoặc hỏi đối tượng/tiêu chí còn thiếu; không tự xếp hạng."
+  },
+  {
+    "id": "G08-015",
+    "group": 8,
+    "groupTitle": "So sánh địa điểm",
+    "sourceLine": 235,
+    "input": "Nơi nào gần trung tâm hơn?",
+    "kind": "comparison",
+    "setup": "So sánh Hilton với Furama",
+    "expected": "Bảng so sánh đúng hai nơi có trong DB hoặc hỏi đối tượng/tiêu chí còn thiếu; không tự xếp hạng."
+  },
+  {
+    "id": "G08-016",
+    "group": 8,
+    "groupTitle": "So sánh địa điểm",
+    "sourceLine": 236,
+    "input": "Nơi nào phù hợp đi buổi tối hơn?",
+    "kind": "comparison",
+    "setup": "So sánh Hilton với Furama",
+    "expected": "Bảng so sánh đúng hai nơi có trong DB hoặc hỏi đối tượng/tiêu chí còn thiếu; không tự xếp hạng."
+  },
+  {
+    "id": "G08-017",
+    "group": 8,
+    "groupTitle": "So sánh địa điểm",
+    "sourceLine": 237,
+    "input": "Tôi ưu tiên giá, hãy giúp tôi chọn.",
+    "kind": "comparison",
+    "setup": "So sánh Hilton với Furama",
+    "expected": "Bảng so sánh đúng hai nơi có trong DB hoặc hỏi đối tượng/tiêu chí còn thiếu; không tự xếp hạng."
+  },
+  {
+    "id": "G08-018",
+    "group": 8,
+    "groupTitle": "So sánh địa điểm",
+    "sourceLine": 238,
+    "input": "Tôi ưu tiên vị trí, hãy giúp tôi chọn.",
+    "kind": "comparison",
+    "setup": "So sánh Hilton với Furama",
+    "expected": "Bảng so sánh đúng hai nơi có trong DB hoặc hỏi đối tượng/tiêu chí còn thiếu; không tự xếp hạng."
+  },
+  {
+    "id": "G08-019",
+    "group": 8,
+    "groupTitle": "So sánh địa điểm",
+    "sourceLine": 239,
+    "input": "Tôi ưu tiên trải nghiệm, hãy giúp tôi chọn.",
+    "kind": "comparison",
+    "setup": "So sánh Hilton với Furama",
+    "expected": "Bảng so sánh đúng hai nơi có trong DB hoặc hỏi đối tượng/tiêu chí còn thiếu; không tự xếp hạng."
+  },
+  {
+    "id": "G08-020",
+    "group": 8,
+    "groupTitle": "So sánh địa điểm",
+    "sourceLine": 240,
+    "input": "Hãy cho tôi bảng so sánh, không cần tự quyết định.",
+    "kind": "comparison",
+    "setup": "So sánh Hilton với Furama",
+    "expected": "Bảng so sánh đúng hai nơi có trong DB hoặc hỏi đối tượng/tiêu chí còn thiếu; không tự xếp hạng."
+  },
+  {
+    "id": "G09-001",
+    "group": 9,
+    "groupTitle": "Lên lịch trình",
+    "sourceLine": 242,
+    "input": "Lên lịch trình Đà Nẵng một ngày.",
+    "kind": "planning",
+    "setup": null,
+    "expected": "Lịch theo buổi hoặc câu hỏi làm rõ; trên 3 ngày báo giới hạn, không tự rút chuyến."
+  },
+  {
+    "id": "G09-002",
+    "group": 9,
+    "groupTitle": "Lên lịch trình",
+    "sourceLine": 243,
+    "input": "Lên lịch trình Đà Nẵng hai ngày.",
+    "kind": "planning",
+    "setup": null,
+    "expected": "Lịch theo buổi hoặc câu hỏi làm rõ; trên 3 ngày báo giới hạn, không tự rút chuyến."
+  },
+  {
+    "id": "G09-003",
+    "group": 9,
+    "groupTitle": "Lên lịch trình",
+    "sourceLine": 244,
+    "input": "Lên lịch trình Đà Nẵng ba ngày hai đêm.",
+    "kind": "planning",
+    "setup": null,
+    "expected": "Lịch theo buổi hoặc câu hỏi làm rõ; trên 3 ngày báo giới hạn, không tự rút chuyến."
+  },
+  {
+    "id": "G09-004",
+    "group": 9,
+    "groupTitle": "Lên lịch trình",
+    "sourceLine": 245,
+    "input": "Lên lịch trình Đà Nẵng bốn ngày.",
+    "kind": "planning",
+    "setup": null,
+    "expected": "Lịch theo buổi hoặc câu hỏi làm rõ; trên 3 ngày báo giới hạn, không tự rút chuyến."
+  },
+  {
+    "id": "G09-005",
+    "group": 9,
+    "groupTitle": "Lên lịch trình",
+    "sourceLine": 246,
+    "input": "Tôi đi Đà Nẵng với ngân sách 5 triệu.",
+    "kind": "planning",
+    "setup": null,
+    "expected": "Lịch theo buổi hoặc câu hỏi làm rõ; trên 3 ngày báo giới hạn, không tự rút chuyến."
+  },
+  {
+    "id": "G09-006",
+    "group": 9,
+    "groupTitle": "Lên lịch trình",
+    "sourceLine": 247,
+    "input": "Lên lịch trình cho hai người.",
+    "kind": "planning",
+    "setup": null,
+    "expected": "Lịch theo buổi hoặc câu hỏi làm rõ; trên 3 ngày báo giới hạn, không tự rút chuyến."
+  },
+  {
+    "id": "G09-007",
+    "group": 9,
+    "groupTitle": "Lên lịch trình",
+    "sourceLine": 248,
+    "input": "Lên lịch trình cho gia đình có trẻ nhỏ.",
+    "kind": "planning",
+    "setup": null,
+    "expected": "Lịch theo buổi hoặc câu hỏi làm rõ; trên 3 ngày báo giới hạn, không tự rút chuyến."
+  },
+  {
+    "id": "G09-008",
+    "group": 9,
+    "groupTitle": "Lên lịch trình",
+    "sourceLine": 249,
+    "input": "Lên lịch trình cho nhóm sáu người.",
+    "kind": "planning",
+    "setup": null,
+    "expected": "Lịch theo buổi hoặc câu hỏi làm rõ; trên 3 ngày báo giới hạn, không tự rút chuyến."
+  },
+  {
+    "id": "G09-009",
+    "group": 9,
+    "groupTitle": "Lên lịch trình",
+    "sourceLine": 250,
+    "input": "Lên lịch trình cho người lớn tuổi.",
+    "kind": "planning",
+    "setup": null,
+    "expected": "Lịch theo buổi hoặc câu hỏi làm rõ; trên 3 ngày báo giới hạn, không tự rút chuyến."
+  },
+  {
+    "id": "G09-010",
+    "group": 9,
+    "groupTitle": "Lên lịch trình",
+    "sourceLine": 251,
+    "input": "Lên lịch trình nhẹ nhàng, không đi nhiều.",
+    "kind": "planning",
+    "setup": null,
+    "expected": "Lịch theo buổi hoặc câu hỏi làm rõ; trên 3 ngày báo giới hạn, không tự rút chuyến."
+  },
+  {
+    "id": "G09-011",
+    "group": 9,
+    "groupTitle": "Lên lịch trình",
+    "sourceLine": 252,
+    "input": "Lên lịch trình năng động.",
+    "kind": "planning",
+    "setup": null,
+    "expected": "Lịch theo buổi hoặc câu hỏi làm rõ; trên 3 ngày báo giới hạn, không tự rút chuyến."
+  },
+  {
+    "id": "G09-012",
+    "group": 9,
+    "groupTitle": "Lên lịch trình",
+    "sourceLine": 253,
+    "input": "Lên lịch trình tập trung vào biển.",
+    "kind": "planning",
+    "setup": null,
+    "expected": "Lịch theo buổi hoặc câu hỏi làm rõ; trên 3 ngày báo giới hạn, không tự rút chuyến."
+  },
+  {
+    "id": "G09-013",
+    "group": 9,
+    "groupTitle": "Lên lịch trình",
+    "sourceLine": 254,
+    "input": "Lên lịch trình tập trung vào ẩm thực.",
+    "kind": "planning",
+    "setup": null,
+    "expected": "Lịch theo buổi hoặc câu hỏi làm rõ; trên 3 ngày báo giới hạn, không tự rút chuyến."
+  },
+  {
+    "id": "G09-014",
+    "group": 9,
+    "groupTitle": "Lên lịch trình",
+    "sourceLine": 255,
+    "input": "Lên lịch trình tập trung vào chụp ảnh.",
+    "kind": "planning",
+    "setup": null,
+    "expected": "Lịch theo buổi hoặc câu hỏi làm rõ; trên 3 ngày báo giới hạn, không tự rút chuyến."
+  },
+  {
+    "id": "G09-015",
+    "group": 9,
+    "groupTitle": "Lên lịch trình",
+    "sourceLine": 256,
+    "input": "Lên lịch trình tập trung vào văn hóa.",
+    "kind": "planning",
+    "setup": null,
+    "expected": "Lịch theo buổi hoặc câu hỏi làm rõ; trên 3 ngày báo giới hạn, không tự rút chuyến."
+  },
+  {
+    "id": "G09-016",
+    "group": 9,
+    "groupTitle": "Lên lịch trình",
+    "sourceLine": 257,
+    "input": "Lên lịch trình tiết kiệm.",
+    "kind": "planning",
+    "setup": null,
+    "expected": "Lịch theo buổi hoặc câu hỏi làm rõ; trên 3 ngày báo giới hạn, không tự rút chuyến."
+  },
+  {
+    "id": "G09-017",
+    "group": 9,
+    "groupTitle": "Lên lịch trình",
+    "sourceLine": 258,
+    "input": "Lên lịch trình cao cấp.",
+    "kind": "planning",
+    "setup": null,
+    "expected": "Lịch theo buổi hoặc câu hỏi làm rõ; trên 3 ngày báo giới hạn, không tự rút chuyến."
+  },
+  {
+    "id": "G09-018",
+    "group": 9,
+    "groupTitle": "Lên lịch trình",
+    "sourceLine": 259,
+    "input": "Lên lịch trình gần trung tâm.",
+    "kind": "planning",
+    "setup": null,
+    "expected": "Lịch theo buổi hoặc câu hỏi làm rõ; trên 3 ngày báo giới hạn, không tự rút chuyến."
+  },
+  {
+    "id": "G09-019",
+    "group": 9,
+    "groupTitle": "Lên lịch trình",
+    "sourceLine": 260,
+    "input": "Lên lịch trình gần biển.",
+    "kind": "planning",
+    "setup": null,
+    "expected": "Lịch theo buổi hoặc câu hỏi làm rõ; trên 3 ngày báo giới hạn, không tự rút chuyến."
+  },
+  {
+    "id": "G09-020",
+    "group": 9,
+    "groupTitle": "Lên lịch trình",
+    "sourceLine": 261,
+    "input": "Lên lịch trình không cần thuê xe.",
+    "kind": "planning",
+    "setup": null,
+    "expected": "Lịch theo buổi hoặc câu hỏi làm rõ; trên 3 ngày báo giới hạn, không tự rút chuyến."
+  },
+  {
+    "id": "G09-021",
+    "group": 9,
+    "groupTitle": "Lên lịch trình",
+    "sourceLine": 262,
+    "input": "Lên lịch trình đi bằng taxi.",
+    "kind": "planning",
+    "setup": null,
+    "expected": "Lịch theo buổi hoặc câu hỏi làm rõ; trên 3 ngày báo giới hạn, không tự rút chuyến."
+  },
+  {
+    "id": "G09-022",
+    "group": 9,
+    "groupTitle": "Lên lịch trình",
+    "sourceLine": 263,
+    "input": "Lên lịch trình đi bằng xe máy.",
+    "kind": "planning",
+    "setup": null,
+    "expected": "Lịch theo buổi hoặc câu hỏi làm rõ; trên 3 ngày báo giới hạn, không tự rút chuyến."
+  },
+  {
+    "id": "G09-023",
+    "group": 9,
+    "groupTitle": "Lên lịch trình",
+    "sourceLine": 264,
+    "input": "Lên lịch trình có điểm tham quan miễn phí.",
+    "kind": "planning",
+    "setup": null,
+    "expected": "Lịch theo buổi hoặc câu hỏi làm rõ; trên 3 ngày báo giới hạn, không tự rút chuyến."
+  },
+  {
+    "id": "G09-024",
+    "group": 9,
+    "groupTitle": "Lên lịch trình",
+    "sourceLine": 265,
+    "input": "Lên lịch trình tránh nơi quá đông.",
+    "kind": "planning",
+    "setup": null,
+    "expected": "Lịch theo buổi hoặc câu hỏi làm rõ; trên 3 ngày báo giới hạn, không tự rút chuyến."
+  },
+  {
+    "id": "G09-025",
+    "group": 9,
+    "groupTitle": "Lên lịch trình",
+    "sourceLine": 266,
+    "input": "Lên lịch trình khi trời mưa.",
+    "kind": "planning",
+    "setup": null,
+    "expected": "Lịch theo buổi hoặc câu hỏi làm rõ; trên 3 ngày báo giới hạn, không tự rút chuyến."
+  },
+  {
+    "id": "G09-026",
+    "group": 9,
+    "groupTitle": "Lên lịch trình",
+    "sourceLine": 267,
+    "input": "Lên lịch trình có thời gian nghỉ trưa.",
+    "kind": "planning",
+    "setup": null,
+    "expected": "Lịch theo buổi hoặc câu hỏi làm rõ; trên 3 ngày báo giới hạn, không tự rút chuyến."
+  },
+  {
+    "id": "G09-027",
+    "group": 9,
+    "groupTitle": "Lên lịch trình",
+    "sourceLine": 268,
+    "input": "Lên lịch trình có nhà hàng gần từng điểm.",
+    "kind": "planning",
+    "setup": null,
+    "expected": "Lịch theo buổi hoặc câu hỏi làm rõ; trên 3 ngày báo giới hạn, không tự rút chuyến."
+  },
+  {
+    "id": "G09-028",
+    "group": 9,
+    "groupTitle": "Lên lịch trình",
+    "sourceLine": 269,
+    "input": "Lên lịch trình có khách sạn gần biển.",
+    "kind": "planning",
+    "setup": null,
+    "expected": "Lịch theo buổi hoặc câu hỏi làm rõ; trên 3 ngày báo giới hạn, không tự rút chuyến."
+  },
+  {
+    "id": "G09-029",
+    "group": 9,
+    "groupTitle": "Lên lịch trình",
+    "sourceLine": 270,
+    "input": "Lên lịch trình ngày đầu gần sân bay.",
+    "kind": "planning",
+    "setup": null,
+    "expected": "Lịch theo buổi hoặc câu hỏi làm rõ; trên 3 ngày báo giới hạn, không tự rút chuyến."
+  },
+  {
+    "id": "G09-030",
+    "group": 9,
+    "groupTitle": "Lên lịch trình",
+    "sourceLine": 271,
+    "input": "Lên lịch trình ngày cuối gần sân bay.",
+    "kind": "planning",
+    "setup": null,
+    "expected": "Lịch theo buổi hoặc câu hỏi làm rõ; trên 3 ngày báo giới hạn, không tự rút chuyến."
+  },
+  {
+    "id": "G09-031",
+    "group": 9,
+    "groupTitle": "Lên lịch trình",
+    "sourceLine": 272,
+    "input": "Tôi đến lúc 18 giờ, hãy xếp lịch phù hợp.",
+    "kind": "planning",
+    "setup": null,
+    "expected": "Lịch theo buổi hoặc câu hỏi làm rõ; trên 3 ngày báo giới hạn, không tự rút chuyến."
+  },
+  {
+    "id": "G09-032",
+    "group": 9,
+    "groupTitle": "Lên lịch trình",
+    "sourceLine": 273,
+    "input": "Tôi rời Đà Nẵng lúc 9 giờ sáng, hãy bỏ các điểm buổi sáng.",
+    "kind": "planning",
+    "setup": null,
+    "expected": "Lịch theo buổi hoặc câu hỏi làm rõ; trên 3 ngày báo giới hạn, không tự rút chuyến."
+  },
+  {
+    "id": "G09-033",
+    "group": 9,
+    "groupTitle": "Lên lịch trình",
+    "sourceLine": 274,
+    "input": "Tôi có trẻ sáu tuổi, hãy xếp lịch nhẹ.",
+    "kind": "planning",
+    "setup": null,
+    "expected": "Lịch theo buổi hoặc câu hỏi làm rõ; trên 3 ngày báo giới hạn, không tự rút chuyến."
+  },
+  {
+    "id": "G09-034",
+    "group": 9,
+    "groupTitle": "Lên lịch trình",
+    "sourceLine": 275,
+    "input": "Tôi không muốn đi bộ nhiều.",
+    "kind": "planning",
+    "setup": null,
+    "expected": "Lịch theo buổi hoặc câu hỏi làm rõ; trên 3 ngày báo giới hạn, không tự rút chuyến."
+  },
+  {
+    "id": "G09-035",
+    "group": 9,
+    "groupTitle": "Lên lịch trình",
+    "sourceLine": 276,
+    "input": "Tôi muốn mỗi ngày chỉ đi ba điểm.",
+    "kind": "planning",
+    "setup": null,
+    "expected": "Lịch theo buổi hoặc câu hỏi làm rõ; trên 3 ngày báo giới hạn, không tự rút chuyến."
+  },
+  {
+    "id": "G09-036",
+    "group": 9,
+    "groupTitle": "Lên lịch trình",
+    "sourceLine": 277,
+    "input": "Tôi muốn có thời gian nghỉ ở khách sạn.",
+    "kind": "planning",
+    "setup": null,
+    "expected": "Lịch theo buổi hoặc câu hỏi làm rõ; trên 3 ngày báo giới hạn, không tự rút chuyến."
+  },
+  {
+    "id": "G09-037",
+    "group": 9,
+    "groupTitle": "Lên lịch trình",
+    "sourceLine": 278,
+    "input": "Tôi muốn ăn hải sản mỗi tối.",
+    "kind": "planning",
+    "setup": null,
+    "expected": "Lịch theo buổi hoặc câu hỏi làm rõ; trên 3 ngày báo giới hạn, không tự rút chuyến."
+  },
+  {
+    "id": "G09-038",
+    "group": 9,
+    "groupTitle": "Lên lịch trình",
+    "sourceLine": 279,
+    "input": "Tôi muốn mỗi ngày có một quán ăn địa phương.",
+    "kind": "planning",
+    "setup": null,
+    "expected": "Lịch theo buổi hoặc câu hỏi làm rõ; trên 3 ngày báo giới hạn, không tự rút chuyến."
+  },
+  {
+    "id": "G09-039",
+    "group": 9,
+    "groupTitle": "Lên lịch trình",
+    "sourceLine": 280,
+    "input": "Tôi muốn kết hợp biển, núi và ẩm thực.",
+    "kind": "planning",
+    "setup": null,
+    "expected": "Lịch theo buổi hoặc câu hỏi làm rõ; trên 3 ngày báo giới hạn, không tự rút chuyến."
+  },
+  {
+    "id": "G09-040",
+    "group": 9,
+    "groupTitle": "Lên lịch trình",
+    "sourceLine": 281,
+    "input": "Tôi muốn đi Sơn Trà và ăn gần đó.",
+    "kind": "planning",
+    "setup": null,
+    "expected": "Lịch theo buổi hoặc câu hỏi làm rõ; trên 3 ngày báo giới hạn, không tự rút chuyến."
+  },
+  {
+    "id": "G09-041",
+    "group": 9,
+    "groupTitle": "Lên lịch trình",
+    "sourceLine": 282,
+    "input": "Tôi muốn đi Ngũ Hành Sơn rồi tìm quán gần đó.",
+    "kind": "mixed",
+    "setup": null,
+    "expected": "Giữ nhu cầu đến Ngũ Hành Sơn và tìm quán gần đó; hỏi thời gian/điểm mốc còn thiếu, không thay bằng loại khác."
+  },
+  {
+    "id": "G09-042",
+    "group": 9,
+    "groupTitle": "Lên lịch trình",
+    "sourceLine": 283,
+    "input": "Tôi muốn đi biển buổi sáng và ăn hải sản buổi trưa.",
+    "kind": "planning",
+    "setup": null,
+    "expected": "Lịch theo buổi hoặc câu hỏi làm rõ; trên 3 ngày báo giới hạn, không tự rút chuyến."
+  },
+  {
+    "id": "G09-043",
+    "group": 9,
+    "groupTitle": "Lên lịch trình",
+    "sourceLine": 284,
+    "input": "Tôi muốn đi Cầu Rồng buổi tối.",
+    "kind": "planning",
+    "setup": null,
+    "expected": "Lịch theo buổi hoặc câu hỏi làm rõ; trên 3 ngày báo giới hạn, không tự rút chuyến."
+  },
+  {
+    "id": "G09-044",
+    "group": 9,
+    "groupTitle": "Lên lịch trình",
+    "sourceLine": 285,
+    "input": "Tôi muốn ngắm hoàng hôn rồi ăn tối gần đó.",
+    "kind": "planning",
+    "setup": null,
+    "expected": "Lịch theo buổi hoặc câu hỏi làm rõ; trên 3 ngày báo giới hạn, không tự rút chuyến."
+  },
+  {
+    "id": "G10-001",
+    "group": 10,
+    "groupTitle": "Chỉnh sửa lịch trình",
+    "sourceLine": 287,
+    "input": "Đổi khách sạn tiết kiệm hơn.",
+    "kind": "edit",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Sửa có phạm vi hoặc hỏi rõ/giới hạn tính năng; không tự thay đổi phần không yêu cầu."
+  },
+  {
+    "id": "G10-002",
+    "group": 10,
+    "groupTitle": "Chỉnh sửa lịch trình",
+    "sourceLine": 288,
+    "input": "Đổi khách sạn gần biển hơn.",
+    "kind": "edit",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Sửa có phạm vi hoặc hỏi rõ/giới hạn tính năng; không tự thay đổi phần không yêu cầu."
+  },
+  {
+    "id": "G10-003",
+    "group": 10,
+    "groupTitle": "Chỉnh sửa lịch trình",
+    "sourceLine": 289,
+    "input": "Thay quán ăn này bằng quán khác.",
+    "kind": "edit",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Sửa có phạm vi hoặc hỏi rõ/giới hạn tính năng; không tự thay đổi phần không yêu cầu."
+  },
+  {
+    "id": "G10-004",
+    "group": 10,
+    "groupTitle": "Chỉnh sửa lịch trình",
+    "sourceLine": 290,
+    "input": "Thay điểm tham quan này bằng điểm miễn phí.",
+    "kind": "edit",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Sửa có phạm vi hoặc hỏi rõ/giới hạn tính năng; không tự thay đổi phần không yêu cầu."
+  },
+  {
+    "id": "G10-005",
+    "group": 10,
+    "groupTitle": "Chỉnh sửa lịch trình",
+    "sourceLine": 291,
+    "input": "Bỏ Bà Nà khỏi lịch trình.",
+    "kind": "edit",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Sửa có phạm vi hoặc hỏi rõ/giới hạn tính năng; không tự thay đổi phần không yêu cầu."
+  },
+  {
+    "id": "G10-006",
+    "group": 10,
+    "groupTitle": "Chỉnh sửa lịch trình",
+    "sourceLine": 292,
+    "input": "Bỏ địa điểm ngày hai.",
+    "kind": "edit",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Sửa có phạm vi hoặc hỏi rõ/giới hạn tính năng; không tự thay đổi phần không yêu cầu."
+  },
+  {
+    "id": "G10-007",
+    "group": 10,
+    "groupTitle": "Chỉnh sửa lịch trình",
+    "sourceLine": 293,
+    "input": "Chuyển điểm này sang ngày hai.",
+    "kind": "edit",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Sửa có phạm vi hoặc hỏi rõ/giới hạn tính năng; không tự thay đổi phần không yêu cầu."
+  },
+  {
+    "id": "G10-008",
+    "group": 10,
+    "groupTitle": "Chỉnh sửa lịch trình",
+    "sourceLine": 294,
+    "input": "Chuyển điểm này sang buổi chiều.",
+    "kind": "edit",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Sửa có phạm vi hoặc hỏi rõ/giới hạn tính năng; không tự thay đổi phần không yêu cầu."
+  },
+  {
+    "id": "G10-009",
+    "group": 10,
+    "groupTitle": "Chỉnh sửa lịch trình",
+    "sourceLine": 295,
+    "input": "Đổi điểm tham quan buổi sáng sang buổi tối.",
+    "kind": "edit",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Sửa có phạm vi hoặc hỏi rõ/giới hạn tính năng; không tự thay đổi phần không yêu cầu."
+  },
+  {
+    "id": "G10-010",
+    "group": 10,
+    "groupTitle": "Chỉnh sửa lịch trình",
+    "sourceLine": 296,
+    "input": "Thêm một quán hải sản vào ngày hai.",
+    "kind": "edit",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Sửa có phạm vi hoặc hỏi rõ/giới hạn tính năng; không tự thay đổi phần không yêu cầu."
+  },
+  {
+    "id": "G10-011",
+    "group": 10,
+    "groupTitle": "Chỉnh sửa lịch trình",
+    "sourceLine": 297,
+    "input": "Thêm thời gian nghỉ trưa.",
+    "kind": "edit",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Sửa có phạm vi hoặc hỏi rõ/giới hạn tính năng; không tự thay đổi phần không yêu cầu."
+  },
+  {
+    "id": "G10-012",
+    "group": 10,
+    "groupTitle": "Chỉnh sửa lịch trình",
+    "sourceLine": 298,
+    "input": "Giữ nguyên ngày một, chỉ sửa ngày hai.",
+    "kind": "edit",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Sửa có phạm vi hoặc hỏi rõ/giới hạn tính năng; không tự thay đổi phần không yêu cầu."
+  },
+  {
+    "id": "G10-013",
+    "group": 10,
+    "groupTitle": "Chỉnh sửa lịch trình",
+    "sourceLine": 299,
+    "input": "Giữ nguyên khách sạn, đổi các điểm tham quan.",
+    "kind": "edit",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Sửa có phạm vi hoặc hỏi rõ/giới hạn tính năng; không tự thay đổi phần không yêu cầu."
+  },
+  {
+    "id": "G10-014",
+    "group": 10,
+    "groupTitle": "Chỉnh sửa lịch trình",
+    "sourceLine": 300,
+    "input": "Giữ nguyên ngân sách nhưng đổi địa điểm.",
+    "kind": "edit",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Sửa có phạm vi hoặc hỏi rõ/giới hạn tính năng; không tự thay đổi phần không yêu cầu."
+  },
+  {
+    "id": "G10-015",
+    "group": 10,
+    "groupTitle": "Chỉnh sửa lịch trình",
+    "sourceLine": 301,
+    "input": "Giữ nguyên lịch trình, giảm chi phí.",
+    "kind": "edit",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Sửa có phạm vi hoặc hỏi rõ/giới hạn tính năng; không tự thay đổi phần không yêu cầu."
+  },
+  {
+    "id": "G10-016",
+    "group": 10,
+    "groupTitle": "Chỉnh sửa lịch trình",
+    "sourceLine": 302,
+    "input": "Đổi sang các điểm gần nhau hơn.",
+    "kind": "edit",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Sửa có phạm vi hoặc hỏi rõ/giới hạn tính năng; không tự thay đổi phần không yêu cầu."
+  },
+  {
+    "id": "G10-017",
+    "group": 10,
+    "groupTitle": "Chỉnh sửa lịch trình",
+    "sourceLine": 303,
+    "input": "Đổi sang lịch trình ít đi bộ hơn.",
+    "kind": "edit",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Sửa có phạm vi hoặc hỏi rõ/giới hạn tính năng; không tự thay đổi phần không yêu cầu."
+  },
+  {
+    "id": "G10-018",
+    "group": 10,
+    "groupTitle": "Chỉnh sửa lịch trình",
+    "sourceLine": 304,
+    "input": "Đổi sang lịch trình phù hợp trẻ em.",
+    "kind": "edit",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Sửa có phạm vi hoặc hỏi rõ/giới hạn tính năng; không tự thay đổi phần không yêu cầu."
+  },
+  {
+    "id": "G10-019",
+    "group": 10,
+    "groupTitle": "Chỉnh sửa lịch trình",
+    "sourceLine": 305,
+    "input": "Đổi sang các điểm không mất vé.",
+    "kind": "edit",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Sửa có phạm vi hoặc hỏi rõ/giới hạn tính năng; không tự thay đổi phần không yêu cầu."
+  },
+  {
+    "id": "G10-020",
+    "group": 10,
+    "groupTitle": "Chỉnh sửa lịch trình",
+    "sourceLine": 306,
+    "input": "Đổi sang quán có món chay.",
+    "kind": "edit",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Sửa có phạm vi hoặc hỏi rõ/giới hạn tính năng; không tự thay đổi phần không yêu cầu."
+  },
+  {
+    "id": "G10-021",
+    "group": 10,
+    "groupTitle": "Chỉnh sửa lịch trình",
+    "sourceLine": 307,
+    "input": "Bỏ những nơi quá xa.",
+    "kind": "edit",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Sửa có phạm vi hoặc hỏi rõ/giới hạn tính năng; không tự thay đổi phần không yêu cầu."
+  },
+  {
+    "id": "G10-022",
+    "group": 10,
+    "groupTitle": "Chỉnh sửa lịch trình",
+    "sourceLine": 308,
+    "input": "Không gợi ý lại địa điểm tôi đã bỏ.",
+    "kind": "edit",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Sửa có phạm vi hoặc hỏi rõ/giới hạn tính năng; không tự thay đổi phần không yêu cầu."
+  },
+  {
+    "id": "G10-023",
+    "group": 10,
+    "groupTitle": "Chỉnh sửa lịch trình",
+    "sourceLine": 309,
+    "input": "Tôi đổi ý, muốn đi biển nhiều hơn.",
+    "kind": "edit",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Sửa có phạm vi hoặc hỏi rõ/giới hạn tính năng; không tự thay đổi phần không yêu cầu."
+  },
+  {
+    "id": "G10-024",
+    "group": 10,
+    "groupTitle": "Chỉnh sửa lịch trình",
+    "sourceLine": 310,
+    "input": "Tôi muốn thêm một ngày nghỉ.",
+    "kind": "edit",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Sửa có phạm vi hoặc hỏi rõ/giới hạn tính năng; không tự thay đổi phần không yêu cầu."
+  },
+  {
+    "id": "G10-025",
+    "group": 10,
+    "groupTitle": "Chỉnh sửa lịch trình",
+    "sourceLine": 311,
+    "input": "Tôi muốn đổi phương tiện sang taxi.",
+    "kind": "edit",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Sửa có phạm vi hoặc hỏi rõ/giới hạn tính năng; không tự thay đổi phần không yêu cầu."
+  },
+  {
+    "id": "G10-026",
+    "group": 10,
+    "groupTitle": "Chỉnh sửa lịch trình",
+    "sourceLine": 312,
+    "input": "Tôi muốn chuyển bữa tối sang gần khách sạn.",
+    "kind": "edit",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Sửa có phạm vi hoặc hỏi rõ/giới hạn tính năng; không tự thay đổi phần không yêu cầu."
+  },
+  {
+    "id": "G10-027",
+    "group": 10,
+    "groupTitle": "Chỉnh sửa lịch trình",
+    "sourceLine": 313,
+    "input": "Ngày cuối đừng xếp điểm quá xa sân bay.",
+    "kind": "edit",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Sửa có phạm vi hoặc hỏi rõ/giới hạn tính năng; không tự thay đổi phần không yêu cầu."
+  },
+  {
+    "id": "G10-028",
+    "group": 10,
+    "groupTitle": "Chỉnh sửa lịch trình",
+    "sourceLine": 314,
+    "input": "Buổi sáng ngày đầu tôi chưa đến nơi, hãy bỏ hoạt động.",
+    "kind": "edit",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Sửa có phạm vi hoặc hỏi rõ/giới hạn tính năng; không tự thay đổi phần không yêu cầu."
+  },
+  {
+    "id": "G10-029",
+    "group": 10,
+    "groupTitle": "Chỉnh sửa lịch trình",
+    "sourceLine": 315,
+    "input": "Buổi tối ngày cuối tôi đã rời Đà Nẵng, hãy bỏ hoạt động.",
+    "kind": "edit",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Sửa có phạm vi hoặc hỏi rõ/giới hạn tính năng; không tự thay đổi phần không yêu cầu."
+  },
+  {
+    "id": "G11-001",
+    "group": 11,
+    "groupTitle": "Ngân sách và chi phí",
+    "sourceLine": 317,
+    "input": "Tổng chuyến đi này khoảng bao nhiêu tiền?",
+    "kind": "budget",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Bám ngân sách đã xác nhận; tách chi phí đã biết và dự kiến, không báo đủ tiền khi thiếu giá."
+  },
+  {
+    "id": "G11-002",
+    "group": 11,
+    "groupTitle": "Ngân sách và chi phí",
+    "sourceLine": 318,
+    "input": "Ngân sách 3 triệu cho hai người có đủ không?",
+    "kind": "budget",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Bám ngân sách đã xác nhận; tách chi phí đã biết và dự kiến, không báo đủ tiền khi thiếu giá."
+  },
+  {
+    "id": "G11-003",
+    "group": 11,
+    "groupTitle": "Ngân sách và chi phí",
+    "sourceLine": 319,
+    "input": "Ngân sách này là cho cả nhóm hay mỗi người?",
+    "kind": "budget",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Bám ngân sách đã xác nhận; tách chi phí đã biết và dự kiến, không báo đủ tiền khi thiếu giá."
+  },
+  {
+    "id": "G11-004",
+    "group": 11,
+    "groupTitle": "Ngân sách và chi phí",
+    "sourceLine": 320,
+    "input": "Tính chi phí cho hai người.",
+    "kind": "budget",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Bám ngân sách đã xác nhận; tách chi phí đã biết và dự kiến, không báo đủ tiền khi thiếu giá."
+  },
+  {
+    "id": "G11-005",
+    "group": 11,
+    "groupTitle": "Ngân sách và chi phí",
+    "sourceLine": 321,
+    "input": "Tính chi phí cho gia đình bốn người.",
+    "kind": "budget",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Bám ngân sách đã xác nhận; tách chi phí đã biết và dự kiến, không báo đủ tiền khi thiếu giá."
+  },
+  {
+    "id": "G11-006",
+    "group": 11,
+    "groupTitle": "Ngân sách và chi phí",
+    "sourceLine": 322,
+    "input": "Tính riêng tiền phòng.",
+    "kind": "budget",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Bám ngân sách đã xác nhận; tách chi phí đã biết và dự kiến, không báo đủ tiền khi thiếu giá."
+  },
+  {
+    "id": "G11-007",
+    "group": 11,
+    "groupTitle": "Ngân sách và chi phí",
+    "sourceLine": 323,
+    "input": "Tính riêng tiền vé.",
+    "kind": "budget",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Bám ngân sách đã xác nhận; tách chi phí đã biết và dự kiến, không báo đủ tiền khi thiếu giá."
+  },
+  {
+    "id": "G11-008",
+    "group": 11,
+    "groupTitle": "Ngân sách và chi phí",
+    "sourceLine": 324,
+    "input": "Tính tiền ăn dự kiến.",
+    "kind": "budget",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Bám ngân sách đã xác nhận; tách chi phí đã biết và dự kiến, không báo đủ tiền khi thiếu giá."
+  },
+  {
+    "id": "G11-009",
+    "group": 11,
+    "groupTitle": "Ngân sách và chi phí",
+    "sourceLine": 325,
+    "input": "Tính tiền di chuyển dự kiến.",
+    "kind": "budget",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Bám ngân sách đã xác nhận; tách chi phí đã biết và dự kiến, không báo đủ tiền khi thiếu giá."
+  },
+  {
+    "id": "G11-010",
+    "group": 11,
+    "groupTitle": "Ngân sách và chi phí",
+    "sourceLine": 326,
+    "input": "Giữ lại 500.000 đồng dự phòng.",
+    "kind": "budget",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Bám ngân sách đã xác nhận; tách chi phí đã biết và dự kiến, không báo đủ tiền khi thiếu giá."
+  },
+  {
+    "id": "G11-011",
+    "group": 11,
+    "groupTitle": "Ngân sách và chi phí",
+    "sourceLine": 327,
+    "input": "Không tính tiền máy bay.",
+    "kind": "budget",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Bám ngân sách đã xác nhận; tách chi phí đã biết và dự kiến, không báo đủ tiền khi thiếu giá."
+  },
+  {
+    "id": "G11-012",
+    "group": 11,
+    "groupTitle": "Ngân sách và chi phí",
+    "sourceLine": 328,
+    "input": "Không tính tiền ăn.",
+    "kind": "budget",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Bám ngân sách đã xác nhận; tách chi phí đã biết và dự kiến, không báo đủ tiền khi thiếu giá."
+  },
+  {
+    "id": "G11-013",
+    "group": 11,
+    "groupTitle": "Ngân sách và chi phí",
+    "sourceLine": 329,
+    "input": "Không tính tiền khách sạn.",
+    "kind": "budget",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Bám ngân sách đã xác nhận; tách chi phí đã biết và dự kiến, không báo đủ tiền khi thiếu giá."
+  },
+  {
+    "id": "G11-014",
+    "group": 11,
+    "groupTitle": "Ngân sách và chi phí",
+    "sourceLine": 330,
+    "input": "Tôi muốn tiết kiệm 20%.",
+    "kind": "budget",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Bám ngân sách đã xác nhận; tách chi phí đã biết và dự kiến, không báo đủ tiền khi thiếu giá."
+  },
+  {
+    "id": "G11-015",
+    "group": 11,
+    "groupTitle": "Ngân sách và chi phí",
+    "sourceLine": 331,
+    "input": "Tìm các điểm miễn phí để giảm chi phí.",
+    "kind": "budget",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Bám ngân sách đã xác nhận; tách chi phí đã biết và dự kiến, không báo đủ tiền khi thiếu giá."
+  },
+  {
+    "id": "G11-016",
+    "group": 11,
+    "groupTitle": "Ngân sách và chi phí",
+    "sourceLine": 332,
+    "input": "Tìm khách sạn rẻ hơn.",
+    "kind": "budget",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Bám ngân sách đã xác nhận; tách chi phí đã biết và dự kiến, không báo đủ tiền khi thiếu giá."
+  },
+  {
+    "id": "G11-017",
+    "group": 11,
+    "groupTitle": "Ngân sách và chi phí",
+    "sourceLine": 333,
+    "input": "Tìm quán ăn dưới 100.000 đồng một người.",
+    "kind": "budget",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Bám ngân sách đã xác nhận; tách chi phí đã biết và dự kiến, không báo đủ tiền khi thiếu giá."
+  },
+  {
+    "id": "G11-018",
+    "group": 11,
+    "groupTitle": "Ngân sách và chi phí",
+    "sourceLine": 334,
+    "input": "Chi phí nào đã có dữ liệu?",
+    "kind": "budget",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Bám ngân sách đã xác nhận; tách chi phí đã biết và dự kiến, không báo đủ tiền khi thiếu giá."
+  },
+  {
+    "id": "G11-019",
+    "group": 11,
+    "groupTitle": "Ngân sách và chi phí",
+    "sourceLine": 335,
+    "input": "Chi phí nào chưa xác định?",
+    "kind": "budget",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Bám ngân sách đã xác nhận; tách chi phí đã biết và dự kiến, không báo đủ tiền khi thiếu giá."
+  },
+  {
+    "id": "G11-020",
+    "group": 11,
+    "groupTitle": "Ngân sách và chi phí",
+    "sourceLine": 336,
+    "input": "Giá này tính theo người hay theo món?",
+    "kind": "budget",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Bám ngân sách đã xác nhận; tách chi phí đã biết và dự kiến, không báo đủ tiền khi thiếu giá."
+  },
+  {
+    "id": "G11-021",
+    "group": 11,
+    "groupTitle": "Ngân sách và chi phí",
+    "sourceLine": 337,
+    "input": "Giá phòng tính theo đêm hay theo người?",
+    "kind": "budget",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Bám ngân sách đã xác nhận; tách chi phí đã biết và dự kiến, không báo đủ tiền khi thiếu giá."
+  },
+  {
+    "id": "G11-022",
+    "group": 11,
+    "groupTitle": "Ngân sách và chi phí",
+    "sourceLine": 338,
+    "input": "Có khoản phụ phí nào chưa tính không?",
+    "kind": "budget",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Bám ngân sách đã xác nhận; tách chi phí đã biết và dự kiến, không báo đủ tiền khi thiếu giá."
+  },
+  {
+    "id": "G11-023",
+    "group": 11,
+    "groupTitle": "Ngân sách và chi phí",
+    "sourceLine": 339,
+    "input": "Nếu vượt ngân sách thì giảm mục nào trước?",
+    "kind": "budget",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Bám ngân sách đã xác nhận; tách chi phí đã biết và dự kiến, không báo đủ tiền khi thiếu giá."
+  },
+  {
+    "id": "G11-024",
+    "group": 11,
+    "groupTitle": "Ngân sách và chi phí",
+    "sourceLine": 340,
+    "input": "Có thể đổi sang địa điểm miễn phí không?",
+    "kind": "budget",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Bám ngân sách đã xác nhận; tách chi phí đã biết và dự kiến, không báo đủ tiền khi thiếu giá."
+  },
+  {
+    "id": "G12-001",
+    "group": 12,
+    "groupTitle": "Di chuyển và bản đồ",
+    "sourceLine": 342,
+    "input": "Từ sân bay đến khách sạn đi thế nào?",
+    "kind": "map",
+    "setup": null,
+    "expected": "Hỏi điểm xuất phát/đích hoặc hướng dẫn bản đồ trong web; không giả GPS/giao thông live."
+  },
+  {
+    "id": "G12-002",
+    "group": 12,
+    "groupTitle": "Di chuyển và bản đồ",
+    "sourceLine": 343,
+    "input": "Từ khách sạn đến biển Mỹ Khê bao xa?",
+    "kind": "map",
+    "setup": null,
+    "expected": "Hỏi điểm xuất phát/đích hoặc hướng dẫn bản đồ trong web; không giả GPS/giao thông live."
+  },
+  {
+    "id": "G12-003",
+    "group": 12,
+    "groupTitle": "Di chuyển và bản đồ",
+    "sourceLine": 344,
+    "input": "Từ địa điểm này đến địa điểm kia mất bao lâu?",
+    "kind": "map",
+    "setup": null,
+    "expected": "Hỏi điểm xuất phát/đích hoặc hướng dẫn bản đồ trong web; không giả GPS/giao thông live."
+  },
+  {
+    "id": "G12-004",
+    "group": 12,
+    "groupTitle": "Di chuyển và bản đồ",
+    "sourceLine": 345,
+    "input": "Đi taxi hay xe máy tiện hơn?",
+    "kind": "map",
+    "setup": null,
+    "expected": "Hỏi điểm xuất phát/đích hoặc hướng dẫn bản đồ trong web; không giả GPS/giao thông live."
+  },
+  {
+    "id": "G12-005",
+    "group": 12,
+    "groupTitle": "Di chuyển và bản đồ",
+    "sourceLine": 346,
+    "input": "Có nên thuê xe máy không?",
+    "kind": "map",
+    "setup": null,
+    "expected": "Hỏi điểm xuất phát/đích hoặc hướng dẫn bản đồ trong web; không giả GPS/giao thông live."
+  },
+  {
+    "id": "G12-006",
+    "group": 12,
+    "groupTitle": "Di chuyển và bản đồ",
+    "sourceLine": 347,
+    "input": "Địa điểm nào có thể đi bộ?",
+    "kind": "map",
+    "setup": null,
+    "expected": "Hỏi điểm xuất phát/đích hoặc hướng dẫn bản đồ trong web; không giả GPS/giao thông live."
+  },
+  {
+    "id": "G12-007",
+    "group": 12,
+    "groupTitle": "Di chuyển và bản đồ",
+    "sourceLine": 348,
+    "input": "Địa điểm nào cần taxi?",
+    "kind": "map",
+    "setup": null,
+    "expected": "Hỏi điểm xuất phát/đích hoặc hướng dẫn bản đồ trong web; không giả GPS/giao thông live."
+  },
+  {
+    "id": "G12-008",
+    "group": 12,
+    "groupTitle": "Di chuyển và bản đồ",
+    "sourceLine": 349,
+    "input": "Tìm các điểm gần nhau để đi cùng ngày.",
+    "kind": "map",
+    "setup": null,
+    "expected": "Hỏi điểm xuất phát/đích hoặc hướng dẫn bản đồ trong web; không giả GPS/giao thông live."
+  },
+  {
+    "id": "G12-009",
+    "group": 12,
+    "groupTitle": "Di chuyển và bản đồ",
+    "sourceLine": 350,
+    "input": "Chỉ đường đến địa điểm này.",
+    "kind": "map",
+    "setup": null,
+    "expected": "Hỏi điểm xuất phát/đích hoặc hướng dẫn bản đồ trong web; không giả GPS/giao thông live."
+  },
+  {
+    "id": "G12-010",
+    "group": 12,
+    "groupTitle": "Di chuyển và bản đồ",
+    "sourceLine": 351,
+    "input": "Tìm tuyến đường ngắn nhất.",
+    "kind": "map",
+    "setup": null,
+    "expected": "Hỏi điểm xuất phát/đích hoặc hướng dẫn bản đồ trong web; không giả GPS/giao thông live."
+  },
+  {
+    "id": "G12-011",
+    "group": 12,
+    "groupTitle": "Di chuyển và bản đồ",
+    "sourceLine": 352,
+    "input": "Tìm địa điểm trong bán kính 2 km.",
+    "kind": "map",
+    "setup": null,
+    "expected": "Hỏi điểm xuất phát/đích hoặc hướng dẫn bản đồ trong web; không giả GPS/giao thông live."
+  },
+  {
+    "id": "G12-012",
+    "group": 12,
+    "groupTitle": "Di chuyển và bản đồ",
+    "sourceLine": 353,
+    "input": "Tìm quán ăn trong bán kính 5 km.",
+    "kind": "map",
+    "setup": null,
+    "expected": "Hỏi điểm xuất phát/đích hoặc hướng dẫn bản đồ trong web; không giả GPS/giao thông live."
+  },
+  {
+    "id": "G12-013",
+    "group": 12,
+    "groupTitle": "Di chuyển và bản đồ",
+    "sourceLine": 354,
+    "input": "Tìm khách sạn gần vị trí tôi.",
+    "kind": "map",
+    "setup": null,
+    "expected": "Hỏi điểm xuất phát/đích hoặc hướng dẫn bản đồ trong web; không giả GPS/giao thông live."
+  },
+  {
+    "id": "G12-014",
+    "group": 12,
+    "groupTitle": "Di chuyển và bản đồ",
+    "sourceLine": 355,
+    "input": "Tôi không muốn cấp GPS, tìm theo quận giúp tôi.",
+    "kind": "map",
+    "setup": null,
+    "expected": "Hỏi điểm xuất phát/đích hoặc hướng dẫn bản đồ trong web; không giả GPS/giao thông live."
+  },
+  {
+    "id": "G12-015",
+    "group": 12,
+    "groupTitle": "Di chuyển và bản đồ",
+    "sourceLine": 356,
+    "input": "Tôi đang ở gần Mỹ Khê, có gì quanh đây?",
+    "kind": "map",
+    "setup": null,
+    "expected": "Hỏi điểm xuất phát/đích hoặc hướng dẫn bản đồ trong web; không giả GPS/giao thông live."
+  },
+  {
+    "id": "G12-016",
+    "group": 12,
+    "groupTitle": "Di chuyển và bản đồ",
+    "sourceLine": 357,
+    "input": "Tôi đang ở Hải Châu, ăn gì gần đây?",
+    "kind": "map",
+    "setup": null,
+    "expected": "Hỏi điểm xuất phát/đích hoặc hướng dẫn bản đồ trong web; không giả GPS/giao thông live."
+  },
+  {
+    "id": "G12-017",
+    "group": 12,
+    "groupTitle": "Di chuyển và bản đồ",
+    "sourceLine": 358,
+    "input": "Có bãi đậu xe không?",
+    "kind": "map",
+    "setup": null,
+    "expected": "Hỏi điểm xuất phát/đích hoặc hướng dẫn bản đồ trong web; không giả GPS/giao thông live."
+  },
+  {
+    "id": "G12-018",
+    "group": 12,
+    "groupTitle": "Di chuyển và bản đồ",
+    "sourceLine": 359,
+    "input": "Đường đến địa điểm có khó đi không?",
+    "kind": "map",
+    "setup": null,
+    "expected": "Hỏi điểm xuất phát/đích hoặc hướng dẫn bản đồ trong web; không giả GPS/giao thông live."
+  },
+  {
+    "id": "G12-019",
+    "group": 12,
+    "groupTitle": "Di chuyển và bản đồ",
+    "sourceLine": 360,
+    "input": "Có phù hợp đi xe lăn không?",
+    "kind": "map",
+    "setup": null,
+    "expected": "Hỏi điểm xuất phát/đích hoặc hướng dẫn bản đồ trong web; không giả GPS/giao thông live."
+  },
+  {
+    "id": "G12-020",
+    "group": 12,
+    "groupTitle": "Di chuyển và bản đồ",
+    "sourceLine": 361,
+    "input": "Có cần leo dốc hoặc leo bậc thang không?",
+    "kind": "map",
+    "setup": null,
+    "expected": "Hỏi điểm xuất phát/đích hoặc hướng dẫn bản đồ trong web; không giả GPS/giao thông live."
+  },
+  {
+    "id": "G12-021",
+    "group": 12,
+    "groupTitle": "Di chuyển và bản đồ",
+    "sourceLine": 362,
+    "input": "Tuyến này có phù hợp trẻ nhỏ không?",
+    "kind": "map",
+    "setup": null,
+    "expected": "Hỏi điểm xuất phát/đích hoặc hướng dẫn bản đồ trong web; không giả GPS/giao thông live."
+  },
+  {
+    "id": "G12-022",
+    "group": 12,
+    "groupTitle": "Di chuyển và bản đồ",
+    "sourceLine": 363,
+    "input": "Thời gian trên bản đồ có phải thời gian giao thông thực tế không?",
+    "kind": "map",
+    "setup": null,
+    "expected": "Hỏi điểm xuất phát/đích hoặc hướng dẫn bản đồ trong web; không giả GPS/giao thông live."
+  },
+  {
+    "id": "G12-023",
+    "group": 12,
+    "groupTitle": "Di chuyển và bản đồ",
+    "sourceLine": 364,
+    "input": "Có thể mở tuyến đường trên Google Maps không?",
+    "kind": "map",
+    "setup": null,
+    "expected": "Hỏi điểm xuất phát/đích hoặc hướng dẫn bản đồ trong web; không giả GPS/giao thông live."
+  },
+  {
+    "id": "G13-001",
+    "group": 13,
+    "groupTitle": "Thời tiết và dữ liệu trực tiếp",
+    "sourceLine": 366,
+    "input": "Hôm nay Đà Nẵng có mưa không?",
+    "kind": "live",
+    "setup": null,
+    "expected": "Nêu rõ chưa có nguồn trực tiếp; không bịa thời tiết/sự kiện/tồn phòng/tồn vé."
+  },
+  {
+    "id": "G13-002",
+    "group": 13,
+    "groupTitle": "Thời tiết và dữ liệu trực tiếp",
+    "sourceLine": 367,
+    "input": "Ngày mai có phù hợp đi biển không?",
+    "kind": "live",
+    "setup": null,
+    "expected": "Nêu rõ chưa có nguồn trực tiếp; không bịa thời tiết/sự kiện/tồn phòng/tồn vé."
+  },
+  {
+    "id": "G13-003",
+    "group": 13,
+    "groupTitle": "Thời tiết và dữ liệu trực tiếp",
+    "sourceLine": 368,
+    "input": "Cuối tuần này thời tiết thế nào?",
+    "kind": "live",
+    "setup": null,
+    "expected": "Nêu rõ chưa có nguồn trực tiếp; không bịa thời tiết/sự kiện/tồn phòng/tồn vé."
+  },
+  {
+    "id": "G13-004",
+    "group": 13,
+    "groupTitle": "Thời tiết và dữ liệu trực tiếp",
+    "sourceLine": 369,
+    "input": "Nhiệt độ hôm nay bao nhiêu?",
+    "kind": "live",
+    "setup": null,
+    "expected": "Nêu rõ chưa có nguồn trực tiếp; không bịa thời tiết/sự kiện/tồn phòng/tồn vé."
+  },
+  {
+    "id": "G13-005",
+    "group": 13,
+    "groupTitle": "Thời tiết và dữ liệu trực tiếp",
+    "sourceLine": 370,
+    "input": "Có nên đi Sơn Trà khi trời mưa không?",
+    "kind": "live",
+    "setup": null,
+    "expected": "Nêu rõ chưa có nguồn trực tiếp; không bịa thời tiết/sự kiện/tồn phòng/tồn vé."
+  },
+  {
+    "id": "G13-006",
+    "group": 13,
+    "groupTitle": "Thời tiết và dữ liệu trực tiếp",
+    "sourceLine": 371,
+    "input": "Nếu trời mưa thì nên đi đâu?",
+    "kind": "live",
+    "setup": null,
+    "expected": "Nêu rõ chưa có nguồn trực tiếp; không bịa thời tiết/sự kiện/tồn phòng/tồn vé."
+  },
+  {
+    "id": "G13-007",
+    "group": 13,
+    "groupTitle": "Thời tiết và dữ liệu trực tiếp",
+    "sourceLine": 372,
+    "input": "Có nên đi Bà Nà hôm nay không?",
+    "kind": "live",
+    "setup": null,
+    "expected": "Nêu rõ chưa có nguồn trực tiếp; không bịa thời tiết/sự kiện/tồn phòng/tồn vé."
+  },
+  {
+    "id": "G13-008",
+    "group": 13,
+    "groupTitle": "Thời tiết và dữ liệu trực tiếp",
+    "sourceLine": 373,
+    "input": "Thời tiết buổi tối thế nào?",
+    "kind": "live",
+    "setup": null,
+    "expected": "Nêu rõ chưa có nguồn trực tiếp; không bịa thời tiết/sự kiện/tồn phòng/tồn vé."
+  },
+  {
+    "id": "G13-009",
+    "group": 13,
+    "groupTitle": "Thời tiết và dữ liệu trực tiếp",
+    "sourceLine": 374,
+    "input": "Có gió mạnh ở biển không?",
+    "kind": "live",
+    "setup": null,
+    "expected": "Nêu rõ chưa có nguồn trực tiếp; không bịa thời tiết/sự kiện/tồn phòng/tồn vé."
+  },
+  {
+    "id": "G13-010",
+    "group": 13,
+    "groupTitle": "Thời tiết và dữ liệu trực tiếp",
+    "sourceLine": 375,
+    "input": "Ngày mai có nắng không?",
+    "kind": "live",
+    "setup": null,
+    "expected": "Nêu rõ chưa có nguồn trực tiếp; không bịa thời tiết/sự kiện/tồn phòng/tồn vé."
+  },
+  {
+    "id": "G13-011",
+    "group": 13,
+    "groupTitle": "Thời tiết và dữ liệu trực tiếp",
+    "sourceLine": 376,
+    "input": "Cầu Rồng tối nay có phun lửa không?",
+    "kind": "live",
+    "setup": null,
+    "expected": "Nêu rõ chưa có nguồn trực tiếp; không bịa thời tiết/sự kiện/tồn phòng/tồn vé."
+  },
+  {
+    "id": "G13-012",
+    "group": 13,
+    "groupTitle": "Thời tiết và dữ liệu trực tiếp",
+    "sourceLine": 377,
+    "input": "Cuối tuần có lễ hội gì không?",
+    "kind": "live",
+    "setup": null,
+    "expected": "Nêu rõ chưa có nguồn trực tiếp; không bịa thời tiết/sự kiện/tồn phòng/tồn vé."
+  },
+  {
+    "id": "G13-013",
+    "group": 13,
+    "groupTitle": "Thời tiết và dữ liệu trực tiếp",
+    "sourceLine": 378,
+    "input": "Đà Nẵng hôm nay có sự kiện nào?",
+    "kind": "live",
+    "setup": null,
+    "expected": "Nêu rõ chưa có nguồn trực tiếp; không bịa thời tiết/sự kiện/tồn phòng/tồn vé."
+  },
+  {
+    "id": "G13-014",
+    "group": 13,
+    "groupTitle": "Thời tiết và dữ liệu trực tiếp",
+    "sourceLine": 379,
+    "input": "Có chương trình biểu diễn nào tối nay không?",
+    "kind": "live",
+    "setup": null,
+    "expected": "Nêu rõ chưa có nguồn trực tiếp; không bịa thời tiết/sự kiện/tồn phòng/tồn vé."
+  },
+  {
+    "id": "G13-015",
+    "group": 13,
+    "groupTitle": "Thời tiết và dữ liệu trực tiếp",
+    "sourceLine": 380,
+    "input": "Có chợ đêm hoặc hoạt động đêm nào không?",
+    "kind": "live",
+    "setup": null,
+    "expected": "Nêu rõ chưa có nguồn trực tiếp; không bịa thời tiết/sự kiện/tồn phòng/tồn vé."
+  },
+  {
+    "id": "G13-016",
+    "group": 13,
+    "groupTitle": "Thời tiết và dữ liệu trực tiếp",
+    "sourceLine": 381,
+    "input": "Địa điểm này đang mở cửa không?",
+    "kind": "live",
+    "setup": null,
+    "expected": "Nêu rõ chưa có nguồn trực tiếp; không bịa thời tiết/sự kiện/tồn phòng/tồn vé."
+  },
+  {
+    "id": "G13-017",
+    "group": 13,
+    "groupTitle": "Thời tiết và dữ liệu trực tiếp",
+    "sourceLine": 382,
+    "input": "Quán này hiện có đông không?",
+    "kind": "live",
+    "setup": null,
+    "expected": "Nêu rõ chưa có nguồn trực tiếp; không bịa thời tiết/sự kiện/tồn phòng/tồn vé."
+  },
+  {
+    "id": "G13-018",
+    "group": 13,
+    "groupTitle": "Thời tiết và dữ liệu trực tiếp",
+    "sourceLine": 383,
+    "input": "Khách sạn này còn phòng không?",
+    "kind": "live",
+    "setup": null,
+    "expected": "Nêu rõ chưa có nguồn trực tiếp; không bịa thời tiết/sự kiện/tồn phòng/tồn vé."
+  },
+  {
+    "id": "G13-019",
+    "group": 13,
+    "groupTitle": "Thời tiết và dữ liệu trực tiếp",
+    "sourceLine": 384,
+    "input": "Bà Nà còn vé không?",
+    "kind": "live",
+    "setup": null,
+    "expected": "Nêu rõ chưa có nguồn trực tiếp; không bịa thời tiết/sự kiện/tồn phòng/tồn vé."
+  },
+  {
+    "id": "G13-020",
+    "group": 13,
+    "groupTitle": "Thời tiết và dữ liệu trực tiếp",
+    "sourceLine": 385,
+    "input": "Giá hôm nay có thay đổi không?",
+    "kind": "live",
+    "setup": null,
+    "expected": "Nêu rõ chưa có nguồn trực tiếp; không bịa thời tiết/sự kiện/tồn phòng/tồn vé."
+  },
+  {
+    "id": "G14-001",
+    "group": 14,
+    "groupTitle": "Đánh giá và độ tin cậy",
+    "sourceLine": 388,
+    "input": "Địa điểm này có bao nhiêu đánh giá?",
+    "kind": "trust",
+    "setup": null,
+    "expected": "Đúng nguồn, mẫu đánh giá hoặc hướng dẫn phản hồi; không bịa xác minh hay báo đã gửi."
+  },
+  {
+    "id": "G14-002",
+    "group": 14,
+    "groupTitle": "Đánh giá và độ tin cậy",
+    "sourceLine": 389,
+    "input": "Đánh giá này có được duyệt không?",
+    "kind": "trust",
+    "setup": null,
+    "expected": "Đúng nguồn, mẫu đánh giá hoặc hướng dẫn phản hồi; không bịa xác minh hay báo đã gửi."
+  },
+  {
+    "id": "G14-003",
+    "group": 14,
+    "groupTitle": "Đánh giá và độ tin cậy",
+    "sourceLine": 390,
+    "input": "Có thể tóm tắt đánh giá không?",
+    "kind": "trust",
+    "setup": null,
+    "expected": "Đúng nguồn, mẫu đánh giá hoặc hướng dẫn phản hồi; không bịa xác minh hay báo đã gửi."
+  },
+  {
+    "id": "G14-004",
+    "group": 14,
+    "groupTitle": "Đánh giá và độ tin cậy",
+    "sourceLine": 391,
+    "input": "Du khách thường khen điểm gì?",
+    "kind": "trust",
+    "setup": null,
+    "expected": "Đúng nguồn, mẫu đánh giá hoặc hướng dẫn phản hồi; không bịa xác minh hay báo đã gửi."
+  },
+  {
+    "id": "G14-005",
+    "group": 14,
+    "groupTitle": "Đánh giá và độ tin cậy",
+    "sourceLine": 392,
+    "input": "Du khách thường phàn nàn điểm gì?",
+    "kind": "trust",
+    "setup": null,
+    "expected": "Đúng nguồn, mẫu đánh giá hoặc hướng dẫn phản hồi; không bịa xác minh hay báo đã gửi."
+  },
+  {
+    "id": "G14-006",
+    "group": 14,
+    "groupTitle": "Đánh giá và độ tin cậy",
+    "sourceLine": 393,
+    "input": "Địa điểm này có phù hợp gia đình không?",
+    "kind": "trust",
+    "setup": null,
+    "expected": "Đúng nguồn, mẫu đánh giá hoặc hướng dẫn phản hồi; không bịa xác minh hay báo đã gửi."
+  },
+  {
+    "id": "G14-007",
+    "group": 14,
+    "groupTitle": "Đánh giá và độ tin cậy",
+    "sourceLine": 394,
+    "input": "Có đủ đánh giá để kết luận chưa?",
+    "kind": "trust",
+    "setup": null,
+    "expected": "Đúng nguồn, mẫu đánh giá hoặc hướng dẫn phản hồi; không bịa xác minh hay báo đã gửi."
+  },
+  {
+    "id": "G14-008",
+    "group": 14,
+    "groupTitle": "Đánh giá và độ tin cậy",
+    "sourceLine": 395,
+    "input": "Các đánh giá có phải của khách thật không?",
+    "kind": "trust",
+    "setup": null,
+    "expected": "Đúng nguồn, mẫu đánh giá hoặc hướng dẫn phản hồi; không bịa xác minh hay báo đã gửi."
+  },
+  {
+    "id": "G14-009",
+    "group": 14,
+    "groupTitle": "Đánh giá và độ tin cậy",
+    "sourceLine": 396,
+    "input": "Thông tin này được cập nhật khi nào?",
+    "kind": "trust",
+    "setup": null,
+    "expected": "Đúng nguồn, mẫu đánh giá hoặc hướng dẫn phản hồi; không bịa xác minh hay báo đã gửi."
+  },
+  {
+    "id": "G14-010",
+    "group": 14,
+    "groupTitle": "Đánh giá và độ tin cậy",
+    "sourceLine": 397,
+    "input": "Giá này lấy từ nguồn nào?",
+    "kind": "trust",
+    "setup": null,
+    "expected": "Đúng nguồn, mẫu đánh giá hoặc hướng dẫn phản hồi; không bịa xác minh hay báo đã gửi."
+  },
+  {
+    "id": "G14-011",
+    "group": 14,
+    "groupTitle": "Đánh giá và độ tin cậy",
+    "sourceLine": 398,
+    "input": "Địa chỉ này có được xác minh không?",
+    "kind": "trust",
+    "setup": null,
+    "expected": "Đúng nguồn, mẫu đánh giá hoặc hướng dẫn phản hồi; không bịa xác minh hay báo đã gửi."
+  },
+  {
+    "id": "G14-012",
+    "group": 14,
+    "groupTitle": "Đánh giá và độ tin cậy",
+    "sourceLine": 399,
+    "input": "Tôi muốn báo thông tin sai.",
+    "kind": "trust",
+    "setup": null,
+    "expected": "Đúng nguồn, mẫu đánh giá hoặc hướng dẫn phản hồi; không bịa xác minh hay báo đã gửi."
+  },
+  {
+    "id": "G14-013",
+    "group": 14,
+    "groupTitle": "Đánh giá và độ tin cậy",
+    "sourceLine": 400,
+    "input": "Giờ mở cửa trên trang có vẻ không đúng.",
+    "kind": "trust",
+    "setup": null,
+    "expected": "Đúng nguồn, mẫu đánh giá hoặc hướng dẫn phản hồi; không bịa xác minh hay báo đã gửi."
+  },
+  {
+    "id": "G14-014",
+    "group": 14,
+    "groupTitle": "Đánh giá và độ tin cậy",
+    "sourceLine": 401,
+    "input": "Giá trên trang không đúng với thực tế.",
+    "kind": "trust",
+    "setup": null,
+    "expected": "Đúng nguồn, mẫu đánh giá hoặc hướng dẫn phản hồi; không bịa xác minh hay báo đã gửi."
+  },
+  {
+    "id": "G14-015",
+    "group": 14,
+    "groupTitle": "Đánh giá và độ tin cậy",
+    "sourceLine": 402,
+    "input": "Tôi muốn gửi nguồn mới cho địa điểm.",
+    "kind": "trust",
+    "setup": null,
+    "expected": "Đúng nguồn, mẫu đánh giá hoặc hướng dẫn phản hồi; không bịa xác minh hay báo đã gửi."
+  },
+  {
+    "id": "G14-016",
+    "group": 14,
+    "groupTitle": "Đánh giá và độ tin cậy",
+    "sourceLine": 403,
+    "input": "Tôi muốn báo địa điểm đã đóng cửa.",
+    "kind": "trust",
+    "setup": null,
+    "expected": "Đúng nguồn, mẫu đánh giá hoặc hướng dẫn phản hồi; không bịa xác minh hay báo đã gửi."
+  },
+  {
+    "id": "G14-017",
+    "group": 14,
+    "groupTitle": "Đánh giá và độ tin cậy",
+    "sourceLine": 404,
+    "input": "Tôi muốn báo địa điểm chuyển địa chỉ.",
+    "kind": "trust",
+    "setup": null,
+    "expected": "Đúng nguồn, mẫu đánh giá hoặc hướng dẫn phản hồi; không bịa xác minh hay báo đã gửi."
+  },
+  {
+    "id": "G14-018",
+    "group": 14,
+    "groupTitle": "Đánh giá và độ tin cậy",
+    "sourceLine": 405,
+    "input": "Tôi muốn báo ảnh không đúng địa điểm.",
+    "kind": "trust",
+    "setup": null,
+    "expected": "Đúng nguồn, mẫu đánh giá hoặc hướng dẫn phản hồi; không bịa xác minh hay báo đã gửi."
+  },
+  {
+    "id": "G15-001",
+    "group": 15,
+    "groupTitle": "Tài khoản và ghi nhớ sở thích",
+    "sourceLine": 407,
+    "input": "Gô có nhớ tôi thích ăn cay không?",
+    "kind": "profile",
+    "setup": null,
+    "expected": "Phiên khách không ghi sở thích lâu dài; yêu cầu cần tài khoản phải nêu rõ, không báo đã lưu."
+  },
+  {
+    "id": "G15-002",
+    "group": 15,
+    "groupTitle": "Tài khoản và ghi nhớ sở thích",
+    "sourceLine": 408,
+    "input": "Gô có nhớ tôi không ăn hải sản không?",
+    "kind": "profile",
+    "setup": null,
+    "expected": "Phiên khách không ghi sở thích lâu dài; yêu cầu cần tài khoản phải nêu rõ, không báo đã lưu."
+  },
+  {
+    "id": "G15-003",
+    "group": 15,
+    "groupTitle": "Tài khoản và ghi nhớ sở thích",
+    "sourceLine": 409,
+    "input": "Hãy lưu tôi thích đi gần biển.",
+    "kind": "profile",
+    "setup": null,
+    "expected": "Phiên khách không ghi sở thích lâu dài; yêu cầu cần tài khoản phải nêu rõ, không báo đã lưu."
+  },
+  {
+    "id": "G15-004",
+    "group": 15,
+    "groupTitle": "Tài khoản và ghi nhớ sở thích",
+    "sourceLine": 410,
+    "input": "Hãy lưu tôi không thích đi bộ nhiều.",
+    "kind": "profile",
+    "setup": null,
+    "expected": "Phiên khách không ghi sở thích lâu dài; yêu cầu cần tài khoản phải nêu rõ, không báo đã lưu."
+  },
+  {
+    "id": "G15-005",
+    "group": 15,
+    "groupTitle": "Tài khoản và ghi nhớ sở thích",
+    "sourceLine": 411,
+    "input": "Hãy lưu tôi thường đi cùng trẻ em.",
+    "kind": "profile",
+    "setup": null,
+    "expected": "Phiên khách không ghi sở thích lâu dài; yêu cầu cần tài khoản phải nêu rõ, không báo đã lưu."
+  },
+  {
+    "id": "G15-006",
+    "group": 15,
+    "groupTitle": "Tài khoản và ghi nhớ sở thích",
+    "sourceLine": 412,
+    "input": "Hãy lưu tôi thích khách sạn tiết kiệm.",
+    "kind": "profile",
+    "setup": null,
+    "expected": "Phiên khách không ghi sở thích lâu dài; yêu cầu cần tài khoản phải nêu rõ, không báo đã lưu."
+  },
+  {
+    "id": "G15-007",
+    "group": 15,
+    "groupTitle": "Tài khoản và ghi nhớ sở thích",
+    "sourceLine": 413,
+    "input": "Hãy lưu tôi thích quán yên tĩnh.",
+    "kind": "profile",
+    "setup": null,
+    "expected": "Phiên khách không ghi sở thích lâu dài; yêu cầu cần tài khoản phải nêu rõ, không báo đã lưu."
+  },
+  {
+    "id": "G15-008",
+    "group": 15,
+    "groupTitle": "Tài khoản và ghi nhớ sở thích",
+    "sourceLine": 414,
+    "input": "Đừng lưu sở thích này.",
+    "kind": "profile",
+    "setup": null,
+    "expected": "Phiên khách không ghi sở thích lâu dài; yêu cầu cần tài khoản phải nêu rõ, không báo đã lưu."
+  },
+  {
+    "id": "G15-009",
+    "group": 15,
+    "groupTitle": "Tài khoản và ghi nhớ sở thích",
+    "sourceLine": 415,
+    "input": "Xóa sở thích ăn cay của tôi.",
+    "kind": "profile",
+    "setup": null,
+    "expected": "Phiên khách không ghi sở thích lâu dài; yêu cầu cần tài khoản phải nêu rõ, không báo đã lưu."
+  },
+  {
+    "id": "G15-010",
+    "group": 15,
+    "groupTitle": "Tài khoản và ghi nhớ sở thích",
+    "sourceLine": 416,
+    "input": "Cho tôi xem các sở thích Gô đã lưu.",
+    "kind": "profile",
+    "setup": null,
+    "expected": "Phiên khách không ghi sở thích lâu dài; yêu cầu cần tài khoản phải nêu rõ, không báo đã lưu."
+  },
+  {
+    "id": "G15-011",
+    "group": 15,
+    "groupTitle": "Tài khoản và ghi nhớ sở thích",
+    "sourceLine": 417,
+    "input": "Tôi muốn đổi sở thích từ tiết kiệm sang cao cấp.",
+    "kind": "profile",
+    "setup": null,
+    "expected": "Phiên khách không ghi sở thích lâu dài; yêu cầu cần tài khoản phải nêu rõ, không báo đã lưu."
+  },
+  {
+    "id": "G15-012",
+    "group": 15,
+    "groupTitle": "Tài khoản và ghi nhớ sở thích",
+    "sourceLine": 418,
+    "input": "Sử dụng sở thích của tôi để gợi ý chuyến này.",
+    "kind": "profile",
+    "setup": null,
+    "expected": "Phiên khách không ghi sở thích lâu dài; yêu cầu cần tài khoản phải nêu rõ, không báo đã lưu."
+  },
+  {
+    "id": "G15-013",
+    "group": 15,
+    "groupTitle": "Tài khoản và ghi nhớ sở thích",
+    "sourceLine": 419,
+    "input": "Không dùng sở thích cũ cho chuyến này.",
+    "kind": "profile",
+    "setup": null,
+    "expected": "Phiên khách không ghi sở thích lâu dài; yêu cầu cần tài khoản phải nêu rõ, không báo đã lưu."
+  },
+  {
+    "id": "G15-014",
+    "group": 15,
+    "groupTitle": "Tài khoản và ghi nhớ sở thích",
+    "sourceLine": 420,
+    "input": "Bắt đầu một chuyến mới.",
+    "kind": "reset",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đi taxi.",
+    "expected": "Bỏ điều kiện chuyến trước, không kéo lịch/ngân sách cũ sang."
+  },
+  {
+    "id": "G15-015",
+    "group": 15,
+    "groupTitle": "Tài khoản và ghi nhớ sở thích",
+    "sourceLine": 421,
+    "input": "Xóa điều kiện của chuyến trước.",
+    "kind": "reset",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đi taxi.",
+    "expected": "Bỏ điều kiện chuyến trước, không kéo lịch/ngân sách cũ sang."
+  },
+  {
+    "id": "G15-016",
+    "group": 15,
+    "groupTitle": "Tài khoản và ghi nhớ sở thích",
+    "sourceLine": 422,
+    "input": "Tại sao Gô lại gợi ý quán cay cho tôi?",
+    "kind": "profile",
+    "setup": null,
+    "expected": "Phiên khách không ghi sở thích lâu dài; yêu cầu cần tài khoản phải nêu rõ, không báo đã lưu."
+  },
+  {
+    "id": "G15-017",
+    "group": 15,
+    "groupTitle": "Tài khoản và ghi nhớ sở thích",
+    "sourceLine": 423,
+    "input": "Tôi thích ăn cay nhưng hôm nay muốn ăn thanh đạm.",
+    "kind": "profile",
+    "setup": null,
+    "expected": "Phiên khách không ghi sở thích lâu dài; yêu cầu cần tài khoản phải nêu rõ, không báo đã lưu."
+  },
+  {
+    "id": "G15-018",
+    "group": 15,
+    "groupTitle": "Tài khoản và ghi nhớ sở thích",
+    "sourceLine": 424,
+    "input": "Tôi bị dị ứng đậu phộng, hãy luôn nhắc tôi kiểm tra thành phần.",
+    "kind": "profile",
+    "setup": null,
+    "expected": "Phiên khách không ghi sở thích lâu dài; yêu cầu cần tài khoản phải nêu rõ, không báo đã lưu."
+  },
+  {
+    "id": "G15-019",
+    "group": 15,
+    "groupTitle": "Tài khoản và ghi nhớ sở thích",
+    "sourceLine": 425,
+    "input": "Tôi đi cùng trẻ em trong chuyến này nhưng không muốn lưu thông tin đó.",
+    "kind": "profile",
+    "setup": null,
+    "expected": "Phiên khách không ghi sở thích lâu dài; yêu cầu cần tài khoản phải nêu rõ, không báo đã lưu."
+  },
+  {
+    "id": "G16-001",
+    "group": 16,
+    "groupTitle": "Các câu hỏi kết hợp nhiều nhu cầu",
+    "sourceLine": 427,
+    "input": "Tôi thích ăn cay, hãy tìm quán gần biển Mỹ Khê.",
+    "kind": "mixed",
+    "setup": null,
+    "expected": "Giữ đủ nhu cầu; hỏi tối đa 3 câu khi thiếu điều kiện; không khẳng định tiêu chí chưa xác minh."
+  },
+  {
+    "id": "G16-002",
+    "group": 16,
+    "groupTitle": "Các câu hỏi kết hợp nhiều nhu cầu",
+    "sourceLine": 428,
+    "input": "Tôi ăn chay, tìm quán gần khách sạn ở Sơn Trà.",
+    "kind": "mixed",
+    "setup": null,
+    "expected": "Giữ đủ nhu cầu; hỏi tối đa 3 câu khi thiếu điều kiện; không khẳng định tiêu chí chưa xác minh."
+  },
+  {
+    "id": "G16-003",
+    "group": 16,
+    "groupTitle": "Các câu hỏi kết hợp nhiều nhu cầu",
+    "sourceLine": 429,
+    "input": "Tôi bị dị ứng hải sản, tìm nhà hàng có món phù hợp gần trung tâm.",
+    "kind": "mixed",
+    "setup": null,
+    "expected": "Giữ đủ nhu cầu; hỏi tối đa 3 câu khi thiếu điều kiện; không khẳng định tiêu chí chưa xác minh."
+  },
+  {
+    "id": "G16-004",
+    "group": 16,
+    "groupTitle": "Các câu hỏi kết hợp nhiều nhu cầu",
+    "sourceLine": 430,
+    "input": "Tôi thích hải sản và muốn ngắm biển, hãy lập lịch một ngày.",
+    "kind": "mixed",
+    "setup": null,
+    "expected": "Giữ đủ nhu cầu; hỏi tối đa 3 câu khi thiếu điều kiện; không khẳng định tiêu chí chưa xác minh."
+  },
+  {
+    "id": "G16-005",
+    "group": 16,
+    "groupTitle": "Các câu hỏi kết hợp nhiều nhu cầu",
+    "sourceLine": 431,
+    "input": "Tôi không đi bộ nhiều, muốn ăn gần các điểm tham quan.",
+    "kind": "mixed",
+    "setup": null,
+    "expected": "Giữ đủ nhu cầu; hỏi tối đa 3 câu khi thiếu điều kiện; không khẳng định tiêu chí chưa xác minh."
+  },
+  {
+    "id": "G16-006",
+    "group": 16,
+    "groupTitle": "Các câu hỏi kết hợp nhiều nhu cầu",
+    "sourceLine": 432,
+    "input": "Tôi đi cùng trẻ sáu tuổi, muốn ở gần biển và có quán ăn gia đình.",
+    "kind": "mixed",
+    "setup": null,
+    "expected": "Giữ đủ nhu cầu; hỏi tối đa 3 câu khi thiếu điều kiện; không khẳng định tiêu chí chưa xác minh."
+  },
+  {
+    "id": "G16-007",
+    "group": 16,
+    "groupTitle": "Các câu hỏi kết hợp nhiều nhu cầu",
+    "sourceLine": 433,
+    "input": "Tôi có người lớn tuổi, hãy tìm nơi ít leo cầu thang.",
+    "kind": "mixed",
+    "setup": null,
+    "expected": "Giữ đủ nhu cầu; hỏi tối đa 3 câu khi thiếu điều kiện; không khẳng định tiêu chí chưa xác minh."
+  },
+  {
+    "id": "G16-008",
+    "group": 16,
+    "groupTitle": "Các câu hỏi kết hợp nhiều nhu cầu",
+    "sourceLine": 434,
+    "input": "Tôi muốn khách sạn gần biển, gần quán ăn và dưới 1 triệu đồng.",
+    "kind": "mixed",
+    "setup": null,
+    "expected": "Giữ đủ nhu cầu; hỏi tối đa 3 câu khi thiếu điều kiện; không khẳng định tiêu chí chưa xác minh."
+  },
+  {
+    "id": "G16-009",
+    "group": 16,
+    "groupTitle": "Các câu hỏi kết hợp nhiều nhu cầu",
+    "sourceLine": 435,
+    "input": "Tôi muốn lịch trình tiết kiệm, nhiều điểm miễn phí và có món ăn địa phương.",
+    "kind": "mixed",
+    "setup": null,
+    "expected": "Giữ đủ nhu cầu; hỏi tối đa 3 câu khi thiếu điều kiện; không khẳng định tiêu chí chưa xác minh."
+  },
+  {
+    "id": "G16-010",
+    "group": 16,
+    "groupTitle": "Các câu hỏi kết hợp nhiều nhu cầu",
+    "sourceLine": 436,
+    "input": "Tôi muốn đi ba ngày, mỗi ngày có biển, tham quan và ăn ngon.",
+    "kind": "mixed",
+    "setup": null,
+    "expected": "Giữ đủ nhu cầu; hỏi tối đa 3 câu khi thiếu điều kiện; không khẳng định tiêu chí chưa xác minh."
+  },
+  {
+    "id": "G16-011",
+    "group": 16,
+    "groupTitle": "Các câu hỏi kết hợp nhiều nhu cầu",
+    "sourceLine": 437,
+    "input": "Tôi muốn ngày đầu gần sân bay, ngày hai đi Sơn Trà, ngày cuối gần trung tâm.",
+    "kind": "mixed",
+    "setup": null,
+    "expected": "Giữ đủ nhu cầu; hỏi tối đa 3 câu khi thiếu điều kiện; không khẳng định tiêu chí chưa xác minh."
+  },
+  {
+    "id": "G16-012",
+    "group": 16,
+    "groupTitle": "Các câu hỏi kết hợp nhiều nhu cầu",
+    "sourceLine": 438,
+    "input": "Tôi đến Đà Nẵng lúc 18 giờ, thích ăn cay và muốn đi nhẹ nhàng.",
+    "kind": "mixed",
+    "setup": null,
+    "expected": "Giữ đủ nhu cầu; hỏi tối đa 3 câu khi thiếu điều kiện; không khẳng định tiêu chí chưa xác minh."
+  },
+  {
+    "id": "G16-013",
+    "group": 16,
+    "groupTitle": "Các câu hỏi kết hợp nhiều nhu cầu",
+    "sourceLine": 439,
+    "input": "Tôi đi hai người, ngân sách 5 triệu, thích biển và hải sản.",
+    "kind": "mixed",
+    "setup": null,
+    "expected": "Giữ đủ nhu cầu; hỏi tối đa 3 câu khi thiếu điều kiện; không khẳng định tiêu chí chưa xác minh."
+  },
+  {
+    "id": "G16-014",
+    "group": 16,
+    "groupTitle": "Các câu hỏi kết hợp nhiều nhu cầu",
+    "sourceLine": 440,
+    "input": "Tôi đi gia đình bốn người, có một bé sáu tuổi, không muốn di chuyển xa.",
+    "kind": "mixed",
+    "setup": null,
+    "expected": "Giữ đủ nhu cầu; hỏi tối đa 3 câu khi thiếu điều kiện; không khẳng định tiêu chí chưa xác minh."
+  },
+  {
+    "id": "G16-015",
+    "group": 16,
+    "groupTitle": "Các câu hỏi kết hợp nhiều nhu cầu",
+    "sourceLine": 441,
+    "input": "Tôi muốn vừa tham quan vừa tìm quán ăn trong bán kính gần nhau.",
+    "kind": "mixed",
+    "setup": null,
+    "expected": "Giữ đủ nhu cầu; hỏi tối đa 3 câu khi thiếu điều kiện; không khẳng định tiêu chí chưa xác minh."
+  },
+  {
+    "id": "G16-016",
+    "group": 16,
+    "groupTitle": "Các câu hỏi kết hợp nhiều nhu cầu",
+    "sourceLine": 442,
+    "input": "Tôi thích chụp ảnh, không thích nơi quá đông, hãy lập lịch trình hai ngày.",
+    "kind": "mixed",
+    "setup": null,
+    "expected": "Giữ đủ nhu cầu; hỏi tối đa 3 câu khi thiếu điều kiện; không khẳng định tiêu chí chưa xác minh."
+  },
+  {
+    "id": "G16-017",
+    "group": 16,
+    "groupTitle": "Các câu hỏi kết hợp nhiều nhu cầu",
+    "sourceLine": 443,
+    "input": "Tôi muốn đi biển sáng, ăn hải sản trưa, nghỉ chiều và đi Cầu Rồng buổi tối.",
+    "kind": "mixed",
+    "setup": null,
+    "expected": "Giữ đủ nhu cầu; hỏi tối đa 3 câu khi thiếu điều kiện; không khẳng định tiêu chí chưa xác minh."
+  },
+  {
+    "id": "G16-018",
+    "group": 16,
+    "groupTitle": "Các câu hỏi kết hợp nhiều nhu cầu",
+    "sourceLine": 444,
+    "input": "Tôi muốn đổi khách sạn nhưng giữ nguyên các quán ăn trong lịch.",
+    "kind": "mixed",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Giữ đủ nhu cầu; hỏi tối đa 3 câu khi thiếu điều kiện; không khẳng định tiêu chí chưa xác minh."
+  },
+  {
+    "id": "G16-019",
+    "group": 16,
+    "groupTitle": "Các câu hỏi kết hợp nhiều nhu cầu",
+    "sourceLine": 445,
+    "input": "Tôi muốn bỏ các điểm xa và thay bằng điểm gần biển.",
+    "kind": "mixed",
+    "setup": "Lên lịch trình 3 ngày 2 đêm cho 2 người, tổng 6 triệu, khởi hành ngày mai, đến 8h, về 21h, đi taxi.",
+    "expected": "Giữ đủ nhu cầu; hỏi tối đa 3 câu khi thiếu điều kiện; không khẳng định tiêu chí chưa xác minh."
+  },
+  {
+    "id": "G16-020",
+    "group": 16,
+    "groupTitle": "Các câu hỏi kết hợp nhiều nhu cầu",
+    "sourceLine": 446,
+    "input": "Tôi muốn lịch trình dự phòng nếu ngày mai trời mưa.",
+    "kind": "mixed",
+    "setup": null,
+    "expected": "Giữ đủ nhu cầu; hỏi tối đa 3 câu khi thiếu điều kiện; không khẳng định tiêu chí chưa xác minh."
+  }
+]

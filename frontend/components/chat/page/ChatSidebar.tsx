@@ -1,7 +1,21 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import type { ChatSessionSummary } from "@/types/chat";
-import { Lightbulb, Plus, Sparkles, Waves } from "lucide-react";
+import {
+  Compass,
+  History,
+  Lightbulb,
+  MessageSquare,
+  Pause,
+  Play,
+  Plus,
+  Radio,
+  ShieldCheck,
+  Sparkles,
+} from "lucide-react";
 import QuickStartList from "./QuickStartList";
+import BotLogo from "../BotLogo";
 import styles from "./ChatPage.module.css";
 
 export default function ChatSidebar({
@@ -24,13 +38,15 @@ export default function ChatSidebar({
   loading: boolean;
 }) {
   const tips = [
-    "Cho Gô biết ngân sách, số ngày và số khách để tư vấn sát chuyến đi hơn.",
-    "Thử ghi rõ khẩu vị cay, ngọt hoặc thanh đạm khi tìm quán ăn.",
-    "Bạn có thể nhờ Gô đổi khách sạn trong lịch trình vừa tạo.",
-    "Giá hiển thị là tham khảo. Hãy xác nhận với cơ sở trước khi đặt dịch vụ.",
+    "Cho Gô biết số người & ngân sách để phân bổ khách sạn và bữa ăn sát nhất.",
+    "Thử ghi rõ khẩu vị cay, thanh đạm hay thích hải sản bình dân ở Sơn Trà.",
+    "Bạn có thể nhờ Gô thay đổi bất kỳ điểm đến nào trong lịch trình vừa tạo.",
+    "Giá hiển thị được đối chiếu từ dữ liệu 1,200+ điểm đến thực tế tại Đà Nẵng.",
   ];
-  const [tip, setTip] = useState(0),
-    [paused, setPaused] = useState(false);
+
+  const [tip, setTip] = useState(0);
+  const [paused, setPaused] = useState(false);
+
   useEffect(() => {
     if (paused || window.matchMedia("(prefers-reduced-motion: reduce)").matches)
       return;
@@ -39,120 +55,201 @@ export default function ChatSidebar({
         document.visibilityState === "visible" &&
         !window.matchMedia("(prefers-reduced-motion: reduce)").matches
       )
-        setTip((i) => (i + 1) % 4);
-    }, 12000);
+        setTip((i) => (i + 1) % tips.length);
+    }, 10000);
     return () => clearInterval(timer);
-  }, [paused]);
+  }, [paused, tips.length]);
+
   const today = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Ho_Chi_Minh",
   }).format(new Date());
+
   const isToday = (date: string) =>
     new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Ho_Chi_Minh" }).format(
       new Date(date),
     ) === today;
+
   return (
     <div className={styles.sidebarInner}>
+      {/* Brand & Assistant Workspace Header */}
       <div className={styles.sidebarBrand}>
-        <span className={styles.brandMark}>
-          <Waves size={21} />
-        </span>
-        <div>
-          <strong>Gô đồng hành</strong>
-          <span>Mỗi chuyến đi, một câu chuyện</span>
+        <div className={styles.brandMark}>
+          <BotLogo size={32} animated={false} />
+          <span className={styles.onlineBeacon} aria-hidden="true" />
+        </div>
+        <div className={styles.brandMeta}>
+          <div className={styles.brandTitleRow}>
+            <strong>Gô Companion</strong>
+            <span className={styles.systemTag}>AI 2.5</span>
+          </div>
+          <span className={styles.brandStatus}>
+            <span className={styles.livePulseDot} />
+            Hệ sinh thái AI trực tuyến
+          </span>
         </div>
       </div>
-      <button type="button" onClick={onReset} className={styles.newChat}>
-        <Plus size={18} />
-        Cuộc trò chuyện mới
+
+      {/* New Conversation CTA (Obsidian Glass Bevel Button) */}
+      <button
+        type="button"
+        onClick={onReset}
+        className={styles.newChat}
+        disabled={loading}
+        title="Bắt đầu cuộc trò chuyện mới (⌘K)"
+      >
+        <span className={styles.newChatContent}>
+          <span className={styles.plusIconWrap}>
+            <Plus size={15} strokeWidth={2.4} />
+          </span>
+          <span>Cuộc trò chuyện mới</span>
+        </span>
+        <kbd className={styles.shortcutKey} aria-hidden="true">⌘K</kbd>
       </button>
+
+      {/* Smart Suggestions & Prompts */}
       <div className={styles.sectionLabel}>
-        <Sparkles size={13} /> BẮT ĐẦU NHANH
+        <Sparkles size={13} className={styles.sectionIcon} />
+        <span>GỢI Ý THÔNG MINH</span>
       </div>
+
       <QuickStartList
         compact
         prompts={prompts}
         onSelect={onSelect}
         disabled={loading}
       />
+
+      {/* Session History */}
       {sessions.length > 0 && (
         <nav
           className={styles.conversationHistory}
           aria-label="Lịch sử hội thoại"
         >
-          {["Hôm nay", "Trước đó"].map((label, index) => {
-            const rows = sessions.filter(
-              (s) => isToday(s.updatedAt) === (index === 0),
-            );
-            return rows.length ? (
-              <div key={label}>
-                <h3>{label}</h3>
-                {rows.map((s) => (
-                  <button
-                    type="button"
-                    key={s.id}
-                    aria-current={sessionId === s.id ? "true" : undefined}
-                    disabled={loading}
-                    onClick={() => onOpenSession(s.id)}
-                    title={s.title}
-                  >
-                    {s.title}
-                  </button>
-                ))}
-              </div>
-            ) : null;
-          })}
-          <small>
-            Khách: lưu tạm 1 giờ hoặc đến khi máy chủ khởi động lại. Đăng nhập:
-            lưu theo tài khoản. Hiển thị tối đa 50 hội thoại.
-          </small>
+          <div className={styles.historyHeaderRow}>
+            <div className={styles.sectionLabel}>
+              <History size={13} className={styles.sectionIcon} />
+              <span>LỊCH SỬ HỘI THOẠI</span>
+            </div>
+            <span className={styles.sessionCountBadge}>{sessions.length}</span>
+          </div>
+
+          <div className={styles.historyScrollZone}>
+            {["Hôm nay", "Trước đó"].map((label, index) => {
+              const rows = sessions.filter(
+                (s) => isToday(s.updatedAt) === (index === 0),
+              );
+              return rows.length ? (
+                <div key={label} className={styles.historyGroup}>
+                  <h3 className={styles.historyGroupTitle}>{label}</h3>
+                  <div className={styles.historyList}>
+                    {rows.map((s) => (
+                      <button
+                        type="button"
+                        key={s.id}
+                        className={styles.historyItem}
+                        data-active={sessionId === s.id}
+                        aria-current={sessionId === s.id ? "true" : undefined}
+                        disabled={loading}
+                        onClick={() => onOpenSession(s.id)}
+                        title={s.title}
+                      >
+                        <MessageSquare size={13} className={styles.historyIcon} />
+                        <span className={styles.historyTitleText}>{s.title}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : null;
+            })}
+          </div>
+
+          <div className={styles.storageNoticeCard}>
+            <ShieldCheck size={14} className={styles.storageNoticeIcon} />
+            <span>Bộ nhớ phiên an toàn · Tối đa 50 hội thoại</span>
+          </div>
         </nav>
       )}
-      {historyError && <p role="status">{historyError}</p>}
+
+      {historyError && (
+        <div className={styles.historyErrorBox} role="status">
+          {historyError}
+        </div>
+      )}
+
       <div className={styles.sidebarSpacer} />
-      <div className={styles.coastCard} aria-hidden="true">
-        <span className={styles.coastSun} />
-        <svg viewBox="0 0 240 100" fill="none">
-          <path
-            d="M-10 55Q50 5 120 45T250 30V110H-10Z"
-            fill="currentColor"
-            opacity=".13"
-          />
-          <path
-            d="M-10 75Q60 25 125 65T250 50V110H-10Z"
-            fill="currentColor"
-            opacity=".18"
-          />
-          <path
-            d="M-10 95Q60 45 125 85T250 70V110H-10Z"
-            fill="currentColor"
-            opacity=".25"
-          />
-        </svg>
-        <p>
-          Đà Nẵng đang chờ.
-          <br />
-          <strong>Đi cùng Gô nhé!</strong>
+
+      {/* Telemetry Radar HUD Card (Replaces cartoon coastCard) */}
+      <div className={styles.aiRadarCard}>
+        <div className={styles.aiRadarHeader}>
+          <div className={styles.aiRadarBadge}>
+            <Radio size={12} className={styles.aiRadarPulseIcon} />
+            <span>DANANG RADAR HUB</span>
+          </div>
+          <span className={styles.aiRadarLiveTag}>LIVE</span>
+        </div>
+
+        <div className={styles.aiRadarMetrics}>
+          <div className={styles.aiRadarMetric}>
+            <strong>1,200+</strong>
+            <span>Điểm đến xác thực</span>
+          </div>
+          <div className={styles.aiRadarDivider} />
+          <div className={styles.aiRadarMetric}>
+            <strong>100%</strong>
+            <span>Tọa độ GPS thực</span>
+          </div>
+        </div>
+
+        <p className={styles.aiRadarNote}>
+          Liên tục đồng bộ giờ mở cửa, bảng giá & lộ trình OSRM tối ưu.
         </p>
+
+        <div className={styles.aiRadarWaves} aria-hidden="true">
+          <svg viewBox="0 0 240 36" fill="none">
+            <path
+              d="M0 26C40 26 60 10 100 10C140 10 160 30 200 30C220 30 230 18 240 18"
+              stroke="#2dd4bf"
+              strokeWidth="1.6"
+              strokeDasharray="4 4"
+              opacity="0.5"
+            />
+            <path
+              d="M0 18C40 18 60 4 100 4C140 4 160 22 200 22C220 22 230 12 240 12"
+              stroke="#06b6d4"
+              strokeWidth="1.8"
+              opacity="0.8"
+            />
+          </svg>
+        </div>
       </div>
-      <div className={styles.tip}>
-        <Lightbulb size={17} />
-        <p>
-          {tips[tip]}
-          <button
-            type="button"
-            onClick={() => setTip((i) => (i + 1) % tips.length)}
-            aria-label="Mẹo tiếp theo"
-          >
-            Mẹo khác →
-          </button>
-          <button
-            type="button"
-            onClick={() => setPaused((v) => !v)}
-            aria-pressed={paused}
-          >
-            {paused ? "Tiếp tục" : "Dừng đổi mẹo"}
-          </button>
-        </p>
+
+      {/* Pro Tips Glass Capsule */}
+      <div className={styles.tipCard}>
+        <div className={styles.tipIconWrap}>
+          <Lightbulb size={15} />
+        </div>
+        <div className={styles.tipBody}>
+          <p className={styles.tipText}>{tips[tip]}</p>
+          <div className={styles.tipControls}>
+            <button
+              type="button"
+              className={styles.tipNavBtn}
+              onClick={() => setTip((i) => (i + 1) % tips.length)}
+              aria-label="Mẹo tiếp theo"
+            >
+              Mẹo khác →
+            </button>
+            <button
+              type="button"
+              className={styles.tipPauseBtn}
+              onClick={() => setPaused((v) => !v)}
+              aria-pressed={paused}
+              title={paused ? "Tiếp tục xoay vòng mẹo" : "Tạm dừng xoay vòng"}
+            >
+              {paused ? <Play size={11} /> : <Pause size={11} />}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

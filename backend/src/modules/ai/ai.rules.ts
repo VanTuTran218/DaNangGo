@@ -28,12 +28,14 @@ export function anonymize(text: string) {
   );
 }
 export function todayVietnam() {
-  return new Intl.DateTimeFormat("en-CA", {
+  const parts = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Ho_Chi_Minh",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
-  }).format(new Date());
+  }).formatToParts(new Date());
+  const value = (type: string) => parts.find(part => part.type === type)!.value;
+  return `${value("year")}-${value("month")}-${value("day")}`;
 }
 export function validDate(value: string | null) {
   if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;

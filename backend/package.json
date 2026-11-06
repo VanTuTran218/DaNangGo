@@ -20,7 +20,7 @@
     "migrate:task8": "npx tsx src/scripts/run-migration-006.ts",
     "migrate:task10": "npx tsx src/scripts/run-migration-008.ts",
     "seed:task7": "npx tsx src/scripts/seed-task7-data.ts",
-    "test": "npx tsx tests/auth.test.ts && npx tsx tests/review-upload.test.ts && npx tsx --test tests/places-top.test.ts tests/review-rules.test.ts tests/recommendations.test.ts tests/itineraries.management.test.ts tests/itineraries.service.test.ts tests/requireAuth.test.ts tests/chat.test.ts tests/chat-security.test.ts tests/ai-features.test.ts tests/chat-advisor.test.ts tests/chat-tools.test.ts tests/ai-runtime.test.ts tests/surveys.test.ts tests/surveys-client.test.ts tests/stay-facts.test.ts tests/feedback-readiness.test.ts tests/trip-preferences.test.ts tests/chat-knowledge.test.ts",
+    "test": "npx tsx tests/auth.test.ts && npx tsx tests/review-upload.test.ts && npx tsx --test tests/places-top.test.ts tests/review-rules.test.ts tests/recommendations.test.ts tests/itineraries.management.test.ts tests/itineraries.service.test.ts tests/requireAuth.test.ts tests/chat.test.ts tests/chat-security.test.ts tests/ai-features.test.ts tests/chat-advisor.test.ts tests/chat-tools.test.ts tests/ai-runtime.test.ts tests/surveys.test.ts tests/surveys-client.test.ts tests/stay-facts.test.ts tests/feedback-readiness.test.ts tests/trip-preferences.test.ts tests/chat-knowledge.test.ts tests/chat-advanced.test.ts tests/chat-policy.test.ts tests/chat-profile-http.test.ts tests/go-prompts.test.ts",
     "test:subscriptions": "npx tsx --test tests/subscriptions.test.ts",
     "test:step2": "npx tsx tests/step2.test.ts",
     "test:step3": "npx tsx tests/step3.test.ts",
@@ -43,7 +43,12 @@
     "test:stay-details": "tsx src/scripts/check-verified-stay-details.ts",
     "test:feedback": "tsx src/scripts/check-feedback-readiness.ts",
     "test:trip-preferences": "tsx src/scripts/check-trip-preferences.ts",
-    "test:knowledge": "tsx src/scripts/check-chat-knowledge.ts"
+    "test:knowledge": "tsx src/scripts/check-chat-knowledge.ts",
+    "test:advanced": "tsx src/scripts/check-chat-advanced.ts",
+    "test:go-policy": "tsx src/scripts/check-go-policy.ts",
+    "test:acceptance": "tsx src/scripts/check-go-acceptance.ts",
+    "test:intent:live": "tsx src/scripts/check-go-intent-live.ts",
+    "test:ai:complete": "npm test && npm run test:acceptance && npm run test:go-policy && npm run test:knowledge && npm run test:advanced && npm run test:trip-preferences"
   },
   "keywords": [],
   "author": "",

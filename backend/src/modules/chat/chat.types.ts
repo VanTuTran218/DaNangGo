@@ -16,15 +16,17 @@ export interface ChatPlaceCard {
   distanceKm?: number;
   distanceOriginName?: string;
   stayFacts?: import("./chat.stay-facts").ChatStayFacts;
+  menuItems?: { id: number; name: string; price: number | null }[];
 }
 
-export interface ChatMessageDto {
+export interface ChatMessageDto extends Partial<import("./chat.contract").ResponseMetadata> {
   id: string;
   sender: ChatSender;
   content: string;
   places?: ChatPlaceCard[];
   travelPlan?: ChatTravelPlan;
   comparison?: ChatComparison;
+  recommendationGroups?: { category: "food" | "sight" | "stay"; title: string; places: ChatPlaceCard[]; notice: string }[];
   quickReplies?: string[];
   actionLink?: {
     text: string;
@@ -64,6 +66,7 @@ export interface ChatComparison {
   notices: string[];
 }
 export interface ChatTravelPlan {
+  revision?: number;
   preferences?: import("./chat.trip-preferences").TripPreferences;
   questions?: string[];
   title: string;

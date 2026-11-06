@@ -1,0 +1,169 @@
+{
+  "executedAt": "2026-11-05T07:28:27.935Z",
+  "scope": "12 direct intent-tool calls; not a full live audit of 423 conversations. No fallback result is counted as live PASS.",
+  "counts": {
+    "PROVIDER_UNAVAILABLE": 12
+  },
+  "results": [
+    {
+      "id": "LIVE-01",
+      "input": "Tôi muốn vừa ăn ngon vừa đi tham quan ở Đà Nẵng",
+      "needs": [
+        "food",
+        "sight"
+      ],
+      "status": "PROVIDER_UNAVAILABLE",
+      "actual": null,
+      "findings": [],
+      "elapsedMs": 9090
+    },
+    {
+      "id": "LIVE-02",
+      "input": "Tìm quán ăn gần khách sạn của tôi",
+      "needs": [
+        "food"
+      ],
+      "status": "PROVIDER_UNAVAILABLE",
+      "actual": null,
+      "findings": [],
+      "elapsedMs": 2
+    },
+    {
+      "id": "LIVE-03",
+      "input": "Khách sạn gần biển Mỹ Khê",
+      "needs": [
+        "stay"
+      ],
+      "status": "PROVIDER_UNAVAILABLE",
+      "actual": null,
+      "findings": [],
+      "elapsedMs": 0
+    },
+    {
+      "id": "LIVE-04",
+      "input": "Chiều rảnh muốn nếm món địa phương rồi chụp vài tấm hình",
+      "needs": [
+        "food",
+        "sight"
+      ],
+      "status": "PROVIDER_UNAVAILABLE",
+      "actual": null,
+      "findings": [],
+      "elapsedMs": 1
+    },
+    {
+      "id": "LIVE-05",
+      "input": "goi y quan mi quang gia duoi 100k o hai chau",
+      "needs": [
+        "food"
+      ],
+      "status": "PROVIDER_UNAVAILABLE",
+      "actual": null,
+      "findings": [],
+      "elapsedMs": 0
+    },
+    {
+      "id": "LIVE-06",
+      "input": "Cần một homstay để nghỉ và các nhà hàng gần đó",
+      "needs": [
+        "stay",
+        "food"
+      ],
+      "status": "PROVIDER_UNAVAILABLE",
+      "actual": null,
+      "findings": [],
+      "elapsedMs": 0
+    },
+    {
+      "id": "LIVE-07",
+      "input": "2 triệu rưỡi cho cả nhóm, gợi ý đi ăn và tham quan",
+      "needs": [
+        "food",
+        "sight"
+      ],
+      "budget": 2500000,
+      "status": "PROVIDER_UNAVAILABLE",
+      "actual": null,
+      "findings": [],
+      "elapsedMs": 1
+    },
+    {
+      "id": "LIVE-08",
+      "input": "5tr5 tổng cả chuyến cho hai người, tìm chỗ nghỉ",
+      "needs": [
+        "stay"
+      ],
+      "budget": 5500000,
+      "status": "PROVIDER_UNAVAILABLE",
+      "actual": null,
+      "findings": [],
+      "elapsedMs": 0
+    },
+    {
+      "id": "LIVE-09",
+      "input": "Tìm quán chay ở Sơn Trà",
+      "needs": [
+        "food"
+      ],
+      "status": "PROVIDER_UNAVAILABLE",
+      "actual": null,
+      "findings": [],
+      "elapsedMs": 1
+    },
+    {
+      "id": "LIVE-10",
+      "input": "Chỉ đường đến điểm tham quan gần khách sạn",
+      "needs": [
+        "sight"
+      ],
+      "status": "PROVIDER_UNAVAILABLE",
+      "actual": null,
+      "findings": [],
+      "elapsedMs": 0
+    },
+    {
+      "id": "LIVE-11",
+      "input": "Gợi ý điểm tham quan miễn phí ở Hải Châu",
+      "needs": [
+        "sight"
+      ],
+      "budget": 0,
+      "status": "PROVIDER_UNAVAILABLE",
+      "actual": null,
+      "findings": [],
+      "elapsedMs": 0
+    },
+    {
+      "id": "LIVE-12",
+      "input": "Viết code Python để giải bài toán",
+      "needs": [],
+      "offTopic": true,
+      "status": "PROVIDER_UNAVAILABLE",
+      "actual": null,
+      "findings": [],
+      "elapsedMs": 1
+    }
+  ],
+  "metrics": {
+    "model": "gemini-3-flash-preview",
+    "keyConfigured": true,
+    "lastProviderIssue": {
+      "code": "RATE_LIMITED",
+      "at": "2026-11-05T07:28:27.929Z"
+    },
+    "activeRequests": 0,
+    "cooldownSeconds": 30,
+    "embeddingCooldownSeconds": 0,
+    "tasks": {
+      "qa-intent": {
+        "calls": 12,
+        "success": 0,
+        "fallback": 12,
+        "retries": 1,
+        "cacheHits": 0,
+        "durationMs": 9088
+      }
+    },
+    "cacheEntries": 0
+  }
+}

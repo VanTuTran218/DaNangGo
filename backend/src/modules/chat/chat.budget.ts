@@ -1,4 +1,5 @@
 import { normalize } from "../ai/ai.rules";
+import { conversationalText } from "./chat.language";
 
 export type BudgetScope = "total" | "perPerson" | "perDay";
 export interface TripBudget {
@@ -22,7 +23,7 @@ export function moneyValue(value: string, unit: string, tail?: string) {
 export function tripBudget(texts: string[]): TripBudget {
   const result: TripBudget = { amount: null, scope: null, reserve: null, nights: null, dayUse: false, hasLodging: false };
   for (const text of texts) {
-    const n = normalize(text);
+    const n = conversationalText(text);
     const amounts = [...n.matchAll(moneyPattern)];
     let budgetInTurn = false;
     for (const match of amounts) {

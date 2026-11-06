@@ -117,6 +117,7 @@ export default function ChatPageView(props: ChatPageViewProps) {
       onStartPlanning={
         planningPrompt ? () => selectPrompt(planningPrompt) : undefined
       }
+      onSelectPrompt={selectPrompt}
     />
   );
   return (
@@ -198,14 +199,16 @@ export default function ChatPageView(props: ChatPageViewProps) {
         <div className={styles.locationTools}>
           <button
             type="button"
+            className={styles.locationButton}
             disabled={props.locating || props.isLoading}
             onClick={props.onLocate}
           >
-            {props.locating ? "Đang định vị…" : "⌖ Quanh vị trí tôi"}
+            <span className={styles.radarIcon}>⌖</span>
+            <span>{props.locating ? "Đang định vị GPS…" : "Tìm quanh vị trí tôi"}</span>
           </button>
           {props.location && (
             <>
-              <label>
+              <label className={styles.locationRadiusLabel}>
                 Bán kính{" "}
                 <select
                   aria-label="Bán kính tìm quanh đây"
@@ -221,13 +224,13 @@ export default function ChatPageView(props: ChatPageViewProps) {
                   ))}
                 </select>
               </label>
-              <button type="button" onClick={props.onClearLocation}>
+              <button type="button" className={styles.locationClearBtn} onClick={props.onClearLocation}>
                 Tắt vị trí
               </button>
             </>
           )}
           {props.locationStatus && (
-            <small role="status">{props.locationStatus}</small>
+            <small className={styles.locationStatusBadge} role="status">{props.locationStatus}</small>
           )}
         </div>
         <ChatComposer

@@ -21,12 +21,16 @@ export default function EmptyState({
     <div className={styles.emptyState}>
       <div className={styles.emptyMascot}>
         <span />
-        <BotLogo size={90} animated={!reduce} />
+        <span className={styles.mascotAura} />
+        <BotLogo size={92} animated={!reduce} />
         <span className={styles.sparkle}>
           <Sparkles size={18} />
         </span>
       </div>
-      <p className={styles.eyebrow}>BẠN ĐỒNG HÀNH Ở ĐÀ NẴNG</p>
+      <div className={styles.eyebrow}>
+        <Sparkles size={11} />
+        <span>BẠN ĐỒNG HÀNH Ở ĐÀ NẴNG</span>
+      </div>
       <h2>
         Một lời nhắn,
         <br />

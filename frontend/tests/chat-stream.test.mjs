@@ -12,6 +12,13 @@ test('SSE giữ thông tin giờ đến/về, nhóm trẻ em và buổi không x
 });
 
 const result = { sessionId: 7, message: { id: 'answer', sender: 'AI', content: 'Gợi ý quán ăn Đà Nẵng', createdAt: '2026-11-03' } };
+test('SSE và lịch sử DTO giữ bảng so sánh, mã mục và phiên bản chỉnh lịch',async()=>{
+  const comparison={places:[{placeId:1,name:'A'},{placeId:2,name:'B'}],rows:[{label:'Giá',values:['Chưa có dữ liệu','60000đ/vé']}],notices:['Chưa xác nhận giá theo ngày']};
+  const travelPlan={revision:2,days:[{day:1,periods:[{items:[{id:'item_stable',durationMinutes:90,estimatedCost:null,title:'09:00 · Tham quan'}]}]}]};
+  const response={...result,message:{...result.message,comparison,travelPlan}};
+  const data=await readChatStream(stream(`data: ${JSON.stringify({type:'result',result:response})}\n\n`,7));
+  assert.deepEqual(data.message.comparison,comparison);assert.deepEqual(data.message.travelPlan,travelPlan);
+});
 function stream(text, size = 1) {
   const bytes = new TextEncoder().encode(text);
   return new ReadableStream({ start(controller) { for (let i = 0; i < bytes.length; i += size) controller.enqueue(bytes.slice(i, i + size)); controller.close(); } });
@@ -49,4 +56,13 @@ test('Lịch sử trình duyệt tách khách, người dùng A và B', () => {
 
 test('SSE giữ mã lỗi phiên hết hạn để UI xóa mã phiên cũ', async () => {
   await assert.rejects(readChatStream(stream('data: {"type":"error","text":"Phiên đã hết hạn","code":"CHAT_SESSION_NOT_FOUND"}\n\n')), error => error.code === 'CHAT_SESSION_NOT_FOUND');
+});
+
+test('SSE giữ đủ nhiều nhu cầu, món trong menu, câu hỏi và đề nghị đồng ý lưu', async () => {
+  const payload = { ...result, message: { ...result.message,
+    intent: 'SEARCH', secondaryIntents: ['FOOD','SIGHT'], needsClarification: true,
+    questions: ['Bạn đi mấy người?'], confirmedContext: { budget: 4000000, budgetScope: null },
+    recommendationGroups: [{category:'food',title:'Ẩm thực & món ăn',places:[{placeId:1,name:'Quán từ API',menuItems:[{id:10,name:'Mì Quảng',price:35000}]}],notice:'Giá món, chưa phải hóa đơn'}],
+    profileSuggestions: [{key:'beach',label:'Thích biển',sensitive:false}], sources: [], warnings: ['Chưa xác nhận giờ hiện tại'] } };
+  assert.deepEqual(await readChatStream(stream(`data: ${JSON.stringify({type:'result',result:payload})}\n\n`, 1)), payload);
 });

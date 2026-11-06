@@ -3,6 +3,7 @@ import { normalize, parseTrip, todayVietnam } from "../ai/ai.rules";
 import { tripPreferences, preferenceContext } from "./chat.trip-preferences";
 import { tripBudget, totalBudget, budgetContext, budgetQuestions } from "./chat.budget";
 import { isRestart } from "./chat.knowledge";
+import { requestedNeeds, conversationalText } from "./chat.language";
 
 export const isTripRequest = (text: string) =>
   /\b(lich trinh|ke hoach|\d+\s*n\s*\d+\s*d|\d+\s*ngay|tour)\b/.test(
@@ -16,21 +17,23 @@ export const isFreeRequest = (text: string) =>
 
 /** Match complete phrases: “tham quan” must never match “quán ăn”. */
 export function explicitCategory(message: string): Intent["category"] {
-  const n = normalize(message).replace(/-/g, " ");
+  const n = normalize(message).replace(/-/g, " ").replace(/\b(?:gan|quanh|sat) (?:khach san|nha hang|quan an)(?: cua)?(?: (?:toi|minh))?\b/g, " ");
   if (
     /\b(viet code|lap trinh|giai toan|chinh tri|lam bai tap|python|javascript|thuat toan|viet ham|viet script)\b/.test(
       n,
     )
   )
     return "off_topic";
+  const needs = requestedNeeds(message);
+  if (needs.length === 1) return needs[0]!;
   if (
-    /\b(khach san|ks|hotel|homestay|homstay|resort|luu tru|cho o|dat phong|phong nghi|nghi ban ngay)\b/.test(
+    /\b(khach san|ks|hotel|homestay|homstay|resort|luu tru|cho o|noi o|dat phong|phong nghi|gia phong|phong (?:co|nay|duoi)|gio (?:nhan|tra) phong|nghi ban ngay)\b/.test(
       n,
     )
   )
     return "stay";
   if (
-    /\b(quan an|quan hai san|quan mi|quan bun|quan banh|an uong|mon an|am thuc|an gi|an chay|thuan chay|di ung|khong cay|it cay|khong an|mi quang|hai san|banh xeo|bun cha|bun bo|cafe|ca phe|nha hang|an sang|an trua|an toi|an vat|quan ngon)\b/.test(
+    /\b(di an|quan an|quan hai san|quan mi|quan bun|quan banh|an uong|mon an|am thuc|an gi|an chay|thuan chay|di ung|khong cay|it cay|khong an|mi quang|hai san|banh xeo|bun cha|bun bo|cafe|ca phe|nha hang|an sang|an trua|an toi|an vat|quan ngon)\b/.test(
       n,
     )
   )
@@ -46,7 +49,7 @@ export function explicitCategory(message: string): Intent["category"] {
 }
 
 export function ruleIntent(message: string): Intent {
-  const n = normalize(message),
+  const n = conversationalText(message),
     category = explicitCategory(message);
   if (category === "off_topic") return { ...DEFAULT_INTENT, category };
   const amount = n.match(
@@ -62,16 +65,25 @@ export function ruleIntent(message: string): Intent {
     : null;
   const budget = isFreeRequest(message)
     ? 0
-    : number === null
+    : tripBudget([message]).amount ?? (number === null
       ? null
       : number *
         (/^(trieu|tr)$/.test(unit)
           ? 1_000_000
           : /^(k|nghin|ngan)$/.test(unit)
             ? 1000
-            : 1);
+            : 1));
   const keywords = [
     "Mì Quảng",
+    "bánh tráng cuốn thịt heo",
+    "cơm niêu",
+    "thịt nướng",
+    "lẩu",
+    "bún bò",
+    "bánh bèo",
+    "chè",
+    "kem",
+    "ốc",
     "hải sản",
     "bánh xèo",
     "bún chả cá",
@@ -91,6 +103,7 @@ export function ruleIntent(message: string): Intent {
   return {
     ...DEFAULT_INTENT,
     category,
+    categories: requestedNeeds(message),
     budget,
     district,
     keywords,
@@ -119,9 +132,13 @@ export function resolveChatRequest(message: string, previous: string[]) {
   const resetAt = previous.map(isRestart).lastIndexOf(true);
   if (resetAt >= 0) previous = previous.slice(resetAt + 1);
   const current = ruleIntent(message);
+  // A view/location refinement keeps the requested service from the last turn.
+  // “Nơi có view biển” after a hotel search does not become an attraction search.
+  const priorKind = [...previous].reverse().map(explicitCategory).find(kind => kind !== "other" && kind !== "off_topic");
+  if (priorKind && /^(?:tim )?(?:noi|cho|phong)\b/.test(normalize(message)) && !/\b(khach san|quan an|diem tham quan|nha hang)\b/.test(normalize(message).replace(/\b(?:gan|sat|quanh) (?:khach san|quan an|nha hang)\b/g, ""))) current.category = priorKind;
   const prior = [...previous].reverse();
   const followup =
-    /\b(con|khac|re hon|dat hon|uu tien|doi|thay|them|bot|bo|khong|chi|vay|nguoi|ngan sach|trieu|tong|giu|du phong|qua dem|khoi hanh|ngay mai|mien phi|co phi|tra phi|duoc|den|toi luc|ve|roi|ha canh|o to|xe may|taxi|grab|xe buyt|di bo|tre em|tre nho|be|ong ba)\b/.test(
+    /\b(tim|noi nao|phong nay|gia nay|co the|gio nhan|gio tra|con|khac|re hon|dat hon|uu tien|doi|thay|them|bot|bo|khong|chi|vay|nguoi|ngan sach|trieu|tong|giu|du phong|qua dem|khoi hanh|ngay mai|mien phi|co phi|tra phi|duoc|den|toi luc|ve|roi|ha canh|o to|xe may|taxi|grab|xe buyt|di bo|tre em|tre nho|be|ong ba)\b/.test(
       normalize(message),
     );
   const lastTrip = prior.find(isTripRequest);

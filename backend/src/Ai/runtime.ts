@@ -13,6 +13,8 @@ const metrics = new Map<
     durationMs: number;
   }
 >();
+let lastProviderIssue: { code: string; at: string } | null = null;
+const providerIssue = (code: string) => { lastProviderIssue = { code, at: new Date().toISOString() }; };
 const cache = new Map<string, { until: number; value: unknown }>();
 const pending = new Map<string, Promise<unknown>>();
 let client: any;
@@ -36,6 +38,7 @@ export function aiMetrics() {
   return {
     model: process.env.GEMINI_MODEL || "gemini-3-flash-preview",
     keyConfigured: Boolean(process.env.GEMINI_API_KEY),
+    lastProviderIssue,
     activeRequests: busy,
     cooldownSeconds: Math.max(
       0,
@@ -85,6 +88,7 @@ export async function runPrompt(
   try {
     const sdk = await geminiClient();
     if (!sdk) {
+      providerIssue("NO_KEY");
       record.fallback++;
       return null;
     }
@@ -114,6 +118,7 @@ export async function runPrompt(
         break;
       } catch (error) {
         const text = String(error instanceof Error ? error.message : error);
+        providerIssue(/429|RESOURCE_EXHAUSTED/.test(text) ? "RATE_LIMITED" : /503|UNAVAILABLE/.test(text) ? "UNAVAILABLE" : /401|403|API_KEY_INVALID/.test(text) ? "AUTH_REJECTED" : /timeout|abort/i.test(text) ? "TIMEOUT" : /400|INVALID_ARGUMENT/.test(text) ? "INVALID_REQUEST" : "PROVIDER_ERROR");
         const transient = /429|503|UNAVAILABLE|RESOURCE_EXHAUSTED/.test(text);
         if (transient) cooldowns.set(model, Date.now() + 30_000);
         if (!transient || attempt || deadline - Date.now() < 2500) break;

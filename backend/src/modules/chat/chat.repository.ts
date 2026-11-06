@@ -1,6 +1,30 @@
 import { getPool, sql } from "../../config/db";
 import type { ChatMessageDto, ChatPlaceCard, ChatSender } from "./chat.types";
+import { catalogFoodMatch } from "./chat.food-match";
 import { publicStayFacts } from "./chat.stay-facts";
+
+export async function chatMenus(placeIds: number[]): Promise<Map<number, NonNullable<ChatPlaceCard["menuItems"]>>> {
+  const ids = [...new Set(placeIds)].slice(0, 60);
+  if (!ids.length) return new Map();
+  const request = getPool().request();
+  const parameters = ids.map((id, index) => { request.input(`menuPlace${index}`, sql.Int, id); return `@menuPlace${index}`; });
+  const result = await request.query<{ place_id: number; menu_item_id: number; name: string; price: number | null }>(`
+    SELECT place_id,menu_item_id,name,price FROM (
+      SELECT mi.place_id,mi.menu_item_id,mi.name,CAST(mi.price AS float) AS price,
+        ROW_NUMBER() OVER(PARTITION BY mi.place_id ORDER BY mi.menu_item_id) AS rn
+      FROM dbo.menu_items mi JOIN dbo.places p ON p.place_id=mi.place_id
+      WHERE p.status='ACTIVE' AND p.place_type='RESTAURANT' AND mi.is_available=1 AND mi.place_id IN (${parameters.join(",")})
+    ) x WHERE rn<=3 ORDER BY place_id,rn`);
+  const map = new Map<number, NonNullable<ChatPlaceCard["menuItems"]>>();
+  for (const row of result.recordset) {
+    if (!ids.includes(row.place_id) || typeof row.name !== "string") continue;
+    const price = row.price === null ? null : Number(row.price);
+    const items = map.get(row.place_id) ?? [];
+    items.push({ id: row.menu_item_id, name: row.name, price: price !== null && Number.isFinite(price) && price >= 0 ? price : null });
+    map.set(row.place_id, items);
+  }
+  return map;
+}
 
 export async function createChatSession(userId: number): Promise<number> {
   const result = await getPool().request().input("userId", sql.Int, userId)
@@ -91,7 +115,7 @@ export async function findPlacesByKeywords(
     const request = pool.request();
     request.input("limit", sql.Int, limit);
 
-    let whereClause = "WHERE p.status = 'ACTIVE'";
+    let whereClause = "WHERE p.status = 'ACTIVE' AND p.name NOT LIKE N'[[]Mẫu]%' AND p.name NOT LIKE N'[[]Test]%' AND p.name NOT LIKE N'[[]Demo]%'";
     if (placeType) {
       request.input("placeType", sql.VarChar(20), placeType);
       whereClause += " AND p.place_type = @placeType";
@@ -210,7 +234,7 @@ export async function searchPlacesForChat(args: {
     request.input("limit", sql.Int, args.limit ?? 10);
     request.input("partySize", sql.Int, args.partySize ?? null);
 
-    const where: string[] = ["p.status = 'ACTIVE'"];
+    const where: string[] = ["p.status = 'ACTIVE'", "p.name NOT LIKE N'[[]Mẫu]%'", "p.name NOT LIKE N'[[]Test]%'", "p.name NOT LIKE N'[[]Demo]%'"];
     if (args.referenceOnly) {
       where.push(
         "p.reference_key IS NOT NULL AND p.reference_checked_at IS NOT NULL",
@@ -244,7 +268,7 @@ export async function searchPlacesForChat(args: {
     if (keywords.length > 0) {
       const conds = keywords.map((k, i) => {
         request.input(`kw_${i}`, sql.NVarChar(100), `%${k}%`);
-        return `(p.name COLLATE Latin1_General_CI_AI LIKE @kw_${i} OR p.description COLLATE Latin1_General_CI_AI LIKE @kw_${i} OR p.address COLLATE Latin1_General_CI_AI LIKE @kw_${i})`;
+        return `(p.name COLLATE Latin1_General_CI_AI LIKE @kw_${i} OR p.description COLLATE Latin1_General_CI_AI LIKE @kw_${i} OR p.address COLLATE Latin1_General_CI_AI LIKE @kw_${i} OR EXISTS(SELECT 1 FROM dbo.menu_items mi WHERE mi.place_id=p.place_id AND mi.is_available=1 AND mi.name COLLATE Latin1_General_CI_AI LIKE @kw_${i}))`;
       });
       where.push(`(${conds.join(" OR ")})`);
     }
@@ -254,6 +278,7 @@ export async function searchPlacesForChat(args: {
         SELECT
           p.place_id, p.name, p.place_type, p.address, p.description, p.latitude, p.longitude, ${distanceSql} AS distance_km,
           psd.facts_json AS stay_facts_json,
+          (SELECT mi.name FROM dbo.menu_items mi WHERE mi.place_id=p.place_id AND mi.is_available=1 FOR JSON PATH) AS menu_names_json,
           (SELECT TOP 1 a.visit_duration_minutes FROM dbo.attractions a WHERE a.place_id=p.place_id) AS visit_duration_minutes,
           (SELECT TOP 1 rt.capacity FROM dbo.room_types rt WHERE rt.place_id=p.place_id AND rt.status='ACTIVE' AND (@partySize IS NULL OR rt.capacity>0) ORDER BY CASE WHEN @partySize IS NULL THEN rt.price_per_night ELSE CEILING(CAST(@partySize AS decimal(18,2))/NULLIF(rt.capacity,0))*rt.price_per_night END,rt.room_type_id) AS room_capacity,
           d.name AS district_name,
@@ -297,6 +322,7 @@ export async function searchPlacesForChat(args: {
       place_type: "ACCOMMODATION" | "RESTAURANT" | "ATTRACTION";
       address: string | null;
       description: string | null;
+      menu_names_json?: string;
       district_name: string | null;
       avg_rating: number;
       review_count: number;
@@ -311,7 +337,13 @@ export async function searchPlacesForChat(args: {
       stay_facts_json?: string | null;
     }>(query);
 
-    return result.recordset.map((row) => {
+    return result.recordset.filter(row => {
+      if (args.placeType !== "RESTAURANT" || !keywords.length || row.menu_names_json === undefined) return true;
+      let names: {name: string}[] = [];
+      try { names = JSON.parse(row.menu_names_json || "[]"); } catch { return false; }
+      const source = [row.name, row.description ?? "", ...names.map(item => item.name)].join(" ");
+      return keywords.some(term => catalogFoodMatch(source, term));
+    }).map((row) => {
       const priceMin = row.price_min == null ? null : Number(row.price_min);
       const priceMax = row.price_max == null ? null : Number(row.price_max);
       let priceText: string | null = null;

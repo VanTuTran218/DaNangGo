@@ -1,6 +1,7 @@
 export type ChatSender = "USER" | "AI";
 
 export interface ChatPlaceCard {
+  menuItems?: { id: number; name: string; price: number | null }[];
   placeId: number;
   name: string;
   placeType: "ACCOMMODATION" | "RESTAURANT" | "ATTRACTION";
@@ -43,6 +44,15 @@ export interface ChatPlaceCard {
 }
 
 export interface ChatMessage {
+  intent?: string;
+  secondaryIntents?: string[];
+  needsClarification?: boolean;
+  questions?: string[];
+  confirmedContext?: { days: number | null; nights: number | null; guests: number | null; budget: number | null; budgetScope: string | null; startDate: string | null; preferences: string[]; dietaryRestrictions: string[] };
+  profileSuggestions?: { key: string; label: string; sensitive: boolean }[];
+  sources?: { url: string; label: string; checkedOn: string; scope: string }[];
+  warnings?: string[];
+  recommendationGroups?: { category: "food" | "sight" | "stay"; title: string; places: ChatPlaceCard[]; notice: string }[];
   id: string;
   sender: ChatSender;
   content: string;
@@ -79,6 +89,7 @@ export interface ChatComparison {
   notices: string[];
 }
 export interface ChatTravelPlan {
+  revision?: number;
   preferences?: {
     arrivalTime?: string;
     departureTime?: string;

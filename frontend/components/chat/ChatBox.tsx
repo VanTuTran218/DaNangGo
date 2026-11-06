@@ -25,6 +25,9 @@ import type {
 } from "@/types/chat";
 import BotLogo from "./BotLogo";
 import TravelPlan from "./TravelPlan";
+import ResponseDetails, { MenuItems } from "./ResponseDetails";
+import ProfileMemory from "./ProfileMemory";
+import ComparisonTable from "./ComparisonTable";
 import ChatPageView from "./page/ChatPageView";
 import StayFacts from "./page/StayFacts";
 import { chatStorageKeys } from "@/lib/chat-storage";
@@ -569,6 +572,7 @@ function ChatExperience({ variant }: { variant: "widget" | "page" }) {
                 </p>
               </div>
               <div className="relative flex items-center gap-0.5">
+                <ProfileMemory />
                 <button
                   onClick={resetChat}
                   title="Cuộc trò chuyện mới"
@@ -653,8 +657,12 @@ function ChatExperience({ variant }: { variant: "widget" | "page" }) {
                           {msg.travelPlan && (
                             <TravelPlan plan={msg.travelPlan} />
                           )}
+                          {msg.comparison && (
+                            <ComparisonTable comparison={msg.comparison} />
+                          )}
 
                           {/* Thẻ địa điểm – bấm để tới trang chi tiết */}
+                          {msg.sender === "AI" && <ResponseDetails message={msg} />}
                           {msg.places && msg.places.length > 0 && (
                             <div className="mt-2 w-full space-y-2">
                               {msg.places.map((place) => {
@@ -741,6 +749,7 @@ function ChatExperience({ variant }: { variant: "widget" | "page" }) {
                                         </div>
                                       </div>
                                     </div>
+                                    <MenuItems place={place} />
                                     <StayFacts place={place} />
                                   </React.Fragment>
                                 );

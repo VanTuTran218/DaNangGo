@@ -332,7 +332,9 @@ export function applyCatalogPlaceDetails(
       title: place.name,
       description: place.description,
       location: place.address,
-      imageUrl: item.imageUrl || place.imageUrl,
+      // The catalog is the source of truth for linked places. This also repairs
+      // saved items that still carry an obsolete image URL from an older catalog.
+      imageUrl: place.imageUrl,
       unitPrice: place.price,
       estimatedCost: place.price * item.quantity,
       durationMinutes: place.visitDurationMinutes,
@@ -392,7 +394,7 @@ export function parseManagedItineraryUpdate(value: unknown): ManagedItineraryUpd
       || (imageUrl !== undefined && (
         typeof imageUrl !== 'string'
         || imageUrl.length > 1000
-        || (imageUrl.length > 0 && !isAllowedItineraryImage(imageUrl))
+        || (catalogPlaceId === undefined && imageUrl.length > 0 && !isAllowedItineraryImage(imageUrl))
       ))
       || typeof unitPrice !== 'number'
       || !Number.isSafeInteger(unitPrice)

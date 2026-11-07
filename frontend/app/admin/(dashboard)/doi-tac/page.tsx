@@ -12,7 +12,7 @@ import type { AdminPartnerItem, PartnerApprovalStatus } from '@/types/admin';
 import DataTable, { Column } from '@/components/ui/DataTable';
 import StatusBadge from '@/components/ui/StatusBadge';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
-import { Check, X, Lock, Eye, Building2, Store } from 'lucide-react';
+import { Check, X, Lock, Unlock, Eye, Building2, Store } from 'lucide-react';
 import Link from 'next/link';
 
 const TABS: { key: PartnerApprovalStatus | 'ALL'; label: string }[] = [
@@ -77,7 +77,7 @@ export default function AdminPartnersPage() {
       const res = await updateAdminPartnerStatus(lockingPartner.id, nextStatus);
       showToast(res.message);
       setLockingPartner(null);
-      reload();
+      await reload();
     } catch (err: any) {
       showToast(err?.message || 'Thao tác thất bại', 'error');
     } finally {
@@ -147,13 +147,14 @@ export default function AdminPartnersPage() {
               </button>
             </>
           )}
-          {p.status === 'APPROVED' && (
+          {(p.status === 'APPROVED' || p.status === 'LOCKED') && (
             <button
               onClick={() => setLockingPartner(p)}
-              title="Khóa đối tác"
-              className="p-1.5 rounded-lg text-amber-600 hover:bg-amber-50"
+              disabled={actionLoading}
+              title={p.status === 'LOCKED' ? 'Mở khóa đối tác' : 'Khóa đối tác'}
+              className={`p-1.5 rounded-lg disabled:opacity-50 ${p.status === 'LOCKED' ? 'text-emerald-600 hover:bg-emerald-50' : 'text-amber-600 hover:bg-amber-50'}`}
             >
-              <Lock className="w-4 h-4" />
+              {p.status === 'LOCKED' ? <Unlock className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
             </button>
           )}
         </div>
@@ -290,10 +291,10 @@ export default function AdminPartnersPage() {
         isOpen={Boolean(lockingPartner)}
         onClose={() => setLockingPartner(null)}
         onConfirm={handleLockToggle}
-        title="Khóa tài khoản đối tác"
-        description={`Bạn có chắc chắn muốn khóa tài khoản đối tác ${lockingPartner?.businessName}?`}
-        variant="danger"
-        confirmText="Khóa tài khoản"
+        title={lockingPartner?.status === 'LOCKED' ? 'Mở khóa tài khoản đối tác' : 'Khóa tài khoản đối tác'}
+        description={`Bạn có chắc chắn muốn ${lockingPartner?.status === 'LOCKED' ? 'mở khóa' : 'khóa'} tài khoản đối tác ${lockingPartner?.businessName}?`}
+        variant={lockingPartner?.status === 'LOCKED' ? 'teal' : 'danger'}
+        confirmText={lockingPartner?.status === 'LOCKED' ? 'Mở khóa tài khoản' : 'Khóa tài khoản'}
         loading={actionLoading}
       />
     </div>

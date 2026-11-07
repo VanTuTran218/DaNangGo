@@ -5,6 +5,7 @@ import {
   reviewPendingPartnerProfile,
   setPartnerAdminLock,
   type PartnerApprovalStatus,
+  type PartnerListStatus,
   type PartnerProfileRow,
 } from './partners.repository';
 
@@ -47,12 +48,12 @@ function toAdminPartner(row: PartnerProfileRow): AdminPartnerProfile {
 }
 
 export async function listAdminPartners(rawStatus: unknown): Promise<AdminPartnerProfile[]> {
-  let status: PartnerApprovalStatus | undefined;
+  let status: PartnerListStatus | undefined;
   if (rawStatus !== undefined) {
-    if (typeof rawStatus !== 'string' || !['ALL', 'PENDING', 'APPROVED', 'REJECTED'].includes(rawStatus)) {
+    if (typeof rawStatus !== 'string' || !['ALL', 'PENDING', 'APPROVED', 'REJECTED', 'LOCKED'].includes(rawStatus)) {
       throw new AuthError(400, 'Trạng thái lọc hồ sơ đối tác không hợp lệ.');
     }
-    if (rawStatus !== 'ALL') status = rawStatus as PartnerApprovalStatus;
+    if (rawStatus !== 'ALL') status = rawStatus as PartnerListStatus;
   }
   return (await listPartnerProfiles(status)).map(toAdminPartner);
 }

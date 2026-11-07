@@ -130,7 +130,8 @@ export async function getAdminPartners(params?: {
   search?: string;
 }): Promise<AdminPartnerItem[]> {
   const searchParams = new URLSearchParams();
-  if (params?.status && params.status !== "ALL") {
+  // Locked accounts retain their approval status; filter by the displayed status below.
+  if (params?.status && params.status !== "ALL" && params.status !== "LOCKED") {
     searchParams.set("status", params.status);
   }
   const qs = searchParams.toString();
@@ -189,7 +190,7 @@ export async function getAdminPartners(params?: {
             : "PENDING") as PartnerApprovalStatus,
       createdAt: r.createdAt,
       rejectReason: r.rejectionReason ?? undefined,
-    }));
+    })).filter((partner) => !params?.status || params.status === "ALL" || partner.status === params.status);
   }
 
   const records = response.data?.partners ?? [];
@@ -212,7 +213,7 @@ export async function getAdminPartners(params?: {
           : "LOCKED") as PartnerApprovalStatus,
     createdAt: r.created_at,
     rejectReason: undefined,
-  }));
+  })).filter((partner) => !params?.status || params.status === "ALL" || partner.status === params.status);
 }
 
 // POST /api/admin/partners/:id/approval (hoặc /approve) — REAL API

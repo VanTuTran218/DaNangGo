@@ -4,7 +4,7 @@ import { requireAuth, requireRole } from '../../middleware/auth.middleware';
 import { listAdminPartners, reviewPartner, setPartnerLock } from '../partners/partners.service';
 
 const router = Router();
-const statusQuery = z.enum(['ALL', 'PENDING', 'APPROVED', 'REJECTED']).optional();
+const statusQuery = z.enum(['ALL', 'PENDING', 'APPROVED', 'REJECTED', 'LOCKED']).optional();
 const partnerIdParam = z.string().regex(/^[1-9]\d*$/, 'ID hồ sơ đối tác không hợp lệ.').transform(Number);
 const reviewBody = z.object({
   status: z.enum(['APPROVED', 'REJECTED']),

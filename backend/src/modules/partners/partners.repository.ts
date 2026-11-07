@@ -1,6 +1,7 @@
 import { getPool, sql } from '../../config/db';
 
 export type PartnerApprovalStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+export type PartnerListStatus = PartnerApprovalStatus | 'LOCKED';
 
 export interface PartnerProfileRow {
   partner_id: number;
@@ -23,7 +24,7 @@ export interface PartnerProfileRow {
   admin_locked: boolean;
 }
 
-export async function listPartnerProfiles(status?: PartnerApprovalStatus): Promise<PartnerProfileRow[]> {
+export async function listPartnerProfiles(status?: PartnerListStatus): Promise<PartnerProfileRow[]> {
   const result = await getPool().request()
     .input('status', sql.VarChar(20), status ?? null)
     .query<PartnerProfileRow>(`
@@ -35,7 +36,9 @@ export async function listPartnerProfiles(status?: PartnerApprovalStatus): Promi
       FROM dbo.partner_profiles AS pp
       INNER JOIN dbo.users AS u ON u.user_id = pp.user_id
       LEFT JOIN dbo.users AS reviewer ON reviewer.user_id = pp.approved_by
-      WHERE @status IS NULL OR pp.approval_status = @status
+      WHERE @status IS NULL
+        OR (pp.approval_status = @status AND u.admin_locked = 0)
+        OR (@status = 'LOCKED' AND u.admin_locked = 1)
       ORDER BY CASE WHEN pp.approval_status = 'PENDING' THEN 0 ELSE 1 END,
         CASE WHEN pp.approval_status = 'PENDING' THEN pp.created_at END ASC,
         pp.created_at DESC;

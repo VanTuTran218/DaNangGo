@@ -1,0 +1,177 @@
+{
+  "status": "PASS",
+  "provider": "disabled",
+  "database": "read-only real catalog",
+  "persistence": "guest memory only; no seeded reviews/surveys",
+  "turns": 24,
+  "results": [
+    {
+      "question": "Có 3 triệu đi 1 ngày, ăn ngon, chụp ảnh, có chỗ nghỉ",
+      "answer": "Để không hiểu sai ngân sách hoặc tính nhầm đêm lưu trú, bạn xác nhận giúp mình:\n• Nhóm bạn có bao nhiêu người?\n• Số tiền bạn nêu là tổng cho cả nhóm hay cho mỗi người?\n• Chuyến một ngày của bạn có qua đêm hay chỉ đi trong ngày?",
+      "hasPlan": false,
+      "cards": 0,
+      "elapsedMs": 21
+    },
+    {
+      "question": "2 người, tổng 3 triệu, không qua đêm",
+      "answer": "Mình lên trước lịch 1 ngày cho 2 người, tổng ngân sách bạn đưa ra 3.000.000đ. Các buổi được cân đối theo giờ đến/về và nhịp đi bạn đã cung cấp; buổi không còn thời gian sẽ không xếp hoạt động.\n\nĐể chỉnh lịch sát hơn, bạn bổ sung giúp mình:\n• Bạn khởi hành ngày nào?\n• Bạn đến Đà Nẵng lúc mấy giờ ngày đầu?\n• Bạn rời Đà Nẵng lúc mấy giờ ngày cuối?",
+      "hasPlan": true,
+      "cards": 0,
+      "elapsedMs": 50
+    },
+    {
+      "question": "Giữ lại 500k dự phòng",
+      "answer": "Mình lên trước lịch 1 ngày cho 2 người, tổng ngân sách bạn đưa ra 3.000.000đ. Các buổi được cân đối theo giờ đến/về và nhịp đi bạn đã cung cấp; buổi không còn thời gian sẽ không xếp hoạt động.\n\nĐể chỉnh lịch sát hơn, bạn bổ sung giúp mình:\n• Bạn khởi hành ngày nào?\n• Bạn đến Đà Nẵng lúc mấy giờ ngày đầu?\n• Bạn rời Đà Nẵng lúc mấy giờ ngày cuối?",
+      "hasPlan": true,
+      "cards": 0,
+      "elapsedMs": 9
+    },
+    {
+      "question": "Đi taxi",
+      "answer": "Mình lên trước lịch 1 ngày cho 2 người, tổng ngân sách bạn đưa ra 3.000.000đ. Các buổi được cân đối theo giờ đến/về và nhịp đi bạn đã cung cấp; buổi không còn thời gian sẽ không xếp hoạt động.\n\nĐể chỉnh lịch sát hơn, bạn bổ sung giúp mình:\n• Bạn khởi hành ngày nào?\n• Bạn đến Đà Nẵng lúc mấy giờ ngày đầu?\n• Bạn rời Đà Nẵng lúc mấy giờ ngày cuối?",
+      "hasPlan": true,
+      "cards": 0,
+      "elapsedMs": 7
+    },
+    {
+      "question": "Bỏ Cầu Rồng",
+      "answer": "Mình lên trước lịch 1 ngày cho 2 người, tổng ngân sách bạn đưa ra 3.000.000đ. Các buổi được cân đối theo giờ đến/về và nhịp đi bạn đã cung cấp; buổi không còn thời gian sẽ không xếp hoạt động.\n\nĐể chỉnh lịch sát hơn, bạn bổ sung giúp mình:\n• Bạn khởi hành ngày nào?\n• Bạn đến Đà Nẵng lúc mấy giờ ngày đầu?\n• Bạn rời Đà Nẵng lúc mấy giờ ngày cuối?",
+      "hasPlan": true,
+      "cards": 0,
+      "elapsedMs": 4
+    },
+    {
+      "question": "Ưu tiên điểm check-in chụp hình",
+      "answer": "Mình lên trước lịch 1 ngày cho 2 người, tổng ngân sách bạn đưa ra 3.000.000đ. Các buổi được cân đối theo giờ đến/về và nhịp đi bạn đã cung cấp; buổi không còn thời gian sẽ không xếp hoạt động.\n\nĐể chỉnh lịch sát hơn, bạn bổ sung giúp mình:\n• Bạn khởi hành ngày nào?\n• Bạn đến Đà Nẵng lúc mấy giờ ngày đầu?\n• Bạn rời Đà Nẵng lúc mấy giờ ngày cuối?",
+      "hasPlan": true,
+      "cards": 0,
+      "elapsedMs": 6
+    },
+    {
+      "question": "Ưu tiên điểm check-in chụp hình",
+      "answer": "Mình lên trước lịch 1 ngày cho 2 người, tổng ngân sách bạn đưa ra 3.000.000đ. Các buổi được cân đối theo giờ đến/về và nhịp đi bạn đã cung cấp; buổi không còn thời gian sẽ không xếp hoạt động.\n\nĐể chỉnh lịch sát hơn, bạn bổ sung giúp mình:\n• Bạn khởi hành ngày nào?\n• Bạn đến Đà Nẵng lúc mấy giờ ngày đầu?\n• Bạn rời Đà Nẵng lúc mấy giờ ngày cuối?",
+      "hasPlan": true,
+      "cards": 0,
+      "elapsedMs": 6
+    },
+    {
+      "question": "Ưu tiên điểm check-in chụp hình",
+      "answer": "Mình lên trước lịch 1 ngày cho 2 người, tổng ngân sách bạn đưa ra 3.000.000đ. Các buổi được cân đối theo giờ đến/về và nhịp đi bạn đã cung cấp; buổi không còn thời gian sẽ không xếp hoạt động.\n\nĐể chỉnh lịch sát hơn, bạn bổ sung giúp mình:\n• Bạn khởi hành ngày nào?\n• Bạn đến Đà Nẵng lúc mấy giờ ngày đầu?\n• Bạn rời Đà Nẵng lúc mấy giờ ngày cuối?",
+      "hasPlan": true,
+      "cards": 0,
+      "elapsedMs": 5
+    },
+    {
+      "question": "Ưu tiên điểm check-in chụp hình",
+      "answer": "Mình lên trước lịch 1 ngày cho 2 người, tổng ngân sách bạn đưa ra 3.000.000đ. Các buổi được cân đối theo giờ đến/về và nhịp đi bạn đã cung cấp; buổi không còn thời gian sẽ không xếp hoạt động.\n\nĐể chỉnh lịch sát hơn, bạn bổ sung giúp mình:\n• Bạn khởi hành ngày nào?\n• Bạn đến Đà Nẵng lúc mấy giờ ngày đầu?\n• Bạn rời Đà Nẵng lúc mấy giờ ngày cuối?",
+      "hasPlan": true,
+      "cards": 0,
+      "elapsedMs": 4
+    },
+    {
+      "question": "Ưu tiên điểm check-in chụp hình",
+      "answer": "Mình lên trước lịch 1 ngày cho 2 người, tổng ngân sách bạn đưa ra 3.000.000đ. Các buổi được cân đối theo giờ đến/về và nhịp đi bạn đã cung cấp; buổi không còn thời gian sẽ không xếp hoạt động.\n\nĐể chỉnh lịch sát hơn, bạn bổ sung giúp mình:\n• Bạn khởi hành ngày nào?\n• Bạn đến Đà Nẵng lúc mấy giờ ngày đầu?\n• Bạn rời Đà Nẵng lúc mấy giờ ngày cuối?",
+      "hasPlan": true,
+      "cards": 0,
+      "elapsedMs": 5
+    },
+    {
+      "question": "Ưu tiên điểm check-in chụp hình",
+      "answer": "Mình lên trước lịch 1 ngày cho 2 người, tổng ngân sách bạn đưa ra 3.000.000đ. Các buổi được cân đối theo giờ đến/về và nhịp đi bạn đã cung cấp; buổi không còn thời gian sẽ không xếp hoạt động.\n\nĐể chỉnh lịch sát hơn, bạn bổ sung giúp mình:\n• Bạn khởi hành ngày nào?\n• Bạn đến Đà Nẵng lúc mấy giờ ngày đầu?\n• Bạn rời Đà Nẵng lúc mấy giờ ngày cuối?",
+      "hasPlan": true,
+      "cards": 0,
+      "elapsedMs": 6
+    },
+    {
+      "question": "Ưu tiên điểm check-in chụp hình",
+      "answer": "Mình lên trước lịch 1 ngày cho 2 người, tổng ngân sách bạn đưa ra 3.000.000đ. Các buổi được cân đối theo giờ đến/về và nhịp đi bạn đã cung cấp; buổi không còn thời gian sẽ không xếp hoạt động.\n\nĐể chỉnh lịch sát hơn, bạn bổ sung giúp mình:\n• Bạn khởi hành ngày nào?\n• Bạn đến Đà Nẵng lúc mấy giờ ngày đầu?\n• Bạn rời Đà Nẵng lúc mấy giờ ngày cuối?",
+      "hasPlan": true,
+      "cards": 0,
+      "elapsedMs": 7
+    },
+    {
+      "question": "Ưu tiên điểm check-in chụp hình",
+      "answer": "Mình lên trước lịch 1 ngày cho 2 người, tổng ngân sách bạn đưa ra 3.000.000đ. Các buổi được cân đối theo giờ đến/về và nhịp đi bạn đã cung cấp; buổi không còn thời gian sẽ không xếp hoạt động.\n\nĐể chỉnh lịch sát hơn, bạn bổ sung giúp mình:\n• Bạn khởi hành ngày nào?\n• Bạn đến Đà Nẵng lúc mấy giờ ngày đầu?\n• Bạn rời Đà Nẵng lúc mấy giờ ngày cuối?",
+      "hasPlan": true,
+      "cards": 0,
+      "elapsedMs": 8
+    },
+    {
+      "question": "Ưu tiên điểm check-in chụp hình",
+      "answer": "Mình lên trước lịch 1 ngày cho 2 người, tổng ngân sách bạn đưa ra 3.000.000đ. Các buổi được cân đối theo giờ đến/về và nhịp đi bạn đã cung cấp; buổi không còn thời gian sẽ không xếp hoạt động.\n\nĐể chỉnh lịch sát hơn, bạn bổ sung giúp mình:\n• Bạn khởi hành ngày nào?\n• Bạn đến Đà Nẵng lúc mấy giờ ngày đầu?\n• Bạn rời Đà Nẵng lúc mấy giờ ngày cuối?",
+      "hasPlan": true,
+      "cards": 0,
+      "elapsedMs": 5
+    },
+    {
+      "question": "Ưu tiên điểm check-in chụp hình",
+      "answer": "Mình lên trước lịch 1 ngày cho 2 người, tổng ngân sách bạn đưa ra 3.000.000đ. Các buổi được cân đối theo giờ đến/về và nhịp đi bạn đã cung cấp; buổi không còn thời gian sẽ không xếp hoạt động.\n\nĐể chỉnh lịch sát hơn, bạn bổ sung giúp mình:\n• Bạn khởi hành ngày nào?\n• Bạn đến Đà Nẵng lúc mấy giờ ngày đầu?\n• Bạn rời Đà Nẵng lúc mấy giờ ngày cuối?",
+      "hasPlan": true,
+      "cards": 0,
+      "elapsedMs": 5
+    },
+    {
+      "question": "Đổi giờ đến 10h",
+      "answer": "Mình lên trước lịch 1 ngày cho 2 người, tổng ngân sách bạn đưa ra 3.000.000đ. Các buổi được cân đối theo giờ đến/về và nhịp đi bạn đã cung cấp; buổi không còn thời gian sẽ không xếp hoạt động.\n\nĐể chỉnh lịch sát hơn, bạn bổ sung giúp mình:\n• Bạn khởi hành ngày nào?\n• Bạn rời Đà Nẵng lúc mấy giờ ngày cuối?",
+      "hasPlan": true,
+      "cards": 0,
+      "elapsedMs": 6
+    },
+    {
+      "question": "Bắt đầu lại",
+      "answer": "Mình đã bắt đầu lại và bỏ các điều kiện chuyến cũ. Bạn muốn đi mấy ngày, với bao nhiêu người và ngân sách dự kiến bao nhiêu?",
+      "hasPlan": false,
+      "cards": 0,
+      "elapsedMs": 2
+    },
+    {
+      "question": "Đi 2 ngày cho 1 người, tổng 2 triệu, khởi hành ngày mai",
+      "answer": "Mình lên trước lịch 2 ngày cho 1 người, tổng ngân sách bạn đưa ra 2.000.000đ. Các buổi được cân đối theo giờ đến/về và nhịp đi bạn đã cung cấp; buổi không còn thời gian sẽ không xếp hoạt động.\n\nĐể chỉnh lịch sát hơn, bạn bổ sung giúp mình:\n• Bạn đến Đà Nẵng lúc mấy giờ ngày đầu?\n• Bạn rời Đà Nẵng lúc mấy giờ ngày cuối?\n• Bạn di chuyển bằng ô tô, xe máy, taxi, xe buýt hay đi bộ?",
+      "hasPlan": true,
+      "cards": 0,
+      "elapsedMs": 5
+    },
+    {
+      "question": "Tôi đã đặt khách sạn rồi",
+      "answer": "Mình lên trước lịch 2 ngày cho 1 người, tổng ngân sách bạn đưa ra 2.000.000đ. Các buổi được cân đối theo giờ đến/về và nhịp đi bạn đã cung cấp; buổi không còn thời gian sẽ không xếp hoạt động.\n\nĐể chỉnh lịch sát hơn, bạn bổ sung giúp mình:\n• Bạn đến Đà Nẵng lúc mấy giờ ngày đầu?\n• Bạn rời Đà Nẵng lúc mấy giờ ngày cuối?\n• Bạn di chuyển bằng ô tô, xe máy, taxi, xe buýt hay đi bộ?",
+      "hasPlan": true,
+      "cards": 0,
+      "elapsedMs": 6
+    },
+    {
+      "question": "Đi taxi",
+      "answer": "Mình lên trước lịch 2 ngày cho 1 người, tổng ngân sách bạn đưa ra 2.000.000đ. Các buổi được cân đối theo giờ đến/về và nhịp đi bạn đã cung cấp; buổi không còn thời gian sẽ không xếp hoạt động.\n\nĐể chỉnh lịch sát hơn, bạn bổ sung giúp mình:\n• Bạn đến Đà Nẵng lúc mấy giờ ngày đầu?\n• Bạn rời Đà Nẵng lúc mấy giờ ngày cuối?",
+      "hasPlan": true,
+      "cards": 0,
+      "elapsedMs": 6
+    },
+    {
+      "question": "Tôi dị ứng đậu phộng, tìm quán Mì Quảng",
+      "answer": "Dữ liệu hiện chưa xác minh đầy đủ thành phần, dị ứng, món chay hoặc mức cay. Mình chưa có món/quán đủ căn cứ để xác nhận đáp ứng điều kiện này, nên chưa đưa thẻ gợi ý phù hợp. Bạn cần hỏi trực tiếp quán về thành phần và nguy cơ lẫn nguyên liệu trước khi gọi món; không suy món an toàn từ tên hoặc nhãn khẩu vị.\n\nDữ liệu chưa xác minh đầy đủ thành phần, dị ứng hoặc mức cay. Bạn cần hỏi trực tiếp quán; Gô chưa thể bảo đảm các tiêu chí này.",
+      "hasPlan": false,
+      "cards": 0,
+      "elapsedMs": 2
+    },
+    {
+      "question": "Quán ăn ở Hải Châu",
+      "answer": "Dữ liệu hiện chưa xác minh đầy đủ thành phần, dị ứng, món chay hoặc mức cay. Mình chưa có món/quán đủ căn cứ để xác nhận đáp ứng điều kiện này, nên chưa đưa thẻ gợi ý phù hợp. Bạn cần hỏi trực tiếp quán về thành phần và nguy cơ lẫn nguyên liệu trước khi gọi món; không suy món an toàn từ tên hoặc nhãn khẩu vị.",
+      "hasPlan": false,
+      "cards": 0,
+      "elapsedMs": 2
+    },
+    {
+      "question": "Bắt đầu lại",
+      "answer": "Mình đã bắt đầu lại và bỏ các điều kiện chuyến cũ. Bạn muốn đi mấy ngày, với bao nhiêu người và ngân sách dự kiến bao nhiêu?",
+      "hasPlan": false,
+      "cards": 0,
+      "elapsedMs": 2
+    },
+    {
+      "question": "Quán ăn ở Hải Châu",
+      "answer": "Mình chọn 3 quán ăn để bạn dễ so sánh ở Hải Châu.\n\nBạn xem giá món ở từng quán trước; tổng hóa đơn còn tùy số món và số người. Nếu có món kiêng hoặc dị ứng, bạn nên trao đổi trực tiếp với quán.\n\nBạn đi mấy người và muốn dành khoảng bao nhiêu cho một bữa?",
+      "hasPlan": false,
+      "cards": 3,
+      "elapsedMs": 56
+    }
+  ]
+}

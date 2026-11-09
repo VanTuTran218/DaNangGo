@@ -1,0 +1,103 @@
+{
+  "status": "PASS",
+  "dataMode": "SQL catalog read-only; provider disabled; guest memory only",
+  "tests": 12,
+  "results": [
+    {
+      "test": "So sánh cơ sở thật, không bịa giá",
+      "question": "So sánh Hilton với Furama",
+      "answer": "Gô so sánh Hilton Da Nang và Furama Resort Danang từ dữ liệu DaNangGo. Ô còn thiếu giữ nguyên là chưa có dữ liệu. Bạn ưu tiên giá, khu vực hay thời lượng để Gô giúp cân nhắc?",
+      "plan": false,
+      "comparison": true,
+      "durationMs": 119
+    },
+    {
+      "test": "So sánh tham chiếu hai cơ sở ở lượt trước",
+      "question": "So sánh hai chỗ này",
+      "answer": "Gô so sánh Hilton Da Nang và Furama Resort Danang từ dữ liệu DaNangGo. Ô còn thiếu giữ nguyên là chưa có dữ liệu. Bạn ưu tiên giá, khu vực hay thời lượng để Gô giúp cân nhắc?",
+      "plan": false,
+      "comparison": true,
+      "durationMs": 9
+    },
+    {
+      "test": "Tên không tồn tại không tạo địa điểm",
+      "question": "So sánh Khách Sạn Không Tồn Tại với Hilton",
+      "answer": "Gô chưa xác định duy nhất cả hai địa điểm trong dữ liệu công khai. Bạn nêu tên đầy đủ/chi nhánh; Gô chưa dựng bảng để tránh so nhầm cơ sở.",
+      "plan": false,
+      "comparison": false,
+      "durationMs": 4
+    },
+    {
+      "test": "Lập lịch nền từ SQL thật",
+      "question": "Đi 3N2Đ cho 2 người, tổng ngân sách 6 triệu, khởi hành 2026-12-01, đến 8h, về 22h, giữ 500k dự phòng",
+      "answer": "Gô lên trước lịch 3 ngày cho 2 người, tổng ngân sách bạn đưa ra 6.000.000đ. Các buổi được cân đối theo giờ đến/về và nhịp đi bạn đã cung cấp; buổi không còn thời gian sẽ không xếp hoạt động.\n\nĐể chỉnh lịch sát hơn, bạn bổ sung giúp Gô:\n• Bạn di chuyển bằng ô tô, xe máy, taxi, xe buýt hay đi bộ?",
+      "plan": true,
+      "comparison": false,
+      "durationMs": 82
+    },
+    {
+      "test": "Bỏ mục ngày 2, giữ nguyên ngày 1 và 3",
+      "question": "Giữ ngày 1, bỏ Danh Thắng Ngũ Hành Sơn ngày 2",
+      "answer": "Đã bỏ Danh Thắng Ngũ Hành Sơn khỏi ngày 2. Các mục khác được giữ nguyên; Gô đã tính lại chi phí vé, khoản dự phòng vẫn giữ.",
+      "plan": true,
+      "comparison": false,
+      "durationMs": 29
+    },
+    {
+      "test": "Đổi phương tiện không làm lại lịch đã chỉnh",
+      "question": "Đi taxi",
+      "answer": "Đã cập nhật giờ/phương tiện và giữ các chỉnh sửa trước đó. Chưa tự thêm điểm để lấp giờ trống.",
+      "plan": true,
+      "comparison": false,
+      "durationMs": 5
+    },
+    {
+      "test": "Chỉ thay bữa trưa ngày 2",
+      "question": "Thay quán ăn ngày 2 buổi trưa bằng quán khác",
+      "answer": "Đã thay Hải Sản Tươi Sống Mỹ Khê bằng Bánh Xèo Bà Ba vào ngày 2, buổi trưa. Những mục khác giữ nguyên. Chi phí vé được tính lại từ dữ liệu đã biết; các khoản chưa biết vẫn để chưa xác định.",
+      "plan": true,
+      "comparison": false,
+      "durationMs": 14
+    },
+    {
+      "test": "Chuyển mục cụ thể sang buổi trống",
+      "question": "Chuyển Bãi Biển Mỹ Khê từ ngày 1 sang ngày 2 buổi sáng",
+      "answer": "Đã chuyển Bãi Biển Mỹ Khê sang ngày 2, buổi sáng. Các ngày và mục khác được giữ nguyên; thời gian này vẫn là đề xuất, cần kiểm tra giờ hoạt động.",
+      "plan": true,
+      "comparison": false,
+      "durationMs": 8
+    },
+    {
+      "test": "Tham chiếu mơ hồ phải hỏi lại",
+      "question": "Bỏ cái đó",
+      "answer": "Bạn muốn điều chỉnh quán ăn, chỗ ở hay điểm tham quan nào? Cho Gô tên cụ thể để giữ các phần còn lại và tránh đổi nhầm.",
+      "plan": false,
+      "comparison": false,
+      "durationMs": 3
+    },
+    {
+      "test": "Ngày ngoài phạm vi không sửa lịch",
+      "question": "Thêm Mỹ Khê ngày 9 buổi chiều",
+      "answer": "Lịch hiện có 3 ngày; ngày cần sửa chưa hợp lệ. Gô giữ nguyên lịch.",
+      "plan": false,
+      "comparison": false,
+      "durationMs": 5
+    },
+    {
+      "test": "Reset bỏ điều kiện/chỉnh sửa cũ",
+      "question": "Bắt đầu lại",
+      "answer": "Gô đã bắt đầu lại và bỏ các điều kiện chuyến cũ. Bạn muốn đi mấy ngày, với bao nhiêu người và ngân sách dự kiến bao nhiêu?",
+      "plan": false,
+      "comparison": false,
+      "durationMs": 2
+    },
+    {
+      "test": "Sau reset chưa có lịch mới để chỉnh",
+      "question": "Bỏ Cầu Rồng ngày 2",
+      "answer": "Cuộc trò chuyện này chưa có lịch trình để chỉnh. Bạn cho biết số ngày, số người và ngân sách để Gô lập bản nháp trước nhé.",
+      "plan": false,
+      "comparison": false,
+      "durationMs": 2
+    }
+  ]
+}

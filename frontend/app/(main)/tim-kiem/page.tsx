@@ -1,4 +1,5 @@
 'use client';
+import { AiSearchRewrite } from '@/components/ai/AiTools';
 
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
@@ -326,6 +327,7 @@ export default function SearchPage() {
               Tìm kiếm
             </button>
           </form>
+          <AiSearchRewrite key={query} query={query} onApply={setQuery} />
         </div>
       </section>
 

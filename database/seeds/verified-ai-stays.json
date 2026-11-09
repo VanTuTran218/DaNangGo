@@ -1,0 +1,85 @@
+[
+  {
+    "key": "furama-resort-danang",
+    "name": "Furama Resort Danang",
+    "kind": "RESORT",
+    "address": "103–105 Võ Nguyên Giáp, phường Ngũ Hành Sơn, Đà Nẵng",
+    "legacyDistrict": "Ngũ Hành Sơn",
+    "phone": "+842363847333",
+    "website": "https://furamavietnam.com/",
+    "summary": "Khu nghỉ dưỡng trên tuyến đường biển Võ Nguyên Giáp tại khu vực Ngũ Hành Sơn.",
+    "sources": ["https://furamavietnam.com/the-resort/contact-us/"],
+    "checkedOn": "2026-11-04",
+    "image": {
+      "path": "/places/real-stays/furama-resort-danang.jpg",
+      "source": "https://furamavietnam.com/wp-content/uploads/2024/07/Furama-Resort-Danang-Accommodation.jpg",
+      "checkedOn": "2026-10-24"
+    }
+  },
+  {
+    "key": "hilton-da-nang",
+    "name": "Hilton Da Nang",
+    "kind": "HOTEL",
+    "address": "50 Bạch Đằng, phường Hải Châu, Đà Nẵng",
+    "legacyDistrict": "Hải Châu",
+    "phone": "+842363874000",
+    "website": "https://www.hilton.com/en/hotels/daddvhi-hilton-da-nang/",
+    "summary": "Khách sạn trên đường Bạch Đằng, khu vực trung tâm bên sông Hàn.",
+    "sources": ["https://www.hilton.com/en/hotels/daddvhi-hilton-da-nang/"],
+    "checkedOn": "2026-11-04"
+  },
+  {
+    "key": "hyatt-regency-danang",
+    "name": "Hyatt Regency Danang Resort and Spa",
+    "kind": "RESORT",
+    "address": "5 Trường Sa, phường Ngũ Hành Sơn, Đà Nẵng",
+    "legacyDistrict": "Ngũ Hành Sơn",
+    "phone": "+842363981234",
+    "website": "https://www.hyatt.com/hyatt-regency/en-US/danhr-hyatt-regency-danang-resort-and-spa/hotel-info",
+    "summary": "Khu nghỉ dưỡng tại số 5 Trường Sa, khu vực Ngũ Hành Sơn, Đà Nẵng.",
+    "sources": [
+      "https://www.hyatt.com/hyatt-regency/en-US/danhr-hyatt-regency-danang-resort-and-spa/hotel-info"
+    ],
+    "checkedOn": "2026-11-04"
+  },
+  {
+    "key": "haian-beach-hotel-spa",
+    "name": "HAIAN Beach Hotel & Spa",
+    "kind": "HOTEL",
+    "address": "278 Võ Nguyên Giáp, Đà Nẵng",
+    "legacyDistrict": "Ngũ Hành Sơn",
+    "phone": "+842362228666",
+    "website": "https://haianbeachhotelspa.com/",
+    "summary": "Khách sạn trên đường Võ Nguyên Giáp, khu vực biển Mỹ Khê; website cơ sở có thông tin về phòng hướng biển.",
+    "sources": [
+      "https://haianbeachhotelspa.com/vi/trang-chu/",
+      "https://haianbeachhotelspa.com/vi/accommodation/beachfront-oasis-2/"
+    ],
+    "checkedOn": "2026-11-04",
+    "image": {
+      "path": "/places/real-stays/haian-beach-hotel-spa.webp",
+      "source": "https://haianbeachhotelspa.com/wp-content/uploads/2023/11/Image-Home-HAB.webp",
+      "checkedOn": "2026-10-24"
+    }
+  },
+  {
+    "key": "sala-danang-beach",
+    "name": "Sala Danang Beach Hotel",
+    "kind": "HOTEL",
+    "address": "36–38 Lâm Hoành, phường An Hải, Đà Nẵng",
+    "legacyDistrict": "Sơn Trà",
+    "phone": "+842363658555",
+    "website": "https://salahotelgroup.com/khachsansaladanangbeach/",
+    "summary": "Khách sạn trên đường Lâm Hoành, khu vực biển Mỹ Khê; website cơ sở giới thiệu các hạng phòng có hướng nhìn ra biển.",
+    "sources": [
+      "https://salahotelgroup.com/en/contact/",
+      "https://salahotelgroup.com/khachsansaladanangbeach/"
+    ],
+    "checkedOn": "2026-11-04",
+    "image": {
+      "path": "/places/real-stays/sala-danang-beach.jpg",
+      "source": "https://salahotelgroup.com/wp-content/uploads/2025/09/DJI_0152-HDR-edit-V3-copy-2-e1758767134913.jpg",
+      "checkedOn": "2026-10-24"
+    }
+  }
+]

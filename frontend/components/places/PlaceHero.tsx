@@ -12,7 +12,6 @@ import {
 import {
   MapPin,
   Share2,
-  Bookmark,
   Check,
   Flame,
   Utensils,
@@ -22,6 +21,7 @@ import {
   Maximize2,
 } from 'lucide-react';
 import type { PlaceDetail } from '@/lib/api/places';
+import HeartButton from '@/components/HeartButton';
 
 const BLUR_PLACEHOLDER =
   'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
@@ -29,8 +29,6 @@ const BLUR_PLACEHOLDER =
 interface PlaceHeroProps {
   place: PlaceDetail;
   images: string[];
-  isSaved: boolean;
-  onToggleSave: () => void;
   onShare: () => void;
   copiedLink: boolean;
 }
@@ -38,8 +36,6 @@ interface PlaceHeroProps {
 export default function PlaceHero({
   place,
   images,
-  isSaved,
-  onToggleSave,
   onShare,
   copiedLink,
 }: PlaceHeroProps) {
@@ -245,6 +241,7 @@ export default function PlaceHero({
 
           {/* DẢI TIỆN ÍCH TOP ACTIONS: NÚT CHIA SẺ & LƯU QUÁN */}
           <div className="flex items-center justify-end gap-3 mt-4">
+            <HeartButton placeId={place.place_id} />
             {/* Nút Chia sẻ */}
             <motion.button
               whileHover={{ scale: 1.03 }}
@@ -265,28 +262,7 @@ export default function PlaceHero({
               )}
             </motion.button>
 
-            {/* Nút Lưu quán nảy (scale bounce) */}
-            <motion.button
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.88 }}
-              onClick={onToggleSave}
-              className={`inline-flex items-center gap-2 px-4 py-2 rounded-2xl border text-xs sm:text-sm font-semibold shadow-sm transition-all ${
-                isSaved
-                  ? 'bg-orange-50 border-orange-300 text-orange-600'
-                  : 'bg-white border-gray-200 text-gray-700 hover:text-orange-500 hover:border-orange-200'
-              }`}
-            >
-              <motion.div
-                animate={isSaved ? { scale: [1, 1.3, 1] } : { scale: 1 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Bookmark
-                  size={16}
-                  className={isSaved ? 'fill-orange-500 text-orange-500' : 'text-gray-500'}
-                />
-              </motion.div>
-              <span>{isSaved ? 'Đã lưu quán' : 'Lưu quán'}</span>
-            </motion.button>
+            <HeartButton placeId={place.place_id} variant="bookmark" showLabel />
           </div>
         </div>
       </section>

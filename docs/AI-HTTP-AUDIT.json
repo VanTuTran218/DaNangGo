@@ -1,0 +1,93 @@
+{
+  "date": "2026-11-04T13:14:23.760Z",
+  "rows": [
+    {
+      "name": "HTTP tạo lịch 2 ngày",
+      "status": "PASS",
+      "result": {
+        "days": 2,
+        "guests": 2
+      }
+    },
+    {
+      "name": "Lịch sử là dữ liệu thật",
+      "status": "PASS",
+      "result": {
+        "conversations": 1
+      }
+    },
+    {
+      "name": "Feedback và đọc lại",
+      "status": "PASS",
+      "result": {
+        "feedback": "helpful"
+      }
+    },
+    {
+      "name": "Dự trù và đọc lại",
+      "status": "PASS",
+      "result": {
+        "known": 420000,
+        "total": 2442000
+      }
+    },
+    {
+      "name": "Khách khác không đọc phiên",
+      "status": "PASS",
+      "result": {
+        "http": 404
+      }
+    },
+    {
+      "name": "Chưa đăng nhập không lưu lịch trình",
+      "status": "PASS",
+      "result": {
+        "http": 401
+      }
+    },
+    {
+      "name": "Giả userId bị chặn",
+      "status": "PASS",
+      "result": {
+        "http": 400
+      }
+    },
+    {
+      "name": "GPS sai tọa độ bị chặn",
+      "status": "PASS",
+      "result": {
+        "http": 400
+      }
+    },
+    {
+      "name": "Admin/đối tác/wizard yêu cầu đúng quyền",
+      "status": "PASS",
+      "result": [
+        {
+          "url": "/ai/admin/metrics",
+          "http": 401
+        },
+        {
+          "url": "/ai/partner/description",
+          "http": 401
+        },
+        {
+          "url": "/ai/itinerary",
+          "http": 401
+        }
+      ]
+    },
+    {
+      "name": "SSE trả lịch giữ ngữ cảnh, không lộ state nội bộ",
+      "status": "PASS",
+      "result": {
+        "events": [
+          "status",
+          "status",
+          "result"
+        ],
+        "days": 2
+      }
+    }
+  ]
+}

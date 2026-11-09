@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ArrowRight, ArrowLeft, Sparkles, Check, Hotel, Home, Tent, Palmtree, UtensilsCrossed, Mountain, Camera } from "lucide-react";
 import { useState, useEffect } from "react";
+import { AiItineraryInput } from "@/components/ai/AiTools";
 
 export interface ItineraryForm {
   budget: number;
@@ -143,6 +144,7 @@ export default function AiWizardModal({ isOpen, initialStep, formData, onChange,
                   initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }} transition={{ duration: 0.3 }}
                   className="space-y-6"
                 >
+                  <AiItineraryInput onApply={onChange} />
                   <div>
                     <h3 className="text-xl font-bold text-gray-900 mb-2">Ngân sách dự kiến của bạn?</h3>
                     <p className="text-gray-500 text-sm mb-4">Ngân sách tổng cho toàn bộ đoàn.</p>

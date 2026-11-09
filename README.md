@@ -1,5 +1,15 @@
 # 🌴 DaNangGo – Website gợi ý Lưu trú · Ẩm thực · Du lịch Đà Nẵng
 
+Các tiện ích AI A2–A9 đã được nối vào tìm kiếm, lịch trình, chi tiết địa điểm, dashboard đối tác và quản trị. Khi lấy mã mới, chạy `npm run migrate:ai` trong `backend` để chuẩn bị bảng phản hồi và embedding. Xem [hướng dẫn tự kiểm tra AI](docs/AI-SELF-TEST.md) cho từng luồng và cấu hình vận hành `/admin/ai`.
+
+Chat AI Gô: widget và `/chat` dùng chung `ChatBox`, cùng lịch sử và thẻ địa điểm. API `POST /api/chat/message?stream=1` trả SSE (status → candidates từ SQL → result đã kiểm tra schema/ID); bỏ query `stream` vẫn nhận JSON như cũ. Chữ chạy bắt đầu sau khi kiểm tra câu trả lời, không hiển thị JSON/token Gemini chưa xác thực.
+
+Phiên chat: người đăng nhập chỉ được đọc/ghi `chat_sessions` thuộc user đã xác thực. Khách dùng cookie HttpOnly và lịch sử tạm trong bộ nhớ (hết hạn sau 1 giờ không hoạt động, tối đa 500 phiên, 12 tin ngữ cảnh và 100 tin hiển thị/phiên; có giới hạn bộ nhớ toàn kho), không gán vào tài khoản khác. Khởi động lại backend sẽ hết hạn phiên khách; giao diện báo tạo hội thoại mới. Khi chạy nhiều backend cần chuyển kho phiên khách và rate limit sang kho dùng chung. Cache trình duyệt tách theo user; đổi tài khoản sẽ hủy request đang chạy và nạp đúng lịch sử.
+
+Chat giới hạn 20 tin/phút/IP, một yêu cầu đang xử lý mỗi danh tính và tối đa 50 yêu cầu đồng thời. Tên, giá, địa chỉ trên thẻ lấy từ DB; lời nhắn/lý do gợi ý được dựng từ dữ liệu đã lọc. AI dùng để phân tích ý định và chọn thứ tự các ID hợp lệ, không đưa prose tự do chứa thông tin chưa xác minh ra giao diện.
+
+Giá nhà hàng lấy MIN/MAX các món `menu_items.is_available = 1`, đơn vị đ/món; không suy ra giá một bữa ăn. Khi lọc ngân sách, địa điểm chưa có giá bị loại. Không dùng địa điểm viết sẵn khi API lỗi. Cache chỉ lưu intent hợp lệ trong 5 phút, tối đa 200 câu hỏi; mỗi lượt vẫn truy vấn SQL mới để không giữ giá cũ. Khóa Gemini nằm trong `backend/.env`, không đưa vào biến `NEXT_PUBLIC_*`.
+
 Nền tảng website tổng hợp giúp khách du lịch và người dân tại Đà Nẵng dễ dàng tìm **chỗ ở**, **quán ăn ngon** và **điểm du lịch**, đồng thời hỗ trợ chỉ đường thông minh, lên lịch trình/chọn món theo ngân sách, chương trình khách hàng VIP và kết nối dữ liệu khảo sát với cơ quan quản lý du lịch địa phương.
 
 ---
@@ -179,3 +189,24 @@ Dự án thực hiện bởi:
 - Trần Văn Long
 - Trần Văn Tin
 - Trần Văn Phúc
+
+
+## Bổ sung công cụ AI trong trang `/chat`
+
+- Danh sách hội thoại thật theo tài khoản hoặc cookie khách, nhóm Hôm nay/Trước đó theo giờ Việt Nam. Tối đa 50 hội thoại, 200 tin gần nhất cho tài khoản; khách giữ tối đa 100 tin trong RAM và hết hạn khi backend khởi động lại.
+- Đánh giá hữu ích/chưa hữu ích, bấm lại để bỏ đánh giá. API kiểm tra chủ sở hữu và chỉ nhận tin AI.
+- Nút “Quanh vị trí tôi” xin GPS khi bấm; bán kính 2/5/10 km. Gửi vị trí trong yêu cầu tìm quanh đây, không lưu tọa độ vào lịch sử/localStorage và không gửi tọa độ sang Gemini. Khoảng cách hiển thị là đường chim bay.
+- Khẩu vị Cay/Mặn/Béo/Ngọt/Thanh đạm lọc theo nhãn món đang bán. Chưa xác minh thành phần/dị ứng/ăn chay; người dùng cần xác nhận với quán.
+- Mẹo đổi sau 12 giây khi trang hiển thị, có nút dừng và tự tắt chuyển khi hệ điều hành yêu cầu giảm chuyển động.
+- Dự trù ăn uống, di chuyển và dự phòng do người dùng nhập. Không thay đổi `knownSubtotal`; khoản chưa có giá chưa được tính.
+- “Lưu lịch trình này” lưu chính bản Gô tạo vào luồng quản lý `/lich-trinh/:id`; yêu cầu đăng nhập và đủ ngày, số khách, ngân sách. Bấm lưu lại không tạo bản trùng trong một tiến trình. Lưu bản nháp và liên kết tin nhắn trong cùng transaction. Chỉnh sửa bản đã lưu qua trang Lịch trình; đặt dịch vụ qua trang chi tiết/luồng hiện có, không tự đặt hoặc thanh toán.
+- Khách và tài khoản có lịch sử riêng. Để lưu lâu dài, đăng nhập trước khi tạo lịch trình; không tự gộp cuộc trò chuyện khách vào tài khoản.
+
+Chạy `npm run migrate:ai` trong `backend` trước khi khởi động backend mới. Runner bổ sung `chat_messages.dto_json` và migration `013_chat_planner_storage.sql` và `014_planner_catalog_preferences.sql`. Schema `planner` giữ riêng cấu trúc bản nháp web khi database dùng schema lịch trình cũ (`itinerary_id`); database đã có cấu trúc web dùng view trỏ tới bảng hiện có. Không sửa/xóa bảng cũ, không nạp dữ liệu mẫu. Catalog riêng chưa có dữ liệu sẽ trả danh sách trống.
+
+Kiểm tra SQL local không lưu dữ liệu thử: `npx tsx src/scripts/check-chat-tools.ts` trong `backend` (thực hiện rồi rollback transaction). Khi chạy nhiều backend cần kho phiên/rate limit/khóa thao tác dùng chung.
+
+
+## Khảo sát người dùng phục vụ AI
+
+Đã nối biểu mẫu đầy đủ/nhanh và quản trị khảo sát với SQL. Chạy `npm run migrate:surveys` trong backend trước khi dùng API mới. Hướng dẫn API, dữ liệu ẩn danh, thống kê và kiểm tra: [docs/SURVEYS.md](docs/SURVEYS.md). Không nạp phản hồi mẫu vào dữ liệu thống kê thật.

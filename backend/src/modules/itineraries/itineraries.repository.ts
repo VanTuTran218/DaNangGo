@@ -157,15 +157,15 @@ export async function getManagedItineraries(userId: number): Promise<ManagedItin
              budget.budget_amount AS budget, budget.estimated_total AS estimatedTotal,
              budget.budget_status AS budgetStatus,
              (SELECT COUNT(*)
-              FROM dbo.itinerary_items AS item
+              FROM planner.itinerary_items AS item
               WHERE item.itinerary_id = itinerary.id) AS itemCount,
              (SELECT TOP (1) candidate.image_url
-              FROM dbo.itinerary_items AS candidate
+              FROM planner.itinerary_items AS candidate
               WHERE candidate.itinerary_id = itinerary.id
                 AND candidate.image_url IS NOT NULL
               ORDER BY candidate.day_number, candidate.sequence_number) AS imageUrl
-      FROM dbo.itineraries AS itinerary
-      INNER JOIN dbo.itinerary_budgets AS budget ON budget.itinerary_id = itinerary.id
+      FROM planner.itineraries AS itinerary
+      INNER JOIN planner.itinerary_budgets AS budget ON budget.itinerary_id = itinerary.id
       WHERE itinerary.user_id = @userId
       ORDER BY itinerary.created_at DESC, itinerary.id DESC
     `);
@@ -188,8 +188,8 @@ export async function getManagedItinerary(
                budget.budget_amount AS budget, budget.estimated_total AS estimatedTotal,
                budget.budget_status AS budgetStatus,
                itinerary.generation_input_json
-        FROM dbo.itineraries AS itinerary
-        INNER JOIN dbo.itinerary_budgets AS budget ON budget.itinerary_id = itinerary.id
+        FROM planner.itineraries AS itinerary
+        INNER JOIN planner.itinerary_budgets AS budget ON budget.itinerary_id = itinerary.id
         WHERE itinerary.id = @itineraryId AND itinerary.user_id = @userId
       `),
     pool.request()
@@ -200,8 +200,8 @@ export async function getManagedItinerary(
                item.item_type, item.title, item.description, item.location, item.image_url,
                item.estimated_cost, item.catalog_place_id, item.unit_price, item.quantity,
                item.duration_minutes
-        FROM dbo.itinerary_items AS item
-        INNER JOIN dbo.itineraries AS itinerary ON itinerary.id = item.itinerary_id
+        FROM planner.itinerary_items AS item
+        INNER JOIN planner.itineraries AS itinerary ON itinerary.id = item.itinerary_id
         WHERE item.itinerary_id = @itineraryId AND itinerary.user_id = @userId
         ORDER BY item.day_number, item.sequence_number
       `),
@@ -250,7 +250,7 @@ export async function updateManagedItinerary(
       .input('userId', sql.Int, userId)
       .query<{ generation_input_json: string }>(`
         SELECT generation_input_json
-        FROM dbo.itineraries WITH (UPDLOCK, HOLDLOCK)
+        FROM planner.itineraries WITH (UPDLOCK, HOLDLOCK)
         WHERE id = @itineraryId AND user_id = @userId
       `);
     const current = currentResult.recordset[0];
@@ -291,14 +291,14 @@ export async function updateManagedItinerary(
       .input('dayCount', sql.TinyInt, update.dayCount)
       .input('guestCount', sql.Int, update.guestCount)
       .query(`
-        UPDATE dbo.itineraries
+        UPDATE planner.itineraries
         SET title = @title, generation_input_json = @inputJson, start_date = @startDate,
             day_count = @dayCount, guest_count = @guestCount, updated_at = SYSUTCDATETIME()
         WHERE id = @itineraryId AND user_id = @userId
       `);
     await new sql.Request(transaction)
       .input('itineraryId', sql.BigInt, itineraryId)
-      .query('DELETE FROM dbo.itinerary_items WHERE itinerary_id = @itineraryId');
+      .query('DELETE FROM planner.itinerary_items WHERE itinerary_id = @itineraryId');
 
     for (const [index, item] of update.items.entries()) {
       await new sql.Request(transaction)
@@ -318,7 +318,7 @@ export async function updateManagedItinerary(
         .input('quantity', sql.Int, item.quantity)
         .input('durationMinutes', sql.SmallInt, item.durationMinutes ?? null)
         .query(`
-          INSERT INTO dbo.itinerary_items
+          INSERT INTO planner.itinerary_items
             (itinerary_id, day_number, sequence_number, item_key, scheduled_time, item_type,
              title, description, location, image_url, estimated_cost, catalog_place_id,
              unit_price, quantity, duration_minutes)
@@ -342,7 +342,7 @@ export async function updateManagedItinerary(
       .input('entertainmentCost', sql.Decimal(18, 2), itemCosts.entertainment)
       .input('contingencyCost', sql.Decimal(18, 2), contingency)
       .query(`
-        UPDATE dbo.itinerary_budgets
+        UPDATE planner.itinerary_budgets
         SET budget_amount = @budget, estimated_total = @estimatedTotal,
             remaining_budget = @remainingBudget, over_budget_amount = @overBudgetAmount,
             budget_status = @budgetStatus, accommodation_cost = @accommodationCost,
@@ -369,7 +369,7 @@ export async function deleteManagedItinerary(itineraryId: number, userId: number
     .input('itineraryId', sql.BigInt, itineraryId)
     .input('userId', sql.Int, userId)
     .query(`
-      DELETE FROM dbo.itineraries
+      DELETE FROM planner.itineraries
       WHERE id = @itineraryId AND user_id = @userId
     `);
   return result.rowsAffected[0] === 1;
@@ -379,9 +379,10 @@ export async function saveDraftItinerary(
   input: GenerateItineraryInput,
   output: GeneratedItinerary,
   userId: number,
+  externalTransaction?: sql.Transaction,
 ): Promise<{ itineraryId: number; trainingExampleId: number }> {
-  const transaction = new sql.Transaction(getPool());
-  await transaction.begin();
+  const transaction = externalTransaction ?? new sql.Transaction(getPool());
+  if (!externalTransaction) await transaction.begin();
 
   try {
     const itineraryResult = await new sql.Request(transaction)
@@ -390,14 +391,14 @@ export async function saveDraftItinerary(
       .input('inputJson', sql.NVarChar(sql.MAX), JSON.stringify(input))
       .input('noticesJson', sql.NVarChar(sql.MAX), JSON.stringify(output.notices))
       .input('recommendationsJson', sql.NVarChar(sql.MAX), JSON.stringify(output.recommendations))
-      .input('algorithmVersion', sql.NVarChar(50), 'db-catalog-draft-v3')
+      .input('algorithmVersion', sql.NVarChar(50), externalTransaction ? 'chat-advisor-draft-v1' : 'db-catalog-draft-v3')
       .input('generatedAt', sql.DateTime2, new Date(output.generatedAt))
       .input('startDate', sql.Date, new Date(`${input.startDate}T00:00:00.000Z`))
       .input('dayCount', sql.TinyInt, input.days)
       .input('guestCount', sql.Int, input.guestCount)
       .input('needsJson', sql.NVarChar(sql.MAX), JSON.stringify(input.needs))
       .query<{ id: number }>(`
-        INSERT INTO dbo.itineraries
+        INSERT INTO planner.itineraries
           (user_id, title, status, generation_input_json, notices_json, recommendations_json,
            algorithm_version, generated_at, start_date, day_count, guest_count, needs_json)
         OUTPUT INSERTED.id
@@ -428,7 +429,7 @@ export async function saveDraftItinerary(
           .input('quantity', sql.Int, item.quantity ?? input.guestCount)
           .input('durationMinutes', sql.SmallInt, item.durationMinutes ?? null)
           .query(`
-            INSERT INTO dbo.itinerary_items
+            INSERT INTO planner.itinerary_items
               (itinerary_id, day_number, sequence_number, item_key, scheduled_time, item_type,
                title, description, location, image_url, estimated_cost, catalog_place_id,
                unit_price, quantity, duration_minutes)
@@ -455,7 +456,7 @@ export async function saveDraftItinerary(
       .input('entertainmentCost', sql.Decimal(18, 2), costs.entertainment)
       .input('contingencyCost', sql.Decimal(18, 2), costs.contingency)
       .query(`
-        INSERT INTO dbo.itinerary_budgets
+        INSERT INTO planner.itinerary_budgets
           (itinerary_id, budget_amount, estimated_total, remaining_budget, over_budget_amount,
            budget_status, accommodation_cost, food_cost, transport_cost, attractions_cost,
            entertainment_cost, contingency_cost)
@@ -468,20 +469,20 @@ export async function saveDraftItinerary(
     const trainingResult = await new sql.Request(transaction)
       .input('inputJson', sql.NVarChar(sql.MAX), JSON.stringify(input))
       .input('outputJson', sql.NVarChar(sql.MAX), JSON.stringify(output))
-      .input('algorithmVersion', sql.NVarChar(50), 'db-catalog-draft-v3')
+      .input('algorithmVersion', sql.NVarChar(50), externalTransaction ? 'chat-advisor-draft-v1' : 'db-catalog-draft-v3')
       .query<{ id: number }>(`
-        INSERT INTO dbo.itinerary_training_data (input_json, output_json, algorithm_version)
+        INSERT INTO planner.itinerary_training_data (input_json, output_json, algorithm_version)
         OUTPUT INSERTED.id
         VALUES (@inputJson, @outputJson, @algorithmVersion)
       `);
     const trainingExampleId = trainingResult.recordset[0]?.id;
     if (trainingExampleId === undefined) throw new Error('Không nhận được mã dữ liệu huấn luyện sau khi lưu.');
 
-    await transaction.commit();
+    if (!externalTransaction) await transaction.commit();
     return { itineraryId, trainingExampleId };
   } catch (error) {
     try {
-      await transaction.rollback();
+      if (!externalTransaction) await transaction.rollback();
     } catch (rollbackError) {
       console.error('Không thể hoàn tác transaction tạo lịch trình:', rollbackError);
     }

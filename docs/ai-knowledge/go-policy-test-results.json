@@ -1,0 +1,222 @@
+{
+  "status": "PASS",
+  "mode": "real SQL catalog; Gemini disabled; guest sessions; profile writes rolled back",
+  "results": [
+    {
+      "question": "tôi đang có 4 triệu và tôi muốn đi ăn và tham quan bạn hãy gợi ý cho tôi",
+      "content": "Gô sẽ phối hợp ăn uống, tham quan. Để gợi ý đúng ngân sách và thời gian, bạn xác nhận giúp Gô:\n• Bạn đi mấy người?\n• Ngân sách bạn nêu là tổng cho cả nhóm hay cho mỗi người?\n• Bạn đi mấy ngày, có qua đêm không?",
+      "intent": "ITINERARY",
+      "secondaryIntents": [
+        "FOOD",
+        "SIGHT"
+      ],
+      "context": {
+        "days": null,
+        "nights": null,
+        "guests": null,
+        "budget": 4000000,
+        "reserve": null,
+        "hasLodging": null,
+        "dayUse": null,
+        "budgetScope": null,
+        "startDate": null,
+        "district": null,
+        "transport": null,
+        "arrivalTime": null,
+        "departureTime": null,
+        "dietaryRestrictions": [],
+        "preferences": [],
+        "excludedPlaces": []
+      },
+      "questions": [
+        "Bạn đi mấy người?",
+        "Ngân sách bạn nêu là tổng cho cả nhóm hay cho mỗi người?",
+        "Bạn đi mấy ngày, có qua đêm không?"
+      ],
+      "groups": [],
+      "plan": false,
+      "elapsedMs": 29
+    },
+    {
+      "question": "2 người, tổng cả nhóm, 1 ngày, không qua đêm, ngày mai",
+      "content": "Gô lên trước lịch 1 ngày cho 2 người, tổng ngân sách bạn đưa ra 4.000.000đ. Các buổi được cân đối theo giờ đến/về và nhịp đi bạn đã cung cấp; buổi không còn thời gian sẽ không xếp hoạt động.\n\nĐể chỉnh lịch sát hơn, bạn bổ sung giúp Gô:\n• Bạn đến Đà Nẵng lúc mấy giờ ngày đầu?\n• Bạn rời Đà Nẵng lúc mấy giờ ngày cuối?\n• Bạn di chuyển bằng ô tô, xe máy, taxi, xe buýt hay đi bộ?",
+      "intent": "ITINERARY",
+      "secondaryIntents": [
+        "FOOD",
+        "SIGHT"
+      ],
+      "context": {
+        "days": 1,
+        "nights": 0,
+        "guests": 2,
+        "budget": 4000000,
+        "reserve": null,
+        "hasLodging": null,
+        "dayUse": null,
+        "budgetScope": "total",
+        "startDate": "2026-11-06",
+        "district": null,
+        "transport": null,
+        "arrivalTime": null,
+        "departureTime": null,
+        "dietaryRestrictions": [],
+        "preferences": [],
+        "excludedPlaces": []
+      },
+      "questions": [
+        "Bạn đến Đà Nẵng lúc mấy giờ ngày đầu?",
+        "Bạn rời Đà Nẵng lúc mấy giờ ngày cuối?",
+        "Bạn di chuyển bằng ô tô, xe máy, taxi, xe buýt hay đi bộ?"
+      ],
+      "plan": true,
+      "elapsedMs": 91
+    },
+    {
+      "question": "Đi taxi, giữ 500k dự phòng",
+      "content": "Gô lên trước lịch 1 ngày cho 2 người, tổng ngân sách bạn đưa ra 4.000.000đ. Các buổi được cân đối theo giờ đến/về và nhịp đi bạn đã cung cấp; buổi không còn thời gian sẽ không xếp hoạt động.\n\nĐể chỉnh lịch sát hơn, bạn bổ sung giúp Gô:\n• Bạn đến Đà Nẵng lúc mấy giờ ngày đầu?\n• Bạn rời Đà Nẵng lúc mấy giờ ngày cuối?",
+      "intent": "ITINERARY",
+      "secondaryIntents": [
+        "FOOD",
+        "SIGHT"
+      ],
+      "context": {
+        "days": 1,
+        "nights": 0,
+        "guests": 2,
+        "budget": 4000000,
+        "reserve": 500000,
+        "hasLodging": null,
+        "dayUse": null,
+        "budgetScope": "total",
+        "startDate": "2026-11-06",
+        "district": null,
+        "transport": "taxi",
+        "arrivalTime": null,
+        "departureTime": null,
+        "dietaryRestrictions": [],
+        "preferences": [
+          "taxi"
+        ],
+        "excludedPlaces": []
+      },
+      "questions": [
+        "Bạn đến Đà Nẵng lúc mấy giờ ngày đầu?",
+        "Bạn rời Đà Nẵng lúc mấy giờ ngày cuối?"
+      ],
+      "plan": true,
+      "elapsedMs": 10
+    },
+    {
+      "question": "Hãy lưu tôi thích biển",
+      "content": "Bạn đang dùng phiên khách. Gô chỉ dùng sở thích tạm thời trong phiên này; bạn đăng nhập để xem, lưu hoặc xóa sở thích lâu dài của tài khoản.",
+      "intent": "PROFILE",
+      "secondaryIntents": [
+        "SIGHT"
+      ],
+      "context": {
+        "days": 1,
+        "nights": 0,
+        "guests": 2,
+        "budget": 4000000,
+        "reserve": 500000,
+        "hasLodging": null,
+        "dayUse": null,
+        "budgetScope": "total",
+        "startDate": "2026-11-06",
+        "district": null,
+        "transport": "taxi",
+        "arrivalTime": null,
+        "departureTime": null,
+        "dietaryRestrictions": [],
+        "preferences": [
+          "taxi",
+          "beach"
+        ],
+        "excludedPlaces": []
+      },
+      "questions": [],
+      "plan": false,
+      "elapsedMs": 6
+    },
+    {
+      "question": "Gợi ý quán ăn, điểm tham quan và khách sạn ở Hải Châu",
+      "groups": [
+        {
+          "category": "food",
+          "places": [
+            {
+              "name": "Bánh Xèo Bà Dưỡng",
+              "menuItems": [
+                {
+                  "id": 63,
+                  "name": "Bánh Xèo Tôm Thịt Đặc Biệt",
+                  "price": 65000
+                },
+                {
+                  "id": 64,
+                  "name": "Nem Lụi Nướng Than Hoa",
+                  "price": 60000
+                },
+                {
+                  "id": 65,
+                  "name": "Bò Cuộn Lá Lốt Nướng",
+                  "price": 75000
+                }
+              ]
+            },
+            {
+              "name": "Bánh Xèo Bà Ba",
+              "menuItems": []
+            },
+            {
+              "name": "Bún Chả Cá Hờn",
+              "menuItems": [
+                {
+                  "id": 72,
+                  "name": "Bún Chả Cá Thu Đặc Biệt",
+                  "price": 45000
+                },
+                {
+                  "id": 73,
+                  "name": "Bún Cá Ngừ Đại Dương",
+                  "price": 40000
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "category": "sight",
+          "places": [
+            {
+              "name": "Cầu Rồng & Cầu Tình Yêu Đà Nẵng"
+            },
+            {
+              "name": "Bảo Tàng Điêu Khắc Chăm Đà Nẵng"
+            }
+          ]
+        },
+        {
+          "category": "stay",
+          "places": [
+            {
+              "name": "Hilton Da Nang"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "question": "Mai thời tiết thế nào và gợi ý quán ăn ở Hải Châu",
+      "content": "Gô chưa tích hợp dữ liệu thời tiết trực tiếp nên chưa thể xác nhận dự báo cho ngày bạn hỏi. Bạn nên kiểm tra dự báo địa phương trước khi đi; Gô có thể tư vấn phương án dự phòng nếu mưa, nhưng chưa xác nhận thời tiết thực tế.\n\nGô chọn 3 quán ăn để bạn dễ so sánh ở Hải Châu.\n\nBạn xem giá món ở từng quán trước; tổng hóa đơn còn tùy số món và số người. Nếu có món kiêng hoặc dị ứng, bạn nên trao đổi trực tiếp với quán.\n\nBạn đi mấy người và muốn dành khoảng bao nhiêu cho một bữa?",
+      "secondaryIntents": [
+        "FOOD",
+        "WEATHER"
+      ],
+      "foodCards": 3
+    },
+    {
+      "profileSql": "PASS; consent audit, opposite preference replacement, scoped delete, account isolation, rollback verified; no user data persisted"
+    }
+  ]
+}

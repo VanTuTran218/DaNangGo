@@ -6,6 +6,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getPlaces } from '@/lib/api/places';
 import { formatPriceRange } from '@/lib/mappers/place.mapper';
+import HeartButton from '@/components/HeartButton';
 import { motion, AnimatePresence, LayoutGroup, useScroll, useTransform } from 'framer-motion';
 import {
   ChevronRight,
@@ -48,6 +49,7 @@ function removeVietnameseTones(str: string): string {
 // ─────────────────────────────────────────────────────────────────────────────
 interface FoodPlace {
   id: number;
+  placeId?: number;
   name: string;
   badge: string;
   badgeColor: string;
@@ -391,23 +393,34 @@ function FoodCard({
           </span>
         </div>
 
+        {place.placeId ? (
+          <div className="absolute top-3 right-3 z-10">
+            <HeartButton placeId={place.placeId} />
+          </div>
+        ) : null}
         {/* Bookmark button góc trên phải */}
+        {place.placeId ? (
+          <div className="absolute top-3 right-[3.25rem] z-10">
+            <HeartButton placeId={place.placeId} variant="bookmark" />
+          </div>
+        ) : (
         <button
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
             onSave();
           }}
-          className="absolute top-3 right-3 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-md hover:scale-110 active:scale-95 transition-all duration-200 z-10"
+          className={`absolute top-3 ${place.placeId ? 'right-[3.25rem]' : 'right-3'} w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-md hover:scale-110 active:scale-95 transition-all duration-200 z-10`}
           aria-label={saved ? 'Bỏ lưu' : 'Lưu địa điểm'}
         >
           <Bookmark
             size={15}
             className={`transition-all duration-200 ${
-              saved ? 'fill-orange-500 text-orange-500 scale-110' : 'text-gray-400'
+              saved ? 'fill-red-500 text-red-500 scale-110' : 'text-gray-400'
             }`}
           />
         </button>
+        )}
       </Link>
 
       {/* Card body */}
@@ -529,6 +542,7 @@ function AmThucContent() {
         if (res && res.items && res.items.length > 0 && isMounted) {
           const livePlaces: FoodPlace[] = res.items.map((item) => ({
             id: item.place_id,
+            placeId: item.place_id,
             name: item.name,
             badge: item.promo_label || (item.avg_rating >= 4.7 ? 'Đặc sản nổi bật' : 'Món ngon Đà Nẵng'),
             badgeColor: CAT_TINT[item.category_name || ''] || 'bg-teal-500',

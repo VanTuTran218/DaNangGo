@@ -7,6 +7,8 @@ import { ImagePlus, Star, X } from "lucide-react";
 import ReviewPhotoGrid from "./ReviewPhotoGrid";
 import { useAuth } from "@/contexts/AuthContext";
 import { ApiError } from "@/lib/api/client";
+import SurveyInviteAfterReview from "@/components/survey/SurveyInviteAfterReview";
+import SurveyQuickSheet from "@/components/survey/SurveyQuickSheet";
 import {
   createPlaceReviewWithImages,
   getMyReviews,
@@ -33,6 +35,7 @@ export default function ReviewSection({
   const [page, setPage] = useState(1);
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
+  const [surveySheetOpen, setSurveySheetOpen] = useState(false);
   const [selectedImages, setSelectedImages] = useState<SelectedReviewImage[]>(
     [],
   );
@@ -277,6 +280,7 @@ export default function ReviewSection({
                 <p className="mt-2 text-amber-500" aria-label={`${ownApprovedReview.rating} trên 5 sao`}>{"★".repeat(ownApprovedReview.rating)}{"☆".repeat(5 - ownApprovedReview.rating)}</p>
                 <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-gray-700">{ownApprovedReview.comment}</p>
                 <ReviewPhotoGrid images={ownApprovedReview.images ?? []} />
+                {ownApprovedReview.partner_reply && <div className="mt-3 rounded-xl border-l-2 border-teal-500 bg-white p-3 text-sm"><p className="font-semibold text-teal-800">Phản hồi từ cơ sở</p><p className="mt-1 whitespace-pre-wrap">{ownApprovedReview.partner_reply}</p></div>}
               </article>
             ) : null}
             {data?.reviews
@@ -312,6 +316,7 @@ export default function ReviewSection({
                     </p>
                   ) : null}
                   <ReviewPhotoGrid images={review.images ?? []} />
+                  {review.partner_reply && <div className="mt-3 rounded-xl border-l-2 border-teal-500 bg-teal-50 p-3 text-sm"><p className="font-semibold text-teal-800">Phản hồi từ cơ sở</p><p className="mt-1 whitespace-pre-wrap text-slate-700">{review.partner_reply}</p></div>}
                 </article>
               ))}
           </div>
@@ -349,12 +354,18 @@ export default function ReviewSection({
             </p>
           ) : null}
           {notice ? (
-            <p
-              role="status"
-              className="mt-3 rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-sm text-emerald-800"
-            >
-              {notice}
-            </p>
+            <>
+              <p
+                role="status"
+                className="mt-3 rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-sm text-emerald-800"
+              >
+                {notice}
+              </p>
+              <SurveyInviteAfterReview
+                placeName={placeName}
+                onOpenQuickSheet={() => setSurveySheetOpen(true)}
+              />
+            </>
           ) : null}
           {error ? (
             <p
@@ -514,6 +525,11 @@ export default function ReviewSection({
           ) : null}
         </div>
       </div>
+
+      <SurveyQuickSheet
+        isOpen={surveySheetOpen}
+        onClose={() => setSurveySheetOpen(false)}
+      />
     </section>
   );
 }

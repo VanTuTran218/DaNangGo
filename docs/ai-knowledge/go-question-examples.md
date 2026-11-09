@@ -1,0 +1,446 @@
+# Các nhóm câu hỏi tham chiếu
+
+Ví dụ thiết kế và kiểm thử; không phải dữ liệu người dùng thật hoặc danh sách giới hạn.
+
+1. Hỏi chung về Đà Nẵng
+- Đà Nẵng có gì vui?
+- Đà Nẵng nên đi đâu?
+- Lần đầu đến Đà Nẵng nên tham quan gì?
+- Đà Nẵng có địa điểm nào nổi tiếng?
+- Địa điểm nào phù hợp đi cùng gia đình?
+- Địa điểm nào phù hợp cho cặp đôi?
+- Địa điểm nào phù hợp đi một mình?
+- Địa điểm nào phù hợp cho trẻ em?
+- Địa điểm nào phù hợp cho người lớn tuổi?
+- Đà Nẵng có gì miễn phí?
+- Địa điểm nào đẹp để chụp ảnh?
+- Địa điểm nào yên tĩnh?
+- Địa điểm nào đông vui về đêm?
+- Đà Nẵng có địa điểm nào trong nhà không?
+- Trời mưa ở Đà Nẵng thì đi đâu?
+- Đà Nẵng có gì đặc biệt vào cuối tuần?
+- Nên đi Đà Nẵng vào tháng nào?
+- Mùa nào đi Đà Nẵng đẹp nhất?
+- Đà Nẵng có phù hợp cho chuyến đi ngắn không?
+- Có thể đi Đà Nẵng trong một ngày không?
+2. Tìm địa điểm tham quan
+- Gợi ý điểm tham quan ở Đà Nẵng.
+- Tìm địa điểm tham quan gần biển.
+- Tìm địa điểm tham quan ở Sơn Trà.
+- Tìm địa điểm tham quan ở Hải Châu.
+- Tìm địa điểm tham quan ở Ngũ Hành Sơn.
+- Tìm địa điểm tham quan miễn phí.
+- Tìm nơi có vé dưới 100.000 đồng.
+- Tìm điểm tham quan phù hợp ngân sách thấp.
+- Tìm nơi có thể đi buổi tối.
+- Tìm nơi mở cửa vào sáng sớm.
+- Tìm nơi phù hợp đi lúc trời nắng.
+- Tìm nơi có mái che khi trời mưa.
+- Tìm nơi ít phải đi bộ.
+- Tìm nơi có chỗ đậu xe.
+- Tìm điểm tham quan gần khách sạn của tôi.
+- Điểm nào gần cầu Rồng?
+- Điểm nào gần biển Mỹ Khê?
+- Điểm nào gần sân bay Đà Nẵng?
+- Điểm nào gần trung tâm thành phố?
+- Điểm nào gần bán đảo Sơn Trà?
+- Địa điểm nào có thể đi trong hai tiếng?
+- Địa điểm nào nên dành cả ngày?
+- Địa điểm nào phù hợp ngắm hoàng hôn?
+- Địa điểm nào phù hợp ngắm bình minh?
+- Địa điểm nào phù hợp ngắm cảnh đêm?
+- Địa điểm nào có cảnh đẹp tự nhiên?
+- Địa điểm nào có yếu tố văn hóa, lịch sử?
+- Địa điểm nào phù hợp chụp ảnh cưới?
+- Địa điểm nào phù hợp check-in?
+- Địa điểm nào không quá đông khách?
+3. Hỏi về biển và thiên nhiên
+- Bãi biển nào đẹp nhất Đà Nẵng?
+- Bãi biển nào gần trung tâm?
+- Bãi biển nào yên tĩnh?
+- Bãi biển nào phù hợp cho trẻ em?
+- Bãi biển nào có thể ngắm bình minh?
+- Gần biển có quán ăn nào ngon?
+- Gần biển có khách sạn nào giá rẻ?
+- Gần biển có homestay nào đẹp?
+- Đi biển Đà Nẵng buổi tối có được không?
+- Bãi biển nào có chỗ gửi xe?
+- Bãi biển nào ít đông hơn Mỹ Khê?
+- Sơn Trà có địa điểm nào đáng đi?
+- Có thể đi Sơn Trà trong nửa ngày không?
+- Địa điểm thiên nhiên nào gần trung tâm?
+- Có nơi nào ngắm núi và biển cùng lúc không?
+- Địa điểm nào có nhiều cây xanh?
+- Địa điểm nào phù hợp đi dạo nhẹ nhàng?
+- Địa điểm nào phù hợp người không thích leo núi?
+- Có nơi nào gần biển nhưng không cần tắm biển không?
+- Có thể kết hợp biển với ăn hải sản ở đâu?
+4. Hỏi về ẩm thực Đà Nẵng
+- Đà Nẵng có món gì ngon?
+- Đặc sản Đà Nẵng gồm những món nào?
+- Nên ăn gì trong chuyến đi đầu tiên?
+- Tìm quán ăn ngon ở Hải Châu.
+- Tìm quán ăn ngon ở Sơn Trà.
+- Tìm quán ăn gần biển Mỹ Khê.
+- Tìm quán ăn gần cầu Rồng.
+- Tìm quán ăn gần khách sạn của tôi.
+- Tìm quán ăn mở buổi sáng.
+- Tìm quán ăn mở khuya.
+- Tìm quán ăn cho bữa trưa.
+- Tìm quán ăn cho bữa tối.
+- Tìm quán ăn nhanh dưới 100.000 đồng.
+- Tìm quán ăn cho gia đình.
+- Tìm quán ăn lãng mạn cho hai người.
+- Tìm quán ăn có không gian đẹp.
+- Tìm quán ăn có phòng riêng.
+- Tìm quán ăn có chỗ đậu ô tô.
+- Tìm quán ăn sạch sẽ.
+- Tìm quán ăn được nhiều người đánh giá tốt.
+- Tìm quán ăn không quá đông.
+- Tìm quán ăn gần địa điểm tham quan.
+- Ăn gì gần biển?
+- Ăn gì gần sân bay?
+- Ăn gì gần chợ Hàn?
+- Ăn gì gần Ngũ Hành Sơn?
+- Ăn gì trước khi đi Bà Nà?
+- Ăn gì sau khi tham quan Sơn Trà?
+- Ăn gì vào ban đêm ở Đà Nẵng?
+- Địa điểm nào bán đặc sản làm quà?
+5. Món ăn cụ thể
+- Tìm quán mì Quảng.
+- Tìm mì Quảng dưới 100.000 đồng.
+- Tìm quán bún chả cá.
+- Tìm quán bánh xèo.
+- Tìm quán bánh tráng cuốn thịt heo.
+- Tìm quán cơm niêu.
+- Tìm quán hải sản.
+- Tìm quán ốc.
+- Tìm quán thịt nướng.
+- Tìm quán lẩu.
+- Tìm quán bún bò.
+- Tìm quán bánh bèo, nậm, lọc.
+- Tìm quán ăn vặt.
+- Tìm quán cà phê đẹp.
+- Tìm quán cà phê gần biển.
+- Tìm quán cà phê có view cao.
+- Tìm quán bán chè.
+- Tìm quán bán kem.
+- Tìm quán ăn sáng kiểu địa phương.
+- Tìm quán phục vụ đồ ăn đêm.
+6. Sở thích ăn uống
+- Tôi thích ăn cay, tìm món phù hợp cho tôi.
+- Tôi không ăn cay, tìm quán phù hợp.
+- Tôi thích món đậm vị.
+- Tôi thích món thanh đạm.
+- Tôi thích đồ ăn miền Trung.
+- Tôi thích hải sản.
+- Tôi không ăn hải sản.
+- Tôi ăn chay.
+- Tôi ăn thuần chay.
+- Tôi không ăn thịt bò.
+- Tôi không ăn thịt heo.
+- Tôi không ăn thịt gà.
+- Tôi không ăn trứng.
+- Tôi không uống sữa.
+- Tôi bị dị ứng đậu phộng.
+- Tôi bị dị ứng hải sản.
+- Tôi bị dị ứng tôm.
+- Tôi bị dị ứng cua.
+- Tôi bị dị ứng sữa.
+- Tôi bị dị ứng trứng.
+- Tôi cần món không chứa gluten.
+- Tôi cần món ít dầu mỡ.
+- Tôi cần món ít muối.
+- Tôi cần món không đường.
+- Tôi muốn ăn món tốt cho sức khỏe.
+- Tôi muốn ăn món dưới 50.000 đồng.
+- Tôi muốn ăn món dưới 100.000 đồng.
+- Tôi muốn tìm quán có nhiều lựa chọn cho trẻ em.
+- Tôi muốn tìm quán có món cho người ăn kiêng.
+- Thành phần món này có gì?
+- Quán này có xác nhận món chay không?
+- Quán này có thể giảm cay không?
+- Quán này có thể làm món không đậu phộng không?
+- Quán này có nguy cơ dùng chung dầu chiên không?
+- Tôi nên hỏi quán những gì về dị ứng?
+- Tìm món cay gần biển.
+- Tìm món chay gần khách sạn.
+- Tìm hải sản gần địa điểm tham quan.
+- Tìm món ăn thanh đạm gần trung tâm.
+- Tìm quán vừa có món cay vừa có món không cay.
+Lưu ý: AI chỉ nên gợi ý theo nhãn và dữ liệu đã xác minh, không được khẳng định món ăn an toàn tuyệt đối cho người dị ứng nếu chưa có xác nhận thành phần từ cơ sở.
+7. Lưu trú
+- Tìm khách sạn ở Đà Nẵng.
+- Tìm khách sạn gần biển.
+- Tìm khách sạn gần Mỹ Khê.
+- Tìm khách sạn gần cầu Rồng.
+- Tìm khách sạn gần sân bay.
+- Tìm khách sạn ở trung tâm.
+- Tìm homestay giá rẻ.
+- Tìm resort gần biển.
+- Tìm khách sạn 3 sao.
+- Tìm khách sạn 4 sao.
+- Tìm khách sạn 5 sao.
+- Tìm nơi ở cho hai người.
+- Tìm nơi ở cho gia đình.
+- Tìm nơi ở cho nhóm bạn.
+- Tìm nơi ở có phòng gia đình.
+- Tìm phòng có sức chứa bốn người.
+- Tìm phòng có ban công.
+- Tìm phòng có hồ bơi.
+- Tìm nơi có bữa sáng.
+- Tìm nơi có chỗ đậu ô tô.
+- Tìm nơi có thang máy.
+- Tìm nơi phù hợp người lớn tuổi.
+- Tìm nơi gần nhà hàng.
+- Tìm nơi gần biển và gần quán ăn.
+- Tìm khách sạn yên tĩnh.
+- Tìm nơi có view biển.
+- Tìm phòng dưới 500.000 đồng một đêm.
+- Tìm khách sạn dưới 1.000.000 đồng một đêm.
+- Tìm nơi tiết kiệm hơn khách sạn hiện tại.
+- Có khách sạn nào gần địa điểm tôi muốn đi không?
+- Khách sạn này có những loại phòng nào?
+- Phòng này ở được bao nhiêu người?
+- Giá phòng có bao gồm bao nhiêu khách?
+- Giờ nhận phòng là mấy giờ?
+- Giờ trả phòng là mấy giờ?
+- Có thể nhận phòng sớm không?
+- Có thể trả phòng muộn không?
+- Có thể gửi hành lý không?
+- Có thể nhận phòng sau nửa đêm không?
+- Giá này đã bao gồm thuế chưa?
+- Có phụ phí trẻ em không?
+- Có phòng cho người khuyết tật không?
+- Có còn phòng vào ngày tôi đi không?
+- Giá này có phải giá hiện tại không?
+- Khách sạn có cho phép mang thú cưng không?
+- Có thể đặt phòng trực tiếp ở đâu?
+AI không được khẳng định còn phòng nếu chưa kết nối dữ liệu tồn phòng trực tiếp.
+8. So sánh địa điểm
+- So sánh Bà Nà Hills và Sơn Trà.
+- So sánh Mỹ Khê và Non Nước.
+- So sánh hai khách sạn này.
+- So sánh hai quán hải sản.
+- So sánh hai quán mì Quảng.
+- Nơi nào rẻ hơn?
+- Nơi nào gần biển hơn?
+- Nơi nào phù hợp trẻ em hơn?
+- Nơi nào ít phải đi bộ hơn?
+- Nơi nào phù hợp người lớn tuổi hơn?
+- Nơi nào có nhiều đánh giá hơn?
+- Nơi nào có giá phòng tốt hơn?
+- Nơi nào có view đẹp hơn?
+- Nơi nào yên tĩnh hơn?
+- Nơi nào gần trung tâm hơn?
+- Nơi nào phù hợp đi buổi tối hơn?
+- Tôi ưu tiên giá, hãy giúp tôi chọn.
+- Tôi ưu tiên vị trí, hãy giúp tôi chọn.
+- Tôi ưu tiên trải nghiệm, hãy giúp tôi chọn.
+- Hãy cho tôi bảng so sánh, không cần tự quyết định.
+9. Lên lịch trình
+- Lên lịch trình Đà Nẵng một ngày.
+- Lên lịch trình Đà Nẵng hai ngày.
+- Lên lịch trình Đà Nẵng ba ngày hai đêm.
+- Lên lịch trình Đà Nẵng bốn ngày.
+- Tôi đi Đà Nẵng với ngân sách 5 triệu.
+- Lên lịch trình cho hai người.
+- Lên lịch trình cho gia đình có trẻ nhỏ.
+- Lên lịch trình cho nhóm sáu người.
+- Lên lịch trình cho người lớn tuổi.
+- Lên lịch trình nhẹ nhàng, không đi nhiều.
+- Lên lịch trình năng động.
+- Lên lịch trình tập trung vào biển.
+- Lên lịch trình tập trung vào ẩm thực.
+- Lên lịch trình tập trung vào chụp ảnh.
+- Lên lịch trình tập trung vào văn hóa.
+- Lên lịch trình tiết kiệm.
+- Lên lịch trình cao cấp.
+- Lên lịch trình gần trung tâm.
+- Lên lịch trình gần biển.
+- Lên lịch trình không cần thuê xe.
+- Lên lịch trình đi bằng taxi.
+- Lên lịch trình đi bằng xe máy.
+- Lên lịch trình có điểm tham quan miễn phí.
+- Lên lịch trình tránh nơi quá đông.
+- Lên lịch trình khi trời mưa.
+- Lên lịch trình có thời gian nghỉ trưa.
+- Lên lịch trình có nhà hàng gần từng điểm.
+- Lên lịch trình có khách sạn gần biển.
+- Lên lịch trình ngày đầu gần sân bay.
+- Lên lịch trình ngày cuối gần sân bay.
+- Tôi đến lúc 18 giờ, hãy xếp lịch phù hợp.
+- Tôi rời Đà Nẵng lúc 9 giờ sáng, hãy bỏ các điểm buổi sáng.
+- Tôi có trẻ sáu tuổi, hãy xếp lịch nhẹ.
+- Tôi không muốn đi bộ nhiều.
+- Tôi muốn mỗi ngày chỉ đi ba điểm.
+- Tôi muốn có thời gian nghỉ ở khách sạn.
+- Tôi muốn ăn hải sản mỗi tối.
+- Tôi muốn mỗi ngày có một quán ăn địa phương.
+- Tôi muốn kết hợp biển, núi và ẩm thực.
+- Tôi muốn đi Sơn Trà và ăn gần đó.
+- Tôi muốn đi Ngũ Hành Sơn rồi tìm quán gần đó.
+- Tôi muốn đi biển buổi sáng và ăn hải sản buổi trưa.
+- Tôi muốn đi Cầu Rồng buổi tối.
+- Tôi muốn ngắm hoàng hôn rồi ăn tối gần đó.
+10. Chỉnh sửa lịch trình
+- Đổi khách sạn tiết kiệm hơn.
+- Đổi khách sạn gần biển hơn.
+- Thay quán ăn này bằng quán khác.
+- Thay điểm tham quan này bằng điểm miễn phí.
+- Bỏ Bà Nà khỏi lịch trình.
+- Bỏ địa điểm ngày hai.
+- Chuyển điểm này sang ngày hai.
+- Chuyển điểm này sang buổi chiều.
+- Đổi điểm tham quan buổi sáng sang buổi tối.
+- Thêm một quán hải sản vào ngày hai.
+- Thêm thời gian nghỉ trưa.
+- Giữ nguyên ngày một, chỉ sửa ngày hai.
+- Giữ nguyên khách sạn, đổi các điểm tham quan.
+- Giữ nguyên ngân sách nhưng đổi địa điểm.
+- Giữ nguyên lịch trình, giảm chi phí.
+- Đổi sang các điểm gần nhau hơn.
+- Đổi sang lịch trình ít đi bộ hơn.
+- Đổi sang lịch trình phù hợp trẻ em.
+- Đổi sang các điểm không mất vé.
+- Đổi sang quán có món chay.
+- Bỏ những nơi quá xa.
+- Không gợi ý lại địa điểm tôi đã bỏ.
+- Tôi đổi ý, muốn đi biển nhiều hơn.
+- Tôi muốn thêm một ngày nghỉ.
+- Tôi muốn đổi phương tiện sang taxi.
+- Tôi muốn chuyển bữa tối sang gần khách sạn.
+- Ngày cuối đừng xếp điểm quá xa sân bay.
+- Buổi sáng ngày đầu tôi chưa đến nơi, hãy bỏ hoạt động.
+- Buổi tối ngày cuối tôi đã rời Đà Nẵng, hãy bỏ hoạt động.
+11. Ngân sách và chi phí
+- Tổng chuyến đi này khoảng bao nhiêu tiền?
+- Ngân sách 3 triệu cho hai người có đủ không?
+- Ngân sách này là cho cả nhóm hay mỗi người?
+- Tính chi phí cho hai người.
+- Tính chi phí cho gia đình bốn người.
+- Tính riêng tiền phòng.
+- Tính riêng tiền vé.
+- Tính tiền ăn dự kiến.
+- Tính tiền di chuyển dự kiến.
+- Giữ lại 500.000 đồng dự phòng.
+- Không tính tiền máy bay.
+- Không tính tiền ăn.
+- Không tính tiền khách sạn.
+- Tôi muốn tiết kiệm 20%.
+- Tìm các điểm miễn phí để giảm chi phí.
+- Tìm khách sạn rẻ hơn.
+- Tìm quán ăn dưới 100.000 đồng một người.
+- Chi phí nào đã có dữ liệu?
+- Chi phí nào chưa xác định?
+- Giá này tính theo người hay theo món?
+- Giá phòng tính theo đêm hay theo người?
+- Có khoản phụ phí nào chưa tính không?
+- Nếu vượt ngân sách thì giảm mục nào trước?
+- Có thể đổi sang địa điểm miễn phí không?
+12. Di chuyển và bản đồ
+- Từ sân bay đến khách sạn đi thế nào?
+- Từ khách sạn đến biển Mỹ Khê bao xa?
+- Từ địa điểm này đến địa điểm kia mất bao lâu?
+- Đi taxi hay xe máy tiện hơn?
+- Có nên thuê xe máy không?
+- Địa điểm nào có thể đi bộ?
+- Địa điểm nào cần taxi?
+- Tìm các điểm gần nhau để đi cùng ngày.
+- Chỉ đường đến địa điểm này.
+- Tìm tuyến đường ngắn nhất.
+- Tìm địa điểm trong bán kính 2 km.
+- Tìm quán ăn trong bán kính 5 km.
+- Tìm khách sạn gần vị trí tôi.
+- Tôi không muốn cấp GPS, tìm theo quận giúp tôi.
+- Tôi đang ở gần Mỹ Khê, có gì quanh đây?
+- Tôi đang ở Hải Châu, ăn gì gần đây?
+- Có bãi đậu xe không?
+- Đường đến địa điểm có khó đi không?
+- Có phù hợp đi xe lăn không?
+- Có cần leo dốc hoặc leo bậc thang không?
+- Tuyến này có phù hợp trẻ nhỏ không?
+- Thời gian trên bản đồ có phải thời gian giao thông thực tế không?
+- Có thể mở tuyến đường trên Google Maps không?
+13. Thời tiết và dữ liệu trực tiếp
+- Hôm nay Đà Nẵng có mưa không?
+- Ngày mai có phù hợp đi biển không?
+- Cuối tuần này thời tiết thế nào?
+- Nhiệt độ hôm nay bao nhiêu?
+- Có nên đi Sơn Trà khi trời mưa không?
+- Nếu trời mưa thì nên đi đâu?
+- Có nên đi Bà Nà hôm nay không?
+- Thời tiết buổi tối thế nào?
+- Có gió mạnh ở biển không?
+- Ngày mai có nắng không?
+- Cầu Rồng tối nay có phun lửa không?
+- Cuối tuần có lễ hội gì không?
+- Đà Nẵng hôm nay có sự kiện nào?
+- Có chương trình biểu diễn nào tối nay không?
+- Có chợ đêm hoặc hoạt động đêm nào không?
+- Địa điểm này đang mở cửa không?
+- Quán này hiện có đông không?
+- Khách sạn này còn phòng không?
+- Bà Nà còn vé không?
+- Giá hôm nay có thay đổi không?
+Các câu hỏi này chỉ được trả lời chắc chắn khi hệ thống có nguồn trực tiếp, thời điểm cập nhật và nguồn xác minh.
+14. Đánh giá và độ tin cậy
+- Địa điểm này có bao nhiêu đánh giá?
+- Đánh giá này có được duyệt không?
+- Có thể tóm tắt đánh giá không?
+- Du khách thường khen điểm gì?
+- Du khách thường phàn nàn điểm gì?
+- Địa điểm này có phù hợp gia đình không?
+- Có đủ đánh giá để kết luận chưa?
+- Các đánh giá có phải của khách thật không?
+- Thông tin này được cập nhật khi nào?
+- Giá này lấy từ nguồn nào?
+- Địa chỉ này có được xác minh không?
+- Tôi muốn báo thông tin sai.
+- Giờ mở cửa trên trang có vẻ không đúng.
+- Giá trên trang không đúng với thực tế.
+- Tôi muốn gửi nguồn mới cho địa điểm.
+- Tôi muốn báo địa điểm đã đóng cửa.
+- Tôi muốn báo địa điểm chuyển địa chỉ.
+- Tôi muốn báo ảnh không đúng địa điểm.
+15. Tài khoản và ghi nhớ sở thích
+- Gô có nhớ tôi thích ăn cay không?
+- Gô có nhớ tôi không ăn hải sản không?
+- Hãy lưu tôi thích đi gần biển.
+- Hãy lưu tôi không thích đi bộ nhiều.
+- Hãy lưu tôi thường đi cùng trẻ em.
+- Hãy lưu tôi thích khách sạn tiết kiệm.
+- Hãy lưu tôi thích quán yên tĩnh.
+- Đừng lưu sở thích này.
+- Xóa sở thích ăn cay của tôi.
+- Cho tôi xem các sở thích Gô đã lưu.
+- Tôi muốn đổi sở thích từ tiết kiệm sang cao cấp.
+- Sử dụng sở thích của tôi để gợi ý chuyến này.
+- Không dùng sở thích cũ cho chuyến này.
+- Bắt đầu một chuyến mới.
+- Xóa điều kiện của chuyến trước.
+- Tại sao Gô lại gợi ý quán cay cho tôi?
+- Tôi thích ăn cay nhưng hôm nay muốn ăn thanh đạm.
+- Tôi bị dị ứng đậu phộng, hãy luôn nhắc tôi kiểm tra thành phần.
+- Tôi đi cùng trẻ em trong chuyến này nhưng không muốn lưu thông tin đó.
+16. Các câu hỏi kết hợp nhiều nhu cầu
+- Tôi thích ăn cay, hãy tìm quán gần biển Mỹ Khê.
+- Tôi ăn chay, tìm quán gần khách sạn ở Sơn Trà.
+- Tôi bị dị ứng hải sản, tìm nhà hàng có món phù hợp gần trung tâm.
+- Tôi thích hải sản và muốn ngắm biển, hãy lập lịch một ngày.
+- Tôi không đi bộ nhiều, muốn ăn gần các điểm tham quan.
+- Tôi đi cùng trẻ sáu tuổi, muốn ở gần biển và có quán ăn gia đình.
+- Tôi có người lớn tuổi, hãy tìm nơi ít leo cầu thang.
+- Tôi muốn khách sạn gần biển, gần quán ăn và dưới 1 triệu đồng.
+- Tôi muốn lịch trình tiết kiệm, nhiều điểm miễn phí và có món ăn địa phương.
+- Tôi muốn đi ba ngày, mỗi ngày có biển, tham quan và ăn ngon.
+- Tôi muốn ngày đầu gần sân bay, ngày hai đi Sơn Trà, ngày cuối gần trung tâm.
+- Tôi đến Đà Nẵng lúc 18 giờ, thích ăn cay và muốn đi nhẹ nhàng.
+- Tôi đi hai người, ngân sách 5 triệu, thích biển và hải sản.
+- Tôi đi gia đình bốn người, có một bé sáu tuổi, không muốn di chuyển xa.
+- Tôi muốn vừa tham quan vừa tìm quán ăn trong bán kính gần nhau.
+- Tôi thích chụp ảnh, không thích nơi quá đông, hãy lập lịch trình hai ngày.
+- Tôi muốn đi biển sáng, ăn hải sản trưa, nghỉ chiều và đi Cầu Rồng buổi tối.
+- Tôi muốn đổi khách sạn nhưng giữ nguyên các quán ăn trong lịch.
+- Tôi muốn bỏ các điểm xa và thay bằng điểm gần biển.
+- Tôi muốn lịch trình dự phòng nếu ngày mai trời mưa.

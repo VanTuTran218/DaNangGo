@@ -255,6 +255,7 @@ function DiemDuLichContent() {
 
             return {
               id: item.place_id,
+              placeId: item.place_id,
               name: item.name,
               category: item.category_name || 'Văn hoá & Lịch sử',
               location: item.district_name ? `${item.district_name}` : (item.address || 'Đà Nẵng'),

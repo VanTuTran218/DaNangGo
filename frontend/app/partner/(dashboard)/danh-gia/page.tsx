@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { AiReplyAssistant } from '@/components/ai/AiTools';
 import { useAsyncData } from '@/hooks/useAsyncData';
 import { getPartnerReviews, replyPartnerReview } from '@/lib/api/partner';
 import type { PartnerReview } from '@/types/partner';
@@ -177,10 +178,12 @@ export default function PartnerReviewsPage() {
               <p className="italic text-gray-600">&ldquo;{replyingReview.comment}&rdquo;</p>
             </div>
 
+            <AiReplyAssistant key={replyingReview.id} reviewId={replyingReview.id} onApply={setReplyText} />
             <form onSubmit={handleSendReply} className="space-y-4">
               <div>
                 <label className="block text-xs font-bold text-gray-700 mb-1">Nội dung phản hồi *</label>
                 <textarea
+                  maxLength={800}
                   rows={4}
                   required
                   value={replyText}

@@ -1,46 +1,81 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useAsyncData } from '@/hooks/useAsyncData';
+import Link from "next/link";
+import { useState } from "react";
+import AiSurveyReport from "@/components/ai/AiSurveyReport";
+import { useAsyncData } from "@/hooks/useAsyncData";
 import {
   getAdminSurveys,
   createAdminSurvey,
   updateAdminSurvey,
   deleteAdminSurvey,
-} from '@/lib/api/admin';
-import type { AdminSurveyItem, SurveyQuestion } from '@/types/admin';
-import DataTable, { Column } from '@/components/ui/DataTable';
-import StatusBadge from '@/components/ui/StatusBadge';
-import ConfirmDialog from '@/components/ui/ConfirmDialog';
-import { Plus, Trash2, Edit3, BarChart2, ToggleLeft, ToggleRight, X } from 'lucide-react';
+} from "@/lib/api/admin";
+import type { AdminSurveyItem, SurveyQuestion } from "@/types/admin";
+import DataTable, { Column } from "@/components/ui/DataTable";
+import StatusBadge from "@/components/ui/StatusBadge";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import {
+  Plus,
+  Trash2,
+  Edit3,
+  BarChart2,
+  ToggleLeft,
+  ToggleRight,
+  X,
+} from "lucide-react";
+
+function surveyQuestionUnit(survey: AdminSurveyItem, code: string) {
+  return code === "NPS_SCORE"
+    ? "/10"
+    : code === "DAILY_BUDGET"
+      ? "đ/người/ngày"
+      : "";
+}
 
 export default function AdminSurveysPage() {
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingSurvey, setEditingSurvey] = useState<AdminSurveyItem | null>(null);
-  const [summarySurvey, setSummarySurvey] = useState<AdminSurveyItem | null>(null);
-  const [deletingSurvey, setDeletingSurvey] = useState<AdminSurveyItem | null>(null);
+  const [editingSurvey, setEditingSurvey] = useState<AdminSurveyItem | null>(
+    null,
+  );
+  const [summarySurvey, setSummarySurvey] = useState<AdminSurveyItem | null>(
+    null,
+  );
+  const [deletingSurvey, setDeletingSurvey] = useState<AdminSurveyItem | null>(
+    null,
+  );
   const [actionLoading, setActionLoading] = useState(false);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error";
+  } | null>(null);
 
   // Form State
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [questions, setQuestions] = useState<SurveyQuestion[]>([
-    { id: 'q-1', question: '', type: 'STAR' },
+    { id: "q-1", question: "", type: "STAR" },
   ]);
 
-  const { data: surveys, loading, error, reload } = useAsyncData(getAdminSurveys);
+  const {
+    data: surveys,
+    loading,
+    error,
+    reload,
+  } = useAsyncData(getAdminSurveys);
 
-  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+  const showToast = (
+    message: string,
+    type: "success" | "error" = "success",
+  ) => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3000);
   };
 
   const openCreateModal = () => {
     setEditingSurvey(null);
-    setTitle('');
-    setDescription('');
-    setQuestions([{ id: `q-${Date.now()}`, question: '', type: 'STAR' }]);
+    setTitle("");
+    setDescription("");
+    setQuestions([{ id: `q-${Date.now()}`, question: "", type: "STAR" }]);
     setModalOpen(true);
   };
 
@@ -53,16 +88,23 @@ export default function AdminSurveysPage() {
   };
 
   const handleAddQuestion = () => {
-    setQuestions([...questions, { id: `q-${Date.now()}`, question: '', type: 'STAR' }]);
+    setQuestions([
+      ...questions,
+      { id: `q-${Date.now()}`, question: "", type: "STAR" },
+    ]);
   };
 
   const handleRemoveQuestion = (id: string) => {
     setQuestions(questions.filter((q) => q.id !== id));
   };
 
-  const handleQuestionChange = (id: string, field: keyof SurveyQuestion, value: string) => {
+  const handleQuestionChange = (
+    id: string,
+    field: keyof SurveyQuestion,
+    value: string,
+  ) => {
     setQuestions(
-      questions.map((q) => (q.id === id ? { ...q, [field]: value } : q))
+      questions.map((q) => (q.id === id ? { ...q, [field]: value } : q)),
     );
   };
 
@@ -77,7 +119,7 @@ export default function AdminSurveysPage() {
           description,
           questions: questions.filter((q) => q.question.trim()),
         });
-        showToast('Cập nhật khảo sát thành công');
+        showToast("Cập nhật khảo sát thành công");
       } else {
         await createAdminSurvey({
           title,
@@ -85,12 +127,12 @@ export default function AdminSurveysPage() {
           questions: questions.filter((q) => q.question.trim()),
           isActive: true,
         });
-        showToast('Tạo khảo sát thành công');
+        showToast("Tạo khảo sát thành công");
       }
       setModalOpen(false);
       reload();
     } catch (err: any) {
-      showToast(err?.message || 'Lưu thất bại', 'error');
+      showToast(err?.message || "Lưu thất bại", "error");
     } finally {
       setActionLoading(false);
     }
@@ -100,10 +142,10 @@ export default function AdminSurveysPage() {
     setActionLoading(true);
     try {
       await updateAdminSurvey(survey.id, { isActive: !survey.isActive });
-      showToast(`Đã ${survey.isActive ? 'tắt' : 'bật'} khảo sát`);
+      showToast(`Đã ${survey.isActive ? "tắt" : "bật"} khảo sát`);
       reload();
     } catch (err: any) {
-      showToast(err?.message || 'Thao tác thất bại', 'error');
+      showToast(err?.message || "Thao tác thất bại", "error");
     } finally {
       setActionLoading(false);
     }
@@ -118,7 +160,7 @@ export default function AdminSurveysPage() {
       setDeletingSurvey(null);
       reload();
     } catch (err: any) {
-      showToast(err?.message || 'Xóa thất bại', 'error');
+      showToast(err?.message || "Xóa thất bại", "error");
     } finally {
       setActionLoading(false);
     }
@@ -126,8 +168,8 @@ export default function AdminSurveysPage() {
 
   const columns: Column<AdminSurveyItem>[] = [
     {
-      key: 'title',
-      header: 'Tiêu đề khảo sát',
+      key: "title",
+      header: "Tiêu đề khảo sát",
       sortable: true,
       render: (s) => (
         <div>
@@ -136,15 +178,25 @@ export default function AdminSurveysPage() {
         </div>
       ),
     },
-    { key: 'responseCount', header: 'Số lượt trả lời', sortable: true, render: (s) => `${s.responseCount} phản hồi` },
     {
-      key: 'isActive',
-      header: 'Trạng thái',
-      render: (s) => <StatusBadge status={s.isActive ? 'APPROVED' : 'HIDDEN'} customLabel={s.isActive ? 'Đang mở' : 'Đã đóng'} />,
+      key: "responseCount",
+      header: "Số lượt trả lời",
+      sortable: true,
+      render: (s) => `${s.responseCount} phản hồi`,
     },
     {
-      key: 'actions',
-      header: 'Thao tác',
+      key: "isActive",
+      header: "Trạng thái",
+      render: (s) => (
+        <StatusBadge
+          status={s.isActive ? "APPROVED" : "HIDDEN"}
+          customLabel={s.isActive ? "Đang mở" : "Đã đóng"}
+        />
+      ),
+    },
+    {
+      key: "actions",
+      header: "Thao tác",
       render: (s) => (
         <div className="flex items-center gap-1.5">
           <button
@@ -157,10 +209,14 @@ export default function AdminSurveysPage() {
           <button
             onClick={() => handleToggleActive(s)}
             disabled={actionLoading}
-            title={s.isActive ? 'Đóng khảo sát' : 'Mở khảo sát'}
+            title={s.isActive ? "Đóng khảo sát" : "Mở khảo sát"}
             className="p-1.5 rounded-lg text-amber-600 hover:bg-amber-50"
           >
-            {s.isActive ? <ToggleRight className="w-5 h-5 text-teal-600" /> : <ToggleLeft className="w-5 h-5 text-gray-400" />}
+            {s.isActive ? (
+              <ToggleRight className="w-5 h-5 text-teal-600" />
+            ) : (
+              <ToggleLeft className="w-5 h-5 text-gray-400" />
+            )}
           </button>
           <button
             onClick={() => openEditModal(s)}
@@ -169,7 +225,17 @@ export default function AdminSurveysPage() {
           >
             <Edit3 className="w-4 h-4" />
           </button>
+          {!s.isSystem && (
+            <Link
+              href={`/khao-sat?surveyId=${s.id}`}
+              target="_blank"
+              className="text-xs text-teal-700 px-2"
+            >
+              Mở biểu mẫu
+            </Link>
+          )}
           <button
+            disabled={s.isSystem}
             onClick={() => setDeletingSurvey(s)}
             title="Xóa khảo sát"
             className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50"
@@ -186,7 +252,9 @@ export default function AdminSurveysPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Quản lý khảo sát</h1>
-          <p className="text-sm text-gray-500">Tạo khảo sát thu thập ý kiến người dùng và phân tích kết quả.</p>
+          <p className="text-sm text-gray-500">
+            Tạo khảo sát thu thập ý kiến người dùng và phân tích kết quả.
+          </p>
         </div>
         <button
           onClick={openCreateModal}
@@ -197,11 +265,15 @@ export default function AdminSurveysPage() {
         </button>
       </div>
 
+      <AiSurveyReport />
+
       {toast && (
         <div
           role="alert"
           className={`p-4 rounded-xl border text-sm font-semibold flex items-center justify-between ${
-            toast.type === 'error' ? 'bg-red-50 text-red-700 border-red-200' : 'bg-teal-50 text-teal-700 border-teal-200'
+            toast.type === "error"
+              ? "bg-red-50 text-red-700 border-red-200"
+              : "bg-teal-50 text-teal-700 border-teal-200"
           }`}
         >
           <span>{toast.message}</span>
@@ -213,8 +285,13 @@ export default function AdminSurveysPage() {
 
       {error ? (
         <div className="p-6 bg-red-50 rounded-2xl border border-red-200 text-red-700">
-          <p className="font-semibold mb-2" role="alert">{error}</p>
-          <button onClick={reload} className="px-4 py-2 bg-red-600 text-white rounded-xl font-semibold text-xs">
+          <p className="font-semibold mb-2" role="alert">
+            {error}
+          </p>
+          <button
+            onClick={reload}
+            className="px-4 py-2 bg-red-600 text-white rounded-xl font-semibold text-xs"
+          >
             Thử lại
           </button>
         </div>
@@ -241,12 +318,14 @@ export default function AdminSurveysPage() {
             </button>
 
             <h3 className="text-lg font-bold text-gray-900">
-              {editingSurvey ? 'Chỉnh sửa khảo sát' : 'Tạo khảo sát mới'}
+              {editingSurvey ? "Chỉnh sửa khảo sát" : "Tạo khảo sát mới"}
             </h3>
 
             <form onSubmit={handleSaveSurvey} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">Tiêu đề khảo sát *</label>
+                <label className="block text-xs font-bold text-gray-700 mb-1">
+                  Tiêu đề khảo sát *
+                </label>
                 <input
                   type="text"
                   required
@@ -257,7 +336,9 @@ export default function AdminSurveysPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">Mô tả ngắn</label>
+                <label className="block text-xs font-bold text-gray-700 mb-1">
+                  Mô tả ngắn
+                </label>
                 <textarea
                   rows={2}
                   value={description}
@@ -268,9 +349,16 @@ export default function AdminSurveysPage() {
 
               <div className="space-y-3 pt-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-gray-700">Danh sách câu hỏi</label>
+                  <label className="text-xs font-bold text-gray-700">
+                    Danh sách câu hỏi
+                  </label>
                   <button
                     type="button"
+                    disabled={Boolean(
+                      editingSurvey &&
+                        (editingSurvey.isSystem ||
+                          editingSurvey.responseCount > 0),
+                    )}
                     onClick={handleAddQuestion}
                     className="text-xs font-bold text-teal-600 hover:underline"
                   >
@@ -279,33 +367,60 @@ export default function AdminSurveysPage() {
                 </div>
 
                 {questions.map((q, idx) => (
-                  <div key={q.id} className="flex items-center gap-2 bg-gray-50 p-3 rounded-xl border border-gray-200">
-                    <span className="text-xs font-bold text-gray-500">{idx + 1}.</span>
+                  <div
+                    key={q.id}
+                    className="flex items-center gap-2 bg-gray-50 p-3 rounded-xl border border-gray-200"
+                  >
+                    <span className="text-xs font-bold text-gray-500">
+                      {idx + 1}.
+                    </span>
                     <input
                       type="text"
                       required
                       placeholder="Nội dung câu hỏi..."
                       value={q.question}
-                      onChange={(e) => handleQuestionChange(q.id, 'question', e.target.value)}
+                      disabled={Boolean(
+                        editingSurvey &&
+                          (editingSurvey.isSystem ||
+                            editingSurvey.responseCount > 0),
+                      )}
+                      onChange={(e) =>
+                        handleQuestionChange(q.id, "question", e.target.value)
+                      }
                       className="flex-1 px-3 py-1.5 text-xs border border-gray-300 rounded-lg bg-white"
                     />
                     <select
                       value={q.type}
-                      onChange={(e) => handleQuestionChange(q.id, 'type', e.target.value)}
+                      disabled={Boolean(
+                        editingSurvey &&
+                          (editingSurvey.isSystem ||
+                            editingSurvey.responseCount > 0),
+                      )}
+                      onChange={(e) =>
+                        handleQuestionChange(q.id, "type", e.target.value)
+                      }
                       className="px-2 py-1.5 text-xs font-semibold border border-gray-300 rounded-lg bg-white"
                     >
                       <option value="STAR">Chọn sao (1-5)</option>
                       <option value="TEXT">Văn bản góp ý</option>
+                      {editingSurvey?.isSystem && (
+                        <>
+                          <option value="CHOICE">Chọn phương án</option>
+                          <option value="NUMBER">Giá trị số</option>
+                        </>
+                      )}
                     </select>
-                    {questions.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveQuestion(q.id)}
-                        className="p-1 text-red-500 hover:bg-red-50 rounded-lg"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    )}
+                    {!editingSurvey?.isSystem &&
+                      !editingSurvey?.responseCount &&
+                      questions.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveQuestion(q.id)}
+                          className="p-1 text-red-500 hover:bg-red-50 rounded-lg"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
                   </div>
                 ))}
               </div>
@@ -323,7 +438,7 @@ export default function AdminSurveysPage() {
                   disabled={actionLoading}
                   className="px-5 py-2 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-md"
                 >
-                  {actionLoading ? 'Đang lưu...' : 'Lưu khảo sát'}
+                  {actionLoading ? "Đang lưu..." : "Lưu khảo sát"}
                 </button>
               </div>
             </form>
@@ -341,13 +456,32 @@ export default function AdminSurveysPage() {
             >
               <X className="w-5 h-5" />
             </button>
-            <h3 className="text-lg font-bold text-gray-900">Tổng hợp kết quả khảo sát</h3>
-            <p className="text-xs text-gray-500">{summarySurvey.title} ({summarySurvey.responseCount} phản hồi)</p>
+            <h3 className="text-lg font-bold text-gray-900">
+              Tổng hợp kết quả khảo sát
+            </h3>
+            <p className="text-xs text-gray-500">
+              {summarySurvey.title} ({summarySurvey.responseCount} phản hồi)
+            </p>
 
             <div className="space-y-4 pt-2">
               {summarySurvey.summaries?.map((sum, i) => (
-                <div key={i} className="p-4 bg-gray-50 rounded-xl border border-gray-200 text-xs space-y-2">
-                  <p className="font-bold text-gray-900">Câu hỏi {i + 1}:</p>
+                <div
+                  key={i}
+                  className="p-4 bg-gray-50 rounded-xl border border-gray-200 text-xs space-y-2"
+                >
+                  <p className="font-bold text-gray-900">
+                    {summarySurvey.questions.find(
+                      (q) => q.id === sum.questionId,
+                    )?.question ?? `Câu hỏi ${i + 1}`}
+                  </p>
+                  <p>{sum.totalAnswers} câu trả lời</p>
+                  {sum.numericAverage !== undefined && (
+                    <p>
+                      Giá trị trung bình:{" "}
+                      {sum.numericAverage.toLocaleString("vi-VN")}{" "}
+                      {surveyQuestionUnit(summarySurvey, sum.questionId)}
+                    </p>
+                  )}
                   {sum.averageStar !== undefined && (
                     <div className="flex items-center gap-2 text-amber-600 font-bold text-sm">
                       <span>Điểm trung bình: {sum.averageStar} / 5</span>
@@ -355,7 +489,9 @@ export default function AdminSurveysPage() {
                   )}
                   {sum.sampleResponses && (
                     <div>
-                      <p className="font-semibold text-gray-600 mb-1">Mẫu phản hồi:</p>
+                      <p className="font-semibold text-gray-600 mb-1">
+                        Mẫu phản hồi:
+                      </p>
                       <ul className="list-disc pl-4 space-y-1 text-gray-700">
                         {sum.sampleResponses.map((res, idx) => (
                           <li key={idx}>{res}</li>
@@ -385,7 +521,7 @@ export default function AdminSurveysPage() {
         onClose={() => setDeletingSurvey(null)}
         onConfirm={handleDeleteConfirm}
         title="Xóa khảo sát"
-        description="Bạn có chắc chắn muốn xóa khảo sát này cùng toàn bộ dữ liệu phản hồi?"
+        description="Lưu trữ khảo sát sẽ đóng biểu mẫu và giữ nguyên các phản hồi đã gửi."
         variant="danger"
         confirmText="Xóa khảo sát"
         loading={actionLoading}

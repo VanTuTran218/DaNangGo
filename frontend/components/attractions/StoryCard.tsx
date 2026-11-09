@@ -4,9 +4,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Heart, MapPin, Star, Users, ArrowRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import HeartButton from '@/components/HeartButton';
 
 export interface AttractionData {
   id: number;
+  placeId?: number;
   name: string;
   category: string;
   location: string;
@@ -74,12 +76,21 @@ export default function StoryCard({ data, liked, onLike }: Props) {
           {data.category}
         </div>
         
+        {data.placeId ? (
+          <div className="absolute top-4 right-4 z-20">
+            <HeartButton placeId={data.placeId} />
+          </div>
+        ) : (
         <button
-          onClick={(e) => { e.stopPropagation(); onLike(); }}
-          className="absolute top-4 right-4 w-9 h-9 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center hover:bg-white/40 active:scale-95 transition-all shadow-sm"
+          type="button"
+          aria-label={liked ? 'Bỏ lưu địa điểm yêu thích' : 'Lưu địa điểm yêu thích'}
+          aria-pressed={liked}
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onLike(); }}
+          className={`absolute top-4 ${data.placeId ? 'right-16' : 'right-4'} w-9 h-9 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center hover:bg-white/40 active:scale-95 transition-all shadow-sm`}
         >
           <Heart size={16} className={`transition-colors ${liked ? 'fill-red-500 text-red-500' : 'text-white'}`} />
         </button>
+        )}
 
         <div className="absolute bottom-4 left-4 right-4 text-white">
           <h3 className="text-xl font-bold leading-tight mb-1 h3-card">{data.name}</h3>

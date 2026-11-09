@@ -3,6 +3,7 @@ import { apiPost, apiRequest } from "./client";
 export interface PlaceReview {
   review_id: number;
   reviewer_name: string;
+  partner_reply?: string | null;
   rating: number;
   comment: string;
   created_at: string;
@@ -13,6 +14,7 @@ export interface MyReview {
   review_id: number;
   place_id: number;
   place_name: string;
+  partner_reply?: string | null;
   rating: number;
   comment: string | null;
   status: "PENDING" | "APPROVED" | "HIDDEN";

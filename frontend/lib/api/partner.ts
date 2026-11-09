@@ -407,29 +407,14 @@ export async function updatePartnerBookingStatus(
   return { success: true, message: `Cập nhật đơn đặt ${booking.bookingCode} thành công.` };
 }
 
-// TODO: GET /api/partner/reviews
-export async function getPartnerReviews(params?: {
-  rating?: number | 'ALL';
-}): Promise<PartnerReview[]> {
-  await delay();
-  let result = [...mockPartnerReviews];
-  if (params?.rating && params.rating !== 'ALL') {
-    result = result.filter((r) => r.rating === Number(params.rating));
-  }
-  return result;
+// Đánh giá thật thuộc các cơ sở của đối tác đã đăng nhập.
+export async function getPartnerReviews(params?: { rating?: number | 'ALL' }): Promise<PartnerReview[]> {
+  const query = params?.rating && params.rating !== 'ALL' ? `?rating=${params.rating}` : '';
+  const res = await apiRequest<PartnerReview[]>(`/api/ai/partner/reviews${query}`);
+  return res.data ?? [];
 }
 
-// TODO: POST /api/partner/reviews/:id/reply
-export async function replyPartnerReview(
-  reviewId: string,
-  content: string
-): Promise<{ success: boolean; message: string }> {
-  await delay();
-  const review = mockPartnerReviews.find((r) => r.id === reviewId);
-  if (!review) throw new Error('Không tìm thấy đánh giá');
-  review.reply = {
-    content,
-    createdAt: new Date().toISOString(),
-  };
-  return { success: true, message: 'Đã phản hồi đánh giá thành công.' };
+export async function replyPartnerReview(reviewId: string, content: string): Promise<{success:boolean;message:string}> {
+  const res = await apiPost<{message:string}>(`/api/ai/partner/reviews/${encodeURIComponent(reviewId)}/reply`, {content});
+  return { success: true, message: res.data?.message ?? 'Đã lưu phản hồi đánh giá.' };
 }

@@ -131,46 +131,46 @@ function EditPlaceContent({ placeId }: { placeId: string }) {
       />
 
       {/* THANH ĐIỀU HƯỚNG TABS (Thông tin quán vs Thực đơn món ăn) */}
-      <div className="bg-white rounded-3xl p-2 border border-slate-200/80 shadow-xs inline-flex items-center gap-1.5 max-w-full overflow-x-auto">
+      <div className="bg-white rounded-2xl p-1.5 border border-[#E2ECEC] shadow-[0_6px_20px_rgba(7,59,58,0.04)] inline-flex items-center gap-1.5 max-w-full overflow-x-auto">
         <button
           onClick={() => handleTabChange('info')}
           type="button"
-          className={`relative px-5 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 select-none ${
+          className={`relative px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 select-none ${
             activeTab === 'info'
-              ? 'text-teal-950'
-              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+              ? 'text-[#073B3A]'
+              : 'text-[#68798A] hover:text-[#14233B] hover:bg-[#F6FAFA]'
           }`}
         >
           {activeTab === 'info' && (
             <motion.div
               layoutId="partnerEditActiveTab"
-              className="absolute inset-0 bg-teal-50 border border-teal-200 rounded-2xl shadow-xs"
+              className="absolute inset-0 bg-[#E9F8F5] border border-[#14B8A6]/30 rounded-xl shadow-xs"
               transition={{ type: 'spring', stiffness: 500, damping: 35 }}
             />
           )}
-          <Store className="w-4 h-4 relative z-10 text-teal-600" />
+          <Store className="w-4 h-4 relative z-10 text-[#008F89]" />
           <span className="relative z-10">Thông tin cơ sở</span>
         </button>
 
         <button
           onClick={() => handleTabChange('menu')}
           type="button"
-          className={`relative px-5 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 select-none ${
+          className={`relative px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 select-none ${
             activeTab === 'menu'
-              ? 'text-teal-950'
-              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+              ? 'text-[#073B3A]'
+              : 'text-[#68798A] hover:text-[#14233B] hover:bg-[#F6FAFA]'
           }`}
         >
           {activeTab === 'menu' && (
             <motion.div
               layoutId="partnerEditActiveTab"
-              className="absolute inset-0 bg-teal-50 border border-teal-200 rounded-2xl shadow-xs"
+              className="absolute inset-0 bg-[#E9F8F5] border border-[#14B8A6]/30 rounded-xl shadow-xs"
               transition={{ type: 'spring', stiffness: 500, damping: 35 }}
             />
           )}
-          <UtensilsCrossed className="w-4 h-4 relative z-10 text-teal-600" />
+          <UtensilsCrossed className="w-4 h-4 relative z-10 text-[#008F89]" />
           <span className="relative z-10">Thực đơn món ăn</span>
-          <span className="relative z-10 px-1.5 py-0.5 rounded-full text-[10px] bg-orange-100 text-orange-700 font-extrabold">
+          <span className="relative z-10 px-1.5 py-0.5 rounded-full text-[10px] bg-[#FF8A24]/15 text-[#FF8A24] font-extrabold">
             9.4
           </span>
         </button>

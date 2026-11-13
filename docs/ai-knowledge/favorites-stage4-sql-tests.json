@@ -1,0 +1,13 @@
+{
+  "checkedAt": "2026-11-06T04:38:02.888Z",
+  "status": "PASS",
+  "mode": "real local SQL; favorite fixtures rolled back; no model calls",
+  "checks": {
+    "pagination": "PASS: two pages, seven distinct active public IDs",
+    "isolation": "PASS: USER and PARTNER see only their own favorites",
+    "category": "PASS: SQL filters by requested place type",
+    "hidden": "PASS: hidden favorite excluded from visible count/cards",
+    "freshRead": "PASS: removals reflected on the next read; hidden rows do not imply visible favorites",
+    "rollback": "PASS: original favorite IDs/count restored; no permanent fixture relationships"
+  }
+}

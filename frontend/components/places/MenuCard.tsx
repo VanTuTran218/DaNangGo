@@ -107,10 +107,9 @@ export default function MenuCard({ item, index }: MenuCardProps) {
               src={item.image_url}
               alt={item.name}
               fill
-              className="object-cover group-hover:scale-108 transition-transform duration-500 ease-out"
-              placeholder="blur"
-              blurDataURL={BLUR_PLACEHOLDER}
-              sizes="112px"
+              quality={85}
+              className="object-cover group-hover:scale-[1.03] transition-transform duration-500 ease-out"
+              sizes="(max-width: 640px) 96px, 112px"
             />
           ) : (
             // Placeholder gradient độc bản theo khẩu vị (tránh lặp 1 ảnh cho mọi món)

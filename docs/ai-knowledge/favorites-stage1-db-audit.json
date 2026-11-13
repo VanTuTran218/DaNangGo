@@ -1,0 +1,37 @@
+{
+  "checkedAt": "2026-11-06T03:51:21.138Z",
+  "mode": "Read-only local database inspection; aggregate metadata only",
+  "checks": {
+    "tables": {
+      "favorites": null,
+      "legacyFavorites": 2085582468
+    },
+    "legacyColumns": [
+      {
+        "name": "user_id",
+        "type": "int",
+        "is_nullable": false
+      },
+      {
+        "name": "place_id",
+        "type": "int",
+        "is_nullable": false
+      },
+      {
+        "name": "created_at",
+        "type": "datetime2",
+        "is_nullable": false
+      }
+    ],
+    "legacyIntegrity": {
+      "totalFavorites": 0,
+      "duplicatePairs": 0,
+      "orphanRows": 0
+    },
+    "currentRepository": {
+      "status": "BLOCKED",
+      "sqlErrorNumber": 208,
+      "reason": "Canonical favorites table is missing; read path cannot operate until migration 009 is applied."
+    }
+  }
+}

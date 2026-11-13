@@ -3,16 +3,11 @@
 /**
  * AuthCardFrame
  * ─────────────
- * Wrapper pure-style cho trang /dang-nhap.
- * Cung cấp:
- *   1. Nền trang gradient dịch chuyển chậm + 3 blobs trôi lơ lửng
- *   2. Card tổng: fade-in+slide-up+scale khi vào trang
- *   3. Viền gradient conic xoay chậm quanh card
- *   4. Đổ bóng nhiều lớp, hover nâng lên (translateY -3px)
- *   5. Shine — vệt sáng lướt qua định kỳ
- *
- * KHÔNG chứa bất kỳ logic nghiệp vụ nào.
- * prefers-reduced-motion được xử lý qua globals.css.
+ * Khung giao diện cao cấp cho trang /dang-nhap (Đăng nhập & Đăng ký).
+ * - Nền chuyển sắc nhẹ nhàng: Pearl White (#FAFCFD), Sky Tint, Soft Cream
+ * - 3 Ambient Glow Shapes (radial gradient) chuyển động rất chậm với biên độ nhỏ
+ * - Khung Card: bo góc 28px, viền gradient siêu mỏng ngọc lam & cam, đổ bóng nhiều tầng
+ * - Animation xuất hiện: fade-in từ 0 lên 1, scale từ 0.98 lên 1, translateY từ 15px về 0
  */
 
 import { type ReactNode } from 'react';
@@ -23,54 +18,54 @@ interface AuthCardFrameProps {
 
 export default function AuthCardFrame({ children }: AuthCardFrameProps) {
   return (
-    /* ── Nền trang ── */
-    <div className="auth-bg min-h-screen flex items-center justify-center relative overflow-hidden py-8 px-4">
+    /* ── Nền trang auth ── */
+    <main className="auth-bg min-h-[100dvh] w-full flex items-center justify-center relative overflow-x-hidden py-6 sm:py-10 px-3 sm:px-6">
 
-      {/* ── Blob 1: teal — top-left ── */}
+      {/* ── Ambient Glow 1: Turquoise — Top-Left ── */}
       <div
-        className="auth-blob-1 absolute -top-24 -left-24 w-[500px] h-[500px] rounded-full pointer-events-none"
+        className="auth-blob-1 absolute -top-24 -left-24 w-[420px] sm:w-[540px] h-[420px] sm:h-[540px] rounded-full pointer-events-none"
         style={{
-          background: 'radial-gradient(circle, rgba(20,184,166,0.18) 0%, transparent 70%)',
-          filter: 'blur(40px)',
+          background: 'radial-gradient(circle, rgba(17,197,198,0.14) 0%, rgba(8,126,156,0.06) 50%, transparent 70%)',
+          filter: 'blur(50px)',
         }}
         aria-hidden="true"
       />
 
-      {/* ── Blob 2: orange — bottom-right ── */}
+      {/* ── Ambient Glow 2: Sunset Orange — Bottom-Right ── */}
       <div
-        className="auth-blob-2 absolute -bottom-32 -right-32 w-[480px] h-[480px] rounded-full pointer-events-none"
+        className="auth-blob-2 absolute -bottom-28 -right-28 w-[400px] sm:w-[500px] h-[400px] sm:h-[500px] rounded-full pointer-events-none"
         style={{
-          background: 'radial-gradient(circle, rgba(251,146,60,0.14) 0%, transparent 70%)',
-          filter: 'blur(48px)',
+          background: 'radial-gradient(circle, rgba(255,106,0,0.11) 0%, rgba(251,146,60,0.04) 50%, transparent 70%)',
+          filter: 'blur(55px)',
         }}
         aria-hidden="true"
       />
 
-      {/* ── Blob 3: cyan — center ── */}
+      {/* ── Ambient Glow 3: Ocean Blue — Center-Mid ── */}
       <div
-        className="auth-blob-3 absolute top-1/3 left-1/3 w-72 h-72 rounded-full pointer-events-none"
+        className="auth-blob-3 absolute top-1/3 left-1/2 -translate-x-1/2 w-72 sm:w-96 h-72 sm:h-96 rounded-full pointer-events-none"
         style={{
-          background: 'radial-gradient(circle, rgba(6,182,212,0.10) 0%, transparent 70%)',
-          filter: 'blur(32px)',
+          background: 'radial-gradient(circle, rgba(39,229,221,0.08) 0%, transparent 65%)',
+          filter: 'blur(45px)',
         }}
         aria-hidden="true"
       />
 
-      {/* ── Card wrapper với animation, viền, shine ── */}
-      <div className="auth-card-animate relative z-10 w-full max-w-[1200px]">
+      {/* ── Card Wrapper: Animation xuất hiện, viền gradient siêu mỏng, hiệu ứng nổi tự nhiên ── */}
+      <div className="auth-card-animate relative z-10 w-full max-w-[1180px] my-auto">
 
-        {/* Viền gradient conic xoay */}
+        {/* Viền gradient xanh ngọc & cam cực mỏng */}
         <div className="auth-card-border" aria-hidden="true" />
 
-        {/* Card chính */}
+        {/* Khung Card chính */}
         <div className="auth-card-frame">
-          {/* Shine overlay */}
+          {/* Shine overlay lướt nhẹ */}
           <div className="auth-card-shine" aria-hidden="true" />
 
-          {/* Nội dung (AuthCard) */}
+          {/* Nội dung bên trong (AuthCard) */}
           {children}
         </div>
       </div>
-    </div>
+    </main>
   );
 }

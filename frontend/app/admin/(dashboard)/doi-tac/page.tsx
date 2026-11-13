@@ -93,7 +93,7 @@ export default function AdminPartnersPage() {
       render: (p) => (
         <div>
           <p className="font-bold text-gray-900">{p.businessName}</p>
-          <p className="text-xs text-gray-500">MST: {p.taxCode}</p>
+          <p className="text-xs text-gray-500">MST: {p.taxCode || 'Chưa cập nhật'}</p>
         </div>
       ),
     },
@@ -106,7 +106,11 @@ export default function AdminPartnersPage() {
         </span>
       ),
     },
-    { key: 'phone', header: 'Liên hệ', render: (p) => `${p.phone} (${p.email})` },
+    {
+      key: 'phone',
+      header: 'Liên hệ',
+      render: (p) => (p.phone ? `${p.phone} (${p.email})` : p.email),
+    },
     { key: 'status', header: 'Trạng thái', render: (p) => <StatusBadge status={p.status} /> },
     {
       key: 'actions',
@@ -239,11 +243,19 @@ export default function AdminPartnersPage() {
             </div>
 
             <div className="space-y-2 text-sm text-gray-700 pt-2 border-t border-gray-100">
-              <p><span className="font-semibold text-gray-500">Loại dịch vụ:</span> {selectedPartner.serviceType}</p>
-              <p><span className="font-semibold text-gray-500">Mã số thuế:</span> {selectedPartner.taxCode}</p>
-              <p><span className="font-semibold text-gray-500">Địa chỉ kinh doanh:</span> {selectedPartner.address}</p>
-              <p><span className="font-semibold text-gray-500">Số điện thoại:</span> {selectedPartner.phone}</p>
-              <p><span className="font-semibold text-gray-500">Email:</span> {selectedPartner.email}</p>
+              <p><span className="font-semibold text-gray-500">Người đại diện:</span> {selectedPartner.name}</p>
+              <p>
+                <span className="font-semibold text-gray-500">Loại dịch vụ:</span>{' '}
+                {selectedPartner.serviceType === 'STAY'
+                  ? 'Lưu trú (STAY)'
+                  : selectedPartner.serviceType === 'TABLE'
+                  ? 'Ẩm thực (TABLE)'
+                  : 'Vé/Tour (TICKET)'}
+              </p>
+              <p><span className="font-semibold text-gray-500">Mã số thuế:</span> {selectedPartner.taxCode || 'Chưa cập nhật'}</p>
+              <p><span className="font-semibold text-gray-500">Địa chỉ kinh doanh:</span> {selectedPartner.address || 'Chưa cập nhật'}</p>
+              <p><span className="font-semibold text-gray-500">Số điện thoại:</span> {selectedPartner.phone || 'Chưa cập nhật'}</p>
+              <p><span className="font-semibold text-gray-500">Email nhận thông báo:</span> {selectedPartner.email}</p>
               <p><span className="font-semibold text-gray-500">Trạng thái:</span> <StatusBadge status={selectedPartner.status} /></p>
               {selectedPartner.rejectReason && (
                 <p className="p-3 bg-red-50 text-red-700 text-xs rounded-xl font-medium">
@@ -252,7 +264,7 @@ export default function AdminPartnersPage() {
               )}
             </div>
 
-            <div className="flex items-center justify-between gap-2 pt-3 border-t border-gray-100">
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-gray-100">
               <Link
                 href={`/admin/dia-diem?search=${encodeURIComponent(selectedPartner.businessName)}`}
                 className="px-4 py-2 bg-teal-50 hover:bg-teal-100 text-teal-700 font-semibold text-xs rounded-xl flex items-center gap-1.5 transition-colors"
@@ -260,12 +272,42 @@ export default function AdminPartnersPage() {
                 <Store className="w-4 h-4" />
                 Xem các cơ sở của đối tác này
               </Link>
-              <button
-                onClick={() => setSelectedPartner(null)}
-                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold text-xs rounded-xl"
-              >
-                Đóng
-              </button>
+              <div className="flex items-center gap-2">
+                {selectedPartner.status === 'PENDING' && (
+                  <>
+                    <button
+                      onClick={async () => {
+                        const target = selectedPartner;
+                        setSelectedPartner(null);
+                        await handleApprove(target);
+                      }}
+                      disabled={actionLoading}
+                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl flex items-center gap-1.5 transition-colors"
+                    >
+                      <Check className="w-4 h-4" />
+                      Duyệt & gửi thông báo
+                    </button>
+                    <button
+                      onClick={() => {
+                        const target = selectedPartner;
+                        setSelectedPartner(null);
+                        setRejectingPartner(target);
+                      }}
+                      disabled={actionLoading}
+                      className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs rounded-xl flex items-center gap-1.5 transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                      Từ chối
+                    </button>
+                  </>
+                )}
+                <button
+                  onClick={() => setSelectedPartner(null)}
+                  className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold text-xs rounded-xl"
+                >
+                  Đóng
+                </button>
+              </div>
             </div>
           </div>
         </div>

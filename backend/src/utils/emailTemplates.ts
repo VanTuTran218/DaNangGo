@@ -267,6 +267,7 @@ Nếu bạn không yêu cầu đặt lại mật khẩu, hãy bỏ qua email nà
 export interface PartnerNotificationData {
   userName: string;
   businessName: string;
+  reason?: string | null;
 }
 
 /** Email thông báo partner được DUYỆT */
@@ -274,6 +275,7 @@ export function buildPartnerApprovalEmail(data: PartnerNotificationData): { subj
   const subject = '[DaNangGo] Tài khoản đối tác của bạn đã được duyệt ✅';
   const safeName = escapeHtml(data.userName);
   const safeBiz = escapeHtml(data.businessName);
+  const partnerPortalUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/partner`;
 
   const html = `<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"><title>${subject}</title></head>
 <body style="margin:0;padding:0;background:#f0fdfa;font-family:'Segoe UI',Arial,sans-serif">
@@ -287,10 +289,15 @@ export function buildPartnerApprovalEmail(data: PartnerNotificationData): { subj
     <h1 style="font-size:22px;font-weight:700;color:#0f172a;margin:0 0 16px">Chúc mừng, ${safeName}! 🎉</h1>
     <p style="font-size:15px;color:#475569;line-height:1.7;margin:0 0 20px">
       Tài khoản đối tác của <strong>${safeBiz}</strong> đã được quản trị viên DaNangGo <strong style="color:#0f766e">phê duyệt</strong>.
-      Bạn có thể đăng nhập ngay để bắt đầu quản lý dịch vụ của mình.
+      Bạn có thể truy cập Kênh Quản Lý Đối Tác ngay để bắt đầu đăng tải và quản lý dịch vụ của mình.
     </p>
     <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:12px;padding:16px 20px;margin-bottom:24px">
       <p style="margin:0;font-size:14px;color:#166534">✅ Tài khoản của bạn hiện đã <strong>HOẠT ĐỘNG</strong> trên hệ thống DaNangGo.</p>
+    </div>
+    <div style="text-align:center;margin-bottom:24px">
+      <a href="${partnerPortalUrl}" style="display:inline-block;background:#0f766e;color:#ffffff;font-weight:700;font-size:14px;padding:12px 24px;border-radius:12px;text-decoration:none">
+        Vào Kênh Quản Lý Đối Tác →
+      </a>
     </div>
     <p style="font-size:14px;color:#64748b">Nếu bạn cần hỗ trợ, liên hệ <a href="mailto:support@dananggo.vn" style="color:#0891b2">support@dananggo.vn</a></p>
   </td></tr>
@@ -299,7 +306,7 @@ export function buildPartnerApprovalEmail(data: PartnerNotificationData): { subj
   </td></tr>
 </table></td></tr></table></body></html>`;
 
-  const text = `[DaNangGo] Tài khoản đối tác được duyệt\n\nChúc mừng ${data.userName}!\n\nTài khoản đối tác "${data.businessName}" đã được phê duyệt. Bạn có thể đăng nhập ngay.\n\nHỗ trợ: support@dananggo.vn\n© ${new Date().getFullYear()} DaNangGo`;
+  const text = `[DaNangGo] Tài khoản đối tác được duyệt\n\nChúc mừng ${data.userName}!\n\nTài khoản đối tác "${data.businessName}" đã được phê duyệt. Bạn có thể truy cập ${partnerPortalUrl} ngay.\n\nHỗ trợ: support@dananggo.vn\n© ${new Date().getFullYear()} DaNangGo`;
   return { subject, html, text };
 }
 
@@ -308,6 +315,15 @@ export function buildPartnerRejectionEmail(data: PartnerNotificationData): { sub
   const subject = '[DaNangGo] Kết quả xét duyệt tài khoản đối tác';
   const safeName = escapeHtml(data.userName);
   const safeBiz = escapeHtml(data.businessName);
+  const safeReason = data.reason?.trim() ? escapeHtml(data.reason.trim()) : null;
+  const partnerProfileUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/partner/ho-so`;
+
+  const reasonHtml = safeReason
+    ? `<div style="background:#fef2f2;border-left:4px solid #ef4444;border-radius:0 8px 8px 0;padding:14px 16px;margin-bottom:20px">
+      <p style="margin:0 0 4px;font-size:12px;font-weight:700;color:#991b1b;text-transform:uppercase;letter-spacing:0.5px">Lý do từ chối từ Quản trị viên:</p>
+      <p style="margin:0;font-size:14px;color:#7f1d1d;line-height:1.6">${safeReason}</p>
+    </div>`
+    : '';
 
   const html = `<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"><title>${subject}</title></head>
 <body style="margin:0;padding:0;background:#fff7ed;font-family:'Segoe UI',Arial,sans-serif">
@@ -320,10 +336,16 @@ export function buildPartnerRejectionEmail(data: PartnerNotificationData): { sub
     <p style="font-size:13px;color:#64748b;text-transform:uppercase;letter-spacing:1px;font-weight:600;margin:0 0 8px">Kết quả xét duyệt</p>
     <h1 style="font-size:22px;font-weight:700;color:#0f172a;margin:0 0 16px">Xin chào, ${safeName}</h1>
     <p style="font-size:15px;color:#475569;line-height:1.7;margin:0 0 20px">
-      Sau khi xem xét, hồ sơ đăng ký đối tác của <strong>${safeBiz}</strong> chưa đáp ứng yêu cầu hiện tại của DaNangGo.
+      Sau khi xem xét, hồ sơ đăng ký đối tác của <strong>${safeBiz}</strong> chưa đáp ứng yêu cầu phê duyệt hiện tại của DaNangGo.
     </p>
+    ${reasonHtml}
     <div style="background:#fff7ed;border-left:4px solid #f97316;border-radius:0 8px 8px 0;padding:14px 16px;margin-bottom:24px">
-      <p style="margin:0;font-size:14px;color:#92400e">Nếu bạn muốn tìm hiểu thêm hoặc cung cấp bổ sung thông tin, vui lòng liên hệ chúng tôi.</p>
+      <p style="margin:0;font-size:14px;color:#92400e">Bạn có thể đăng nhập vào Kênh Đối Tác để cập nhật bổ sung thông tin hồ sơ doanh nghiệp và gửi duyệt lại.</p>
+    </div>
+    <div style="text-align:center;margin-bottom:24px">
+      <a href="${partnerProfileUrl}" style="display:inline-block;background:#0e7490;color:#ffffff;font-weight:700;font-size:14px;padding:12px 24px;border-radius:12px;text-decoration:none">
+        Cập nhật hồ sơ đối tác →
+      </a>
     </div>
     <p style="font-size:14px;color:#64748b">Liên hệ hỗ trợ: <a href="mailto:support@dananggo.vn" style="color:#0891b2">support@dananggo.vn</a></p>
   </td></tr>
@@ -332,6 +354,7 @@ export function buildPartnerRejectionEmail(data: PartnerNotificationData): { sub
   </td></tr>
 </table></td></tr></table></body></html>`;
 
-  const text = `[DaNangGo] Kết quả xét duyệt đối tác\n\nXin chào ${data.userName},\n\nHồ sơ đối tác "${data.businessName}" chưa được chấp thuận. Vui lòng liên hệ support@dananggo.vn để biết thêm chi tiết.\n\n© ${new Date().getFullYear()} DaNangGo`;
+  const reasonText = data.reason?.trim() ? `\nLý do từ chối: ${data.reason.trim()}\n` : '';
+  const text = `[DaNangGo] Kết quả xét duyệt đối tác\n\nXin chào ${data.userName},\n\nHồ sơ đối tác "${data.businessName}" chưa được chấp thuận.${reasonText}\nBạn có thể cập nhật lại hồ sơ tại ${partnerProfileUrl} hoặc liên hệ support@dananggo.vn để biết thêm chi tiết.\n\n© ${new Date().getFullYear()} DaNangGo`;
   return { subject, html, text };
 }

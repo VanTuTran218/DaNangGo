@@ -4,15 +4,12 @@ export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
   const adminAccess = request.cookies.get('admin_access')?.value;
   const accessToken = request.cookies.get('access_token')?.value;
-  const hasValidAdminToken = !!adminAccess;
   const hasValidUserToken = !!accessToken;
 
   if (pathname.startsWith('/admin')) {
-    if (pathname === '/admin/login') {
-      if (hasValidAdminToken) return NextResponse.redirect(new URL('/admin', request.url));
-      return NextResponse.next();
+    if (pathname !== '/admin/login' && !adminAccess && !request.cookies.get('admin_refresh')?.value) {
+      return NextResponse.redirect(new URL('/admin/login', request.url));
     }
-    if (!hasValidAdminToken) return NextResponse.redirect(new URL('/admin/login', request.url));
   }
   if (
     (pathname.startsWith('/ca-nhan') ||

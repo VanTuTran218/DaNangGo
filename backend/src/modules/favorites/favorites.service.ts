@@ -19,7 +19,7 @@ export async function addFavorite(userId: number, placeId: number): Promise<void
   try {
     await insertFavorite(userId, placeId);
   } catch (error) {
-    if ((error as { number?: number }).number === 547) {
+    if ([547, 50001].includes((error as { number?: number }).number ?? 0)) {
       throw new AuthError(404, 'Không tìm thấy địa điểm đang hoạt động.');
     }
     throw error;

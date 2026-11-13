@@ -7,14 +7,13 @@ function hasAuthCookie(request: Parameters<RequestHandler>[0]): boolean {
   );
 }
 
-export const csrfProtection: RequestHandler = (req, res, next) => {
+export const csrfProtection = (allowedOrigins: readonly string[]): RequestHandler => (req, res, next) => {
   if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method) || !hasAuthCookie(req)) {
     next();
     return;
   }
 
   const source = req.get('origin') || req.get('referer');
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
 
   // Cho phép các công cụ test như Postman / cURL trong môi trường development
   if (process.env.NODE_ENV !== 'production' && !source) {
@@ -23,7 +22,7 @@ export const csrfProtection: RequestHandler = (req, res, next) => {
   }
 
   try {
-    if (!source || new URL(source).origin !== new URL(frontendUrl).origin) {
+    if (!source || !allowedOrigins.includes(new URL(source).origin)) {
       res.status(403).json({ success: false, message: 'Nguồn yêu cầu không hợp lệ.' });
       return;
     }

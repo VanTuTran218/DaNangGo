@@ -122,6 +122,7 @@ chatRouter.post(
             message: message.trim(),
             sessionId: sessionId ? Number(sessionId) : null,
             userId,
+            userRole: req.user?.role,
             guestId,
             location,
           },

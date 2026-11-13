@@ -95,10 +95,11 @@ async function issueOtp(
     await transporter.sendMail({ from: `"${fromName}" <${fromUser}>`, to: email, subject, html, text });
   } catch (err) {
     if (process.env.NODE_ENV !== 'production') {
-      console.error('[OTP Mail Error]', err);
-    } else {
-      console.error('[OTP Mail Error] Failed to send OTP email.');
+      console.warn('[OTP Mail Warning] Không gửi được qua SMTP, dùng fallback console cho môi trường dev:', (err as Error)?.message);
+      console.info(`[DEV OTP:${purpose}] ${email} → ${code} (hết hạn: ${expiresAt.toISOString()})`);
+      return;
     }
+    console.error('[OTP Mail Error] Failed to send OTP email.');
     throw new AuthError(500, 'Không thể gửi email. Vui lòng thử lại sau.');
   }
 }

@@ -1,5 +1,6 @@
 "use client";
 import Link from 'next/link';
+import HeartButton from '@/components/HeartButton';
 
 /**
  * DanangGo — Trang chủ (route "/")
@@ -31,7 +32,9 @@ import { getPlaces } from "@/lib/api/places";
 import { formatPriceRange } from "@/lib/mappers/place.mapper";
 import Reveal from "@/components/ui/Reveal";
 import AnimatedCounter from "@/components/ui/AnimatedCounter";
+import { Magnetic, SpotlightCard, recordSharedPlaceClick } from "@/components/ui/MotionPrimitives";
 import BudgetRecommendation from "@/components/home/BudgetRecommendation";
+import HomeHero from "@/components/home/HomeHero";
 import { useAuth } from "@/contexts/AuthContext";
 import { getManagedItineraries, type ManagedItineraryListItem } from "@/lib/api/itineraries";
 import SurveyInviteCard from "@/components/survey/SurveyInviteCard";
@@ -41,6 +44,17 @@ import SurveyQuickSheet from "@/components/survey/SurveyQuickSheet";
 // ============================================================
 // DATA
 // ============================================================
+
+// Helper nâng cấp độ phân giải ảnh Unsplash từ DB (w=600/800 -> w=1600&q=90)
+function upgradeHiResImage(url?: string | null, fallback = "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=1600&q=90&auto=format&fit=crop"): string {
+  if (!url) return fallback;
+  if (url.includes("images.unsplash.com")) {
+    return url
+      .replace(/([?&])w=\d+/g, "$1w=1600")
+      .replace(/([?&])q=\d+/g, "$1q=90");
+  }
+  return url;
+}
 
 // 4 card theo ảnh tham chiếu (giảm từ 6 xuống 4)
 const POPULAR_CARDS = [
@@ -52,7 +66,7 @@ const POPULAR_CARDS = [
     rating: 4.9,
     reviews: 2341,
     price: "Miễn phí",
-    img: "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=600&q=80",
+    img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1600&q=90&auto=format&fit=crop",
     badge: "🔥 Hot",
     badgeColor: "bg-red-500",
   },
@@ -64,7 +78,7 @@ const POPULAR_CARDS = [
     rating: 4.8,
     reviews: 1893,
     price: "40.000₫",
-    img: "https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=600&q=80",
+    img: "https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=1600&q=90&auto=format&fit=crop",
     badge: "🍜 Đặc sản",
     badgeColor: "bg-orange-500",
   },
@@ -76,7 +90,7 @@ const POPULAR_CARDS = [
     rating: 4.9,
     reviews: 3102,
     price: "Miễn phí",
-    img: "https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=600&q=80",
+    img: "https://images.unsplash.com/photo-1701396173275-835886dd72ce?w=1600&q=90&auto=format&fit=crop",
     badge: "🏆 Nổi bật",
     badgeColor: "bg-yellow-500",
   },
@@ -88,7 +102,7 @@ const POPULAR_CARDS = [
     rating: 4.8,
     reviews: 1204,
     price: "từ 750.000₫",
-    img: "https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=600&q=80",
+    img: "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=1600&q=90&auto=format&fit=crop",
     badge: "⭐ Top 1",
     badgeColor: "bg-teal-600",
   },
@@ -104,7 +118,7 @@ const CATEGORIES = [
     icon: "🏨",
     stat: "124 lựa chọn",
     cta: "Xem 124+ khách sạn",
-    img: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&q=80",
+    img: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=1600&q=90&auto=format&fit=crop",
     color: "from-blue-600/70",
   },
   {
@@ -115,7 +129,7 @@ const CATEGORIES = [
     icon: "🍜",
     stat: "89 nhà hàng",
     cta: "Khám phá ẩm thực",
-    img: "https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=800&q=80",
+    img: "https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=1600&q=90&auto=format&fit=crop",
     color: "from-orange-600/70",
   },
   {
@@ -126,7 +140,7 @@ const CATEGORIES = [
     icon: "🗺️",
     stat: "67 điểm đến",
     cta: "Xem điểm check-in",
-    img: "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=800&q=80",
+    img: "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=1600&q=90&auto=format&fit=crop",
     color: "from-teal-600/70",
   },
 ];
@@ -233,14 +247,9 @@ export default function HomePage() {
   const { user } = useAuth();
   const [completedItinerary, setCompletedItinerary] = useState<ManagedItineraryListItem | null>(null);
   const [quickSheetOpen, setQuickSheetOpen] = useState(false);
-  const [popularCards, setPopularCards] = useState(POPULAR_CARDS);
-  const [likedCards, setLikedCards] = useState<Set<number>>(new Set());
+  const [popularCards, setPopularCards] = useState<((typeof POPULAR_CARDS)[number] & { placeId?: number })[]>(POPULAR_CARDS);
   const [selectedPlan, setSelectedPlan] = useState<PlanKey>("3N2D");
   const [showScrollTop, setShowScrollTop] = useState(false);
-
-  const heroSectionRef = useRef<HTMLElement>(null);
-  const { scrollYProgress } = useScroll({ target: heroSectionRef, offset: ['start start', 'end start'] });
-  const y = useTransform(scrollYProgress, [0, 1], ['0%', '20%']);
   const prefersReduced = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // Lấy các địa điểm nổi bật từ SQL Server: GET /api/places?limit=4&sort=rating_desc
@@ -252,13 +261,14 @@ export default function HomePage() {
         if (res && res.items && res.items.length > 0 && isMounted) {
           const liveCards = res.items.slice(0, 4).map((p) => ({
             id: p.place_id,
+            placeId: p.place_id,
             title: p.name,
             category: p.category_name || (p.place_type === 'RESTAURANT' ? 'Ẩm thực' : 'Điểm tham quan'),
             location: p.district_name ? `${p.district_name}, Đà Nẵng` : (p.address || 'Đà Nẵng'),
             rating: p.avg_rating || 4.8,
             reviews: p.review_count || 120,
             price: formatPriceRange(p.price_min, p.price_max, p.ticket_price),
-            img: p.cover_image || 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=600&q=80',
+            img: upgradeHiResImage(p.cover_image),
             badge: p.promo_label || '🔥 Nổi bật',
             badgeColor: 'bg-teal-600',
           }));
@@ -303,148 +313,14 @@ export default function HomePage() {
     return () => window.removeEventListener("scroll", handler);
   }, []);
 
-  const toggleLike = (id: number) => {
-    setLikedCards((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  };
-
   const currentPlan = ITINERARY_PLANS[selectedPlan];
 
   return (
     <>
       {/* ============================================================
-          1. HERO SECTION
-          Ken Burns bg + CSS fade-up stagger (LCP-safe, không chờ JS)
+          1. HERO CAROUSEL SECTION (3 SLIDES + SYNCED COPY + ZERO CLS)
           ============================================================ */}
-      <section
-        ref={heroSectionRef}
-        data-navbar-overlay="true"
-        id="hero"
-        className="relative h-screen min-h-[640px] flex items-center overflow-hidden"
-      >
-        <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/60 via-black/10 to-transparent pointer-events-none z-20" />
-        {/* Ken Burns background */}
-        <div className="absolute inset-0 overflow-hidden">
-          <motion.div className="absolute inset-0 ken-burns" style={{ y }}>
-            <Image
-              src="https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=1920&q=85"
-              alt="Bãi biển Đà Nẵng nhìn từ trên cao"
-              fill
-              priority
-              className="object-cover"
-              sizes="100vw"
-            />
-          </motion.div>
-          <div className="absolute inset-0 bg-gradient-to-b from-[#071a2e]/65 via-[#0f2942]/45 to-[#071a2e]/85" />
-        </div>
-
-        {/* Hero Content — CSS animation chạy ngay, không chờ JS hydrate (LCP-safe) */}
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 w-full pt-20">
-          {/* Badge nhỏ */}
-          <div
-            className="eyebrow-label inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-1.5 text-white/80 text-xs mb-5"
-            style={{ opacity: 0, animation: "fade-up 0.6s 0.1s ease-out forwards" }}
-          >
-            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-            Cẩm nang du lịch Đà Nẵng 2025
-          </div>
-
-          {/* H1 — đúng theo ảnh tham chiếu */}
-          <h1
-            className="h1-hero text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight mb-4 max-w-3xl"
-            style={{ opacity: 0, animation: "fade-up 0.7s 0.2s ease-out forwards" }}
-          >
-            Khám Phá Đà Nẵng —{" "}
-            <span className="text-gradient-animate">
-              Thiên Đường Biển
-            </span>{" "}
-            & Văn Hóa Miền Trung
-          </h1>
-
-          {/* Quote nghiêng */}
-          <p
-            className="body-text italic text-white/70 text-base sm:text-lg max-w-xl mb-7 leading-relaxed"
-            style={{ opacity: 0, animation: "fade-up 0.7s 0.32s ease-out forwards" }}
-          >
-            "Đà Nẵng — nơi ánh nắng chạm sóng biển, lịch sử hòa quyện cùng hiện đại,
-            và mỗi góc phố đều là một câu chuyện đáng nhớ."
-          </p>
-
-          {/* Search box 2 ô */}
-          <div
-            style={{ opacity: 0, animation: "fade-up 0.7s 0.45s ease-out forwards" }}
-          >
-            <form action="/tim-kiem" method="get" className="flex flex-col sm:flex-row gap-2 max-w-2xl bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-2">
-              {/* Ô 1: Từ khóa */}
-              <div className="relative flex-1">
-                <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
-                </svg>
-                <input
-                  type="text"
-                  name="q"
-                  placeholder="Từ khóa hoặc địa điểm..."
-                  className="w-full bg-transparent text-white placeholder-white/50 pl-9 pr-3 py-3 focus:outline-none text-sm"
-                />
-              </div>
-              {/* Divider */}
-              <div className="hidden sm:block w-px bg-white/20 my-2" />
-              {/* Ô 2: Danh mục */}
-              <div className="relative flex-1">
-                <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-                </svg>
-                <select
-                  name="type"
-                  defaultValue=""
-                  aria-label="Loại địa điểm"
-                  className="w-full appearance-none bg-transparent text-white py-3 pl-9 pr-3 focus:outline-none text-sm [&>option]:text-[#0f2942]"
-                >
-                  <option value="">Tất cả danh mục</option>
-                  <option value="STAY">Nơi lưu trú</option>
-                  <option value="FOOD">Ẩm thực</option>
-                  <option value="ATTRACTION">Điểm du lịch</option>
-                  <option value="ENTERTAINMENT">Giải trí</option>
-                </select>
-              </div>
-              {/* Nút tìm kiếm */}
-              <button type="submit" className="btn-ripple bg-orange-500 hover:bg-orange-400 text-white font-semibold px-6 py-3 rounded-xl transition-colors text-sm hover:scale-[1.02] active:scale-[0.97] whitespace-nowrap">
-                Tìm kiếm
-              </button>
-            </form>
-
-            <BudgetRecommendation />
-
-            {/* Tags xu hướng */}
-            <div
-              className="flex flex-wrap gap-2 mt-4"
-              style={{ opacity: 0, animation: "fade-up 0.6s 0.6s ease-out forwards" }}
-            >
-              <span className="text-white/60 text-xs mr-1 self-center">🔥 Xu hướng:</span>
-              {["#MyKheBeach", "#CauRongPhunLua", "#NuiSonTra", "#NguHanhSon", "#BaNaHills"].map((tag) => (
-                <motion.button
-                  whileHover={{ y: -2, scale: 1.04 }}
-                  whileTap={{ scale: 0.96 }}
-                  transition={{ duration: 0.2 }}
-                  key={tag}
-                  className="text-white/70 bg-white/10 hover:bg-cyan-500/30 hover:text-cyan-300 border border-white/20 hover:border-cyan-400/40 text-xs px-3 py-1.5 rounded-full transition-all hover:-translate-y-0.5 hover:scale-105 active:scale-95"
-                >
-                  {tag}
-                </motion.button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2 text-white/40">
-          <span className="text-xs tracking-widest uppercase">Cuộn xuống</span>
-          <div className="w-px h-10 bg-gradient-to-b from-white/40 to-transparent" style={{ animation: "float 2s ease-in-out infinite" }} />
-        </div>
-      </section>
+      <HomeHero />
 
       {/* ============================================================
           2. STATS ROW — lấp lánh gradient navy
@@ -552,8 +428,6 @@ export default function HomePage() {
               <Reveal key={card.id} delay={prefersReduced ? 0 : i * 0.08}>
                 <PopularCard
                   card={card}
-                  liked={likedCards.has(card.id)}
-                  onToggleLike={() => toggleLike(card.id)}
                 />
               </Reveal>
             ))}
@@ -586,10 +460,11 @@ export default function HomePage() {
             <Reveal direction="left" className="relative">
               <div className="relative rounded-2xl overflow-hidden shadow-xl aspect-[4/3]">
                 <Image
-                  src="https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=800&q=80"
+                  src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=2000&q=90&auto=format&fit=crop"
                   alt="Khoảnh khắc hoàng hôn Đà Nẵng"
                   fill
-                  className="object-cover hover:scale-105 transition-transform duration-700"
+                  quality={90}
+                  className="object-cover hover:scale-[1.03] transition-transform duration-700 ease-out"
                   sizes="(max-width: 1024px) 100vw, 50vw"
                 />
                 {/* Badge "Trải nghiệm địa phương" */}
@@ -815,9 +690,11 @@ export default function HomePage() {
 
                 {/* 2 nút CTA */}
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  <Link href="/dang-nhap?tab=dang-ky&intent=vip" className="btn-ripple inline-flex items-center justify-center bg-orange-500 hover:bg-orange-400 text-white font-bold px-8 py-3.5 rounded-xl transition-colors hover:scale-[1.03] active:scale-[0.97] text-sm">
-                    Đăng ký thành viên VIP
-                  </Link>
+                  <Magnetic strength={3}>
+                    <Link href="/dang-nhap?tab=dang-ky&intent=vip" className="btn-ripple inline-flex items-center justify-center bg-orange-500 hover:bg-orange-400 text-white font-bold px-8 py-3.5 rounded-xl transition-colors hover:scale-[1.03] active:scale-[0.97] text-sm">
+                      Đăng ký thành viên VIP
+                    </Link>
+                  </Magnetic>
                   <Link href="/lich-trinh/tao-moi" className="border-2 border-white/60 hover:border-white text-white hover:bg-white/10 font-semibold px-8 py-3.5 rounded-xl transition-all text-sm inline-flex items-center justify-center">
                     📋 Tạo lịch trình của bạn
                   </Link>
@@ -964,67 +841,57 @@ export default function HomePage() {
  * PopularCard — hover translateY + shadow + img scale + like bounce (GIỮ NGUYÊN)
  * Bổ sung: location + price fields
  */
-function PopularCard({
-  card,
-  liked,
-  onToggleLike,
-}: {
-  card: (typeof POPULAR_CARDS)[0];
-  liked: boolean;
-  onToggleLike: () => void;
-}) {
+function PopularCard({ card }: { card: (typeof POPULAR_CARDS)[number] & { placeId?: number } }) {
+  const targetId = card.placeId ?? card.id;
   return (
-    <div className="group bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 cursor-pointer">
+    <SpotlightCard className="group bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl hover:-translate-y-1 border border-gray-100 hover:border-teal-300/80 transition-all duration-300 cursor-pointer h-full flex flex-col">
       {/* Image */}
-      <div className="relative h-44 overflow-hidden">
+      <Link
+        href={`/places/${targetId}`}
+        onClick={() => recordSharedPlaceClick(targetId, card.img)}
+        className="relative h-44 overflow-hidden block shrink-0"
+      >
         <Image
           src={card.img}
           alt={card.title}
           fill
-          className="object-cover group-hover:scale-110 transition-transform duration-500"
+          quality={90}
+          className="object-cover group-hover:scale-[1.03] transition-transform duration-500 ease-out"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
         />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#071a2e]/50 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300 pointer-events-none" />
         {/* Badge */}
         <div className="absolute top-3 left-3">
           <span className={`${card.badgeColor} text-white text-xs font-semibold px-2.5 py-1 rounded-full shadow-sm`}>
             {card.badge}
           </span>
         </div>
-        {/* Like button — scale bounce khi click */}
-        <button
-          onClick={(e) => { e.stopPropagation(); onToggleLike(); }}
-          className="absolute top-3 right-3 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm hover:scale-110 active:scale-125 transition-transform"
-          aria-label={liked ? "Bỏ yêu thích" : "Yêu thích"}
-        >
-          <motion.svg width="14" height="14" viewBox="0 0 24 24" animate={liked ? { scale: [1, 1.4, 1] } : { scale: 1 }} transition={{ duration: 0.3 }}>
-            <path
-              d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
-              fill={liked ? "#ef4444" : "none"}
-              stroke={liked ? "#ef4444" : "#9ca3af"}
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-          </motion.svg>
-        </button>
-      </div>
+        <div className="absolute top-3 right-3 z-10"><HeartButton placeId={card.placeId} /></div>
+      </Link>
 
       {/* Content */}
-      <div className="p-4">
-        <span className="text-xs text-teal-600 font-semibold bg-teal-50 px-2 py-0.5 rounded-full">
-          {card.category}
-        </span>
-        <h3 className="font-bold text-[#0f2942] text-sm mt-2 mb-1 leading-snug group-hover:text-teal-700 transition-colors line-clamp-2">
-          {card.title}
-        </h3>
-        {/* Location */}
-        <div className="flex items-center gap-1 text-gray-400 text-xs mb-2">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
-          </svg>
-          {card.location}
+      <Link
+        href={`/places/${targetId}`}
+        onClick={() => recordSharedPlaceClick(targetId, card.img)}
+        className="p-4 flex-1 flex flex-col justify-between block"
+      >
+        <div>
+          <span className="text-xs text-teal-600 font-semibold bg-teal-50 px-2 py-0.5 rounded-full">
+            {card.category}
+          </span>
+          <h3 className="font-bold text-[#0f2942] text-sm mt-2 mb-1 leading-snug group-hover:text-teal-700 transition-colors line-clamp-2">
+            {card.title}
+          </h3>
+          {/* Location */}
+          <div className="flex items-center gap-1 text-gray-400 text-xs mb-2">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+            </svg>
+            {card.location}
+          </div>
         </div>
         {/* Rating + Price */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between pt-1">
           <div className="flex items-center gap-1">
             <span className="text-yellow-400 text-xs">★</span>
             <span className="text-xs font-semibold text-gray-700">{card.rating}</span>
@@ -1032,8 +899,8 @@ function PopularCard({
           </div>
           <span className="text-xs font-bold text-orange-500">{card.price}</span>
         </div>
-      </div>
-    </div>
+      </Link>
+    </SpotlightCard>
   );
 }
 
@@ -1052,7 +919,8 @@ function CategoryCard({ category }: { category: (typeof CATEGORIES)[0] }) {
         src={category.img}
         alt={category.label}
         fill
-        className="object-cover group-hover:scale-110 transition-transform duration-500"
+        quality={90}
+        className="object-cover group-hover:scale-[1.03] transition-transform duration-500 ease-out"
         sizes="(max-width: 768px) 100vw, 33vw"
       />
       {/* Overlay tối dần khi hover */}

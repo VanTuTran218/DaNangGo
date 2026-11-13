@@ -22,6 +22,10 @@ import { PLACE_PLACEHOLDER, type MapLocation } from '@/lib/map-places';
 import { DANANG_CENTER, googleMapsDirections, haversineDistance, type Coordinates, type MapLayer } from '@/lib/map-navigation';
 import { getRouteDirections, type TravelOption, type TravelMode } from '@/lib/api/routes';
 
+// ── ĐƯỜNG DẪN ẢNH MINH HỌA CẨM NANG DU LỊCH (DỄ DÀNG THAY THẾ) ───────────────
+// Bạn có thể đổi đường dẫn ảnh hoặc thay thế file: frontend/public/images/da-nang-travel-map.jpg
+const TRAVEL_MAP_ILLUSTRATION = '/images/da-nang-travel-map.jpg';
+
 const MAP_MODE_META: { mode: TravelMode; label: string; icon: typeof Car; googleMode: string }[] = [
   { mode: 'WALK', label: 'Đi bộ', icon: Footprints, googleMode: 'walking' },
   { mode: 'MOTORBIKE', label: 'Xe máy', icon: Bike, googleMode: 'two-wheeler' },
@@ -56,7 +60,7 @@ function MapPlaceImage(props: React.ComponentProps<typeof Image>) {
 function AnimCheckbox({ checked, onChange, label, dot, count }: { checked: boolean; onChange: () => void; label: string; dot: string; count: number; }) {
   return (
     <button onClick={onChange} aria-pressed={checked} className="flex items-center gap-2.5 group w-full text-left py-1" type="button">
-      <div className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all duration-200 ${checked ? 'bg-teal-500 border-teal-500' : 'border-gray-300 bg-white group-hover:border-teal-400'}`}>
+      <div className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all duration-200 ${checked ? 'bg-teal-600 border-teal-600' : 'border-gray-300 bg-white group-hover:border-teal-400'}`}>
         <AnimatePresence>
           {checked && (
             <motion.svg key="chk" viewBox="0 0 12 10" width="9" height="7" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} exit={{ pathLength: 0 }} transition={{ duration: 0.2 }}>
@@ -66,8 +70,8 @@ function AnimCheckbox({ checked, onChange, label, dot, count }: { checked: boole
         </AnimatePresence>
       </div>
       <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${dot}`} />
-      <span className="text-xs text-gray-700 flex-1 leading-snug">{label}</span>
-      <span className="text-[10px] text-gray-400 font-medium">{count}</span>
+      <span className="text-xs font-semibold text-[#102C58] flex-1 leading-snug">{label}</span>
+      <span className="text-[11px] font-bold text-teal-800 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-100">{count}</span>
     </button>
   );
 }
@@ -79,7 +83,7 @@ function MapPopup({ loc, onClose, onAddTrip, onNavigate }: { loc: MapLocation; o
   return (
     <motion.div initial={{ opacity: 0, y: 24, scale: 0.95 }} animate={{ opacity: 1, y: 0,  scale: 1 }} exit={{ opacity: 0, y: 16, scale: 0.95 }} transition={{ duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }} className="absolute bottom-4 left-4 sm:left-auto sm:right-20 z-[1000] w-[calc(100%-2rem)] sm:w-72 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
       <div className="relative h-28 overflow-hidden">
-        <MapPlaceImage src={loc.img} alt={loc.name} fill className="object-cover" sizes="288px" placeholder="blur" blurDataURL={BLUR} />
+        <MapPlaceImage src={loc.img} alt={loc.name} fill className="object-cover" sizes="288px" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
         <button onClick={onClose} aria-label="Đóng thông tin địa điểm" className="absolute top-2 right-2 w-6 h-6 bg-white/80 rounded-full flex items-center justify-center hover:bg-white transition-colors z-10"><X size={12} className="text-gray-700" /></button>
         <div className="absolute bottom-2 left-3">
@@ -116,14 +120,19 @@ function LocationItem({ loc, isSelected, isChecked, onSelect, onCheck, index }: 
   const meta = CATEGORY_META[loc.category];
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 + index * 0.04, duration: 0.3 }} onClick={onSelect} className={`group flex items-start gap-2.5 p-2.5 rounded-xl cursor-pointer transition-all duration-200 border ${isSelected ? 'bg-teal-50 border-teal-200' : 'border-transparent hover:bg-gray-50 hover:border-gray-100 hover:translate-x-0.5'}`}>
-      <button onClick={e => { e.stopPropagation(); onCheck(); }} className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-all duration-200 ${isChecked ? 'bg-teal-500 border-teal-500' : 'border-gray-300 bg-white'}`}>
+      <button onClick={e => { e.stopPropagation(); onCheck(); }} className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-all duration-200 ${isChecked ? 'bg-teal-600 border-teal-600' : 'border-gray-300 bg-white'}`}>
         {isChecked && <motion.svg viewBox="0 0 12 10" width="9" height="7" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.2 }}><motion.path d="M1 5 L4.5 8.5 L11 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" /></motion.svg>}
       </button>
-      <div className="relative w-12 h-12 rounded-xl overflow-hidden flex-shrink-0"><MapPlaceImage src={loc.img} alt={loc.name} fill className="object-cover" sizes="48px" placeholder="blur" blurDataURL={BLUR} /></div>
+      <div className="relative w-12 h-12 rounded-xl overflow-hidden flex-shrink-0"><MapPlaceImage src={loc.img} alt={loc.name} fill className="object-cover" sizes="48px" /></div>
       <div className="flex-1 min-w-0">
-        <p className="text-xs font-bold text-[#0f2942] leading-tight truncate">{loc.name}</p>
-        <div className="flex items-center gap-1 mt-0.5"><span className={`w-1.5 h-1.5 rounded-full ${meta.dot} flex-shrink-0`} /><Star size={9} className="fill-yellow-400 text-yellow-400" /><span className="text-[10px] text-gray-600">{loc.rating}</span><span className="text-[10px] text-gray-400 ml-auto">{loc.distance}</span></div>
-        <p className="text-[10px] text-gray-400 mt-0.5 truncate">{loc.address}</p>
+        <p className="text-xs font-bold text-[#102C58] leading-tight truncate group-hover:text-teal-700 transition-colors">{loc.name}</p>
+        <div className="flex items-center gap-1.5 mt-0.5">
+          <span className={`w-1.5 h-1.5 rounded-full ${meta.dot} flex-shrink-0`} />
+          <Star size={10} className="fill-amber-400 text-amber-400" />
+          <span className="text-[11px] font-bold text-[#102C58]">{loc.rating}</span>
+          <span className="text-[11px] font-bold text-teal-700 ml-auto">{loc.distance}</span>
+        </div>
+        <p className="text-[11px] text-[#52657D] font-medium mt-0.5 truncate">{loc.address}</p>
       </div>
     </motion.div>
   );
@@ -253,71 +262,76 @@ export default function BanDoDuLichPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 pt-[56px]">
+    <div className="min-h-screen flex flex-col bg-[#EFFAF8] pt-[56px] relative overflow-hidden">
+      {/* ── Nền xanh ngọc pastel nhẹ tạo chiều sâu phong cách Coastal Travel ── */}
+      <div className="pointer-events-none absolute top-20 right-10 w-[600px] h-[600px] bg-[radial-gradient(circle,rgba(0,184,169,0.06)_0%,transparent_70%)] -z-0" />
+      <div className="pointer-events-none absolute top-1/2 left-0 w-[550px] h-[550px] bg-[radial-gradient(circle,rgba(38,184,174,0.05)_0%,transparent_70%)] -z-0" />
 
       {/* ═══ HEADER (BREADCRUMB & STATS) ════════════════════════════════════ */}
-      <div className="bg-gradient-to-r from-teal-50/70 to-cyan-50/30 border-b border-gray-100 pb-5 pt-4">
+      <div className="bg-gradient-to-r from-teal-100/50 via-[#EFFAF8] to-cyan-100/30 border-b border-teal-100/80 pb-5 pt-4 relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
-              <div className="flex items-center gap-1 text-sm text-gray-500 mb-2">
-                <Link href="/" className="hover:text-teal-600 transition-colors">Trang chủ</Link>
-                <ChevronRight size={14} className="text-gray-300" />
-                <span className="text-[#0f2942] font-medium">Bản đồ du lịch</span>
+              <div className="flex items-center gap-1.5 text-sm text-[#52657D] font-medium mb-2">
+                <Link href="/" className="hover:text-teal-700 transition-colors">Trang chủ</Link>
+                <ChevronRight size={14} className="text-teal-300" />
+                <span className="text-[#102C58] font-bold">Bản đồ du lịch</span>
               </div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-[#0f2942] h2-section">Bản đồ du lịch tương tác Đà Nẵng</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-[#102C58] h2-section tracking-tight">
+                Bản đồ du lịch tương tác Đà Nẵng
+              </h1>
             </div>
             <div className="flex flex-wrap items-center gap-3">
-              <div className="inline-flex items-center gap-2 bg-white shadow-sm border border-gray-200 text-gray-700 text-xs font-medium px-3.5 py-1.5 rounded-full">
+              <div className="inline-flex items-center gap-2 bg-white/95 shadow-sm border border-teal-100 text-[#102C58] text-xs font-semibold px-3.5 py-1.5 rounded-full">
                 <div className="text-amber-500 flex items-center justify-center">
                   <Sun size={14} className="animate-[spin_4s_linear_infinite]" />
                 </div>
                 28°C · Nắng êm sóng lặng
               </div>
-              <div className="inline-flex items-center gap-2 bg-white shadow-sm border border-gray-200 text-gray-600 text-xs font-medium px-3.5 py-1.5 rounded-full">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+              <div className="inline-flex items-center gap-2 bg-white/95 shadow-sm border border-teal-100 text-[#102C58] text-xs font-semibold px-3.5 py-1.5 rounded-full">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 {filterCenter[0].toFixed(4)}°, {filterCenter[1].toFixed(4)}° · {userPosition ? 'Vị trí của bạn' : 'Tâm Đà Nẵng'}
               </div>
             </div>
           </motion.div>
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1 }} className="flex flex-wrap gap-x-6 gap-y-2 mt-5">
             {[ { cat: 'luutru', dot: 'bg-blue-500' }, { cat: 'amthuc', dot: 'bg-orange-500' }, { cat: 'diemdulich', dot: 'bg-green-500' }, { cat: 'cafe', dot: 'bg-pink-500' } ].map(({ cat, dot }) => (
-              <div key={cat} className="flex items-center gap-1.5 text-sm text-gray-600 font-medium">
+              <div key={cat} className="flex items-center gap-1.5 text-sm text-[#52657D] font-medium bg-white/70 px-3 py-1 rounded-full border border-teal-100/60 shadow-xs">
                 <span className={`w-2 h-2 rounded-full ${dot}`} />
-                <AnimatedCounter key={`${cat}-${categoryCounts[cat as Category]}`} to={categoryCounts[cat as Category]} className="font-bold text-[#0f2942]" />
-                <span className="text-xs">{CATEGORY_META[cat as Category].label.split('&')[0].trim()}</span>
+                <AnimatedCounter key={`${cat}-${categoryCounts[cat as Category]}`} to={categoryCounts[cat as Category]} className="font-bold text-[#102C58]" />
+                <span className="text-xs font-semibold text-[#102C58]">{CATEGORY_META[cat as Category].label.split('&')[0].trim()}</span>
               </div>
             ))}
           </motion.div>
         </div>
       </div>
 
-      <div className="mx-auto w-full max-w-7xl px-4 pt-3 sm:px-6" aria-live="polite">
-        {placesLoading && <p role="status" className="flex items-center gap-2 text-sm text-teal-700"><LoaderCircle size={16} className="animate-spin" /> Đang tải địa điểm từ máy chủ…</p>}
-        {placesError && <div role="alert" className="rounded-xl bg-amber-50 p-3 text-sm text-amber-800">{placesError}<button onClick={reloadPlaces} className="ml-3 font-bold underline">Thử tải lại</button></div>}
-        {!placesLoading && !placesError && locations.length === 0 && <p className="text-sm text-gray-600">Chưa có địa điểm có tọa độ để hiển thị trên bản đồ.</p>}
-        {!placesLoading && !placesError && missingCoordinates > 0 && <p className="text-xs text-gray-500">{missingCoordinates} địa điểm chưa có tọa độ hợp lệ nên chưa hiển thị trên bản đồ.</p>}
+      <div className="mx-auto w-full max-w-7xl px-4 pt-3 sm:px-6 relative z-10" aria-live="polite">
+        {placesLoading && <p role="status" className="flex items-center gap-2 text-sm text-teal-700 font-medium"><LoaderCircle size={16} className="animate-spin" /> Đang tải địa điểm từ máy chủ…</p>}
+        {placesError && <div role="alert" className="rounded-xl bg-amber-50 p-3 text-sm text-amber-800 border border-amber-200">{placesError}<button onClick={reloadPlaces} className="ml-3 font-bold underline">Thử tải lại</button></div>}
+        {!placesLoading && !placesError && locations.length === 0 && <p className="text-sm text-[#52657D]">Chưa có địa điểm có tọa độ để hiển thị trên bản đồ.</p>}
+        {!placesLoading && !placesError && missingCoordinates > 0 && <p className="text-xs text-[#52657D]">{missingCoordinates} địa điểm chưa có tọa độ hợp lệ nên chưa hiển thị trên bản đồ.</p>}
       </div>
 
       {/* ═══ MAP APP CONTAINER ══════════════════════════════════════════════ */}
-      <div className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-6 flex flex-col min-h-0">
+      <div className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-6 flex flex-col min-h-0 relative z-10">
         <motion.div 
           initial={{ opacity: 0, scale: 0.98 }} 
           animate={{ opacity: 1, scale: 1 }} 
           transition={{ duration: 0.5, ease: 'easeOut' }}
-          className="flex-1 flex flex-col lg:flex-row bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden min-h-[600px] max-h-[85vh] relative"
+          className="flex-1 flex flex-col lg:flex-row bg-white rounded-3xl shadow-xl shadow-teal-950/5 border border-teal-100/90 overflow-hidden min-h-[600px] max-h-[85vh] relative"
         >
           {/* ── SIDEBAR ── */}
-          <aside className="hidden lg:flex flex-col w-[340px] bg-white border-r border-gray-200 flex-shrink-0 z-20 relative min-h-0">
+          <aside className="hidden lg:flex flex-col w-[340px] bg-white border-r border-gray-100 flex-shrink-0 z-20 relative min-h-0">
             {/* Sidebar gradient accent */}
-            <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-teal-50/50 to-transparent pointer-events-none" />
+            <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-teal-50/60 to-transparent pointer-events-none" />
             
             {/* PHẦN TRÊN - KHÔNG CUỘN */}
-            <div className="p-5 space-y-6 shrink-0 relative z-10 border-b border-gray-50">
+            <div className="p-5 space-y-6 shrink-0 relative z-10 border-b border-gray-100/70">
               <div>
                 <div className="relative shadow-sm rounded-xl">
                   <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                  <input value={search} onChange={e => setSearch(e.target.value)} placeholder='Tìm địa điểm... "Sơn Trà"' className="w-full pl-9 pr-8 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400 bg-white transition-all" />
+                  <input value={search} onChange={e => setSearch(e.target.value)} placeholder='Tìm địa điểm... "Sơn Trà"' className="w-full pl-9 pr-8 py-2.5 border border-gray-200 focus:border-teal-500 rounded-xl text-sm font-medium text-[#102C58] focus:outline-none focus:ring-2 focus:ring-teal-400/20 bg-white transition-all placeholder-[#52657D]/50" />
                   <AnimatePresence>
                     {search && (
                       <motion.button initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }} onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
@@ -329,8 +343,8 @@ export default function BanDoDuLichPage() {
               </div>
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <p className="text-xs font-bold text-gray-800 uppercase tracking-wider">Phân loại</p>
-                  <button onClick={resetFilters} className="flex items-center gap-1 text-[11px] text-gray-400 hover:text-red-500 transition-colors font-medium">
+                  <p className="text-xs font-bold text-[#102C58] uppercase tracking-wider">Phân loại</p>
+                  <button onClick={resetFilters} className="flex items-center gap-1 text-[11px] text-[#52657D] hover:text-red-500 transition-colors font-semibold">
                     <RefreshCw size={11} /> Đặt lại
                   </button>
                 </div>
@@ -341,11 +355,11 @@ export default function BanDoDuLichPage() {
                 </div>
               </div>
               <div>
-                <p className="text-xs font-bold text-gray-800 uppercase tracking-wider mb-3">Bán kính từ {userPosition ? 'vị trí của bạn' : 'tâm Đà Nẵng'}</p>
+                <p className="text-xs font-bold text-[#102C58] uppercase tracking-wider mb-3">Bán kính từ {userPosition ? 'vị trí của bạn' : 'tâm Đà Nẵng'}</p>
                 <LayoutGroup id="radius">
                   <div className="flex gap-2 p-1 bg-gray-100 rounded-xl">
                     {([2, 5, 10] as const).map(r => (
-                      <button key={r} onClick={() => setRadius(r)} aria-pressed={radius === r} className={`relative flex-1 py-1.5 rounded-lg text-xs font-semibold transition-colors ${radius === r ? 'text-[#0f2942]' : 'text-gray-500 hover:text-gray-700'}`}>
+                      <button key={r} onClick={() => setRadius(r)} aria-pressed={radius === r} className={`relative flex-1 py-1.5 rounded-lg text-xs font-bold transition-colors ${radius === r ? 'text-[#102C58]' : 'text-[#52657D] hover:text-[#102C58]'}`}>
                         {radius === r && (
                           <motion.span layoutId="radius-bg" className="absolute inset-0 rounded-lg bg-white shadow-sm" transition={{ type: 'spring', stiffness: 500, damping: 35 }} />
                         )}
@@ -354,13 +368,13 @@ export default function BanDoDuLichPage() {
                     ))}
                   </div>
                 </LayoutGroup>
-                <p className="mt-2 text-[10px] text-gray-500">Khoảng cách đường chim bay. Quãng đường lái xe sẽ được tính khi chỉ đường.</p>
+                <p className="mt-2 text-[11px] font-medium text-[#52657D]">Khoảng cách đường chim bay. Quãng đường lái xe sẽ được tính khi chỉ đường.</p>
               </div>
             </div>
 
             {/* PHẦN LIST - CUỘN ĐỘC LẬP */}
-            <div className="flex-1 min-h-0 overflow-y-auto px-5 pb-5 relative z-10 pt-2">
-              <p className="text-xs font-bold text-gray-800 uppercase tracking-wider mb-3">Địa điểm ghim ({visibleLocations.length})</p>
+            <div className="flex-1 min-h-0 overflow-y-auto px-5 pb-5 relative z-10 pt-3">
+              <p className="text-xs font-bold text-[#102C58] uppercase tracking-wider mb-3">Địa điểm ghim ({visibleLocations.length})</p>
               <div className="space-y-1.5 pb-20"> {/* pb-20 prevents bottom items from being cut off */}
                 {visibleLocations.slice(0, 5).map((loc, i) => (
                   <LocationItem key={loc.id} loc={loc} isSelected={selectedId === loc.id} isChecked={checkedIds.has(loc.id)} onSelect={() => setSelectedId(selectedId === loc.id ? null : loc.id)} onCheck={() => toggleCheck(loc.id)} index={i} />
@@ -667,6 +681,188 @@ export default function BanDoDuLichPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ═══ SECTION: CẨM NANG DU LỊCH ĐÀ NẴNG (MINH HỌA DA NANG TRAVEL MAP) ═══ */}
+      <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 pt-4 pb-12 relative z-10">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-40px' }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+          className="rounded-3xl border border-teal-200/80 bg-white/95 backdrop-blur-md p-6 sm:p-8 lg:p-10 shadow-xl shadow-teal-900/5 transition-all duration-300 hover:shadow-2xl hover:border-teal-300"
+        >
+          {/* Header section */}
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8 pb-6 border-b border-teal-100">
+            <div>
+              <div className="inline-flex items-center gap-2 bg-teal-50 border border-teal-200/80 text-teal-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-2.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#00B8A9] animate-pulse" />
+                Cẩm nang du lịch Đà Nẵng
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-bold text-[#102C58] tracking-tight">
+                Bản Đồ Chỉ Dẫn Du Lịch &amp; Điểm Đến Nổi Bật
+              </h2>
+              <p className="text-sm sm:text-base text-[#52657D] font-medium mt-1.5 max-w-2xl leading-relaxed">
+                Khám phá tổng quan vị trí 6 danh thắng biểu tượng, bãi biển quyến rũ và ẩm thực đặc sản Đà Nẵng qua bản đồ minh họa sinh động.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3 shrink-0">
+              <Link
+                href="/lich-trinh/tao-moi"
+                className="inline-flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-xl shadow-sm transition-all hover:shadow-md hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <Calendar size={15} />
+                <span>Lên lịch trình tự động</span>
+              </Link>
+              <Link
+                href="/diemdulich"
+                className="inline-flex items-center gap-1.5 bg-teal-50 hover:bg-teal-100/80 border border-teal-200 text-teal-800 text-xs sm:text-sm font-semibold px-3.5 py-2.5 rounded-xl transition-all"
+              >
+                <span>Xem danh thắng</span>
+                <ArrowRight size={14} />
+              </Link>
+            </div>
+          </div>
+
+          {/* Grid 2 cột: Trái là Ảnh minh họa giữ trọn tỷ lệ 576:1024, Phải là Danh sách chỉ dẫn */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
+            {/* Cột trái: Ảnh minh họa (giữ đúng 100% tỷ lệ, không bị kéo giãn, không cắt chữ) */}
+            <div className="lg:col-span-5 flex flex-col items-center">
+              <div className="relative w-full max-w-[420px] rounded-2xl overflow-hidden bg-gradient-to-b from-[#F3FBFA] to-white p-3 border border-teal-100 shadow-md group">
+                <div className="relative w-full aspect-[576/1024] rounded-xl overflow-hidden bg-white shadow-inner">
+                  <Image
+                    src={TRAVEL_MAP_ILLUSTRATION}
+                    alt="Da Nang Travel Map — Cẩm nang du lịch Đà Nẵng minh họa trực quan"
+                    fill
+                    sizes="(max-width: 768px) 100vw, 420px"
+                    className="object-contain transition-transform duration-500 group-hover:scale-[1.015]"
+                    priority={false}
+                  />
+                </div>
+                <div className="pt-3 pb-1 text-center">
+                  <p className="text-xs font-bold text-[#102C58]">
+                    DA NANG TRAVEL MAP — RECIPE, TRAVEL &amp; ASIA
+                  </p>
+                  <p className="text-[11px] text-teal-700/80 font-medium mt-0.5">
+                    Ảnh minh họa độc quyền các điểm đến &amp; ẩm thực Đà Nẵng
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Cột phải: 6 Điểm đến nổi bật & Ẩm thực miệt vườn tương ứng */}
+            <div className="lg:col-span-7 flex flex-col gap-6">
+              {/* Khối 1: 6 Danh thắng trên bản đồ minh họa */}
+              <div>
+                <h3 className="text-xs font-bold text-[#102C58] uppercase tracking-wider mb-3 flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-teal-500" />
+                  6 Tọa Độ Biểu Tượng Trên Bản Đồ
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {[
+                    {
+                      no: 1,
+                      name: 'Cầu Rồng (Dragon Bridge)',
+                      desc: 'Biểu tượng Đà Nẵng, xem trình diễn phun lửa & phun nước 21h thứ Bảy, Chủ Nhật.',
+                    },
+                    {
+                      no: 2,
+                      name: 'Bãi biển Mỹ Khê (My Khe Beach)',
+                      desc: 'Top bãi biển quyến rũ nhất hành tinh với bãi cát trắng mịn, làn nước trong xanh.',
+                    },
+                    {
+                      no: 3,
+                      name: 'Ngũ Hành Sơn (Marble Mountains)',
+                      desc: 'Quần thể 5 ngọn núi đá vôi kỳ vĩ với hệ thống hang động huyền ảo và chùa cổ.',
+                    },
+                    {
+                      no: 4,
+                      name: 'Bán đảo Sơn Trà & Chùa Linh Ứng',
+                      desc: 'Tượng Phật Bà Quan Âm 67m hướng biển, ngắm toàn cảnh vịnh Đà Nẵng.',
+                    },
+                    {
+                      no: 5,
+                      name: 'Chợ Hàn (Han Market)',
+                      desc: 'Chợ truyền thống sầm uất tại trung tâm, thiên đường đặc sản & quà lưu niệm.',
+                    },
+                    {
+                      no: 6,
+                      name: 'Phố cổ Hội An (Cách 30km)',
+                      desc: 'Di sản thế giới UNESCO lung linh lồng đèn ven sông Hoài bình yên.',
+                    },
+                  ].map((place) => (
+                    <div
+                      key={place.no}
+                      className="flex items-start gap-3 p-3.5 rounded-2xl bg-[#F8FDFA] border border-teal-100/80 hover:bg-white hover:border-teal-300 hover:shadow-md transition-all duration-200"
+                    >
+                      <span className="w-7 h-7 rounded-xl bg-teal-600 text-white flex items-center justify-center text-xs font-black shrink-0 shadow-xs">
+                        {place.no}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-xs sm:text-sm font-bold text-[#102C58] truncate">
+                          {place.name}
+                        </h4>
+                        <p className="text-[11px] text-[#52657D] font-medium leading-relaxed mt-1">
+                          {place.desc}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Khối 2: Ẩm thực đặc sản gợi ý */}
+              <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-50/60 via-orange-50/30 to-teal-50/40 border border-amber-200/60">
+                <h3 className="text-xs font-bold text-[#102C58] uppercase tracking-wider mb-2 flex items-center gap-2">
+                  <span>🍜</span> Món Ngon Nhất Định Phải Thử (Must-Try Food)
+                </h3>
+                <p className="text-xs text-[#52657D] font-medium mb-3">
+                  Ẩm thực đậm đà phong vị miền Trung được thể hiện sinh động ở chân bản đồ:
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { name: 'Mì Quảng ếch & tôm thịt', icon: '🍜' },
+                    { name: 'Bánh xèo tôm nhảy giòn rụm', icon: '🥞' },
+                    { name: 'Bún chả cá thu gia truyền', icon: '🍲' },
+                    { name: 'Hải sản tươi sống Mỹ Khê', icon: '🦀' },
+                    { name: 'Cà phê sữa đá đậm đà', icon: '☕' },
+                  ].map((food) => (
+                    <span
+                      key={food.name}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-amber-200/80 text-xs font-bold text-[#102C58] shadow-2xs hover:border-orange-300 transition-colors"
+                    >
+                      <span>{food.icon}</span>
+                      <span>{food.name}</span>
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Khối 3: Mẹo di chuyển */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 rounded-2xl bg-teal-50/60 border border-teal-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-teal-600/10 text-teal-700 flex items-center justify-center shrink-0">
+                    <Navigation size={18} />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-[#102C58]">Mẹo di chuyển thuận tiện</h4>
+                    <p className="text-[11px] text-[#52657D] font-medium">
+                      Thuê xe máy khám phá đèo &amp; bán đảo, dùng Grab/Taxi trong phố, dạo bộ ngắm cầu sông Hàn.
+                    </p>
+                  </div>
+                </div>
+                <Link
+                  href="/amthuc"
+                  className="shrink-0 text-xs font-bold text-teal-700 hover:text-teal-800 hover:underline flex items-center gap-1"
+                >
+                  <span>Khám phá ẩm thực</span>
+                  <ChevronRight size={13} />
+                </Link>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </section>
 
       <Footer />
     </div>

@@ -42,6 +42,8 @@ export interface SendMessageInput {
   message: string;
   location?: ChatLocation;
   userId?: number | null;
+  /** Vai trò lấy từ middleware xác thực, không nhận từ JSON client. */
+  userRole?: 'USER' | 'PARTNER' | 'ADMIN';
   /** Danh tính khách lấy từ cookie HttpOnly, không lấy từ JSON client. */
   guestId?: string;
 }
@@ -66,6 +68,7 @@ export interface ChatComparison {
   notices: string[];
 }
 export interface ChatTravelPlan {
+  source?: 'FAVORITES';
   revision?: number;
   preferences?: import("./chat.trip-preferences").TripPreferences;
   questions?: string[];

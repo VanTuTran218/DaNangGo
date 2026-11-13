@@ -85,6 +85,7 @@ export interface PartnerProfile {
   email: string;
   status: PartnerAccountStatus;
   rejectReason?: string;
+  reviewedAt?: string;
 }
 
 export interface DailyBookingStat {

@@ -1,0 +1,13 @@
+{
+  "checkedAt": "2026-11-06T04:58:06.104Z",
+  "status": "PASS",
+  "mode": "real local SQL; favorite fixtures rolled back; no model calls",
+  "checks": {
+    "publicIdsAndIsolation": "PASS: all plan/group IDs are current favorites of owner A; owner B-only place excluded",
+    "realPlan": "PASS: two-day plan built from real SQL price/location/duration data",
+    "costs": "PASS: projected amounts and remaining budget consistent when known subtotal exists",
+    "hidden": "PASS: hidden saved place excluded from planner candidates",
+    "freshRead": "PASS: rebuilding after removals does not reuse old candidates or other-owner places",
+    "rollback": "PASS: original favorite IDs/count restored; no permanent fixture relationships"
+  }
+}

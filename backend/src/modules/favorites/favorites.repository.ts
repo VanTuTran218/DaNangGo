@@ -1,5 +1,7 @@
 import { getPool, sql } from '../../config/db';
 
+const requestFor = (transaction?: sql.Transaction) => transaction ? new sql.Request(transaction) : getPool().request();
+
 export type FavoritePlaceType = 'RESTAURANT' | 'ACCOMMODATION' | 'ATTRACTION';
 
 export interface FavoritePlaceRecord {
@@ -13,8 +15,8 @@ export interface FavoritePlaceRecord {
   favorited_at: Date;
 }
 
-export async function listFavoriteIds(userId: number): Promise<number[]> {
-  const result = await getPool().request()
+export async function listFavoriteIds(userId: number, transaction?: sql.Transaction): Promise<number[]> {
+  const result = await requestFor(transaction)
     .input('userId', sql.Int, userId)
     .query<{ place_id: number }>(`
       SELECT place_id
@@ -24,8 +26,8 @@ export async function listFavoriteIds(userId: number): Promise<number[]> {
   return result.recordset.map((row) => row.place_id);
 }
 
-export async function isActivePlace(placeId: number): Promise<boolean> {
-  const result = await getPool().request()
+export async function isActivePlace(placeId: number, transaction?: sql.Transaction): Promise<boolean> {
+  const result = await requestFor(transaction)
     .input('placeId', sql.Int, placeId)
     .query<{ found: number }>(`
       SELECT TOP (1) 1 AS found
@@ -35,9 +37,9 @@ export async function isActivePlace(placeId: number): Promise<boolean> {
   return result.recordset.length > 0;
 }
 
-export async function insertFavorite(userId: number, placeId: number): Promise<void> {
+export async function insertFavorite(userId: number, placeId: number, transaction?: sql.Transaction): Promise<void> {
   try {
-    await getPool().request()
+    await requestFor(transaction)
       .input('userId', sql.Int, userId)
       .input('placeId', sql.Int, placeId)
       .query(`
@@ -47,7 +49,8 @@ export async function insertFavorite(userId: number, placeId: number): Promise<v
         )
         BEGIN
           INSERT INTO dbo.favorites (user_id, place_id)
-          VALUES (@userId, @placeId)
+          SELECT @userId, place_id FROM dbo.places WHERE place_id=@placeId AND status='ACTIVE';
+          IF @@ROWCOUNT=0 THROW 50001, N'Địa điểm không còn hoạt động.', 1;
         END
       `);
   } catch (error) {
@@ -56,8 +59,8 @@ export async function insertFavorite(userId: number, placeId: number): Promise<v
   }
 }
 
-export async function deleteFavorite(userId: number, placeId: number): Promise<void> {
-  await getPool().request()
+export async function deleteFavorite(userId: number, placeId: number, transaction?: sql.Transaction): Promise<void> {
+  await requestFor(transaction)
     .input('userId', sql.Int, userId)
     .input('placeId', sql.Int, placeId)
     .query(`
@@ -71,22 +74,21 @@ export async function listFavorites(input: {
   type?: FavoritePlaceType;
   page: number;
   limit: number;
-}): Promise<{ data: FavoritePlaceRecord[]; total: number }> {
-  const pool = getPool();
-  const bind = (request: ReturnType<typeof pool.request>) => request
+}, transaction?: sql.Transaction): Promise<{ data: FavoritePlaceRecord[]; total: number }> {
+  const bind = (request: sql.Request) => request
     .input('userId', sql.Int, input.userId)
     .input('type', sql.VarChar(20), input.type ?? null);
   const where = `f.user_id = @userId AND p.status = 'ACTIVE'
     AND (@type IS NULL OR p.place_type = @type)`;
 
-  const count = await bind(pool.request()).query<{ total: number }>(`
+  const count = await bind(requestFor(transaction)).query<{ total: number }>(`
     SELECT COUNT(*) AS total
     FROM dbo.favorites AS f
     INNER JOIN dbo.places AS p ON p.place_id = f.place_id
     WHERE ${where}
   `);
 
-  const result = await bind(pool.request())
+  const result = await bind(requestFor(transaction))
     .input('offset', sql.Int, (input.page - 1) * input.limit)
     .input('limit', sql.Int, input.limit)
     .query<FavoritePlaceRecord>(`
@@ -108,4 +110,11 @@ export async function listFavorites(input: {
     `);
 
   return { data: result.recordset, total: count.recordset[0]?.total ?? 0 };
+}
+
+/** Expected owner is a UI precondition only; authenticated userId remains authoritative. */
+export async function favoriteOwnerPublicId(userId: number): Promise<string | null> {
+  const result = await getPool().request().input('userId', sql.Int, userId)
+    .query<{public_id:string}>('SELECT public_id FROM dbo.users WHERE user_id=@userId');
+  return result.recordset[0]?.public_id ?? null;
 }

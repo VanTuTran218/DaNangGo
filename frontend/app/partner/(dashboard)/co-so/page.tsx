@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAsyncData } from '@/hooks/useAsyncData';
 import { getPartnerPlaces, getPartnerProfile, updatePlaceStatus } from '@/lib/api/partner';
-import type { PartnerPlace, PartnerPlaceStatus } from '@/types/partner';
+import type { PartnerPlace } from '@/types/partner';
 import PartnerPageHeader from '@/components/partner/PartnerPageHeader';
 import StatsRow from '@/components/partner/StatsRow';
 import StatusFilterPills, { type StatusFilterValue } from '@/components/partner/StatusFilterPills';
@@ -12,10 +12,10 @@ import PlacesTable from '@/components/partner/PlacesTable';
 import CtaBanner from '@/components/partner/CtaBanner';
 import ScrollToTop from '@/components/partner/ScrollToTop';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
-import StatusBadge from '@/components/ui/StatusBadge';
+import PartnerStatusBadge from '@/components/partner/PartnerStatusBadge';
 import ToastNotification, { type ToastItem } from '@/components/ui/ToastNotification';
 import { getFriendlyErrorMessage } from '@/lib/utils/formatError';
-import { Plus, Search, MapPin, X, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Plus, Search, MapPin, X } from 'lucide-react';
 import Image from 'next/image';
 
 export default function PartnerPlacesPage() {
@@ -23,7 +23,6 @@ export default function PartnerPlacesPage() {
   const [searchKeyword, setSearchKeyword] = useState('');
   const [selectedPlace, setSelectedPlace] = useState<PartnerPlace | null>(null);
 
-  // State cho Confirm Dialog đổi trạng thái Ẩn / Hiện
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean;
     place: PartnerPlace | null;
@@ -45,7 +44,6 @@ export default function PartnerPlacesPage() {
   const isLocked = profile?.status === 'PENDING' || profile?.status === 'REJECTED';
   const allPlaces = rawPlaces || [];
 
-  // Filter client-side by keyword
   const filteredPlaces = useMemo(() => {
     if (!searchKeyword.trim()) return allPlaces;
     const kw = searchKeyword.toLowerCase().trim();
@@ -57,7 +55,6 @@ export default function PartnerPlacesPage() {
     );
   }, [allPlaces, searchKeyword]);
 
-  // Metric stats
   const stats = useMemo(() => {
     const total = allPlaces.length;
     const active = allPlaces.filter((p) => p.status === 'ACTIVE' || p.status === 'APPROVED').length;
@@ -66,7 +63,6 @@ export default function PartnerPlacesPage() {
     return { total, active, pending, locked };
   }, [allPlaces]);
 
-  // Counts for filter pills
   const filterCounts = useMemo(() => {
     return {
       ALL: allPlaces.length,
@@ -118,10 +114,9 @@ export default function PartnerPlacesPage() {
 
   return (
     <div className="space-y-6">
-      {/* Toast Notification */}
       <ToastNotification toast={toast} onClose={() => setToast(null)} />
 
-      {/* 1. Header dùng chung */}
+      {/* 1. Hero Banner Cơ sở dịch vụ */}
       <PartnerPageHeader
         breadcrumbs={[
           { label: 'Partner', href: '/partner' },
@@ -129,6 +124,7 @@ export default function PartnerPlacesPage() {
         ]}
         title="Danh sách quán của tôi"
         description="Theo dõi hoạt động, quản lý hiển thị và cập nhật thông tin các quán ăn, nhà hàng của bạn."
+        backgroundImage="/images/partner/danang-dragon-bridge-night.jpg"
         action={
           !isLocked
             ? {
@@ -149,20 +145,18 @@ export default function PartnerPlacesPage() {
       />
 
       {/* 3. Thanh tìm kiếm và bộ lọc trạng thái */}
-      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-white p-4 rounded-3xl border border-slate-200/80 shadow-xs">
-        {/* Ô tìm kiếm */}
+      <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 bg-white p-4 rounded-[20px] border border-[#E2ECEC] shadow-xs">
         <div className="relative flex-1 max-w-md">
           <input
             type="text"
             value={searchKeyword}
             onChange={(e) => setSearchKeyword(e.target.value)}
             placeholder="Tìm kiếm theo tên quán, địa chỉ..."
-            className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-2xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/25 focus:border-teal-500 transition-all"
+            className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm text-[#14233B] placeholder:text-[#68798A]/80 bg-[#F6FAFA] border border-[#E2ECEC] rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/30 focus:border-[#14B8A6] transition-all"
           />
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <Search className="w-4 h-4 text-[#68798A] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
         </div>
 
-        {/* Pill lọc theo trạng thái */}
         <StatusFilterPills
           current={statusFilter}
           onChange={setStatusFilter}
@@ -181,10 +175,10 @@ export default function PartnerPlacesPage() {
         onToggleStatus={openToggleConfirm}
       />
 
-      {/* 5. Dải Banner CTA */}
+      {/* 5. Dải Banner CTA hỗ trợ đối tác */}
       <CtaBanner />
 
-      {/* 6. Nút Lên đầu trang có vòng tròn tiến độ cuộn */}
+      {/* 6. Nút Lên đầu trang */}
       <ScrollToTop />
 
       {/* 7. Dialog xác nhận Ẩn / Hiện */}
@@ -207,63 +201,65 @@ export default function PartnerPlacesPage() {
       {/* 8. Modal xem chi tiết cơ sở */}
       <AnimatePresence>
         {selectedPlace && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#073B3A]/60 backdrop-blur-xs">
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              initial={{ opacity: 0, scale: 0.96, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-100 relative space-y-5 max-h-[90vh] overflow-y-auto"
+              exit={{ opacity: 0, scale: 0.96, y: 10 }}
+              className="bg-white rounded-[24px] max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-[#E2ECEC] relative space-y-5 max-h-[90vh] overflow-y-auto"
             >
               <button
                 onClick={() => setSelectedPlace(null)}
-                className="absolute right-5 top-5 p-1.5 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100 transition-colors"
+                className="absolute right-5 top-5 p-1.5 text-[#68798A] hover:text-[#14233B] rounded-xl hover:bg-[#F6FAFA] transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
 
               <div className="flex items-start gap-3.5">
-                <div className="w-12 h-12 rounded-2xl bg-teal-50 border border-teal-100 flex items-center justify-center text-teal-600 shrink-0">
+                <div className="w-12 h-12 rounded-2xl bg-[#E9F8F5] border border-[#BDE8E0] flex items-center justify-center text-[#008F89] shrink-0">
                   <MapPin className="w-6 h-6" />
                 </div>
                 <div className="flex-1 pr-6">
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-lg font-bold text-slate-900">{selectedPlace.name}</h3>
-                    <StatusBadge status={selectedPlace.status} />
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-lg font-bold text-[#14233B]">{selectedPlace.name}</h3>
+                    <PartnerStatusBadge status={selectedPlace.status} />
                   </div>
-                  <p className="text-xs text-slate-500 mt-0.5">
+                  <p className="text-xs text-[#68798A] mt-0.5">
                     {selectedPlace.area || 'Đà Nẵng'} • {selectedPlace.address}
                   </p>
                 </div>
               </div>
 
-              <div className="space-y-2.5 text-xs sm:text-sm text-slate-700 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+              <div className="space-y-2.5 text-xs sm:text-sm text-[#14233B] bg-[#F6FAFA] p-4 rounded-2xl border border-[#E2ECEC]">
                 <p>
-                  <span className="font-bold text-slate-500">Mô tả:</span>{' '}
+                  <span className="font-bold text-[#68798A]">Mô tả:</span>{' '}
                   {selectedPlace.description || 'Chưa có mô tả chi tiết.'}
                 </p>
                 <p>
-                  <span className="font-bold text-slate-500">Khoảng giá:</span>{' '}
-                  <span className="font-bold text-orange-600">
+                  <span className="font-bold text-[#68798A]">Khoảng giá:</span>{' '}
+                  <span className="font-bold text-[#FF8A24]">
                     ₫{selectedPlace.priceMin?.toLocaleString('vi-VN') || 0}{' '}
-                    {selectedPlace.priceMax ? `- ₫${selectedPlace.priceMax.toLocaleString('vi-VN')}` : ''}
+                    {selectedPlace.priceMax
+                      ? `- ₫${selectedPlace.priceMax.toLocaleString('vi-VN')}`
+                      : ''}
                   </span>
                 </p>
                 <p>
-                  <span className="font-bold text-slate-500">Giờ mở cửa:</span>{' '}
+                  <span className="font-bold text-[#68798A]">Giờ mở cửa:</span>{' '}
                   {selectedPlace.openHours}
                 </p>
                 <p>
-                  <span className="font-bold text-slate-500">Lượt xem:</span>{' '}
+                  <span className="font-bold text-[#68798A]">Lượt xem:</span>{' '}
                   {(selectedPlace.viewCount ?? 0).toLocaleString('vi-VN')} lượt
                 </p>
                 {selectedPlace.bookingUrl && (
                   <p>
-                    <span className="font-bold text-slate-500">URL đặt bàn:</span>{' '}
+                    <span className="font-bold text-[#68798A]">URL đặt bàn:</span>{' '}
                     <a
                       href={selectedPlace.bookingUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-teal-600 underline font-semibold break-all"
+                      className="text-[#008F89] underline font-semibold break-all"
                     >
                       {selectedPlace.bookingUrl}
                     </a>
@@ -273,14 +269,14 @@ export default function PartnerPlacesPage() {
 
               {selectedPlace.images && selectedPlace.images.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-xs font-bold text-slate-700">
+                  <p className="text-xs font-bold text-[#14233B]">
                     Hình ảnh ({selectedPlace.images.length})
                   </p>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-3 gap-2.5">
                     {selectedPlace.images.map((url, idx) => (
                       <div
                         key={idx}
-                        className="relative h-20 rounded-xl overflow-hidden bg-slate-100 border border-slate-200"
+                        className="relative h-20 rounded-xl overflow-hidden bg-[#F6FAFA] border border-[#E2ECEC]"
                       >
                         <Image src={url} alt={`Ảnh ${idx + 1}`} fill className="object-cover" />
                       </div>
@@ -289,11 +285,11 @@ export default function PartnerPlacesPage() {
                 </div>
               )}
 
-              <div className="flex justify-end pt-2 border-t border-slate-100">
+              <div className="flex justify-end pt-2 border-t border-[#E2ECEC]">
                 <button
                   type="button"
                   onClick={() => setSelectedPlace(null)}
-                  className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs rounded-xl transition-colors"
+                  className="px-5 py-2.5 bg-[#F6FAFA] hover:bg-[#E9F8F5] border border-[#E2ECEC] text-[#14233B] font-bold text-xs rounded-xl transition-colors"
                 >
                   Đóng
                 </button>

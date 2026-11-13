@@ -3,17 +3,18 @@
 /**
  * VerifyEmailStep
  * ──────────────
- * Bước xác thực email bằng OTP 6 số.
- * - 6 ô input riêng, tự focus, tự submit khi đủ 6 số
- * - Hỗ trợ dán toàn bộ mã (paste)
- * - Hỗ trợ Backspace xóa và lùi ô
- * - Đếm ngược 60 giây để gửi lại mã
- * - Hiển thị lỗi rõ ràng
- * - Animation fade + slide khi mount
+ * Bước xác thực email bằng mã OTP 6 số:
+ * - 6 ô input tách rời, tự động focus ô kế tiếp khi nhập số
+ * - Hỗ trợ dán (paste) toàn bộ mã OTP
+ * - Hỗ trợ phím Backspace xóa và lùi ô mượt mà
+ * - Đếm ngược 60s để gửi lại mã OTP
+ * - Nút xác nhận phủ gradient Sunset Orange đồng bộ với toàn hệ thống
+ * - Giữ nguyên 100% API xác thực và luồng xử lý
  */
 
 import { useRef, useState, useEffect, useCallback, type KeyboardEvent, type ClipboardEvent, type ChangeEvent } from 'react';
 import { motion } from 'framer-motion';
+import { Mail, Check, AlertCircle, ArrowLeft, Send } from 'lucide-react';
 import { verifyEmail, resendCode } from '@/lib/api/auth';
 
 const OTP_LENGTH = 6;
@@ -32,7 +33,15 @@ interface VerifyEmailStepProps {
   backLabel?: string;
 }
 
-export default function VerifyEmailStep({ email, maskedEmail, onSuccess, onBack, onVerify, onResend, backLabel }: VerifyEmailStepProps) {
+export default function VerifyEmailStep({
+  email,
+  maskedEmail,
+  onSuccess,
+  onBack,
+  onVerify,
+  onResend,
+  backLabel,
+}: VerifyEmailStepProps) {
   const [digits, setDigits] = useState<string[]>(Array(OTP_LENGTH).fill(''));
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -62,8 +71,10 @@ export default function VerifyEmailStep({ email, maskedEmail, onSuccess, onBack,
   useEffect(() => {
     startCountdown();
     // Focus ô đầu khi mount
-    setTimeout(() => inputRefs.current[0]?.focus(), 100);
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+    setTimeout(() => inputRefs.current[0]?.focus(), 120);
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
   }, [startCountdown]);
 
   /** Cập nhật digits và tự focus ô tiếp theo */
@@ -77,7 +88,7 @@ export default function VerifyEmailStep({ email, maskedEmail, onSuccess, onBack,
     if (digit && index < OTP_LENGTH - 1) {
       inputRefs.current[index + 1]?.focus();
     }
-    // Auto-submit khi nhập đủ
+    // Auto-submit khi nhập đủ 6 số
     if (newDigits.every((d) => d !== '') && digit) {
       handleSubmit(newDigits.join(''));
     }
@@ -106,7 +117,7 @@ export default function VerifyEmailStep({ email, maskedEmail, onSuccess, onBack,
     }
   };
 
-  /** Hỗ trợ dán cả mã */
+  /** Hỗ trợ dán cả mã OTP */
   const handlePaste = (e: ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
     const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, OTP_LENGTH);
@@ -117,10 +128,8 @@ export default function VerifyEmailStep({ email, maskedEmail, onSuccess, onBack,
     }
     setDigits(newDigits);
     setError('');
-    // Focus vào ô sau ký tự cuối được dán
     const nextIdx = Math.min(pasted.length, OTP_LENGTH - 1);
     inputRefs.current[nextIdx]?.focus();
-    // Auto-submit nếu đủ 6 số
     if (pasted.length === OTP_LENGTH) {
       handleSubmit(newDigits.join(''));
     }
@@ -140,7 +149,6 @@ export default function VerifyEmailStep({ email, maskedEmail, onSuccess, onBack,
         setTimeout(() => onSuccess(email), 1200);
       } else {
         setError(res.error ?? 'Mã xác nhận không đúng.');
-        // Xóa các ô khi sai để nhập lại dễ hơn
         setDigits(Array(OTP_LENGTH).fill(''));
         setTimeout(() => inputRefs.current[0]?.focus(), 50);
       }
@@ -178,49 +186,54 @@ export default function VerifyEmailStep({ email, maskedEmail, onSuccess, onBack,
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: 30 }}
+      initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -30 }}
+      exit={{ opacity: 0, x: -20 }}
       transition={{ duration: 0.3, ease: 'easeOut' }}
-      className="flex flex-col gap-5 w-full max-w-md mx-auto"
+      className="flex flex-col gap-5 w-full max-w-md mx-auto py-2"
     >
       {/* Header */}
       <div className="text-center flex flex-col items-center gap-3">
-        <div className="w-16 h-16 rounded-full bg-teal-50 flex items-center justify-center">
-          <svg className="w-8 h-8 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-              d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-          </svg>
+        <div className="relative">
+          <div className="w-16 h-16 rounded-2xl bg-teal-50 border border-teal-100 flex items-center justify-center text-[#087E9C] shadow-xs">
+            <Mail className="w-8 h-8" />
+          </div>
+          <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-[#11C5C6] text-white flex items-center justify-center text-xs shadow-xs">
+            <Send className="w-3 h-3" />
+          </div>
         </div>
+
         <div>
-          <h2 className="text-xl font-bold text-gray-900">Xác thực email của bạn</h2>
-          <p className="text-sm text-gray-500 mt-1">
-            Mã xác nhận đã được gửi tới
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 font-display">
+            Xác thực email của bạn
+          </h2>
+          <p className="text-sm text-slate-500 mt-1">
+            Mã xác nhận 6 số đã được gửi tới
           </p>
-          <p className="text-sm font-semibold text-teal-700 mt-0.5">{maskedEmail}</p>
+          <p className="text-sm font-semibold text-[#087E9C] mt-0.5">{maskedEmail}</p>
         </div>
       </div>
 
-      {/* Sent notice */}
+      {/* Thông báo đã gửi */}
       {sentNotice && !error && (
         <motion.div
-          initial={{ opacity: 0, y: -8 }}
+          initial={{ opacity: 0, y: -6 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-2 px-4 py-2.5 bg-teal-50 border border-teal-200 rounded-xl text-sm text-teal-700"
+          className="flex items-center gap-2 px-4 py-2.5 bg-teal-50/80 border border-teal-200/80 rounded-xl text-xs sm:text-sm text-teal-800 font-medium"
         >
-          <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-          </svg>
-          {sentNotice}
+          <Check className="w-4 h-4 text-teal-600 shrink-0" strokeWidth={2.5} />
+          <span>{sentNotice}</span>
         </motion.div>
       )}
 
-      {/* OTP Inputs */}
-      <div className="flex gap-3 justify-center">
+      {/* 6 ô OTP Inputs */}
+      <div className="flex gap-2 sm:gap-3 justify-center py-2">
         {digits.map((digit, i) => (
           <input
             key={i}
-            ref={(el) => { inputRefs.current[i] = el; }}
+            ref={(el) => {
+              inputRefs.current[i] = el;
+            }}
             type="text"
             inputMode="numeric"
             maxLength={1}
@@ -231,15 +244,16 @@ export default function VerifyEmailStep({ email, maskedEmail, onSuccess, onBack,
             onFocus={(e) => e.target.select()}
             disabled={isLoading || isSuccess}
             className={`
-              w-12 h-14 text-center text-2xl font-bold rounded-xl border-2 outline-none
-              transition-all duration-150 caret-transparent
-              ${isSuccess
-                ? 'border-teal-500 bg-teal-50 text-teal-700'
-                : error
-                  ? 'border-red-400 bg-red-50 text-red-700'
+              w-11 sm:w-12 h-13 sm:h-14 text-center text-xl sm:text-2xl font-bold rounded-xl border-2 outline-none
+              transition-all duration-150 caret-transparent font-mono shadow-xs
+              ${
+                isSuccess
+                  ? 'border-emerald-500 bg-emerald-50 text-emerald-800'
+                  : error
+                  ? 'border-rose-400 bg-rose-50/50 text-rose-700'
                   : digit
-                    ? 'border-teal-500 bg-teal-50/60 text-teal-900'
-                    : 'border-gray-200 bg-white text-gray-900 focus:border-teal-500 focus:bg-teal-50/30'
+                  ? 'border-[#11C5C6] bg-teal-50/40 text-slate-900 ring-2 ring-[#11C5C6]/15'
+                  : 'border-slate-200 bg-white text-slate-900 focus:border-[#11C5C6] focus:ring-4 focus:ring-[#11C5C6]/15'
               }
               disabled:opacity-70 disabled:cursor-not-allowed
             `}
@@ -253,27 +267,22 @@ export default function VerifyEmailStep({ email, maskedEmail, onSuccess, onBack,
         <motion.div
           initial={{ opacity: 0, y: -6 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-start gap-2 px-4 py-3 bg-red-50 border border-red-200 rounded-xl"
+          className="flex items-center gap-2 px-4 py-2.5 bg-rose-50 border border-rose-200 rounded-xl text-sm text-rose-700"
         >
-          <svg className="w-4 h-4 text-red-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-          </svg>
-          <p className="text-sm text-red-600">{error}</p>
+          <AlertCircle className="w-4 h-4 text-rose-500 shrink-0" />
+          <p>{error}</p>
         </motion.div>
       )}
 
       {/* Success message */}
       {isSuccess && (
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
+          initial={{ opacity: 0, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="flex items-center gap-2 px-4 py-3 bg-teal-50 border border-teal-300 rounded-xl"
+          className="flex items-center gap-2 px-4 py-2.5 bg-emerald-50 border border-emerald-300 rounded-xl text-sm font-semibold text-emerald-800"
         >
-          <svg className="w-5 h-5 text-teal-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-          </svg>
-          <p className="text-sm font-semibold text-teal-700">Xác thực thành công! Đang chuyển hướng...</p>
+          <Check className="w-5 h-5 text-emerald-600 shrink-0" strokeWidth={3} />
+          <span>Xác thực thành công! Đang chuyển hướng...</span>
         </motion.div>
       )}
 
@@ -282,55 +291,57 @@ export default function VerifyEmailStep({ email, maskedEmail, onSuccess, onBack,
         type="button"
         onClick={() => handleSubmit()}
         disabled={!isComplete || isLoading || isSuccess}
-        className="relative w-full py-3 px-4 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl
-                   transition-colors duration-200 shadow-lg shadow-orange-500/30
-                   flex items-center justify-center gap-2
-                   disabled:opacity-60 disabled:cursor-not-allowed"
+        className="group relative w-full h-[52px] px-6 text-white font-bold text-sm tracking-wide rounded-xl shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 overflow-hidden cursor-pointer"
+        style={{
+          background: 'linear-gradient(135deg, #FF6A00 0%, #FF8533 50%, #FF6A00 100%)',
+        }}
       >
+        <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full duration-1000 bg-gradient-to-r from-transparent via-white/25 to-transparent pointer-events-none transition-transform" />
+
         {isLoading ? (
           <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
         ) : isSuccess ? (
           <>
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-            </svg>
-            Đã xác thực
+            <Check className="w-5 h-5" strokeWidth={3} />
+            <span>ĐÃ XÁC THỰC</span>
           </>
         ) : (
-          'XÁC NHẬN MÃ'
+          <span>XÁC NHẬN MÃ</span>
         )}
       </button>
 
-      {/* Resend & expiry info */}
-      <div className="text-center text-sm text-gray-500">
-        <p className="mb-1">Mã có hiệu lực trong <strong className="text-gray-700">10 phút</strong></p>
+      {/* Gửi lại mã & Thời gian hiệu lực */}
+      <div className="text-center text-xs sm:text-sm text-slate-500">
+        <p className="mb-1">
+          Mã có hiệu lực trong <strong className="text-slate-700">10 phút</strong>
+        </p>
         {countdown > 0 ? (
           <p>
             Gửi lại mã sau{' '}
-            <span className="font-semibold text-teal-600 tabular-nums">{countdown}s</span>
+            <span className="font-semibold text-[#087E9C] tabular-nums font-mono">
+              {countdown}s
+            </span>
           </p>
         ) : (
           <button
             type="button"
             onClick={handleResend}
             disabled={isResending}
-            className="text-teal-600 font-semibold hover:underline focus:outline-none disabled:opacity-60"
+            className="text-[#087E9C] hover:text-[#11C5C6] font-semibold hover:underline focus:outline-none disabled:opacity-60 cursor-pointer"
           >
-            {isResending ? 'Đang gửi...' : 'Gửi lại mã'}
+            {isResending ? 'Đang gửi mã mới...' : 'Gửi lại mã OTP'}
           </button>
         )}
       </div>
 
-      {/* Back link */}
+      {/* Nút quay lại */}
       <button
         type="button"
         onClick={onBack}
-        className="flex items-center justify-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+        className="flex items-center justify-center gap-1.5 text-xs sm:text-sm text-slate-500 hover:text-slate-800 transition-colors cursor-pointer pt-1"
       >
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-        </svg>
-        {backLabel ?? 'Đổi email / Quay lại đăng ký'}
+        <ArrowLeft className="w-4 h-4" />
+        <span>{backLabel ?? 'Đổi email / Quay lại đăng ký'}</span>
       </button>
     </motion.div>
   );

@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import Reveal from '@/components/ui/Reveal';
 import AnimatedCounter from '@/components/ui/AnimatedCounter';
+import { SpotlightCard, recordSharedPlaceClick } from '@/components/ui/MotionPrimitives';
 
 // Helper chuẩn hóa tiếng Việt không dấu
 function removeVietnameseTones(str: string): string {
@@ -43,6 +44,10 @@ function removeVietnameseTones(str: string): string {
     .toLowerCase()
     .trim();
 }
+
+// ── ĐƯỜNG DẪN ẢNH NỀN HERO ẨM THỰC (DỄ DÀNG THAY ĐỔI TẠI ĐÂY) ────────────────────
+// Bạn có thể đổi đường dẫn ảnh hoặc thay thế file: frontend/public/images/am-thuc-hero.jpg
+const AM_THUC_HERO_IMAGE = '/images/am-thuc-hero.jpg';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DATA — Danh sách địa điểm ẩm thực (Đồng bộ với CSDL SQL Server Task 7)
@@ -83,7 +88,7 @@ const FOOD_PLACES: FoodPlace[] = [
     priceNote: '/món',
     openNow: true,
     hours: '09:00–23:59',
-    img: 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=600&q=80',
+    img: 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=1200&q=85',
     tags: ['Hải sản tươi sống', 'Sơn Trà', 'Chip chip hấp', 'Mực lá nướng'],
     description: 'Quán hải sản bình dân đông đúc nhất dọc bãi biển Sơn Trà, hải sản tươi rói vừa cập bến ghe tàu.',
   },
@@ -101,7 +106,7 @@ const FOOD_PLACES: FoodPlace[] = [
     priceNote: '/tô',
     openNow: true,
     hours: '06:00–22:00',
-    img: 'https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?w=600&q=80',
+    img: 'https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?w=1200&q=85',
     tags: ['Bún chả cá', 'Hải Châu', 'Chả cá thu', 'Gia truyền'],
     description: 'Thương hiệu bún chả cá lâu năm nổi danh xứ Đà với nước dùng ngọt lịm từ bí đỏ và chả cá thu dai giòn.',
   },
@@ -119,7 +124,7 @@ const FOOD_PLACES: FoodPlace[] = [
     priceNote: '/món',
     openNow: true,
     hours: '10:00–22:00',
-    img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&q=80',
+    img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=1200&q=85',
     tags: ['Cơm niêu đập', 'Cá bống kho tộ', 'Cơm nhà ấm cúng'],
     description: 'Cơm niêu đập cháy giòn rụm ăn kèm cá bống sông Trà kho tộ và canh cua đồng đậm đà hương vị quê hương.',
   },
@@ -137,7 +142,7 @@ const FOOD_PLACES: FoodPlace[] = [
     priceNote: '/tô',
     openNow: true,
     hours: '06:00–21:30',
-    img: 'https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=600&q=80',
+    img: 'https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=1200&q=85',
     tags: ['Mì Quảng tôm thịt', 'Ếch đồng', 'Đặc sản Đà Nẵng'],
     description: 'Địa chỉ mì Quảng nức tiếng với sợi mì gạo vàng óng, nước nhưn tôm thịt rim đậm đà và bánh tráng mè nướng.',
   },
@@ -155,7 +160,7 @@ const FOOD_PLACES: FoodPlace[] = [
     priceNote: '/phần',
     openNow: true,
     hours: '09:30–21:30',
-    img: 'https://images.unsplash.com/photo-1600850056064-a8b380df8395?w=600&q=80',
+    img: 'https://images.unsplash.com/photo-1600850056064-a8b380df8395?w=1200&q=85',
     tags: ['Bánh xèo giòn rụm', 'Nước chấm gan heo mè', 'Nem lụi than hoa'],
     description: 'Huyền thoại ẩm thực hẻm Hoàng Diệu, bánh xèo vàng ươm giòn tan cuộn rau sống chấm nước sốt gan heo béo bùi.',
   },
@@ -173,7 +178,7 @@ const FOOD_PLACES: FoodPlace[] = [
     priceNote: '/món',
     openNow: true,
     hours: '09:00–23:30',
-    img: 'https://images.unsplash.com/photo-1559847844-5315695dadae?w=600&q=80',
+    img: 'https://images.unsplash.com/photo-1559847844-5315695dadae?w=1200&q=85',
     tags: ['Tôm hùm bơ tỏi', 'Cua huỳnh đế', 'View biển Mỹ Khê'],
     description: 'Nhà hàng hải sản uy tín bậc nhất ven biển Mỹ Khê, bắt trực tiếp từ hồ kính chế biến theo phong vị miền Trung.',
   },
@@ -191,7 +196,7 @@ const FOOD_PLACES: FoodPlace[] = [
     priceNote: '/phần',
     openNow: true,
     hours: '10:00–22:00',
-    img: 'https://images.unsplash.com/photo-1561189386-42f49bcc29ef?w=600&q=80',
+    img: 'https://images.unsplash.com/photo-1561189386-42f49bcc29ef?w=1200&q=85',
     tags: ['Thịt heo 2 đầu da', 'Mắm nêm nguyên chất', 'Rau rừng'],
     description: 'Điểm đến ẩm thực trứ danh khi đến Đà Nẵng, thịt heo luộc 2 đầu da cuốn bánh tráng Đại Lộc chấm mắm nêm thơm nồng.',
   },
@@ -209,7 +214,7 @@ const FOOD_PLACES: FoodPlace[] = [
     priceNote: '/ổ',
     openNow: true,
     hours: '06:00–21:00',
-    img: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80',
+    img: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=85',
     tags: ['Bánh mì chả bò', 'Pate béo ngậy', 'Đông khách'],
     description: 'Huyền thoại bánh mì Đà Nẵng, vỏ giòn ruột mềm nhân chả bò, thịt nguội và pate béo ngậy đặc trưng.',
   },
@@ -227,7 +232,7 @@ const FOOD_PLACES: FoodPlace[] = [
     priceNote: '/ly',
     openNow: true,
     hours: '07:00–22:30',
-    img: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=600&q=80',
+    img: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=1200&q=85',
     tags: ['View sông Hàn', 'Cà phê muối', 'Decor vintage'],
     description: 'Không gian cà phê sân thượng ngắm trọn cầu Rồng và cầu sông Hàn lung linh ánh đèn về đêm.',
   },
@@ -245,7 +250,7 @@ const FOOD_PLACES: FoodPlace[] = [
     priceNote: '/tô',
     openNow: true,
     hours: '08:00–20:00',
-    img: 'https://images.unsplash.com/photo-1551326844-4df70f78d0e9?w=600&q=80',
+    img: 'https://images.unsplash.com/photo-1551326844-4df70f78d0e9?w=1200&q=85',
     tags: ['Cao lầu chính hiệu', 'Thịt xá xíu', 'Rau Trà Quế'],
     description: 'Cao lầu sợi to dai sần sật, xá xíu thơm lừng hòa quyện rau sống Trà Quế giòn mát ngay giữa lòng Đà Nẵng.',
   },
@@ -263,7 +268,7 @@ const FOOD_PLACES: FoodPlace[] = [
     priceNote: '/tô',
     openNow: true,
     hours: '07:00–20:00',
-    img: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=600&q=80',
+    img: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=1200&q=85',
     tags: ['Hoành thánh mỏng vỏ', 'Nước dùng thanh ngọt', 'Lâu đời'],
     description: 'Mì hoành thánh chuẩn phong cách người Hoa tồn tại hơn 50 năm, nước dùng trong vắt thanh tao.',
   },
@@ -281,7 +286,7 @@ const FOOD_PLACES: FoodPlace[] = [
     priceNote: '/đòn',
     openNow: true,
     hours: '08:00–18:00',
-    img: 'https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=600&q=80',
+    img: 'https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=1200&q=85',
     tags: ['Chả bò nguyên chất', 'Tiêu sọ cay nồng', 'Quà tặng Đà Nẵng'],
     description: 'Chả bò loại 1 thơm lừng tiêu sọ cay nồng, dai giòn sần sật, món quà biếu ý nghĩa khi đến Đà Nẵng.',
   },
@@ -355,20 +360,25 @@ function FoodCard({
 }) {
   return (
     <motion.div
+      layout="position"
       whileHover={{ y: -4 }}
       transition={{ duration: 0.25 }}
-      className="group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 ease-out border border-gray-100 flex flex-col h-full"
+      className="h-full"
     >
+      <SpotlightCard className="group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 ease-out border border-gray-100 hover:border-teal-300/80 flex flex-col h-full">
       {/* Image */}
-      <Link href={`/places/${place.id}`} className="block relative h-52 overflow-hidden shrink-0">
+      <Link
+        href={`/places/${place.id}`}
+        onClick={() => recordSharedPlaceClick(place.placeId ?? place.id, place.img)}
+        className="block relative h-52 overflow-hidden shrink-0"
+      >
         <Image
           src={place.img}
           alt={place.name}
           fill
-          className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+          quality={85}
+          className="object-cover group-hover:scale-[1.03] transition-transform duration-500 ease-out"
           sizes="(max-width:640px) 100vw,(max-width:1024px) 50vw,33vw"
-          placeholder="blur"
-          blurDataURL={BLUR}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
 
@@ -465,6 +475,7 @@ function FoodCard({
 
           <Link
             href={`/places/${place.id}`}
+            onClick={() => recordSharedPlaceClick(place.placeId ?? place.id, place.img)}
             className="inline-flex items-center gap-1.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition-all shadow-md shadow-orange-500/20 group-hover:scale-105"
           >
             <span>Xem chi tiết</span>
@@ -472,6 +483,7 @@ function FoodCard({
           </Link>
         </div>
       </div>
+      </SpotlightCard>
     </motion.div>
   );
 }
@@ -555,7 +567,7 @@ function AmThucContent() {
             priceNote: '/món',
             openNow: item.is_open,
             hours: item.today_hours || '08:00–22:00',
-            img: item.cover_image || 'https://images.unsplash.com/photo-1559847844-5315695dadae?w=600&q=80',
+            img: item.cover_image || 'https://images.unsplash.com/photo-1559847844-5315695dadae?w=1200&q=85',
             tags: [item.district_name || 'Đà Nẵng', item.category_name || 'Ẩm thực'].filter(Boolean),
             description: item.description || 'Quán ăn ngon nổi tiếng tại Đà Nẵng.',
           }));
@@ -585,7 +597,7 @@ function AmThucContent() {
     target: heroRef,
     offset: ['start start', 'end start'],
   });
-  const heroY = useTransform(scrollYProgress, [0, 1], ['0%', '30%']);
+  const heroY = useTransform(scrollYProgress, [0, 1], prefersReduced ? ['0px', '0px'] : ['0px', '22px']);
 
   const toggleSave = (id: number) => {
     setSavedPlaces((prev) => {
@@ -725,52 +737,67 @@ function AmThucContent() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col overflow-x-hidden">
-      {/* ═══ PHẦN 1: MINI HERO BANNER ════════════════════════════════════════ */}
+      {/* ═══ PHẦN 1: HERO BANNER ẨM THỰC (ĐỒNG BỘ TỈ LỆ VỚI TRANG KHÁM PHÁ & LƯU TRÚ) ════════════════════════════════════════ */}
       <section
         ref={heroRef}
         data-navbar-overlay="true"
-        className="relative h-[320px] sm:h-[350px] overflow-hidden"
+        aria-label="Ẩm thực Đà Nẵng"
+        className="relative w-full h-[400px] sm:h-[450px] lg:h-[490px] overflow-hidden select-none"
       >
-        <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/60 via-black/10 to-transparent pointer-events-none z-20" />
-        <motion.div style={{ y: heroY }} className="absolute inset-0 ken-burns">
+        {/* Lớp gradient tối trên đỉnh bảo đảm Navbar trong suốt đọc sắc nét */}
+        <div className="absolute inset-x-0 top-0 h-36 bg-gradient-to-b from-black/75 via-black/30 to-transparent pointer-events-none z-20" />
+
+        {/* Ảnh nền C1 Hero Image Reveal (scale 1.05 -> 1 trong 1.5s) & C3 Subtle Parallax */}
+        <motion.div
+          style={{ y: heroY }}
+          initial={prefersReduced ? false : { scale: 1.05 }}
+          animate={{ scale: 1 }}
+          transition={prefersReduced ? { duration: 0 } : { duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+          className="absolute inset-0"
+        >
           <Image
-            src="https://images.unsplash.com/photo-1600850056064-a8b380df8395?w=1920&q=85"
-            alt="Ẩm thực đặc sản Đà Nẵng — bánh xèo tôm thịt"
+            src={AM_THUC_HERO_IMAGE}
+            alt="Món ngon ẩm thực đặc sản Đà Nẵng"
             fill
             priority
-            className="object-cover"
+            quality={90}
+            className="object-cover object-center"
             sizes="100vw"
           />
         </motion.div>
-        <div className="absolute inset-0 bg-gradient-to-b from-[#071a2e]/65 via-[#0f2942]/50 to-[#071a2e]/85" />
 
-        <div className="absolute top-20 right-6 sm:right-8 z-20 hidden sm:block">
-          <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm border border-white/25 text-white rounded-full px-4 py-1.5 text-xs font-semibold">
-            <CheckCircle size={12} className="text-emerald-300" />
+        {/* Overlay gradient cân bằng: tôn lên màu sắc hấp dẫn của món ngon và đảm bảo chữ tương phản cao */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-[#071a2e]/40 to-[#071a2e]/85 pointer-events-none z-10" />
+
+        {/* Badge "Được tuyển chọn & xác minh bởi DanangGo" — góc trên phải */}
+        <div className="absolute top-24 right-6 sm:right-8 z-20 hidden sm:block">
+          <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-md border border-white/25 text-white rounded-full px-4 py-1.5 text-xs font-semibold shadow-sm">
+            <CheckCircle size={13} className="text-emerald-400" />
             Được tuyển chọn &amp; xác minh bởi DanangGo
           </div>
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-6 flex flex-col justify-end h-full pb-14 pt-16">
-          <div className="flex items-center gap-1 text-sm text-white/70 mb-3">
-            <Link href="/" className="hover:text-white transition-colors">
+        {/* Nội dung banner — thoáng đãng, cân đối tương tự trang Khám phá & Lưu trú */}
+        <div className="relative z-10 max-w-7xl mx-auto px-6 flex flex-col justify-end h-full pb-14 sm:pb-16 pt-24">
+          <div className="flex items-center gap-1.5 text-sm text-white/80 mb-3">
+            <Link href="/" className="hover:text-orange-300 transition-colors">
               Trang chủ
             </Link>
-            <ChevronRight size={14} className="text-white/40" />
+            <ChevronRight size={14} className="text-white/50" />
             <span className="text-white font-medium">Ẩm thực Đà Nẵng</span>
           </div>
 
           <div className="mb-2">
-            <span className="inline-flex items-center gap-2 bg-orange-500/90 backdrop-blur-sm text-white text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+            <span className="inline-flex items-center gap-2 bg-orange-500/90 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
               🗺️ BẢN ĐỒ VỊ GIÁC MIỀN TRUNG
             </span>
           </div>
 
           <div>
-            <h1 className="h1-hero text-2xl sm:text-3xl lg:text-4xl font-bold text-white leading-tight">
+            <h1 className="h1-hero text-2xl sm:text-3xl lg:text-4xl font-bold text-white leading-tight drop-shadow-sm">
               Ẩm thực Đà Nẵng — Đậm đà phong vị miền Trung
             </h1>
-            <p className="body-text stat-number text-white/70 text-sm mt-1.5">
+            <p className="body-text stat-number text-white/85 text-sm sm:text-base mt-2 flex items-center gap-1.5">
               <AnimatedCounter
                 to={TOTAL_DISPLAY}
                 suffix=" địa điểm ẩm thực được tuyển chọn"

@@ -17,7 +17,8 @@
  */
 
 import { useRef } from "react";
-import { motion, useInView, type Variants } from "framer-motion";
+import { motion, useInView, useReducedMotion, type Variants } from "framer-motion";
+import { DURATION, EASING } from "@/lib/motion-tokens";
 
 interface RevealProps {
   children: React.ReactNode;
@@ -34,19 +35,24 @@ export default function Reveal({
   className = "",
   once = true,
   direction = "up",
-  duration = 0.5,
+  duration = DURATION.medium,
 }: RevealProps) {
   const ref = useRef<HTMLDivElement>(null);
+  const reducedMotion = useReducedMotion();
   // Trigger when 15% of element is visible
-  const isInView = useInView(ref, { once, margin: "0px 0px -60px 0px" });
+  const isInView = useInView(ref, { once, margin: "0px 0px -50px 0px" });
 
-  // Determine initial offset based on direction
+  // Determine initial offset based on direction (16-24px per D1 spec)
   const offsets = {
     up: { x: 0, y: 20 },
     left: { x: -20, y: 0 },
     right: { x: 20, y: 0 },
     none: { x: 0, y: 0 },
   };
+
+  if (reducedMotion) {
+    return <div className={className}>{children}</div>;
+  }
 
   const variants: Variants = {
     hidden: {
@@ -61,7 +67,7 @@ export default function Reveal({
       transition: {
         duration,
         delay,
-        ease: [0.25, 0.46, 0.45, 0.94], // cubic-bezier easeOutQuart
+        ease: EASING.standard,
       },
     },
   };

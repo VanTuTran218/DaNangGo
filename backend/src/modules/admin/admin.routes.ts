@@ -40,7 +40,8 @@ adminPartnersRouter.post('/:id/approve', async (req, res) => {
 adminPartnersRouter.post('/:id/reject', async (req, res) => {
   const partnerId = z.coerce.number().int().positive().parse(req.params.id);
   const adminUserId = res.locals.authUserId as number;
-  const ok = await adminRejectPartner(partnerId, adminUserId);
+  const reason = typeof req.body?.reason === 'string' && req.body.reason.trim() ? req.body.reason.trim() : null;
+  const ok = await adminRejectPartner(partnerId, adminUserId, reason);
   if (!ok) {
     res.status(404).json({ success: false, message: 'Không tìm thấy đối tác.' });
     return;

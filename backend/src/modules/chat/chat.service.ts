@@ -31,6 +31,9 @@ import {
   type PlaceSearchRow,
 } from "./chat.repository";
 import { openChatConversation } from "./chat.sessions";
+import { favoritesReply } from "./chat.favorites";
+import { favoritePlanReply, isFavoritePlanRequest } from "./chat.favorite-plan";
+import { favoriteConsultReply, isFavoriteConsultRequest } from "./chat.favorite-consult";
 import { groundChatAnswer } from "./chat.safety";
 import type {
   ChatMessageDto,
@@ -250,6 +253,58 @@ export async function processUserMessage(
     return { role: "user", content: m.content };
   });
   await conversation.save("USER", rawMsg);
+
+  // Explicit private-list reads bypass taste memory, catalog search and the model.
+  const favoriteSafety: {dietaryRestricted?:boolean;notice?:string} = {
+    dietaryRestricted: !!advisorState?.dialogue?.context.dietaryRestrictions.length,
+  };
+  if ((isFavoritePlanRequest(rawMsg, !!advisorState?.favorites) || advisorState?.favoritePlan || isFavoriteConsultRequest(rawMsg, !!(advisorState?.favorites || advisorState?.favoriteConsult))) && input.userId && (input.userRole === 'USER' || input.userRole === 'PARTNER')) {
+    try {
+      const preferences = await readProfile(input.userId);
+      favoriteSafety.dietaryRestricted ||= preferences.some(key=>key.startsWith('allergy_') || ['vegetarian','vegan','avoid_seafood','avoid_gluten'].includes(key));
+    } catch {
+      favoriteSafety.dietaryRestricted = true;
+      favoriteSafety.notice = 'Chưa tải được khẩu vị/điều kiện ăn uống đã lưu; Gô chưa xếp quán ăn để tránh bỏ sót hạn chế của bạn.';
+    }
+  }
+  const favoriteConsultAnswer = await favoriteConsultReply(rawMsg,input,advisorState?.favoriteConsult,!!(advisorState?.favorites || advisorState?.favoritePlan),undefined,favoriteSafety);
+  const favoritePlanAnswer = favoriteConsultAnswer ? null : await favoritePlanReply(rawMsg, input, advisorState?.favoritePlan, !!advisorState?.favorites, undefined, favoriteSafety);
+  const favoriteAnswer = favoriteConsultAnswer ? {
+    content:favoriteConsultAnswer.content,places:favoriteConsultAnswer.places,cursor:undefined,
+    quickReplies:favoriteConsultAnswer.quickReplies ?? [],actionLink:!input.userId?{text:'Đăng nhập để tư vấn từ yêu thích',url:'/dang-nhap?redirect=%2Fchat'}:undefined,
+  } : favoritePlanAnswer ? {
+    content: favoritePlanAnswer.content, places: undefined, cursor: undefined,
+    quickReplies: [], actionLink: !input.userId ? {text:'Đăng nhập để lập lịch từ yêu thích',url:'/dang-nhap?redirect=%2Fchat'} : undefined,
+  } : await favoritesReply(rawMsg, input, advisorState?.favorites);
+  if (favoriteAnswer) {
+    const warnings: string[] = [];
+    const places = favoriteAnswer.places ?? [];
+    const plan = favoritePlanAnswer?.travelPlan;
+    const allPlaces = [...places, ...(favoriteConsultAnswer?.comparison?.places ?? []), ...(plan?.groups.flatMap(group=>group.places) ?? []), ...(plan?.days.flatMap(day=>day.periods.flatMap(period=>period.items.flatMap(item=>item.place?[item.place]:[]))) ?? [])];
+    const foodIds = [...new Set(allPlaces.filter(place => place.placeType === 'RESTAURANT').map(place => place.placeId))];
+    if (foodIds.length) {
+      try {
+        const menus = await chatMenus(foodIds);
+        for (const place of allPlaces) if (place.placeType === 'RESTAURANT') place.menuItems = menus.get(place.placeId) ?? [];
+      } catch { warnings.push('Chưa tải được menu hiện tại; Gô không tự thêm món hoặc giá.'); }
+    }
+    const message: ChatMessageDto = {
+      id: `ai_${randomUUID()}`, sender: 'AI', content: favoriteAnswer.content,
+      intent: plan ? 'ITINERARY' : favoriteConsultAnswer?.comparison ? 'COMPARE' : 'FAVORITES', ...(places.length ? { places } : {}),
+      ...(favoriteConsultAnswer?.comparison ? {comparison:favoriteConsultAnswer.comparison}:{}),
+      ...(plan ? {travelPlan:plan} : {}),
+      ...(favoritePlanAnswer?.questions?.length ? {questions:favoritePlanAnswer.questions,needsClarification:true} : {}),
+      quickReplies: favoriteAnswer.quickReplies, actionLink: favoriteAnswer.actionLink,
+      warnings, createdAt: new Date().toISOString(),
+    };
+    const state: AdvisorState = {
+      stayId: null, excludedStayIds: [], ...advisorState, favorites: favoriteAnswer.cursor,
+      favoritePlan: favoritePlanAnswer ? favoritePlanAnswer.state : advisorState?.favoritePlan,
+      favoriteConsult:favoriteConsultAnswer?.state,
+    };
+    await conversation.save('AI', writeAdvisorTurn(message.content, state), [...new Set(allPlaces.map(place => place.placeId))], message);
+    return { sessionId, message };
+  }
 
   // 1. Phân tích ý định
   const previousUserMessages = history
@@ -685,7 +740,7 @@ export async function processUserMessage(
   const sources = allCards.flatMap(card => [card.stayFacts?.hours, ...(card.stayFacts?.rooms ?? []), ...(card.stayFacts?.publicRates ?? [])].flatMap(fact => fact ? [{ url: fact.sourceUrl, checkedOn: fact.checkedOn, label: card.name, scope: "Thông tin lưu trú công bố; chưa xác nhận giá hoặc phòng theo ngày" }] : []));
   const metadata: ResponseMetadata = { intent: kind, secondaryIntents: [...dialogue.needs.map(need => ({ food: "FOOD", sight: "SIGHT", stay: "STAY" })[need]), ...(liveNotice ? [liveNotice.intentKey === "RT_WEATHER" ? "WEATHER" : liveNotice.intentKey === "RT_EVENT" ? "EVENT" : "LIVE_DATA"] : [])], needsClarification: responseQuestions.length > 0, questions: responseQuestions,
     confirmedContext: dialogue.context, profileSuggestions: suggestions, sources: [...new Map(sources.map(source => [source.url + source.checkedOn, source])).values()], warnings: metadataWarnings };
-  advisorState = { stayId: null, excludedStayIds: [], ...advisorState, dietaryRestricted: dietRestricted, dialogue };
+  advisorState = { stayId: null, excludedStayIds: [], ...advisorState, favorites: undefined, favoritePlan: undefined, favoriteConsult:undefined, dietaryRestricted: dietRestricted, dialogue };
 
   const aiMessage: ChatMessageDto = {
     id: `ai_${randomUUID()}`,

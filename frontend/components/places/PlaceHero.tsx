@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import {
   motion,
@@ -22,6 +22,8 @@ import {
 } from 'lucide-react';
 import type { PlaceDetail } from '@/lib/api/places';
 import HeartButton from '@/components/HeartButton';
+import { consumeSharedPlaceClick } from '@/components/ui/MotionPrimitives';
+import { DURATION, EASING, SPRING } from '@/lib/motion-tokens';
 
 const BLUR_PLACEHOLDER =
   'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
@@ -42,11 +44,19 @@ export default function PlaceHero({
   const containerRef = useRef<HTMLDivElement>(null);
   const prefersReduced = useReducedMotion();
 
-  // State Lightbox
+  // State Lightbox & Shared Element Morph
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [fromCardClick, setFromCardClick] = useState(false);
 
-  // Parallax cuộn ảnh
+  useEffect(() => {
+    const shared = consumeSharedPlaceClick(place.place_id);
+    if (shared) {
+      setFromCardClick(true);
+    }
+  }, [place.place_id]);
+
+  // Parallax cuộn ảnh nhẹ nhàng (tối đa 24px theo C3)
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ['start start', 'end start'],
@@ -54,7 +64,7 @@ export default function PlaceHero({
   const yParallax = useTransform(
     scrollYProgress,
     [0, 1],
-    prefersReduced ? ['0%', '0%'] : ['0%', '15%']
+    prefersReduced ? ['0px', '0px'] : ['0px', '24px']
   );
 
   const openLightbox = (index: number) => {
@@ -62,13 +72,31 @@ export default function PlaceHero({
     setLightboxOpen(true);
   };
 
-  const nextImage = () => {
+  const nextImage = useCallback(() => {
     setLightboxIndex((prev) => (prev + 1) % images.length);
-  };
+  }, [images.length]);
 
-  const prevImage = () => {
+  const prevImage = useCallback(() => {
     setLightboxIndex((prev) => (prev - 1 + images.length) % images.length);
-  };
+  }, [images.length]);
+
+  // K1 & N: Hỗ trợ phím ESC, mũi tên Trái/Phải và khóa cuộn nền khi mở Lightbox
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setLightboxOpen(false);
+      else if (e.key === 'ArrowRight' && images.length > 1) nextImage();
+      else if (e.key === 'ArrowLeft' && images.length > 1) prevImage();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [lightboxOpen, images.length, nextImage, prevImage]);
 
   // Số lượng ảnh hiện có
   const hasMultipleImages = images.length > 1;
@@ -91,8 +119,17 @@ export default function PlaceHero({
                 : 'p-0'
             }`}
           >
-            {/* 1. ẢNH CHÍNH LỚN (BENTO MAIN) */}
-            <div
+            {/* 1. ẢNH CHÍNH LỚN (BENTO MAIN + SHARED ELEMENT MORPH) */}
+            <motion.div
+              initial={
+                prefersReduced
+                  ? false
+                  : fromCardClick
+                  ? { scale: 0.94, opacity: 0.85 }
+                  : { opacity: 0.95 }
+              }
+              animate={{ scale: 1, opacity: 1 }}
+              transition={fromCardClick ? SPRING.gentle : { duration: DURATION.medium, ease: EASING.standard }}
               className={`relative overflow-hidden cursor-pointer group ${
                 hasMultipleImages
                   ? 'lg:col-span-8 h-[360px] sm:h-[440px] lg:h-[500px] rounded-2xl'
@@ -100,22 +137,21 @@ export default function PlaceHero({
               }`}
               onClick={() => openLightbox(0)}
             >
-              {/* Parallax & Zoom motion */}
+              {/* Parallax & C1 Hero Image Reveal (scale 1.05 -> 1 trong 1.5s) */}
               <motion.div
-                className="relative w-full h-[115%] -top-[7.5%]"
+                className="relative w-full h-[108%] -top-[4%]"
                 style={{ y: yParallax }}
-                initial={{ scale: prefersReduced ? 1 : 1.06 }}
+                initial={{ scale: prefersReduced ? 1 : 1.05 }}
                 animate={{ scale: 1 }}
-                transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
+                transition={{ duration: DURATION.cinematic, ease: EASING.entrance }}
               >
                 <Image
                   src={mainImage}
                   alt={place.name}
                   fill
                   priority
-                  className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                  placeholder="blur"
-                  blurDataURL={BLUR_PLACEHOLDER}
+                  quality={90}
+                  className="object-cover group-hover:scale-[1.03] transition-transform duration-700 ease-out"
                   sizes="(max-width: 1024px) 100vw, 70vw"
                 />
               </motion.div>
@@ -194,7 +230,7 @@ export default function PlaceHero({
                   </span>
                 </motion.div>
               </div>
-            </div>
+            </motion.div>
 
             {/* 2. ẢNH PHỤ BENTO (CHỈ HIỆN KHI CÓ NHIỀU ẢNH) */}
             {hasMultipleImages && (
@@ -214,9 +250,8 @@ export default function PlaceHero({
                         src={imgUrl}
                         alt={`${place.name} - ảnh ${actualIndex + 1}`}
                         fill
-                        className="object-cover group-hover:scale-108 transition-transform duration-500 ease-out"
-                        placeholder="blur"
-                        blurDataURL={BLUR_PLACEHOLDER}
+                        quality={85}
+                        className="object-cover group-hover:scale-[1.03] transition-transform duration-500 ease-out"
                         sizes="(max-width: 1024px) 50vw, 30vw"
                       />
                       <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors" />
@@ -300,6 +335,7 @@ export default function PlaceHero({
                 src={images[lightboxIndex] || mainImage}
                 alt={`${place.name} - ảnh ${lightboxIndex + 1}`}
                 fill
+                quality={95}
                 className="object-contain"
                 sizes="100vw"
               />

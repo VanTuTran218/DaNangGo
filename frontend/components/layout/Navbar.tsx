@@ -1,12 +1,17 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { TIER_CONFIG } from "@/lib/constants/tiers";
+import { Magnetic } from "@/components/ui/MotionPrimitives";
+import { SPRING } from "@/lib/motion-tokens";
+
+// Ngưỡng cuộn trang (px) để chuyển từ trong suốt sang nền trắng
+const SCROLL_THRESHOLD = 24;
 
 const NAV_LINKS = [
   { href: "/", label: "Trang chủ" },
@@ -18,47 +23,57 @@ const NAV_LINKS = [
   { href: "/chat", label: "Trợ lý AI" },
 ];
 
-
 export default function Navbar() {
-  const pathname = usePathname();
-  const [isAtTop, setIsAtTop] = useState(false);
-  const [initialized, setInitialized] = useState(false);
+  const [isAtTop, setIsAtTop] = useState(true);
+  const [isScrolled, setIsScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [exploreOpen, setExploreOpen] = useState(false);
   const [avatarDropdownOpen, setAvatarDropdownOpen] = useState(false);
-  const exploreRef = useRef<HTMLDivElement>(null);
+  const [initialized, setInitialized] = useState(false);
+  const pathname = usePathname();
   const avatarRef = useRef<HTMLDivElement>(null);
 
   const { user, loading, logout } = useAuth();
 
+  // Theo dõi vị trí cuộn trang bằng passive listener + requestAnimationFrame
   useEffect(() => {
-    function checkOverlay() {
-      const elements = document.querySelectorAll('[data-navbar-overlay="true"]');
-      let found = false;
-      for (let i = 0; i < elements.length; i++) {
-        const rect = elements[i].getBoundingClientRect();
-        if (rect.bottom > 60) {
-          found = true;
-          break;
-        }
+    let ticking = false;
+
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const scrolled = window.scrollY >= SCROLL_THRESHOLD;
+          setIsScrolled((prev) => (prev !== scrolled ? scrolled : prev));
+
+          // Kiểm tra xem các trang con có hero overlay không
+          const elements = document.querySelectorAll('[data-navbar-overlay="true"]');
+          let found = false;
+          for (let i = 0; i < elements.length; i++) {
+            const rect = elements[i].getBoundingClientRect();
+            if (rect.bottom > 60) {
+              found = true;
+              break;
+            }
+          }
+          setIsAtTop(found);
+          if (!initialized) setInitialized(true);
+
+          ticking = false;
+        });
+        ticking = true;
       }
-      setIsAtTop(found);
-      if (!initialized) setInitialized(true);
-    }
-    checkOverlay();
-    window.addEventListener("scroll", checkOverlay, { passive: true });
-    window.addEventListener("resize", checkOverlay, { passive: true });
+    };
+
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", handleScroll, { passive: true });
     return () => {
-      window.removeEventListener("scroll", checkOverlay);
-      window.removeEventListener("resize", checkOverlay);
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleScroll);
     };
   }, [initialized]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (exploreRef.current && !exploreRef.current.contains(e.target as Node)) {
-        setExploreOpen(false);
-      }
       if (avatarRef.current && !avatarRef.current.contains(e.target as Node)) {
         setAvatarDropdownOpen(false);
       }
@@ -75,49 +90,43 @@ export default function Navbar() {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  if (pathname?.startsWith('/dang-nhap') || pathname?.startsWith('/quen-mat-khau') || pathname?.startsWith('/admin') || pathname?.startsWith('/partner')) {
+  if (
+    pathname?.startsWith('/dang-nhap') ||
+    pathname?.startsWith('/quen-mat-khau') ||
+    pathname?.startsWith('/admin') ||
+    pathname?.startsWith('/partner')
+  ) {
     return null;
   }
 
-  const textColor = isAtTop ? "text-white drop-shadow-md" : "text-[#0f2942]";
-  const subTextColor = isAtTop ? "text-white/90 drop-shadow-md" : "text-gray-500";
-  const hoverTextColor = isAtTop ? "hover:text-white" : "hover:text-[#0f2942]";
+  const isHomePage = pathname === "/";
+  // Trên trang chủ: Trong suốt khi ở đầu trang (scrollY < 24px), chuyển sang nền trắng khi cuộn >= 24px
+  // Trên trang con: Trong suốt nếu có banner overlay và chưa cuộn, ngược lại là nền trắng
+  const isTransparent = isHomePage ? !isScrolled : (isAtTop && !isScrolled);
+
+  const textColor = isTransparent ? "text-white" : "text-[#0f2942]";
+  const subTextColor = isTransparent ? "text-white/90" : "text-gray-600";
+  const hoverTextColor = isTransparent ? "hover:text-cyan-300" : "hover:text-teal-600";
+  const textShadowStyle = isTransparent ? { textShadow: "0 1px 2px rgba(0, 0, 0, 0.35)" } : undefined;
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 ${isAtTop ? "py-3" : "py-2"}`}
-      style={{ 
-        transition: "padding 350ms ease, opacity 200ms ease",
-        opacity: initialized ? 1 : 0
+      className={`fixed top-0 left-0 right-0 z-50 h-16 flex items-center transition-colors duration-250 ease-out select-none ${
+        isTransparent
+          ? "bg-transparent border-b border-transparent shadow-none"
+          : "bg-white/95 backdrop-blur-md border-b border-gray-200/80 shadow-sm"
+      }`}
+      style={{
+        opacity: initialized ? 1 : 0,
       }}
     >
-      {/* ── LAYER 1: GLASS ── */}
-      <div
-        className="absolute inset-0 bg-transparent pointer-events-none"
-        style={{
-          opacity: isAtTop ? 1 : 0,
-          transition: "opacity 350ms ease",
-        }}
-        aria-hidden="true"
-      />
+      {/* Container căn giữa nội dung Navbar */}
+      <div className="relative z-10 mx-auto flex w-full max-w-[1440px] items-center justify-between gap-4 px-4 sm:px-6 xl:gap-8">
 
-      {/* ── LAYER 2: SOLID WHITE ── */}
-      <div
-        className="absolute inset-0 bg-white/90 backdrop-blur-lg border-b border-black/5 shadow-sm pointer-events-none"
-        style={{
-          opacity: isAtTop ? 0 : 1,
-          transition: "opacity 350ms ease",
-        }}
-        aria-hidden="true"
-      />
-
-      {/* Logo, điều hướng và nhóm thao tác có khoảng cách riêng */}
-      <div className="relative z-10 mx-auto flex w-full max-w-[1440px] items-center gap-6 px-4 sm:px-6 xl:gap-8">
-
-        {/* ══ LOGO ══ */}
-        <div className="flex shrink-0 items-center">
-          <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
-            <div className={`w-9 h-9 rounded-full bg-gradient-to-br from-cyan-400 to-teal-600 flex items-center justify-center shadow-md ${isAtTop ? "shadow-black/20" : "shadow-teal-500/30"}`}>
+        {/* ══ 1. LOGO DANANGGO ══ */}
+        <div className="flex shrink-0 items-center min-w-[140px] lg:min-w-[200px]">
+          <Link href="/" className="group flex items-center gap-2.5 flex-shrink-0">
+            <div className={`w-9 h-9 sm:w-[38px] sm:h-[38px] rounded-full bg-gradient-to-br from-cyan-400 to-teal-600 flex items-center justify-center shadow-md transition-transform duration-200 group-hover:scale-105 shrink-0 ${isTransparent ? "shadow-black/25" : "shadow-teal-500/25"}`}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                 <path
                   d="M3 10c1.5-2.5 3-2.5 4.5 0S11 12.5 12.5 10 16 7.5 17.5 10s3 2.5 4.5 0"
@@ -125,148 +134,103 @@ export default function Navbar() {
                 />
                 <path
                   d="M3 15c1.5-2 3-2 4.5 0S11 17 12.5 15s3.5-2 5 0 3 2 4.5 0"
-                  stroke="rgba(255,255,255,0.55)" strokeWidth="1.5" strokeLinecap="round" fill="none"
+                  stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" strokeLinecap="round" fill="none"
                 />
-                <circle cx="18" cy="5.5" r="2" fill="#f97316" />
+                <circle cx="18" cy="5.5" r="2" fill="#FF7300" />
               </svg>
             </div>
-            <span className={`font-bold text-xl tracking-tight leading-none ${isAtTop ? "drop-shadow-md" : ""}`}>
-              <span className={isAtTop ? "text-white" : "text-cyan-400"}>Danang</span>
-              <span className={isAtTop ? "text-white" : "text-orange-400"}>Go</span>
+            <span className="font-bold text-[20px] sm:text-[21px] tracking-tight leading-none flex items-center select-none" style={textShadowStyle}>
+              <span className={`transition-colors duration-200 ${isTransparent ? "text-white" : "text-[#0f2942]"}`}>Danang</span>
+              <span className="text-[#FF7300] font-extrabold ml-0.5">Go</span>
             </span>
           </Link>
-
-
         </div>
 
-        {/* ══ ĐIỀU HƯỚNG: chia đều khoảng trống giữa các mục ══ */}
+        {/* ══ 2. ĐIỀU HƯỚNG MENU (CĂN GIỮA HOÀN HẢO) ══ */}
         <nav
-          className="hidden min-w-0 flex-1 items-center justify-evenly gap-1 lg:flex xl:gap-2"
+          className="hidden min-w-0 flex-1 items-center justify-center gap-1 xl:gap-1.5 2xl:gap-2.5 lg:flex"
           aria-label="Main navigation"
         >
-          {/* Gộp các mục cuối vào Khám phá trên màn hình tablet ngang */}
-          {NAV_LINKS.map((link, index) => {
+          {NAV_LINKS.map((link) => {
             const isActive = link.href === "/" 
               ? pathname === "/" 
               : pathname?.startsWith(link.href);
-            
-            const displayClass = index >= 3 ? "hidden xl:block" : "";
 
             return (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`relative shrink-0 whitespace-nowrap px-2 py-2 text-sm font-medium rounded-lg transition-colors duration-300 group xl:px-3 ${displayClass} ${
-                  isActive ? textColor : `${subTextColor} ${hoverTextColor}`
+                style={textShadowStyle}
+                className={`relative shrink-0 whitespace-nowrap px-3 py-1.5 xl:px-3.5 text-[13.5px] xl:text-[14px] leading-tight tracking-[-0.01em] rounded-full transition-colors duration-200 select-none ${
+                  isActive
+                    ? isTransparent
+                      ? "text-white font-semibold"
+                      : "text-teal-800 font-semibold"
+                    : isTransparent
+                      ? "text-white/90 font-medium hover:text-white hover:bg-white/12 border border-transparent"
+                      : "text-slate-600 font-medium hover:text-slate-900 hover:bg-slate-100/90 border border-transparent"
                 }`}
               >
-                {link.label}
                 {isActive && (
                   <motion.span
-                    layoutId="nav-underline"
-                    className={`absolute bottom-1 left-2 right-2 xl:left-3 xl:right-3 h-0.5 rounded-full ${isAtTop ? "bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]" : "bg-orange-400"}`}
-                    transition={{ type: "spring", stiffness: 500, damping: 35 }}
-                  />
-                )}
-                {!isActive && (
-                  <span
-                    className={`absolute bottom-1 left-2 right-2 xl:left-3 xl:right-3 h-0.5 rounded-full scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left ${
-                      isAtTop ? "bg-white/60" : "bg-gray-300"
+                    layoutId="navbar-active-pill"
+                    transition={SPRING.snappy}
+                    className={`absolute inset-0 rounded-full -z-10 ${
+                      isTransparent
+                        ? "bg-white/20 border border-white/30 shadow-sm shadow-black/15 backdrop-blur-sm"
+                        : "bg-teal-500/10 border border-teal-500/20 shadow-xs"
                     }`}
                   />
                 )}
+                <span className="relative z-10">{link.label}</span>
               </Link>
             );
           })}
-
-          {/* Dropdown Khám phá cho các mục được gộp trên tablet ngang */}
-          <div ref={exploreRef} className="relative shrink-0 xl:hidden">
-            <button
-              onClick={() => setExploreOpen(!exploreOpen)}
-              className={`relative flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-300 ${subTextColor} ${hoverTextColor}`}
-            >
-              Khám phá
-              <svg
-                width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
-                className={`transition-transform duration-200 ${exploreOpen ? "rotate-180" : ""}`}
-              >
-                <path d="m6 9 6 6 6-6" />
-              </svg>
-            </button>
-
-            <AnimatePresence>
-              {exploreOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: -6, scale: 0.97 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -6, scale: 0.97 }}
-                  transition={{ duration: 0.16 }}
-                  className="absolute top-full left-1/2 -translate-x-1/2 mt-1.5 w-44 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 overflow-hidden"
-                >
-                  {[
-                    { href: "/amthuc", label: "Ẩm thực", icon: "🍜" },
-                    { href: "/diemdulich", label: "Điểm du lịch", icon: "🏛️" },
-                    { href: "/bando", label: "Bản đồ tương tác", icon: "🗺️" },
-                    { href: "/chat", label: "Trợ lý AI", icon: "✨" },
-                  ].map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={() => setExploreOpen(false)}
-                      className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-teal-600 transition-colors"
-                    >
-                      <span>{item.icon}</span>
-                      {item.label}
-                    </Link>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
         </nav>
 
-        {/* ══ CỘT PHẢI: CTA Desktop + Hamburger Mobile ══ */}
-        <div className="ml-auto flex shrink-0 items-center gap-3">
+        {/* ══ 3. CỘT PHẢI: CTA Desktop & Hamburger Mobile ══ */}
+        <div className="ml-auto lg:ml-0 flex shrink-0 items-center justify-end min-w-[140px] lg:min-w-[200px] gap-2.5 sm:gap-3">
 
           {/* Desktop CTA */}
-          <div className="hidden items-center gap-3 lg:flex">
-            {/* Thêm lịch trình — nút chính */}
-            <Link
-              href="/lich-trinh/tao-moi"
-              className={`btn-ripple h-10 flex items-center gap-1.5 text-sm font-semibold px-5 rounded-full transition-colors shadow-md whitespace-nowrap ${
-                isAtTop 
-                  ? "bg-white text-teal-600 hover:bg-gray-50 hover:text-teal-700 shadow-black/10" 
-                  : "bg-teal-500 hover:bg-teal-400 text-white shadow-teal-500/25 hover:shadow-teal-400/30"
-              }`}
-            >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path d="M12 5v14M5 12h14" strokeLinecap="round" />
-              </svg>
-              Thêm lịch trình
-            </Link>
+          <div className="hidden items-center gap-2.5 sm:gap-3 lg:flex">
+            {/* Nút "Thêm lịch trình": Giữ màu xanh ngọc thương hiệu hiện tại + Magnetic nhẹ */}
+            <Magnetic strength={2.5}>
+              <Link
+                href="/lich-trinh/tao-moi"
+                className="h-9 sm:h-[38px] flex items-center gap-1.5 text-[13px] sm:text-[13.5px] font-semibold px-4 sm:px-4.5 rounded-full text-white bg-teal-500 hover:bg-teal-400 hover:brightness-105 shadow-md shadow-teal-500/25 hover:shadow-lg hover:shadow-teal-500/35 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] motion-reduce:transform-none whitespace-nowrap transition-all duration-200"
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="shrink-0">
+                  <path d="M12 5v14M5 12h14" strokeLinecap="round" />
+                </svg>
+                <span>Thêm lịch trình</span>
+              </Link>
+            </Magnetic>
 
             {loading ? (
-              <div className="w-10 h-10 rounded-full bg-white/20 animate-pulse border border-black/10"></div>
+              <div className="w-9 h-9 sm:w-[38px] sm:h-[38px] rounded-full bg-white/20 animate-pulse border border-black/10"></div>
             ) : !user ? (
+              /* Nút "Đăng nhập": outlined button, tăng tương phản, icon & text cùng hàng */
               <Link
                 href="/dang-nhap"
-                className={`h-10 flex items-center gap-1.5 text-sm font-medium px-4 rounded-full transition-all duration-300 border whitespace-nowrap ${
-                  isAtTop
-                    ? "text-white border-white bg-white/10 hover:bg-white/20 hover:border-white shadow-[0_2px_4px_rgba(0,0,0,0.1)] backdrop-blur-sm"
-                    : "text-[#0f2942] border-gray-300 hover:border-teal-400 hover:text-teal-600 hover:bg-teal-50"
+                style={textShadowStyle}
+                className={`h-9 sm:h-[38px] flex items-center gap-1.5 text-[13px] sm:text-[13.5px] font-semibold px-4 rounded-full whitespace-nowrap hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] motion-reduce:transform-none transition-all duration-200 ${
+                  isTransparent
+                    ? "text-white border border-white/60 bg-white/10 hover:bg-white/20 hover:border-white shadow-sm"
+                    : "text-slate-800 border border-slate-300 hover:border-teal-500 hover:text-teal-700 hover:bg-teal-50/70"
                 }`}
               >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="shrink-0">
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
                 </svg>
-                Đăng nhập
+                <span>Đăng nhập</span>
               </Link>
             ) : (
+              /* Avatar khi đã đăng nhập: đồng bộ kích thước h-9 sm:h-[38px] */
               <div className="relative" ref={avatarRef}>
                 <button
                   onClick={() => setAvatarDropdownOpen(!avatarDropdownOpen)}
-                  className={`relative w-10 h-10 rounded-full border-2 transition-colors focus:outline-none focus:ring-2 focus:ring-teal-400 shadow-sm ${
-                    isAtTop ? "border-white/80 hover:border-white bg-white" : "border-gray-200 hover:border-teal-300 bg-gray-50"
+                  className={`relative w-9 h-9 sm:w-[38px] sm:h-[38px] rounded-full border-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-400 shadow-sm hover:scale-105 ${
+                    isTransparent ? "border-white ring-2 ring-white/60 bg-white/20" : "border-gray-200 hover:border-teal-300 bg-gray-50"
                   }`}
                 >
                   {user.avatarUrl ? (
@@ -361,27 +325,24 @@ export default function Navbar() {
                             </div>
                             <div>
                               <p className="font-semibold text-sm">{user.name}</p>
-                              <p className="text-xs text-gray-500">{user.email}</p>
-                              <span className="inline-block mt-1 px-2 py-0.5 bg-gray-100 text-gray-600 text-[10px] rounded-full font-medium">
-                                {user.role === 'PARTNER' ? 'Đối tác dịch vụ' : 'Thành viên thường'}
-                              </span>
+                              <p className="text-xs text-gray-500">{user.email || 'Thành viên DaNangGo'}</p>
                             </div>
                           </div>
-                          
-                          <div className="px-4 py-3 border-b border-gray-100">
-                            <div className="bg-orange-50 border border-orange-100 rounded-xl p-3 text-center">
-                              <p className="text-xs text-orange-800 font-medium mb-2">Đăng ký thành viên VIP để nhận ưu đãi từ 500+ đối tác</p>
-                              <Link 
-                                href="/vip?action=register-vip" 
-                                className="block w-full py-2 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-lg transition-colors"
-                                onClick={() => setAvatarDropdownOpen(false)}
-                              >
-                                Đăng ký thành viên VIP
-                              </Link>
+
+                          <div className="px-4 py-3 border-b border-gray-100 bg-teal-50/50">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <span className="text-xs font-semibold text-teal-800">Thành viên Tiêu chuẩn</span>
+                                <p className="text-[10px] text-teal-600">Nâng cấp VIP để nhận ưu đãi</p>
+                              </div>
+                              <Link href="/vip" className="text-xs font-semibold text-white bg-teal-600 hover:bg-teal-700 px-3 py-1 rounded-full transition-colors" onClick={() => setAvatarDropdownOpen(false)}>Nâng cấp</Link>
                             </div>
-                            <div className="flex justify-between mt-3 px-2">
-                              <Link href="/lich-trinh" className="text-center hover:text-teal-700" onClick={() => setAvatarDropdownOpen(false)}>
-                                <p className="text-sm font-semibold text-teal-600">Lịch trình của tôi</p>
+                          </div>
+
+                          <div className="px-4 py-2 border-b border-gray-100">
+                            <div className="flex items-center justify-around py-1">
+                              <Link href="/lich-trinh" className="text-center group" onClick={() => setAvatarDropdownOpen(false)}>
+                                <p className="text-lg font-bold text-teal-600 group-hover:text-teal-700">0</p>
                                 <p className="text-[10px] text-gray-500">Xem lịch đã lưu</p>
                               </Link>
                               <div className="w-px h-8 bg-gray-200"></div>
@@ -415,7 +376,7 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Mobile: Hamburger only */}
+          {/* Hamburger Mobile */}
           <button
             className="flex lg:hidden p-2"
             onClick={() => setMobileOpen(!mobileOpen)}
@@ -425,17 +386,17 @@ export default function Navbar() {
             <div className="flex flex-col justify-center w-5 h-5 gap-[5px]">
               <div
                 className={`w-5 h-0.5 rounded-full transition-all duration-300 ${
-                  isAtTop ? "bg-white shadow-sm" : "bg-[#0f2942]"
+                  isTransparent ? "bg-white shadow-sm" : "bg-[#0f2942]"
                 } ${mobileOpen ? "rotate-45 translate-y-[7px]" : ""}`}
               />
               <div
                 className={`w-5 h-0.5 rounded-full transition-all duration-300 ${
-                  isAtTop ? "bg-white shadow-sm" : "bg-[#0f2942]"
+                  isTransparent ? "bg-white shadow-sm" : "bg-[#0f2942]"
                 } ${mobileOpen ? "opacity-0" : ""}`}
               />
               <div
                 className={`w-5 h-0.5 rounded-full transition-all duration-300 ${
-                  isAtTop ? "bg-white shadow-sm" : "bg-[#0f2942]"
+                  isTransparent ? "bg-white shadow-sm" : "bg-[#0f2942]"
                 } ${mobileOpen ? "-rotate-45 -translate-y-[7px]" : ""}`}
               />
             </div>
@@ -443,7 +404,7 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* ── MOBILE MENU ── */}
+      {/* ── MOBILE MENU DRAWER ── */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
@@ -451,9 +412,13 @@ export default function Navbar() {
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.22 }}
-            className="relative z-10 lg:hidden bg-white border-t border-gray-100 overflow-hidden shadow-xl"
+            className={`absolute top-full left-0 right-0 z-50 lg:hidden overflow-hidden shadow-2xl transition-colors duration-250 ${
+              isTransparent
+                ? "bg-[#071a2e] text-white border-t border-white/10"
+                : "bg-white text-gray-800 border-t border-gray-100"
+            }`}
           >
-            <nav className="flex flex-col px-5 py-4 gap-1">
+            <nav className="flex flex-col px-5 py-4 gap-1.5">
               {NAV_LINKS.map((link) => {
                 const isActive = link.href === "/" 
                   ? pathname === "/" 
@@ -463,10 +428,14 @@ export default function Navbar() {
                   <Link
                     key={link.href}
                     href={link.href}
-                    className={`py-2.5 px-3 rounded-xl text-sm transition-colors ${
-                      isActive
-                        ? "text-[#0f2942] font-semibold bg-gray-100 border-l-2 border-orange-400"
-                        : "text-gray-600 hover:text-[#0f2942] hover:bg-gray-50"
+                    className={`py-2.5 px-3.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                      isTransparent
+                        ? isActive
+                          ? "text-white font-semibold bg-white/20 border border-white/25 shadow-sm"
+                          : "text-white/85 hover:text-white hover:bg-white/10"
+                        : isActive
+                          ? "text-teal-800 font-semibold bg-teal-50 border border-teal-200/60"
+                          : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                     }`}
                     onClick={() => setMobileOpen(false)}
                   >
@@ -476,22 +445,26 @@ export default function Navbar() {
               })}
 
               {/* Divider */}
-              <div className="h-px my-3 bg-gray-200" />
+              <div className={`h-px my-3 ${isTransparent ? "bg-white/10" : "bg-gray-200"}`} />
 
               {loading ? (
                 <div className="flex items-center justify-center py-3">
-                  <div className="w-8 h-8 rounded-full bg-black/10 animate-pulse"></div>
+                  <div className="w-8 h-8 rounded-full bg-white/20 animate-pulse"></div>
                 </div>
               ) : !user ? (
                 <Link
                   href="/dang-nhap"
-                  className="flex items-center justify-center gap-2 border border-gray-300 text-[#0f2942] hover:bg-gray-50 py-3 rounded-full text-sm font-medium transition-all"
+                  className={`flex items-center justify-center gap-2 py-3 rounded-full text-sm font-semibold transition-all ${
+                    isTransparent
+                      ? "border border-white/60 bg-white/10 text-white hover:bg-white/20"
+                      : "border border-slate-300 text-slate-800 hover:border-teal-500 hover:bg-teal-50/70"
+                  }`}
                   onClick={() => setMobileOpen(false)}
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="shrink-0">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
                   </svg>
-                  Đăng nhập
+                  <span>Đăng nhập</span>
                 </Link>
               ) : (
                 <>
@@ -506,7 +479,9 @@ export default function Navbar() {
                   )}
                   <Link
                     href="/ca-nhan"
-                    className="flex items-center justify-center gap-2 border border-gray-300 text-[#0f2942] hover:bg-gray-50 py-3 rounded-full text-sm font-medium transition-all"
+                    className={`flex items-center justify-center gap-2 py-3 rounded-full text-sm font-medium transition-all ${
+                      isTransparent ? "border border-white/20 text-white hover:bg-white/10" : "border border-gray-300 text-[#0f2942] hover:bg-gray-50"
+                    }`}
                     onClick={() => setMobileOpen(false)}
                   >
                     Hồ sơ của tôi
@@ -530,7 +505,7 @@ export default function Navbar() {
               {/* Thêm lịch trình — nút chính, full width */}
               <Link
                 href="/lich-trinh/tao-moi"
-                className="flex items-center justify-center gap-2 bg-teal-500 hover:bg-teal-400 text-white py-3 rounded-full text-sm font-semibold mt-1 transition-colors"
+                className="flex items-center justify-center gap-2 bg-teal-500 hover:bg-teal-400 text-white py-3 rounded-full text-sm font-semibold mt-1 transition-colors shadow-md shadow-teal-500/25"
                 onClick={() => setMobileOpen(false)}
               >
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">

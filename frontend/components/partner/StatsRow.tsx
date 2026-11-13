@@ -21,7 +21,7 @@ function Counter({ target }: { target: number }) {
       setCount(0);
       return;
     }
-    const duration = 600; // ms
+    const duration = 600;
     const incrementTime = 20;
     const steps = duration / incrementTime;
     const stepValue = Math.ceil(end / steps);
@@ -49,54 +49,61 @@ export default function StatsRow({ total, active, pending, locked }: StatsRowPro
       value: total,
       desc: 'Cơ sở đã đăng ký',
       icon: Store,
-      iconBg: 'bg-teal-50 text-teal-600 border-teal-100',
+      iconBg: 'bg-[#E9F8F5] text-[#008F89] border-[#BDE8E0]',
+      accentBar: 'bg-[#008F89]',
     },
     {
       title: 'Đang hoạt động',
       value: active,
       desc: 'Hiển thị công khai',
       icon: CheckCircle2,
-      iconBg: 'bg-emerald-50 text-emerald-600 border-emerald-100',
+      iconBg: 'bg-emerald-50 text-emerald-600 border-emerald-200/80',
+      accentBar: 'bg-emerald-500',
     },
     {
       title: 'Chờ phê duyệt',
       value: pending,
       desc: 'Ban quản trị tiếp nhận',
       icon: Clock,
-      iconBg: 'bg-amber-50 text-amber-600 border-amber-100',
+      iconBg: 'bg-amber-50 text-amber-600 border-amber-200/80',
+      accentBar: 'bg-[#FF8A24]',
     },
     {
       title: 'Bị khóa (Admin)',
       value: locked,
       desc: 'Tạm ngưng phục vụ',
       icon: Lock,
-      iconBg: 'bg-rose-50 text-rose-600 border-rose-100',
+      iconBg: 'bg-rose-50 text-rose-600 border-rose-200/80',
+      accentBar: 'bg-rose-500',
     },
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 mb-7">
       {items.map((stat, idx) => {
         const Icon = stat.icon;
         return (
           <motion.div
             key={stat.title}
-            initial={{ opacity: 0, y: 16 }}
+            initial={{ opacity: 0, y: 12 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.35, delay: idx * 0.08, ease: 'easeOut' }}
-            className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:shadow-md transition-shadow flex items-center justify-between"
+            transition={{ duration: 0.3, delay: idx * 0.06, ease: 'easeOut' }}
+            className="group relative bg-white rounded-[20px] p-5 sm:p-6 border border-[#E2ECEC] hover:border-[#BDE8E0] shadow-xs hover:shadow-md hover:-translate-y-[3px] transition-all duration-200 flex items-center justify-between overflow-hidden"
           >
-            <div>
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+            <div className={`absolute left-0 top-0 bottom-0 w-1 ${stat.accentBar} opacity-80`} />
+            <div className="pl-1">
+              <p className="text-xs font-semibold text-[#68798A] uppercase tracking-wider">
                 {stat.title}
               </p>
-              <h3 className="text-2xl font-black text-slate-900 mt-1">
+              <h3 className="text-[28px] sm:text-[32px] font-extrabold text-[#14233B] mt-1.5 leading-none">
                 <Counter target={stat.value} />
               </h3>
-              <p className="text-[11px] text-slate-400 mt-0.5">{stat.desc}</p>
+              <p className="text-[11px] text-[#68798A] mt-1">{stat.desc}</p>
             </div>
-            <div className={`w-12 h-12 rounded-2xl border flex items-center justify-center shrink-0 ${stat.iconBg}`}>
+            <div
+              className={`w-12 h-12 rounded-2xl border flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105 ${stat.iconBg}`}
+            >
               <Icon className="w-6 h-6" />
             </div>
           </motion.div>

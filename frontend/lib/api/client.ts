@@ -93,7 +93,7 @@ export async function apiRequest<T>(
     path !== "/api/auth/refresh" &&
     path !== "/api/admin/auth/refresh";
 
-  if (canRefresh) {
+  if (canRefresh && !requestInit.signal?.aborted) {
     const isAdminRequest = path.startsWith("/api/admin/");
     const refreshPath = isAdminRequest
       ? "/api/admin/auth/refresh"
@@ -101,6 +101,7 @@ export async function apiRequest<T>(
     const refreshResponse = await fetch(apiUrl(refreshPath), {
       method: "POST",
       credentials: "include",
+      signal: requestInit.signal,
     });
     if (refreshResponse.ok) {
       response = await fetch(apiUrl(path), requestInit);

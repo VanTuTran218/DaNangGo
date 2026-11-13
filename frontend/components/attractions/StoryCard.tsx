@@ -2,9 +2,10 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Heart, MapPin, Star, Users, ArrowRight } from 'lucide-react';
+import { MapPin, Star, Users, ArrowRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import HeartButton from '@/components/HeartButton';
+import { recordSharedPlaceClick } from '@/components/ui/MotionPrimitives';
 
 export interface AttractionData {
   id: number;
@@ -42,7 +43,7 @@ const tintText = {
   purple: 'text-purple-600 bg-purple-50'
 };
 
-export default function StoryCard({ data, liked, onLike }: Props) {
+export default function StoryCard({ data }: Props) {
   const [isHovered, setIsHovered] = useState(false);
   const [imgSrc, setImgSrc] = useState(data.img);
 
@@ -53,21 +54,23 @@ export default function StoryCard({ data, liked, onLike }: Props) {
   return (
     <Link
       href={`/places/${data.id}`}
-      className="group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 border border-gray-100 cursor-pointer h-[420px] flex flex-col relative block"
+      onClick={() => recordSharedPlaceClick(data.id, imgSrc)}
+      className="group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-teal-950/10 hover:-translate-y-1 transition-all duration-300 border border-gray-100 hover:border-teal-300/80 cursor-pointer h-[420px] flex flex-col relative block"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
 
       {/* Nửa trên: Hình ảnh */}
-      <div className="relative h-[240px] w-full overflow-hidden shrink-0">
+      <div className="relative h-[240px] w-full overflow-hidden shrink-0 bg-slate-100">
         <Image
-          src={imgSrc || 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=800&q=80'}
+          src={imgSrc || 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=1200&q=85'}
           alt={data.name}
           fill
-          className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+          quality={85}
+          className="object-cover group-hover:scale-[1.03] transition-transform duration-500 ease-out"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           onError={() => {
-            setImgSrc('https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=800&q=80');
+            setImgSrc('https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=1200&q=85');
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80" />
@@ -76,21 +79,7 @@ export default function StoryCard({ data, liked, onLike }: Props) {
           {data.category}
         </div>
         
-        {data.placeId ? (
-          <div className="absolute top-4 right-4 z-20">
-            <HeartButton placeId={data.placeId} />
-          </div>
-        ) : (
-        <button
-          type="button"
-          aria-label={liked ? 'Bỏ lưu địa điểm yêu thích' : 'Lưu địa điểm yêu thích'}
-          aria-pressed={liked}
-          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onLike(); }}
-          className={`absolute top-4 ${data.placeId ? 'right-16' : 'right-4'} w-9 h-9 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center hover:bg-white/40 active:scale-95 transition-all shadow-sm`}
-        >
-          <Heart size={16} className={`transition-colors ${liked ? 'fill-red-500 text-red-500' : 'text-white'}`} />
-        </button>
-        )}
+        <div className="absolute top-4 right-4 z-20"><HeartButton placeId={data.placeId} /></div>
 
         <div className="absolute bottom-4 left-4 right-4 text-white">
           <h3 className="text-xl font-bold leading-tight mb-1 h3-card">{data.name}</h3>

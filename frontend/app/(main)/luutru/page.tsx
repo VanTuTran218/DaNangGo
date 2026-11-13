@@ -28,36 +28,40 @@ import PriceRangeSlider from '@/components/ui/PriceRangeSlider';
 
 
 
+// ── ĐƯỜNG DẪN ẢNH NỀN HERO LƯU TRÚ (DỄ DÀNG THAY ĐỔI TẠI ĐÂY) ───────────────────
+// Bạn có thể đổi đường dẫn ảnh hoặc thay thế file: frontend/public/images/luu-tru-hero.jpg
+const LUU_TRU_HERO_IMAGE = '/images/luu-tru-hero.jpg';
+
 // ── DATA: 24 khách sạn để có phân trang thực (4 trang × 6 card) ───────────────
 const HOTELS: HotelData[] = [
   // Page 1
-  { id:1,  name:'Fusion Maia Da Nang Resort', category:'KHU NGHỈ DƯỠNG 5 SAO', badgeColor:'bg-purple-600', badgePulse:false, location:'Khu vực Biển Mỹ Khê', rating:4.9, reviews:2341, pricePerNight:3200000, originalPrice:4500000, img:'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=600&q=80', amenities:['Hồ bơi vô cực & Spa','Giáp biển Mỹ Khê','Bao gồm bữa sáng'], amenityIcon:'🏊', tags:['Hồ bơi vô cực','Spa cao cấp','Trực tiếp biển'], isLiked:false },
-  { id:2,  name:'InterContinental Da Nang Sun Peninsula', category:'ĐƯỢC YÊU THÍCH', badgeColor:'bg-red-500', badgePulse:true, location:'Sơn Trà, Đà Nẵng', rating:4.8, reviews:1893, pricePerNight:5800000, originalPrice:7200000, img:'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=600&q=80', amenities:['Tầm nhìn biển toàn cảnh','Nhà hàng 5 sao','Infinity pool'], amenityIcon:'🌊', tags:['View biển','Ẩm thực','Hồ bơi'], isLiked:false },
-  { id:3,  name:'Novotel Da Nang Premier Han River', category:'KHÁCH SẠN 4 SAO', badgeColor:'bg-blue-500', badgePulse:false, location:'Trung tâm Đà Nẵng', rating:4.6, reviews:3102, pricePerNight:1850000, originalPrice:2400000, img:'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&q=80', amenities:['View sông Hàn','Hồ bơi ngoài trời','Trung tâm thành phố'], amenityIcon:'🏙️', tags:['View sông Hàn','Trung tâm','Hồ bơi'], isLiked:false },
-  { id:4,  name:'Ohana Beach Hotel Da Nang', category:'TOP VIEW BIỂN', badgeColor:'bg-teal-500', badgePulse:false, location:'Phạm Văn Đồng, Mỹ Khê', rating:4.7, reviews:1204, pricePerNight:980000, originalPrice:1300000, img:'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=600&q=80', amenities:['Ngay mặt biển Mỹ Khê','Rooftop bar','Wifi tốc độ cao'], amenityIcon:'🏖️', tags:['Mặt biển','Rooftop','Giá tốt'], isLiked:false },
-  { id:5,  name:'The Anam Da Nang', category:'ƯU ĐÃI HỜI', badgeColor:'bg-orange-500', badgePulse:true, location:'Bãi biển Non Nước', rating:4.5, reviews:876, pricePerNight:2100000, originalPrice:3500000, img:'https://images.unsplash.com/photo-1445019980597-93fa8acb246c?w=600&q=80', amenities:['Biển Non Nước riêng tư','Spa Việt Nam','Bao gồm bữa trưa'], amenityIcon:'🌴', tags:['Bãi riêng','Spa','Ưu đãi'], isLiked:false },
-  { id:6,  name:'The Lena House Boutique', category:'BOUTIQUE HOMESTAY', badgeColor:'bg-pink-500', badgePulse:false, location:'Hải Châu, Đà Nẵng', rating:4.8, reviews:567, pricePerNight:450000, originalPrice:600000, img:'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600&q=80', amenities:['Phong cách vintage','Bếp chung','Gần chợ Hàn'], amenityIcon:'🏡', tags:['Boutique','Cozy','Giá rẻ'], isLiked:false },
+  { id:1,  name:'Fusion Maia Da Nang Resort', category:'KHU NGHỈ DƯỠNG 5 SAO', badgeColor:'bg-purple-600', badgePulse:false, location:'Khu vực Biển Mỹ Khê', rating:4.9, reviews:2341, pricePerNight:3200000, originalPrice:4500000, img:'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=1200&q=85', amenities:['Hồ bơi vô cực & Spa','Giáp biển Mỹ Khê','Bao gồm bữa sáng'], amenityIcon:'🏊', tags:['Hồ bơi vô cực','Spa cao cấp','Trực tiếp biển'], isLiked:false },
+  { id:2,  name:'InterContinental Da Nang Sun Peninsula', category:'ĐƯỢC YÊU THÍCH', badgeColor:'bg-red-500', badgePulse:true, location:'Sơn Trà, Đà Nẵng', rating:4.8, reviews:1893, pricePerNight:5800000, originalPrice:7200000, img:'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=1200&q=85', amenities:['Tầm nhìn biển toàn cảnh','Nhà hàng 5 sao','Infinity pool'], amenityIcon:'🌊', tags:['View biển','Ẩm thực','Hồ bơi'], isLiked:false },
+  { id:3,  name:'Novotel Da Nang Premier Han River', category:'KHÁCH SẠN 4 SAO', badgeColor:'bg-blue-500', badgePulse:false, location:'Trung tâm Đà Nẵng', rating:4.6, reviews:3102, pricePerNight:1850000, originalPrice:2400000, img:'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1200&q=85', amenities:['View sông Hàn','Hồ bơi ngoài trời','Trung tâm thành phố'], amenityIcon:'🏙️', tags:['View sông Hàn','Trung tâm','Hồ bơi'], isLiked:false },
+  { id:4,  name:'Ohana Beach Hotel Da Nang', category:'TOP VIEW BIỂN', badgeColor:'bg-teal-500', badgePulse:false, location:'Phạm Văn Đồng, Mỹ Khê', rating:4.7, reviews:1204, pricePerNight:980000, originalPrice:1300000, img:'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=1200&q=85', amenities:['Ngay mặt biển Mỹ Khê','Rooftop bar','Wifi tốc độ cao'], amenityIcon:'🏖️', tags:['Mặt biển','Rooftop','Giá tốt'], isLiked:false },
+  { id:5,  name:'The Anam Da Nang', category:'ƯU ĐÃI HỜI', badgeColor:'bg-orange-500', badgePulse:true, location:'Bãi biển Non Nước', rating:4.5, reviews:876, pricePerNight:2100000, originalPrice:3500000, img:'https://images.unsplash.com/photo-1445019980597-93fa8acb246c?w=1200&q=85', amenities:['Biển Non Nước riêng tư','Spa Việt Nam','Bao gồm bữa trưa'], amenityIcon:'🌴', tags:['Bãi riêng','Spa','Ưu đãi'], isLiked:false },
+  { id:6,  name:'The Lena House Boutique', category:'BOUTIQUE HOMESTAY', badgeColor:'bg-pink-500', badgePulse:false, location:'Hải Châu, Đà Nẵng', rating:4.8, reviews:567, pricePerNight:450000, originalPrice:600000, img:'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1200&q=85', amenities:['Phong cách vintage','Bếp chung','Gần chợ Hàn'], amenityIcon:'🏡', tags:['Boutique','Cozy','Giá rẻ'], isLiked:false },
   // Page 2
-  { id:7,  name:'Hyatt Regency Da Nang Resort', category:'KHU NGHỈ DƯỠNG 5 SAO', badgeColor:'bg-purple-600', badgePulse:false, location:'Khu vực Biển Mỹ Khê', rating:4.7, reviews:1650, pricePerNight:4100000, originalPrice:5500000, img:'https://images.unsplash.com/photo-1540541338537-1220059b8aed?w=600&q=80', amenities:['4 hồ bơi','Bãi biển riêng','Spa cao cấp'], amenityIcon:'🏊', tags:['Hồ bơi vô cực','Trực tiếp biển','Spa cao cấp'], isLiked:false },
-  { id:8,  name:'Sheraton Grand Da Nang Resort', category:'KHÁCH SẠN 5 SAO', badgeColor:'bg-purple-700', badgePulse:false, location:'Khu vực Biển Mỹ Khê', rating:4.8, reviews:2089, pricePerNight:3600000, originalPrice:4800000, img:'https://images.unsplash.com/photo-1551882547-ff40c4a49ce5?w=600&q=80', amenities:['View biển trực tiếp','Nhà hàng Nhật Bản','Fitness center'], amenityIcon:'🌊', tags:['View biển','Ẩm thực','Hồ bơi'], isLiked:false },
-  { id:9,  name:'Cocobay Da Nang', category:'ĐƯỢC YÊU THÍCH', badgeColor:'bg-red-500', badgePulse:true, location:'Ngũ Hành Sơn, Đà Nẵng', rating:4.6, reviews:943, pricePerNight:1200000, originalPrice:1800000, img:'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=600&q=80', amenities:['Khu phức hợp giải trí','Beach club','Water park'], amenityIcon:'🎡', tags:['Giải trí','Ưu đãi','Hồ bơi'], isLiked:false },
-  { id:10, name:'Muong Thanh Luxury Da Nang Hotel', category:'KHÁCH SẠN 4 SAO', badgeColor:'bg-blue-500', badgePulse:false, location:'Trung tâm Đà Nẵng', rating:4.5, reviews:2210, pricePerNight:890000, originalPrice:1200000, img:'https://images.unsplash.com/photo-1568084680786-a84f91d1153c?w=600&q=80', amenities:['Hồ bơi tầng cao','Nhà hàng buffet','Gần biển Mỹ Khê'], amenityIcon:'🏙️', tags:['Trung tâm','Giá tốt','Hồ bơi'], isLiked:false },
-  { id:11, name:'Azura Da Nang', category:'TOP VIEW BIỂN', badgeColor:'bg-teal-500', badgePulse:false, location:'Phạm Văn Đồng, Mỹ Khê', rating:4.6, reviews:780, pricePerNight:1100000, originalPrice:1500000, img:'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=600&q=80', amenities:['Rooftop infinity pool','View biển Mỹ Khê','Bar tầng thượng'], amenityIcon:'🏖️', tags:['Rooftop','Mặt biển','Hồ bơi'], isLiked:false },
-  { id:12, name:'Faifo Hoi An - Da Nang Gateway', category:'BOUTIQUE HOMESTAY', badgeColor:'bg-pink-500', badgePulse:false, location:'Hải Châu, Đà Nẵng', rating:4.7, reviews:432, pricePerNight:550000, originalPrice:750000, img:'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=600&q=80', amenities:['Phong cách Hội An','Rooftop garden','Breakfast included'], amenityIcon:'🏡', tags:['Boutique','Cozy','Bao gồm bữa sáng'], isLiked:false },
+  { id:7,  name:'Hyatt Regency Da Nang Resort', category:'KHU NGHỈ DƯỠNG 5 SAO', badgeColor:'bg-purple-600', badgePulse:false, location:'Khu vực Biển Mỹ Khê', rating:4.7, reviews:1650, pricePerNight:4100000, originalPrice:5500000, img:'https://images.unsplash.com/photo-1540541338537-1220059b8aed?w=1200&q=85', amenities:['4 hồ bơi','Bãi biển riêng','Spa cao cấp'], amenityIcon:'🏊', tags:['Hồ bơi vô cực','Trực tiếp biển','Spa cao cấp'], isLiked:false },
+  { id:8,  name:'Sheraton Grand Da Nang Resort', category:'KHÁCH SẠN 5 SAO', badgeColor:'bg-purple-700', badgePulse:false, location:'Khu vực Biển Mỹ Khê', rating:4.8, reviews:2089, pricePerNight:3600000, originalPrice:4800000, img:'https://images.unsplash.com/photo-1551882547-ff40c4a49ce5?w=1200&q=85', amenities:['View biển trực tiếp','Nhà hàng Nhật Bản','Fitness center'], amenityIcon:'🌊', tags:['View biển','Ẩm thực','Hồ bơi'], isLiked:false },
+  { id:9,  name:'Cocobay Da Nang', category:'ĐƯỢC YÊU THÍCH', badgeColor:'bg-red-500', badgePulse:true, location:'Ngũ Hành Sơn, Đà Nẵng', rating:4.6, reviews:943, pricePerNight:1200000, originalPrice:1800000, img:'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=1200&q=85', amenities:['Khu phức hợp giải trí','Beach club','Water park'], amenityIcon:'🎡', tags:['Giải trí','Ưu đãi','Hồ bơi'], isLiked:false },
+  { id:10, name:'Muong Thanh Luxury Da Nang Hotel', category:'KHÁCH SẠN 4 SAO', badgeColor:'bg-blue-500', badgePulse:false, location:'Trung tâm Đà Nẵng', rating:4.5, reviews:2210, pricePerNight:890000, originalPrice:1200000, img:'https://images.unsplash.com/photo-1568084680786-a84f91d1153c?w=1200&q=85', amenities:['Hồ bơi tầng cao','Nhà hàng buffet','Gần biển Mỹ Khê'], amenityIcon:'🏙️', tags:['Trung tâm','Giá tốt','Hồ bơi'], isLiked:false },
+  { id:11, name:'Azura Da Nang', category:'TOP VIEW BIỂN', badgeColor:'bg-teal-500', badgePulse:false, location:'Phạm Văn Đồng, Mỹ Khê', rating:4.6, reviews:780, pricePerNight:1100000, originalPrice:1500000, img:'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=1200&q=85', amenities:['Rooftop infinity pool','View biển Mỹ Khê','Bar tầng thượng'], amenityIcon:'🏖️', tags:['Rooftop','Mặt biển','Hồ bơi'], isLiked:false },
+  { id:12, name:'Faifo Hoi An - Da Nang Gateway', category:'BOUTIQUE HOMESTAY', badgeColor:'bg-pink-500', badgePulse:false, location:'Hải Châu, Đà Nẵng', rating:4.7, reviews:432, pricePerNight:550000, originalPrice:750000, img:'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=1200&q=85', amenities:['Phong cách Hội An','Rooftop garden','Breakfast included'], amenityIcon:'🏡', tags:['Boutique','Cozy','Bao gồm bữa sáng'], isLiked:false },
   // Page 3
-  { id:13, name:'Premier Village Da Nang Resort', category:'KHU NGHỈ DƯỠNG 5 SAO', badgeColor:'bg-purple-600', badgePulse:false, location:'Sơn Trà, Đà Nẵng', rating:4.9, reviews:1102, pricePerNight:6200000, originalPrice:8000000, img:'https://images.unsplash.com/photo-1527786356703-4b100091cd2c?w=600&q=80', amenities:['Villa riêng có hồ bơi','Bờ biển riêng','Butler service'], amenityIcon:'🏝️', tags:['Hồ bơi vô cực','Bãi riêng','Spa cao cấp'], isLiked:false },
-  { id:14, name:'Almanity Hoi An Wellness Resort', category:'ƯU ĐÃI HỜI', badgeColor:'bg-orange-500', badgePulse:true, location:'Non Nước, Đà Nẵng', rating:4.6, reviews:698, pricePerNight:1750000, originalPrice:2800000, img:'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=600&q=80', amenities:['Wellness & Detox','Yoga hàng ngày','Hồ bơi muối khoáng'], amenityIcon:'🧘', tags:['Spa','Ưu đãi','Bao gồm bữa sáng'], isLiked:false },
-  { id:15, name:'Grand Mercure Da Nang', category:'KHÁCH SẠN 4 SAO', badgeColor:'bg-blue-500', badgePulse:false, location:'Trung tâm Đà Nẵng', rating:4.5, reviews:1876, pricePerNight:1350000, originalPrice:1800000, img:'https://images.unsplash.com/photo-1549294413-26f195200c16?w=600&q=80', amenities:['View sông Hàn & biển','Buffet sáng 5 sao','Club Lounge độc quyền'], amenityIcon:'🏙️', tags:['View sông Hàn','Trung tâm','Ẩm thực'], isLiked:false },
-  { id:16, name:'Brilliant Hotel Da Nang', category:'ĐƯỢC YÊU THÍCH', badgeColor:'bg-red-500', badgePulse:true, location:'Trung tâm Đà Nẵng', rating:4.6, reviews:2034, pricePerNight:750000, originalPrice:1050000, img:'https://images.unsplash.com/photo-1445991842772-097fea258e7b?w=600&q=80', amenities:['Rooftop bar sầm uất','View sông Hàn','Gần cầu Rồng'], amenityIcon:'🌉', tags:['Rooftop','Trung tâm','Giá tốt'], isLiked:false },
-  { id:17, name:'Sandy Beach Non Nuoc Resort', category:'TOP VIEW BIỂN', badgeColor:'bg-teal-500', badgePulse:false, location:'Non Nước, Đà Nẵng', rating:4.4, reviews:1123, pricePerNight:1600000, originalPrice:2200000, img:'https://images.unsplash.com/photo-1535498730771-e735b998cd64?w=600&q=80', amenities:['Bãi biển Non Nước','Beach volleyball','Hải sản tươi sống'], amenityIcon:'🏖️', tags:['Mặt biển','Bãi riêng','Ẩm thực'], isLiked:false },
-  { id:18, name:'Memority Hotel Da Nang', category:'BOUTIQUE HOMESTAY', badgeColor:'bg-pink-500', badgePulse:false, location:'Hải Châu, Đà Nẵng', rating:4.8, reviews:312, pricePerNight:380000, originalPrice:520000, img:'https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?w=600&q=80', amenities:['Decor nghệ thuật độc đáo','Cafe sân thượng','Vị trí trung tâm'], amenityIcon:'🎨', tags:['Boutique','Cozy','Giá rẻ'], isLiked:false },
+  { id:13, name:'Premier Village Da Nang Resort', category:'KHU NGHỈ DƯỠNG 5 SAO', badgeColor:'bg-purple-600', badgePulse:false, location:'Sơn Trà, Đà Nẵng', rating:4.9, reviews:1102, pricePerNight:6200000, originalPrice:8000000, img:'https://images.unsplash.com/photo-1527786356703-4b100091cd2c?w=1200&q=85', amenities:['Villa riêng có hồ bơi','Bờ biển riêng','Butler service'], amenityIcon:'🏝️', tags:['Hồ bơi vô cực','Bãi riêng','Spa cao cấp'], isLiked:false },
+  { id:14, name:'Almanity Hoi An Wellness Resort', category:'ƯU ĐÃI HỜI', badgeColor:'bg-orange-500', badgePulse:true, location:'Non Nước, Đà Nẵng', rating:4.6, reviews:698, pricePerNight:1750000, originalPrice:2800000, img:'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=1200&q=85', amenities:['Wellness & Detox','Yoga hàng ngày','Hồ bơi muối khoáng'], amenityIcon:'🧘', tags:['Spa','Ưu đãi','Bao gồm bữa sáng'], isLiked:false },
+  { id:15, name:'Grand Mercure Da Nang', category:'KHÁCH SẠN 4 SAO', badgeColor:'bg-blue-500', badgePulse:false, location:'Trung tâm Đà Nẵng', rating:4.5, reviews:1876, pricePerNight:1350000, originalPrice:1800000, img:'https://images.unsplash.com/photo-1549294413-26f195200c16?w=1200&q=85', amenities:['View sông Hàn & biển','Buffet sáng 5 sao','Club Lounge độc quyền'], amenityIcon:'🏙️', tags:['View sông Hàn','Trung tâm','Ẩm thực'], isLiked:false },
+  { id:16, name:'Brilliant Hotel Da Nang', category:'ĐƯỢC YÊU THÍCH', badgeColor:'bg-red-500', badgePulse:true, location:'Trung tâm Đà Nẵng', rating:4.6, reviews:2034, pricePerNight:750000, originalPrice:1050000, img:'https://images.unsplash.com/photo-1445991842772-097fea258e7b?w=1200&q=85', amenities:['Rooftop bar sầm uất','View sông Hàn','Gần cầu Rồng'], amenityIcon:'🌉', tags:['Rooftop','Trung tâm','Giá tốt'], isLiked:false },
+  { id:17, name:'Sandy Beach Non Nuoc Resort', category:'TOP VIEW BIỂN', badgeColor:'bg-teal-500', badgePulse:false, location:'Non Nước, Đà Nẵng', rating:4.4, reviews:1123, pricePerNight:1600000, originalPrice:2200000, img:'https://images.unsplash.com/photo-1535498730771-e735b998cd64?w=1200&q=85', amenities:['Bãi biển Non Nước','Beach volleyball','Hải sản tươi sống'], amenityIcon:'🏖️', tags:['Mặt biển','Bãi riêng','Ẩm thực'], isLiked:false },
+  { id:18, name:'Memority Hotel Da Nang', category:'BOUTIQUE HOMESTAY', badgeColor:'bg-pink-500', badgePulse:false, location:'Hải Châu, Đà Nẵng', rating:4.8, reviews:312, pricePerNight:380000, originalPrice:520000, img:'https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?w=1200&q=85', amenities:['Decor nghệ thuật độc đáo','Cafe sân thượng','Vị trí trung tâm'], amenityIcon:'🎨', tags:['Boutique','Cozy','Giá rẻ'], isLiked:false },
   // Page 4
-  { id:19, name:'TMS Hotel Da Nang Beach', category:'TOP VIEW BIỂN', badgeColor:'bg-teal-500', badgePulse:false, location:'Khu vực Biển Mỹ Khê', rating:4.7, reviews:1567, pricePerNight:1450000, originalPrice:2000000, img:'https://images.unsplash.com/photo-1561501900-3701fa6a0864?w=600&q=80', amenities:['Ngay biển Mỹ Khê','Hồ bơi nước mặn','Nhà hàng hải sản'], amenityIcon:'🏖️', tags:['Mặt biển','Hồ bơi','Ẩm thực'], isLiked:false },
-  { id:20, name:'A La Carte Da Nang Beach Hotel', category:'ĐƯỢC YÊU THÍCH', badgeColor:'bg-red-500', badgePulse:true, location:'Khu vực Biển Mỹ Khê', rating:4.6, reviews:2198, pricePerNight:1250000, originalPrice:1700000, img:'https://images.unsplash.com/photo-1506059612708-99d6128a0101?w=600&q=80', amenities:['Phòng có bếp riêng','Rooftop pool','Dịch vụ tự nấu ăn'], amenityIcon:'🍳', tags:['Rooftop','Mặt biển','Hồ bơi'], isLiked:false },
-  { id:21, name:'Green World Hotel Da Nang', category:'KHÁCH SẠN 4 SAO', badgeColor:'bg-blue-500', badgePulse:false, location:'Sơn Trà, Đà Nẵng', rating:4.5, reviews:934, pricePerNight:820000, originalPrice:1100000, img:'https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?w=600&q=80', amenities:['View bán đảo Sơn Trà','Gym & Yoga center','Bao gồm bữa sáng'], amenityIcon:'🌿', tags:['Spa','Bao gồm bữa sáng','View biển'], isLiked:false },
-  { id:22, name:'Palmy Hotel & Spa Da Nang', category:'ƯU ĐÃI HỜI', badgeColor:'bg-orange-500', badgePulse:true, location:'Hải Châu, Đà Nẵng', rating:4.4, reviews:756, pricePerNight:650000, originalPrice:1100000, img:'https://images.unsplash.com/photo-1496417263034-38ec4f0b665a?w=600&q=80', amenities:['Spa toàn thân','Hồ bơi tầng trệt','Trung tâm thành phố'], amenityIcon:'💆', tags:['Spa','Ưu đãi','Trung tâm'], isLiked:false },
-  { id:23, name:'Bana Hills Retreat Lodge', category:'KHU NGHỈ DƯỠNG 5 SAO', badgeColor:'bg-purple-600', badgePulse:false, location:'Hòa Vang, Đà Nẵng', rating:4.8, reviews:489, pricePerNight:2800000, originalPrice:3800000, img:'https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=600&q=80', amenities:['Cảnh núi rừng','Bungalow riêng tư','Đưa đón Bà Nà Hills'], amenityIcon:'⛰️', tags:['Spa cao cấp','Bãi riêng','Hồ bơi vô cực'], isLiked:false },
-  { id:24, name:'Da Nang Riverside Hotel', category:'BOUTIQUE HOMESTAY', badgeColor:'bg-pink-500', badgePulse:false, location:'Hải Châu, Đà Nẵng', rating:4.5, reviews:623, pricePerNight:420000, originalPrice:580000, img:'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=600&q=80', amenities:['View sông Hàn','Tầng thượng thư giãn','Gần cầu Tình Yêu'], amenityIcon:'🌉', tags:['Boutique','Cozy','View sông Hàn'], isLiked:false },
+  { id:19, name:'TMS Hotel Da Nang Beach', category:'TOP VIEW BIỂN', badgeColor:'bg-teal-500', badgePulse:false, location:'Khu vực Biển Mỹ Khê', rating:4.7, reviews:1567, pricePerNight:1450000, originalPrice:2000000, img:'https://images.unsplash.com/photo-1561501900-3701fa6a0864?w=1200&q=85', amenities:['Ngay biển Mỹ Khê','Hồ bơi nước mặn','Nhà hàng hải sản'], amenityIcon:'🏖️', tags:['Mặt biển','Hồ bơi','Ẩm thực'], isLiked:false },
+  { id:20, name:'A La Carte Da Nang Beach Hotel', category:'ĐƯỢC YÊU THÍCH', badgeColor:'bg-red-500', badgePulse:true, location:'Khu vực Biển Mỹ Khê', rating:4.6, reviews:2198, pricePerNight:1250000, originalPrice:1700000, img:'https://images.unsplash.com/photo-1506059612708-99d6128a0101?w=1200&q=85', amenities:['Phòng có bếp riêng','Rooftop pool','Dịch vụ tự nấu ăn'], amenityIcon:'🍳', tags:['Rooftop','Mặt biển','Hồ bơi'], isLiked:false },
+  { id:21, name:'Green World Hotel Da Nang', category:'KHÁCH SẠN 4 SAO', badgeColor:'bg-blue-500', badgePulse:false, location:'Sơn Trà, Đà Nẵng', rating:4.5, reviews:934, pricePerNight:820000, originalPrice:1100000, img:'https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?w=1200&q=85', amenities:['View bán đảo Sơn Trà','Gym & Yoga center','Bao gồm bữa sáng'], amenityIcon:'🌿', tags:['Spa','Bao gồm bữa sáng','View biển'], isLiked:false },
+  { id:22, name:'Palmy Hotel & Spa Da Nang', category:'ƯU ĐÃI HỜI', badgeColor:'bg-orange-500', badgePulse:true, location:'Hải Châu, Đà Nẵng', rating:4.4, reviews:756, pricePerNight:650000, originalPrice:1100000, img:'https://images.unsplash.com/photo-1496417263034-38ec4f0b665a?w=1200&q=85', amenities:['Spa toàn thân','Hồ bơi tầng trệt','Trung tâm thành phố'], amenityIcon:'💆', tags:['Spa','Ưu đãi','Trung tâm'], isLiked:false },
+  { id:23, name:'Bana Hills Retreat Lodge', category:'KHU NGHỈ DƯỠNG 5 SAO', badgeColor:'bg-purple-600', badgePulse:false, location:'Hòa Vang, Đà Nẵng', rating:4.8, reviews:489, pricePerNight:2800000, originalPrice:3800000, img:'https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=1200&q=85', amenities:['Cảnh núi rừng','Bungalow riêng tư','Đưa đón Bà Nà Hills'], amenityIcon:'⛰️', tags:['Spa cao cấp','Bãi riêng','Hồ bơi vô cực'], isLiked:false },
+  { id:24, name:'Da Nang Riverside Hotel', category:'BOUTIQUE HOMESTAY', badgeColor:'bg-pink-500', badgePulse:false, location:'Hải Châu, Đà Nẵng', rating:4.5, reviews:623, pricePerNight:420000, originalPrice:580000, img:'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=1200&q=85', amenities:['View sông Hàn','Tầng thượng thư giãn','Gần cầu Tình Yêu'], amenityIcon:'🌉', tags:['Boutique','Cozy','View sông Hàn'], isLiked:false },
 ];
 
 const TOTAL_DISPLAY = 128; // Số hiển thị trên UI (thực tế demo 24 card)
@@ -90,7 +94,6 @@ function SpinnerDots() {
 // ── PAGE ───────────────────────────────────────────────────────────────────────
 export default function LuuTruPage() {
   const prefersReduced = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const [likedHotels, setLikedHotels] = useState<Set<number>>(new Set());
   const [filterArea, setFilterArea] = useState('Tất cả');
   const [filterRating, setFilterRating] = useState(0);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000000]);
@@ -109,6 +112,7 @@ export default function LuuTruPage() {
         if (!isMounted || !res?.items?.length) return;
         const live: HotelData[] = res.items.map((item: any) => ({
           id: item.place_id,
+          placeId: item.place_id,
           name: item.name,
           category:
             item.accommodation_type === 'RESORT'
@@ -132,7 +136,7 @@ export default function LuuTruPage() {
           originalPrice: item.price_max ?? 800000,
           img:
             item.cover_image ||
-            'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=600&q=80',
+            'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=1200&q=85',
           amenities: ['Tiện nghi đầy đủ', 'WiFi miễn phí'],
           amenityIcon: '🏨',
           tags: [item.district_name || 'Đà Nẵng'],
@@ -162,7 +166,7 @@ export default function LuuTruPage() {
 
   const bannerRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: bannerRef, offset: ['start start', 'end start'] });
-  const yImage = useTransform(scrollYProgress, [0, 1], ['0%', '30%']);
+  const yImage = useTransform(scrollYProgress, [0, 1], prefersReduced ? ['0px', '0px'] : ['0px', '22px']);
 
 
 
@@ -172,14 +176,6 @@ export default function LuuTruPage() {
     setCurrentPage(1);
     setTimeout(() => setIsLoading(false), 600);
   }, []);
-
-  const toggleLike = (id: number) => {
-    setLikedHotels((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  };
 
   const toggleAmenity = (a: string) => {
     applyFilter(() => {
@@ -272,50 +268,63 @@ export default function LuuTruPage() {
     <div className="min-h-screen bg-gray-50">
 
       {/* ═══════════════════════════════════════════════════════════════════════
-          PHẦN A-1: MINI HERO BANNER — ảnh resort + overlay gradient
-          Ảnh: Fusion Maia resort (hồ bơi vô cực view biển) — đại diện đỉnh cao
-          lưu trú Đà Nẵng, màu xanh teal hài hoà thương hiệu DanangGo.
-          Ken Burns scale chậm (20s) tái sử dụng class `.ken-burns`.
+          PHẦN A-1: HERO BANNER LƯU TRÚ (ĐỒNG BỘ TỈ LỆ VỚI TRANG KHÁM PHÁ)
+          Chiều cao: h-[400px] sm:h-[450px] lg:h-[490px]
+          Ảnh nền phòng khách sạn cao cấp view trọn hoàng hôn biển Mỹ Khê
       ═══════════════════════════════════════════════════════════════════════ */}
-      <section ref={bannerRef} data-navbar-overlay="true" className="relative h-[320px] sm:h-[340px] overflow-hidden">
-        <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/60 via-black/10 to-transparent pointer-events-none z-20" />
-        {/* Ảnh nền Ken Burns */}
-        <motion.div style={{ y: yImage }} className="absolute inset-0 ken-burns">
+      <section
+        ref={bannerRef}
+        data-navbar-overlay="true"
+        aria-label="Lưu trú tại Đà Nẵng"
+        className="relative w-full h-[400px] sm:h-[450px] lg:h-[490px] overflow-hidden select-none"
+      >
+        {/* Lớp gradient tối trên đỉnh bảo đảm Navbar trong suốt đọc sắc nét */}
+        <div className="absolute inset-x-0 top-0 h-36 bg-gradient-to-b from-black/70 via-black/25 to-transparent pointer-events-none z-20" />
+
+        {/* Ảnh nền C1 Hero Image Reveal (scale 1.05 -> 1 trong 1.5s) & C3 Subtle Parallax */}
+        <motion.div
+          style={{ y: yImage }}
+          initial={prefersReduced ? false : { scale: 1.05 }}
+          animate={{ scale: 1 }}
+          transition={prefersReduced ? { duration: 0 } : { duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+          className="absolute inset-0"
+        >
           <Image
-            src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=1920&q=85"
-            alt="Resort Đà Nẵng hồ bơi vô cực view biển"
+            src={LUU_TRU_HERO_IMAGE}
+            alt="Khách sạn resort nghỉ dưỡng view biển Đà Nẵng"
             fill
             priority
-            className="object-cover"
+            quality={90}
+            className="object-cover object-center"
             sizes="100vw"
           />
         </motion.div>
-        {/* Overlay gradient: tối dưới → sáng trên để chữ trắng đọc được */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#071a2e]/60 via-[#0f2942]/50 to-[#071a2e]/80" />
 
-        {/* Badge "Đảm bảo giá tốt nhất" — cố định góc trên phải, cách mép 24px,
-            z-index 20 nhưng nằm TRONG banner (không gần đường overlap filter) */}
+        {/* Overlay gradient tinh tế: giữ trọn sắc vàng ấm của hoàng hôn biển, tăng tương phản chữ */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-[#071a2e]/35 to-[#071a2e]/80 pointer-events-none z-10" />
+
+        {/* Badge "Đảm bảo giá tốt nhất" — cố định góc trên phải */}
         <div
-          className="absolute top-20 right-6 sm:right-8 z-20"
+          className="absolute top-24 right-6 sm:right-8 z-20"
           style={{ opacity: 0, animation: 'fade-up 0.5s 0.3s ease-out forwards' }}
         >
-          <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm border border-white/25 text-white rounded-full px-4 py-1.5 text-xs font-semibold">
-            <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+          <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-md border border-white/25 text-white rounded-full px-4 py-1.5 text-xs font-semibold shadow-sm">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             Đảm bảo giá tốt nhất
           </div>
         </div>
 
-        {/* Nội dung banner — fade-up staggered, pb-10 đệm trước vùng overlap */}
-        <div className="relative z-10 max-w-7xl mx-auto px-6 flex flex-col justify-end h-full pb-10 pt-16">
+        {/* Nội dung banner — thoáng đãng, cân đối tương tự trang Khám phá */}
+        <div className="relative z-10 max-w-7xl mx-auto px-6 flex flex-col justify-end h-full pb-14 sm:pb-16 pt-24">
           {/* Breadcrumb */}
           <div
-            className="flex items-center gap-1 text-sm text-white/70 mb-3"
+            className="flex items-center gap-1.5 text-sm text-white/80 mb-3"
             style={{ opacity: 0, animation: 'fade-up 0.5s 0.1s ease-out forwards' }}
           >
-            <Link href="/" className="hover:text-white transition-colors">
+            <Link href="/" className="hover:text-cyan-300 transition-colors">
               Trang chủ
             </Link>
-            <ChevronRight size={14} className="text-white/40" />
+            <ChevronRight size={14} className="text-white/50" />
             <span className="text-white font-medium">Lưu trú tại Đà Nẵng</span>
           </div>
 
@@ -323,10 +332,10 @@ export default function LuuTruPage() {
           <div
             style={{ opacity: 0, animation: 'fade-up 0.55s 0.2s ease-out forwards' }}
           >
-            <h1 className="h1-hero text-2xl sm:text-3xl lg:text-4xl font-bold text-white leading-tight">
+            <h1 className="h1-hero text-2xl sm:text-3xl lg:text-4xl font-bold text-white leading-tight drop-shadow-sm">
               Lưu trú tại Đà Nẵng
             </h1>
-            <p className="stat-number text-white/70 text-sm mt-1.5">
+            <p className="stat-number text-white/85 text-sm sm:text-base mt-2 flex items-center gap-1.5">
               <AnimatedCounter
                 to={TOTAL_DISPLAY}
                 suffix=" khách sạn, resort & homestay tốt nhất"
@@ -589,8 +598,6 @@ export default function LuuTruPage() {
                   >
                     <HotelCard
                       hotel={hotel}
-                      liked={likedHotels.has(hotel.id)}
-                      onLike={() => toggleLike(hotel.id)}
                     />
                   </motion.div>
                 ))}

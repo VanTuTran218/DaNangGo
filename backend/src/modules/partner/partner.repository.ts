@@ -11,6 +11,7 @@ export interface PartnerProfileRow {
   approval_status: string;
   approved_by: number | null;
   approved_at: Date | null;
+  rejection_reason: string | null;
   created_at: Date;
   email: string;
   full_name: string;
@@ -61,6 +62,7 @@ export async function findPartnerProfileByUserId(userId: number): Promise<Partne
         pp.approval_status,
         pp.approved_by,
         pp.approved_at,
+        pp.rejection_reason,
         pp.created_at,
         u.email,
         u.full_name
@@ -90,6 +92,7 @@ export async function findPartnerProfileById(partnerId: number): Promise<Partner
         pp.approval_status,
         pp.approved_by,
         pp.approved_at,
+        pp.rejection_reason,
         pp.created_at,
         u.email,
         u.full_name
@@ -141,7 +144,9 @@ export async function updatePartnerProfile(
 
   await req.query(`
     UPDATE dbo.partner_profiles
-    SET ${updates.join(', ')}
+    SET ${updates.join(', ')},
+        approval_status = CASE WHEN approval_status = 'REJECTED' THEN 'PENDING' ELSE approval_status END,
+        rejection_reason = CASE WHEN approval_status = 'REJECTED' THEN NULL ELSE rejection_reason END
     WHERE user_id = @userId
   `);
 }

@@ -4,7 +4,7 @@ import { requireAuth, requireRole } from '../../middleware/auth.middleware';
 import { listAdminPartners, reviewPartner, setPartnerLock } from '../partners/partners.service';
 
 const router = Router();
-const statusQuery = z.enum(['ALL', 'PENDING', 'APPROVED', 'REJECTED']).optional();
+const statusQuery = z.enum(['ALL', 'PENDING', 'APPROVED', 'REJECTED', 'LOCKED']).optional();
 const partnerIdParam = z.string().regex(/^[1-9]\d*$/, 'ID hồ sơ đối tác không hợp lệ.').transform(Number);
 const reviewBody = z.object({
   status: z.enum(['APPROVED', 'REJECTED']),
@@ -30,7 +30,7 @@ router.post('/:id/approve', async (req, res) => {
   res.json({
     success: true,
     data,
-    message: 'Đã phê duyệt tài khoản đối tác.',
+    message: 'Đã phê duyệt hồ sơ đối tác và gửi thông báo thành công.',
   });
 });
 
@@ -46,7 +46,7 @@ router.post('/:id/reject', async (req, res) => {
   res.json({
     success: true,
     data,
-    message: 'Đã từ chối tài khoản đối tác.',
+    message: 'Đã từ chối hồ sơ đối tác và gửi thông báo thành công.',
   });
 });
 
@@ -62,7 +62,10 @@ router.patch('/:id/approval', async (req, res) => {
   res.json({
     success: true,
     data,
-    message: data.status === 'APPROVED' ? 'Đã duyệt hồ sơ đối tác.' : 'Đã từ chối hồ sơ đối tác.',
+    message:
+      data.status === 'APPROVED'
+        ? 'Đã phê duyệt hồ sơ đối tác và gửi thông báo thành công.'
+        : 'Đã từ chối hồ sơ đối tác và gửi thông báo thành công.',
   });
 });
 

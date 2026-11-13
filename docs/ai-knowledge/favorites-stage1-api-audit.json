@@ -1,0 +1,30 @@
+{
+  "checkedAt": "2026-11-06T03:51:58.134Z",
+  "mode": "Isolated local Express router; no authentication cookie/token; no SQL connection; no writes",
+  "results": [
+    {
+      "method": "GET",
+      "path": "/api/favorites/ids",
+      "status": 401,
+      "message": "Vui lòng đăng nhập để tiếp tục."
+    },
+    {
+      "method": "GET",
+      "path": "/api/favorites",
+      "status": 401,
+      "message": "Vui lòng đăng nhập để tiếp tục."
+    },
+    {
+      "method": "POST",
+      "path": "/api/favorites",
+      "status": 401,
+      "message": "Vui lòng đăng nhập để tiếp tục."
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/favorites/1",
+      "status": 401,
+      "message": "Vui lòng đăng nhập để tiếp tục."
+    }
+  ]
+}

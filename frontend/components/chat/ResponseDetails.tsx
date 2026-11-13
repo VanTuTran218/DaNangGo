@@ -1,5 +1,6 @@
 "use client";
 
+import HeartButton from "@/components/HeartButton";
 import Link from "next/link";
 import type { ChatMessage, ChatPlaceCard } from "@/types/chat";
 import { useState } from "react";
@@ -35,7 +36,10 @@ export default function ResponseDetails({ message }: { message: ChatMessage }) {
     {message.recommendationGroups?.map(group => <section key={group.category} className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
       <h3 className="bg-teal-50 px-4 py-3 font-semibold text-teal-900">{group.title}</h3>
       {group.places.map(place => <article key={place.placeId} className="border-b border-slate-100 p-3">
-        <Link className="font-semibold text-slate-800 hover:text-teal-700" href={place.detailUrl}>{place.name} ↗</Link>
+        <div className="flex items-start justify-between gap-2">
+          <Link className="font-semibold text-slate-800 hover:text-teal-700" href={place.detailUrl}>{place.name} ↗</Link>
+          <HeartButton placeId={place.placeId} placeName={place.name} />
+        </div>
         <p className="mt-1 text-xs">{place.districtName ?? "Đà Nẵng"} · {place.priceText ?? "Chưa cập nhật giá"}</p>
         <MenuItems place={place} /><Link className="text-xs text-teal-700" href={`/bando?search=${encodeURIComponent(place.name)}`}>Chỉ đường trên bản đồ →</Link>
       </article>)}

@@ -1,112 +1,94 @@
 'use client';
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import ToastNotification, { type ToastItem } from '@/components/ui/ToastNotification';
 import { addFavorite, getFavoriteIds, removeFavorite } from '@/lib/api/favorites';
+import { FavoritesStore, initialFavorites, type FavoriteStatus } from '@/lib/favorites-store';
 
 interface FavoritesContextValue {
+  ownerId: string | null;
   ready: boolean;
+  status: FavoriteStatus;
+  error: string | null;
+  revision: number;
   isAuthenticated: boolean;
+  canUseFavorites: boolean;
   isFavorite: (placeId: number) => boolean;
+  isPending: (placeId: number) => boolean;
+  reload: () => Promise<boolean>;
+  setFavorite: (placeId: number, saved: boolean) => Promise<boolean>;
   toggle: (placeId: number) => Promise<boolean>;
 }
-
 const FavoritesContext = createContext<FavoritesContextValue | null>(null);
 
 export function FavoritesProvider({ children }: { children: ReactNode }) {
   const { user, loading: authLoading } = useAuth();
-  const [favoriteIds, setFavoriteIds] = useState<Set<number>>(() => new Set());
-  const [ready, setReady] = useState(false);
-  const [toast, setToast] = useState<ToastItem | null>(null);
-  const userId = user?.id;
+  const [store] = useState(() => {
+    const instance = new FavoritesStore({
+      getIds: signal => getFavoriteIds({ signal, ownerId: instance.getSnapshot().owner ?? undefined }),
+      set: (id, saved, signal) => {
+        const options = { signal, ownerId: instance.getSnapshot().owner ?? undefined };
+        return saved ? addFavorite(id, options) : removeFavorite(id, options);
+      },
+    });
+    return instance;
+  });
+  const snapshot = useSyncExternalStore(store.subscribe, store.getSnapshot, () => initialFavorites);
+  const canUseFavorites = !authLoading && !!user && (user.role === 'USER' || user.role === 'PARTNER');
+  const ownerId = canUseFavorites ? user!.id : null;
+  const currentOwner = useRef(ownerId);
+  currentOwner.current = ownerId;
+  const [toast, setToast] = useState<(ToastItem & { owner: string | null }) | null>(null);
+  const current = snapshot.owner === ownerId;
+  const ready = !authLoading && current && snapshot.status === 'ready' && !snapshot.error;
 
   useEffect(() => {
-    if (authLoading) return;
-    if (!userId) {
-      setFavoriteIds(new Set());
-      setReady(true);
-      return;
-    }
-    let active = true;
-    setFavoriteIds(new Set());
-    setReady(false);
-    getFavoriteIds()
-      .then((ids) => {
-        if (active) setFavoriteIds(new Set(ids));
-      })
-      .catch((error: unknown) => {
-        if (active) {
-          setToast({
-            type: 'error',
-            title: 'Không tải được địa điểm yêu thích',
-            message: error instanceof Error ? error.message : 'Vui lòng thử tải lại trang.',
-          });
-        }
-      })
-      .finally(() => {
-        if (active) setReady(true);
-      });
-    return () => { active = false; };
-  }, [authLoading, userId]);
+    store.changeOwner(ownerId);
+    if (ownerId) void store.reload();
+    return () => store.changeOwner(null);
+  }, [ownerId, store]);
 
-  const isFavorite = useCallback((placeId: number) => favoriteIds.has(placeId), [favoriteIds]);
+  useEffect(() => {
+    if (!ownerId) return;
+    const refresh = () => { if (document.visibilityState === 'visible') void store.reload(); };
+    window.addEventListener('focus', refresh);
+    document.addEventListener('visibilitychange', refresh);
+    return () => { window.removeEventListener('focus', refresh); document.removeEventListener('visibilitychange', refresh); };
+  }, [ownerId, store]);
 
-  const toggle = useCallback(async (placeId: number): Promise<boolean> => {
+  const setFavorite = useCallback(async (placeId: number, saved: boolean) => {
     if (!user) {
-      setToast({
-        type: 'info',
-        title: 'Cần đăng nhập',
-        message: 'Vui lòng đăng nhập để lưu địa điểm yêu thích.',
-        action: { label: 'Đăng nhập', href: '/dang-nhap' },
-      });
+      setToast({ owner: null, type: 'info', title: 'Cần đăng nhập', message: 'Vui lòng đăng nhập để lưu địa điểm yêu thích.', action: { label: 'Đăng nhập', href: '/dang-nhap' } });
       return false;
     }
-    if (!ready) return false;
-
-    const wasFavorite = favoriteIds.has(placeId);
-    setFavoriteIds((current) => {
-      const next = new Set(current);
-      if (wasFavorite) next.delete(placeId);
-      else next.add(placeId);
-      return next;
-    });
-
-    try {
-      if (wasFavorite) await removeFavorite(placeId);
-      else await addFavorite(placeId);
-      return true;
-    } catch (error) {
-      setFavoriteIds((current) => {
-        const restored = new Set(current);
-        if (wasFavorite) restored.add(placeId);
-        else restored.delete(placeId);
-        return restored;
-      });
-      setToast({
-        type: 'error',
-        title: 'Không cập nhật được yêu thích',
-        message: error instanceof Error ? error.message : 'Vui lòng thử lại.',
-      });
+    if (!canUseFavorites) {
+      setToast({ owner: null, type: 'info', title: 'Chưa hỗ trợ tài khoản này', message: 'Yêu thích dành cho tài khoản người dùng và đối tác.' });
       return false;
     }
-  }, [favoriteIds, ready, user]);
-
+    if (store.getSnapshot().owner !== ownerId || !ready || store.getSnapshot().pending.has(placeId)) return false;
+    const session = store.getSession();
+    const succeeded = await store.setFavorite(placeId, saved);
+    if (!succeeded && store.getSession() === session && currentOwner.current === ownerId && store.getSnapshot().owner === ownerId) {
+      setToast({ owner: ownerId, type: 'error', title: 'Chưa cập nhật được yêu thích', message: 'Bạn kiểm tra trạng thái sau khi tải lại và thử lại nhé.' });
+    }
+    return succeeded && currentOwner.current === ownerId;
+  }, [user, canUseFavorites, store, ownerId, ready]);
+  const toggle = useCallback((placeId: number) => setFavorite(placeId, !store.getSnapshot().ids.has(placeId)), [setFavorite, store]);
   const value = useMemo(() => ({
-    ready,
-    isAuthenticated: Boolean(user),
-    isFavorite,
-    toggle,
-  }), [isFavorite, ready, toggle, user]);
-
-  return (
-    <FavoritesContext.Provider value={value}>
-      {children}
-      <ToastNotification toast={toast} onClose={() => setToast(null)} />
-    </FavoritesContext.Provider>
-  );
+    ownerId, ready, status: authLoading || !current ? 'loading' as const : snapshot.status,
+    error: current ? snapshot.error : null, revision: current ? snapshot.revision : 0,
+    isAuthenticated: !!user, canUseFavorites,
+    isFavorite: (id: number) => !!ownerId && current && snapshot.ids.has(id),
+    isPending: (id: number) => current && snapshot.pending.has(id),
+    reload: () => ownerId && store.getSnapshot().owner === ownerId ? store.reload() : Promise.resolve(false),
+    setFavorite, toggle,
+  }), [ownerId, ready, authLoading, current, snapshot, user, canUseFavorites, store, setFavorite, toggle]);
+  return <FavoritesContext.Provider value={value}>
+    {children}
+    <ToastNotification toast={toast?.owner === ownerId ? toast : null} onClose={() => setToast(null)} />
+  </FavoritesContext.Provider>;
 }
-
 export function useFavorites() {
   const context = useContext(FavoritesContext);
   if (!context) throw new Error('useFavorites must be used within FavoritesProvider');

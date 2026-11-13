@@ -1,20 +1,55 @@
 "use client";
 
+import { useState } from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 
 interface BotLogoProps {
   size?: number;
-  /** Mắt chớp + ăng-ten phát sáng */
+  /** Mắt chớp + ăng-ten phát sáng (dùng cho SVG fallback) */
   animated?: boolean;
   className?: string;
+  src?: string;
+  alt?: string;
 }
 
 /**
- * Logo linh vật "Gô" – DanangGo AI Bot.
- * Robot đầu tròn tông teal, mắt cười, má hồng, ăng-ten đỉnh ngọn lửa cam
- * (gợi hình Cầu Rồng phun lửa – biểu tượng Đà Nẵng) và sóng biển dưới cằm.
+ * Logo mascot DANANGGO AI (Rồng Cam DANANGGO AI).
+ * Mặc định ưu tiên hiển thị file mascot: /dananggo-dragon-ai.png.
+ * Giữ tỉ lệ 1:1, object-contain, sắc nét trên mọi màn hình.
+ * Có fallback tự động sang SVG robot nếu file ảnh chưa có sẵn trên hệ thống.
  */
-export default function BotLogo({ size = 40, animated = true, className = "" }: BotLogoProps) {
+export default function BotLogo({
+  size = 40,
+  animated = true,
+  className = "",
+  src = "/dananggo-dragon-ai.png",
+  alt = "DanangGo AI Assistant",
+}: BotLogoProps) {
+  const [hasError, setHasError] = useState(false);
+
+  // Khi có ảnh mascot hợp lệ
+  if (!hasError && src) {
+    return (
+      <span
+        className={`relative inline-flex items-center justify-center shrink-0 select-none overflow-hidden ${className}`}
+        style={{ width: size, height: size }}
+      >
+        <Image
+          src={src}
+          alt={alt}
+          width={size}
+          height={size}
+          priority
+          unoptimized
+          className="h-full w-full object-contain pointer-events-none drop-shadow-sm"
+          onError={() => setHasError(true)}
+        />
+      </span>
+    );
+  }
+
+  // Fallback SVG nếu chưa có file hoặc gặp sự cố tải ảnh
   return (
     <svg
       width={size}
@@ -24,7 +59,7 @@ export default function BotLogo({ size = 40, animated = true, className = "" }: 
       xmlns="http://www.w3.org/2000/svg"
       className={className}
       role="img"
-      aria-label="DanangGo AI Bot"
+      aria-label={alt}
     >
       <defs>
         <linearGradient id="dng-bot-head" x1="10" y1="12" x2="54" y2="56" gradientUnits="userSpaceOnUse">

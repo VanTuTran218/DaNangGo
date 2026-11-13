@@ -1,5 +1,6 @@
 'use client';
-import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+import { redirect, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import AuthCard from '@/components/auth/AuthCard';
 
@@ -10,7 +11,18 @@ function AuthContent() {
   const redirectTo = rawRedirect && rawRedirect.startsWith('/') && !rawRedirect.startsWith('//') && !rawRedirect.startsWith('/\\')
     ? rawRedirect
     : '/';
-  return <AuthCard initialTab={tab} redirectTo={redirectTo} />;
+  if (/^\/admin(?:\/|\?|#|$)/.test(redirectTo)) redirect('/admin/login');
+
+  return (
+    <>
+      <AuthCard initialTab={tab} redirectTo={redirectTo} />
+      <div className="pb-6 text-center">
+        <Link href="/admin/login" className="text-sm font-semibold text-teal-700 hover:underline">
+          Đăng nhập quản trị
+        </Link>
+      </div>
+    </>
+  );
 }
 
 export default function DangNhapPage() {

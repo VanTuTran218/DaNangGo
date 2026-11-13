@@ -11,6 +11,8 @@ export interface PartnerProfileDto {
   phone: string;
   email: string;
   status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'LOCKED';
+  rejectReason?: string | undefined;
+  reviewedAt?: string | undefined;
   createdAt: string;
 }
 
@@ -36,6 +38,8 @@ export async function getPartnerProfile(userId: number): Promise<PartnerProfileD
     phone: row.contact_phone || '',
     email: row.email,
     status: mapApprovalStatus(row.approval_status),
+    ...(row.rejection_reason ? { rejectReason: row.rejection_reason } : {}),
+    ...(row.approved_at ? { reviewedAt: row.approved_at.toISOString() } : {}),
     createdAt: row.created_at.toISOString(),
   };
 }

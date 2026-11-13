@@ -47,6 +47,19 @@ export interface PlaceCardViewModel {
   bookingUrl: string | null;
 }
 
+export function upgradeUnsplashImage(
+  url?: string | null,
+  fallback = 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=1600&q=90&auto=format&fit=crop'
+): string {
+  if (!url) return fallback;
+  if (url.includes('images.unsplash.com')) {
+    return url
+      .replace(/([?&])w=\d+/g, '$1w=1600')
+      .replace(/([?&])q=\d+/g, '$1q=90');
+  }
+  return url;
+}
+
 /**
  * Ánh xạ PlaceSearchItem sang ViewModel phục vụ hiển thị các Card trên giao diện
  */
@@ -62,7 +75,7 @@ export function mapPlaceToCard(place: PlaceSearchItem): PlaceCardViewModel {
     priceRange: formatPriceRange(place.price_min, place.price_max, place.ticket_price),
     isOpen: place.is_open,
     hours: place.today_hours || '08:00 – 22:00',
-    img: place.cover_image || 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=600&q=80',
+    img: upgradeUnsplashImage(place.cover_image),
     badge: place.promo_label,
     bookingUrl: place.booking_url,
   };

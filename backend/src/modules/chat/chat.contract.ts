@@ -6,7 +6,7 @@ export type PreferenceKey = z.infer<typeof preferenceKeySchema>;
 export const preferenceLabels: Record<PreferenceKey, string> = {
   food_spicy: "Thích ăn cay", food_mild: "Không ăn cay", food_light: "Thích món thanh đạm", food_local: "Thích ẩm thực địa phương", food_seafood: "Thích hải sản", avoid_seafood: "Không ăn hải sản", vegetarian: "Ăn chay", vegan: "Ăn thuần chay", allergy_peanut: "Dị ứng đậu phộng", allergy_seafood: "Dị ứng hải sản", allergy_milk: "Dị ứng sữa", allergy_egg: "Dị ứng trứng", avoid_gluten: "Tránh gluten", beach: "Thích biển", photos: "Thích chụp ảnh", quiet: "Thích nơi yên tĩnh", avoid_crowds: "Tránh nơi đông khách", avoid_walking: "Hạn chế đi bộ", pace_gentle: "Thích lịch nhẹ", pace_active: "Thích lịch năng động", stay_budget: "Ưu tiên lưu trú tiết kiệm", stay_premium: "Ưu tiên lưu trú cao cấp", taxi: "Ưu tiên taxi", motorbike: "Ưu tiên xe máy", walk: "Ưu tiên đi bộ", usually_children: "Thường đi cùng trẻ em", usually_seniors: "Thường đi cùng người lớn tuổi",
 };
-export const intentKinds = ["SEARCH", "ITINERARY", "MODIFY_ITINERARY", "COMPARE", "WEATHER", "EVENT", "PLACE_INFO", "FOLLOW_UP", "OFF_TOPIC", "PROFILE", "BUDGET", "DIRECTIONS", "FEEDBACK"] as const;
+export const intentKinds = ["SEARCH", "ITINERARY", "MODIFY_ITINERARY", "COMPARE", "WEATHER", "EVENT", "PLACE_INFO", "FOLLOW_UP", "OFF_TOPIC", "PROFILE", "FAVORITES", "BUDGET", "DIRECTIONS", "FEEDBACK"] as const;
 export const confirmedContextSchema = z.object({
   days: z.number().int().min(1).max(100).nullable(), nights: z.number().int().min(0).max(99).nullable(),
   guests: z.number().int().min(1).max(100).nullable(), budget: z.number().positive().max(1e9).nullable(),

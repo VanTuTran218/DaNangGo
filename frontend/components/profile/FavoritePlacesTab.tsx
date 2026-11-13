@@ -21,8 +21,8 @@ function imageUrl(image: string | null): string | null {
   return `${apiUrl.replace(/\/$/, '')}/${image.replace(/^\//, '')}`;
 }
 
-export default function FavoritePlacesTab() {
-  const { toggle } = useFavorites();
+function FavoritePlacesContent() {
+  const { ownerId, revision, setFavorite, isPending, ready, status: favoritesStatus, error: favoritesError, reload } = useFavorites();
   const [type, setType] = useState<FavoriteType>('ALL');
   const [page, setPage] = useState(1);
   const [places, setPlaces] = useState<FavoritePlace[]>([]);
@@ -30,16 +30,18 @@ export default function FavoritePlacesTab() {
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [removingId, setRemovingId] = useState<number | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
+    if (!ownerId) { setPlaces([]); setTotal(0); setTotalPages(0); setLoading(false); return; }
     let active = true;
+    const controller = new AbortController();
     setLoading(true);
     setError('');
-    getFavorites({ type, page, limit: PAGE_SIZE })
+    getFavorites({ type, page, limit: PAGE_SIZE, ownerId, signal: controller.signal })
       .then((result) => {
         if (!active) return;
+        if (page > Math.max(1, result.pagination.totalPages)) { setPage(Math.max(1, result.pagination.totalPages)); return; }
         setPlaces(result.data);
         setTotal(result.pagination.total);
         setTotalPages(result.pagination.totalPages);
@@ -51,19 +53,12 @@ export default function FavoritePlacesTab() {
       .finally(() => {
         if (active) setLoading(false);
       });
-    return () => { active = false; };
-  }, [page, refreshKey, type]);
+    return () => { active = false; controller.abort(); };
+  }, [ownerId, revision, page, refreshKey, type]);
 
   const handleRemove = async (placeId: number) => {
-    setRemovingId(placeId);
-    const removed = await toggle(placeId);
-    setRemovingId(null);
-    if (!removed) return;
-    setPlaces((current) => current.filter((place) => place.place_id !== placeId));
-    const nextTotal = Math.max(0, total - 1);
-    setTotal(nextTotal);
-    setTotalPages(Math.ceil(nextTotal / PAGE_SIZE));
-    if (places.length === 1 && page > 1) setPage((current) => current - 1);
+    // Explicit DELETE: stale state can never turn “Bỏ lưu” into an insertion.
+    await setFavorite(placeId, false);
   };
 
   return (
@@ -71,7 +66,7 @@ export default function FavoritePlacesTab() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="text-lg font-bold text-gray-800">Địa điểm đã lưu</h3>
-          <p className="text-sm text-gray-500">Bạn đã lưu {total} địa điểm.</p>
+          <p className="text-sm text-gray-500">{loading ? 'Đang tải số địa điểm đã lưu…' : error ? 'Chưa tải được số địa điểm đã lưu.' : `Bạn đã lưu ${total} địa điểm.`}</p>
         </div>
         <label className="flex items-center gap-2 text-sm text-gray-600">
           <span>Lọc loại:</span>
@@ -87,6 +82,10 @@ export default function FavoritePlacesTab() {
         </label>
       </div>
 
+      {favoritesStatus === 'error' && <div role="alert" className="rounded-xl bg-amber-50 p-3 text-sm text-amber-800">
+        {favoritesError ?? 'Chưa tải được trạng thái yêu thích. Bạn tải lại trước khi thay đổi nhé.'}
+        <button type="button" className="ml-2 underline" onClick={() => void reload()}>Tải lại</button>
+      </div>}
       {error && (
         <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
           {error}
@@ -135,10 +134,10 @@ export default function FavoritePlacesTab() {
                     <button
                       type="button"
                       onClick={() => void handleRemove(place.place_id)}
-                      disabled={removingId === place.place_id}
+                      disabled={!ready || isPending(place.place_id)}
                       className="w-full rounded-lg border border-rose-200 py-2 text-sm font-semibold text-rose-600 transition hover:bg-rose-50 disabled:opacity-60"
                     >
-                      {removingId === place.place_id ? 'Đang bỏ lưu...' : 'Bỏ lưu'}
+                      {isPending(place.place_id) ? 'Đang bỏ lưu...' : 'Bỏ lưu'}
                     </button>
                   </div>
                 </article>
@@ -157,4 +156,10 @@ export default function FavoritePlacesTab() {
       )}
     </section>
   );
+}
+
+export default function FavoritePlacesTab() {
+  const { ownerId } = useFavorites();
+  if (!ownerId) return <p className="py-8 text-center text-slate-500">Bạn đăng nhập bằng tài khoản người dùng hoặc đối tác để xem địa điểm đã lưu.</p>;
+  return <FavoritePlacesContent key={ownerId} />;
 }

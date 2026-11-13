@@ -1,0 +1,13 @@
+{
+  "checkedAt": "2026-11-06T06:22:47.033Z",
+  "status": "PASS",
+  "mode": "real local SQL, rollback, no model calls",
+  "checks": {
+    "compare": "PASS: owned real SQL pair survives price follow-up; same source re-read",
+    "alternative": "PASS: same-type favorites only, excludes source place",
+    "near": "PASS: returned distances <=10km; all candidates owned; origin excluded",
+    "hidden": "PASS: hidden favorite excluded",
+    "freshAndIsolated": "PASS: removed favorite and foreign-owner pair cannot be reused from cursor",
+    "rollback": "PASS: original IDs/count restored; no permanent fixture relationships"
+  }
+}

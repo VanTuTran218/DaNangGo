@@ -3,7 +3,8 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import type { User } from '@/types/user';
 import { getSession, logout as apiLogout } from '@/lib/api/me';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { shouldRedirectPartner } from '@/lib/auth-redirect';
 
 interface AuthContextType {
   user: User | null;
@@ -20,6 +21,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const pathname = usePathname();
+  const redirectPartner = shouldRedirectPartner(user?.role, pathname);
+
+  useEffect(() => {
+    if (redirectPartner) router.replace('/partner');
+  }, [redirectPartner, router]);
 
   useEffect(() => {
     async function checkSession() {
@@ -61,7 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider value={{ user, loading, login, logout, logoutTo, updateUser }}>
-      {children}
+      {redirectPartner ? null : children}
     </AuthContext.Provider>
   );
 }

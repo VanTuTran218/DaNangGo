@@ -10,6 +10,9 @@ const schema = z
     dietaryRestricted: z.boolean().optional(),
     excludedNames: z.array(z.string().max(100)).max(60).optional(),
     dialogue: dialogueSchema.optional(),
+    favorites: z.object({ type: z.enum(['ALL', 'RESTAURANT', 'ACCOMMODATION', 'ATTRACTION']), page: z.number().int().min(1).max(1_000_000) }).strict().optional(),
+    favoritePlan: z.object({ context: z.string().max(2000), pending: z.boolean(), dietaryRestricted: z.boolean().optional(), excludedNames: z.array(z.string().max(100)).max(60).optional() }).strict().optional(),
+    favoriteConsult: z.object({mode:z.enum(['compare','near','alternative']),pair:z.tuple([z.number().int().positive(),z.number().int().positive()]).optional(),anchorId:z.number().int().positive().optional(),type:z.enum(['RESTAURANT','ACCOMMODATION','ATTRACTION']).optional(),radius:z.union([z.literal(2),z.literal(5),z.literal(10)]).optional(),gps:z.boolean().optional(),shownIds:z.array(z.number().int().positive()).max(500).optional()}).strict().optional(),
   })
   .strict();
 export type AdvisorState = z.infer<typeof schema>;

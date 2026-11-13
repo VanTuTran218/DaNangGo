@@ -1,5 +1,6 @@
 "use client";
 
+import HeartButton from "@/components/HeartButton";
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -676,7 +677,7 @@ function ChatExperience({ variant }: { variant: "widget" | "page" }) {
                                       tabIndex={0}
                                       onClick={() => goToPlace(place)}
                                       onKeyDown={(e) =>
-                                        e.key === "Enter" && goToPlace(place)
+                                        e.target === e.currentTarget && e.key === "Enter" && goToPlace(place)
                                       }
                                       className="group flex cursor-pointer gap-2.5 rounded-2xl bg-white p-2 shadow-sm ring-1 ring-gray-100 transition hover:-translate-y-0.5 hover:shadow-md hover:ring-teal-200"
                                     >
@@ -731,7 +732,8 @@ function ChatExperience({ variant }: { variant: "widget" | "page" }) {
                                             💡 {place.reason}
                                           </p>
                                         )}
-                                        <div className="mt-auto flex items-center justify-end gap-2 pt-1 text-[11px] font-semibold">
+                                        <div className="mt-auto flex flex-wrap items-center justify-end gap-2 pt-1 text-[11px] font-semibold">
+                                          <HeartButton placeId={place.placeId} placeName={place.name} />
                                           <Link
                                             href={`/bando?search=${encodeURIComponent(place.name)}`}
                                             onClick={(e) => e.stopPropagation()}
@@ -909,8 +911,9 @@ function ChatExperience({ variant }: { variant: "widget" | "page" }) {
                 initial={{ scale: 0.6, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.6, opacity: 0 }}
+                className="flex items-center justify-center"
               >
-                <BotLogo size={46} />
+                <BotLogo size={50} />
               </motion.span>
             )}
           </AnimatePresence>

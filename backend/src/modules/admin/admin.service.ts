@@ -21,6 +21,7 @@ function createMailTransporter() {
 async function sendPartnerNotification(
   partnerId: number,
   approved: boolean,
+  reason?: string | null,
 ): Promise<void> {
   const contact = await getPartnerContact(partnerId);
   if (!contact) return;
@@ -28,7 +29,9 @@ async function sendPartnerNotification(
   const transporter = createMailTransporter();
   if (!transporter) {
     // Dev fallback — in ra console
-    console.info(`[DEV] Partner ${contact.email} ${approved ? 'APPROVED' : 'REJECTED'}`);
+    console.info(
+      `[DEV] Partner ${contact.email} ${approved ? 'APPROVED' : 'REJECTED'}${reason ? ` (Reason: ${reason})` : ''}`
+    );
     return;
   }
 
@@ -37,7 +40,11 @@ async function sendPartnerNotification(
 
   const { subject, html, text } = approved
     ? buildPartnerApprovalEmail({ userName: contact.full_name, businessName: contact.business_name })
-    : buildPartnerRejectionEmail({ userName: contact.full_name, businessName: contact.business_name });
+    : buildPartnerRejectionEmail({
+        userName: contact.full_name,
+        businessName: contact.business_name,
+        reason,
+      });
 
   try {
     await transporter.sendMail({ from: `"${fromName}" <${fromUser}>`, to: contact.email, subject, html, text });
@@ -59,10 +66,14 @@ export async function adminApprovePartner(partnerId: number, adminUserId: number
   return ok;
 }
 
-export async function adminRejectPartner(partnerId: number, adminUserId: number): Promise<boolean> {
-  const ok = await rejectPartner(partnerId, adminUserId);
+export async function adminRejectPartner(
+  partnerId: number,
+  adminUserId: number,
+  reason?: string | null,
+): Promise<boolean> {
+  const ok = await rejectPartner(partnerId, adminUserId, reason);
   if (ok) {
-    await sendPartnerNotification(partnerId, false);
+    await sendPartnerNotification(partnerId, false, reason);
   }
   return ok;
 }

@@ -3,8 +3,21 @@
 import { useState, useEffect } from 'react';
 import { useAsyncData } from '@/hooks/useAsyncData';
 import { getPartnerProfile, updatePartnerProfile } from '@/lib/api/partner';
-import StatusBadge from '@/components/ui/StatusBadge';
-import { Building2, Save, X } from 'lucide-react';
+import PartnerStatusBadge from '@/components/partner/PartnerStatusBadge';
+import {
+  Building2,
+  Save,
+  X,
+  FileText,
+  PhoneCall,
+  Mail,
+  MapPin,
+  Briefcase,
+  Hash,
+  CheckCircle2,
+  AlertCircle,
+  ShieldCheck,
+} from 'lucide-react';
 
 export default function PartnerProfilePage() {
   const { data: profile, loading, error, reload } = useAsyncData(getPartnerProfile);
@@ -45,8 +58,15 @@ export default function PartnerProfilePage() {
         phone: phone.trim(),
         email: email.trim(),
       });
-      showToast('Cập nhật hồ sơ doanh nghiệp thành công.');
+      showToast(
+        profile?.status === 'REJECTED'
+          ? 'Đã cập nhật hồ sơ và gửi lại yêu cầu xét duyệt tới Quản trị viên.'
+          : 'Cập nhật hồ sơ doanh nghiệp thành công.'
+      );
       reload();
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('partner-profile-updated'));
+      }
     } catch (err: any) {
       showToast(err?.message || 'Cập nhật thất bại.', 'error');
     } finally {
@@ -55,14 +75,24 @@ export default function PartnerProfilePage() {
   };
 
   if (loading) {
-    return <div className="p-12 text-center text-gray-500 font-semibold">Đang tải hồ sơ doanh nghiệp...</div>;
+    return (
+      <div className="p-16 text-center text-[#68798A] font-semibold bg-white rounded-[22px] border border-[#E2ECEC] shadow-[0_8px_28px_rgba(7,59,58,0.04)]">
+        <div className="w-8 h-8 border-2 border-[#008F89] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+        Đang tải hồ sơ doanh nghiệp...
+      </div>
+    );
   }
 
   if (error || !profile) {
     return (
-      <div className="p-6 bg-red-50 rounded-2xl border border-red-200 text-red-700">
-        <p className="font-semibold mb-2" role="alert">{error || 'Không tải được hồ sơ.'}</p>
-        <button onClick={reload} className="px-4 py-2 bg-red-600 text-white rounded-xl font-semibold text-xs">
+      <div className="p-6 bg-rose-50 rounded-2xl border border-rose-200 text-rose-700">
+        <p className="font-semibold mb-2" role="alert">
+          {error || 'Không tải được hồ sơ.'}
+        </p>
+        <button
+          onClick={reload}
+          className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold text-xs transition-colors"
+        >
           Thử lại
         </button>
       </div>
@@ -70,118 +100,262 @@ export default function PartnerProfilePage() {
   }
 
   return (
-    <div className="space-y-6 max-w-3xl">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Hồ sơ doanh nghiệp</h1>
-        <p className="text-sm text-gray-500">Quản lý thông tin pháp lý và thông tin liên hệ của đối tác.</p>
+    <div className="space-y-6 max-w-4xl">
+      {/* Page Title */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+        <div>
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[#008F89] bg-[#E9F8F5] px-2.5 py-1 rounded-full border border-[#14B8A6]/20 mb-2">
+            <ShieldCheck className="w-3.5 h-3.5" /> Định danh đối tác
+          </span>
+          <h1 className="text-2xl sm:text-[28px] font-extrabold text-[#14233B] tracking-tight">
+            Hồ sơ doanh nghiệp
+          </h1>
+          <p className="text-sm text-[#68798A] mt-0.5">
+            Quản lý thông tin pháp lý và thông tin liên hệ chính thức của đối tác trên hệ thống DanangGo.
+          </p>
+        </div>
       </div>
 
+      {/* Toast Notification */}
       {toast && (
         <div
           role="alert"
-          className={`p-4 rounded-xl border text-sm font-semibold flex items-center justify-between ${
-            toast.type === 'error' ? 'bg-red-50 text-red-700 border-red-200' : 'bg-teal-50 text-teal-700 border-teal-200'
+          className={`p-4 rounded-2xl border text-sm font-semibold flex items-center justify-between shadow-sm animate-in fade-in slide-in-from-top-1 duration-200 ${
+            toast.type === 'error'
+              ? 'bg-rose-50 text-rose-800 border-rose-200'
+              : 'bg-[#E9F8F5] text-[#073B3A] border-[#14B8A6]/30'
           }`}
         >
-          <span>{toast.message}</span>
-          <button onClick={() => setToast(null)}>
+          <div className="flex items-center gap-2.5">
+            {toast.type === 'error' ? (
+              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+            ) : (
+              <CheckCircle2 className="w-4 h-4 text-[#008F89] shrink-0" />
+            )}
+            <span>{toast.message}</span>
+          </div>
+          <button
+            onClick={() => setToast(null)}
+            className="p-1 rounded-lg hover:bg-black/5 transition-colors"
+          >
             <X className="w-4 h-4" />
           </button>
         </div>
       )}
 
-      <div className="bg-white rounded-2xl border border-gray-100 p-6 md:p-8 shadow-xs space-y-6">
-        <div className="flex items-center justify-between pb-4 border-b border-gray-100">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center">
-              <Building2 className="w-6 h-6" />
+      {/* Main Profile Card */}
+      <div className="bg-white rounded-[24px] border border-[#E2ECEC] shadow-[0_10px_30px_rgba(7,59,58,0.06)] overflow-hidden">
+        {/* A. Header doanh nghiệp */}
+        <div className="relative bg-gradient-to-r from-[#073B3A] via-[#064A48] to-[#008F89] p-6 sm:p-8 text-white overflow-hidden">
+          {/* Decorative coastal wave SVG */}
+          <svg
+            className="absolute right-0 bottom-0 h-full w-72 text-white/[0.06] pointer-events-none"
+            viewBox="0 0 200 120"
+            fill="none"
+          >
+            <path
+              d="M20 120C55 75 95 95 140 45C165 18 185 20 200 0V120H20Z"
+              fill="currentColor"
+            />
+          </svg>
+
+          <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-white/12 backdrop-blur-md border border-white/20 text-[#2DD4BF] flex items-center justify-center shrink-0 shadow-inner">
+                <Building2 className="w-7 h-7" />
+              </div>
+              <div>
+                <h2 className="text-xl font-extrabold text-white tracking-tight">
+                  {profile.businessName}
+                </h2>
+                <div className="flex flex-wrap items-center gap-2.5 mt-1">
+                  <span className="inline-flex items-center gap-1 text-xs font-medium text-[#E9F8F5]/85 bg-white/10 px-2.5 py-0.5 rounded-lg border border-white/15">
+                    Mã đối tác: {profile.id}
+                  </span>
+                  <span className="text-xs text-[#E9F8F5]/75">
+                    •{' '}
+                    {profile.serviceType === 'STAY'
+                      ? 'Lưu trú & Khách sạn'
+                      : profile.serviceType === 'TABLE'
+                      ? 'Nhà hàng & Ẩm thực'
+                      : 'Vé & Tour tham quan'}
+                  </span>
+                </div>
+              </div>
             </div>
-            <div>
-              <h2 className="text-lg font-bold text-gray-900">{profile.businessName}</h2>
-              <p className="text-xs text-gray-500">Mã đối tác: {profile.id}</p>
+            <div className="self-start sm:self-center">
+              <PartnerStatusBadge status={profile.status} />
             </div>
           </div>
-          <StatusBadge status={profile.status} />
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-xs font-bold text-gray-700 mb-1">Tên doanh nghiệp / Cơ sở *</label>
-            <input
-              type="text"
-              required
-              value={businessName}
-              onChange={(e) => setBusinessName(e.target.value)}
-              className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-teal-500"
-            />
-          </div>
+        {/* B. Form thông tin */}
+        <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-8">
+          {/* Section 1: Thông tin pháp lý & Dịch vụ */}
+          <div className="space-y-5">
+            <div className="flex items-center gap-2.5 pb-2.5 border-b border-[#E2ECEC]">
+              <div className="w-8 h-8 rounded-xl bg-[#E9F8F5] text-[#008F89] flex items-center justify-center">
+                <FileText className="w-4 h-4" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-[#14233B]">Thông tin pháp lý & Dịch vụ</h3>
+                <p className="text-xs text-[#68798A]">
+                  Thông tin đăng ký kinh doanh và lĩnh vực hoạt động chính của đơn vị
+                </p>
+              </div>
+            </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-gray-700 mb-1">Loại dịch vụ chính</label>
-              <select
-                value={serviceType}
-                onChange={(e) => setServiceType(e.target.value as any)}
-                className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-teal-500"
+              <label
+                htmlFor="partner-business-name"
+                className="block text-xs font-bold text-[#14233B] mb-1.5"
               >
-                <option value="STAY">Khách sạn / Lưu trú (STAY)</option>
-                <option value="TABLE">Nhà hàng / Ẩm thực (TABLE)</option>
-                <option value="TICKET">Vé & Tour tham quan (TICKET)</option>
-              </select>
+                Tên doanh nghiệp / Cơ sở <span className="text-rose-500">*</span>
+              </label>
+              <div className="relative">
+                <Building2 className="w-4 h-4 text-[#68798A] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <input
+                  id="partner-business-name"
+                  type="text"
+                  required
+                  value={businessName}
+                  onChange={(e) => setBusinessName(e.target.value)}
+                  className="w-full h-11 pl-10 pr-4 text-sm text-[#14233B] bg-[#F6FAFA]/60 border border-[#E2ECEC] rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/25 focus:border-[#14B8A6] transition-all font-medium"
+                />
+              </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-gray-700 mb-1">Mã số thuế *</label>
-              <input
-                type="text"
-                required
-                value={taxCode}
-                onChange={(e) => setTaxCode(e.target.value)}
-                className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-teal-500"
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div>
+                <label
+                  htmlFor="partner-service-type"
+                  className="block text-xs font-bold text-[#14233B] mb-1.5"
+                >
+                  Loại dịch vụ chính
+                </label>
+                <div className="relative">
+                  <Briefcase className="w-4 h-4 text-[#68798A] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <select
+                    id="partner-service-type"
+                    value={serviceType}
+                    onChange={(e) => setServiceType(e.target.value as any)}
+                    className="w-full h-11 pl-10 pr-4 text-sm text-[#14233B] bg-[#F6FAFA]/60 border border-[#E2ECEC] rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/25 focus:border-[#14B8A6] transition-all font-medium"
+                  >
+                    <option value="STAY">Khách sạn / Lưu trú (STAY)</option>
+                    <option value="TABLE">Nhà hàng / Ẩm thực (TABLE)</option>
+                    <option value="TICKET">Vé & Tour tham quan (TICKET)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="partner-tax-code"
+                  className="block text-xs font-bold text-[#14233B] mb-1.5"
+                >
+                  Mã số thuế <span className="text-rose-500">*</span>
+                </label>
+                <div className="relative">
+                  <Hash className="w-4 h-4 text-[#68798A] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <input
+                    id="partner-tax-code"
+                    type="text"
+                    required
+                    value={taxCode}
+                    onChange={(e) => setTaxCode(e.target.value)}
+                    className="w-full h-11 pl-10 pr-4 text-sm text-[#14233B] bg-[#F6FAFA]/60 border border-[#E2ECEC] rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/25 focus:border-[#14B8A6] transition-all font-medium"
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-gray-700 mb-1">Địa chỉ đăng ký kinh doanh *</label>
-            <input
-              type="text"
-              required
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-teal-500"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-gray-700 mb-1">Số điện thoại liên hệ *</label>
-              <input
-                type="text"
-                required
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-teal-500"
-              />
+          {/* Section 2: Thông tin liên hệ & Địa chỉ */}
+          <div className="space-y-5">
+            <div className="flex items-center gap-2.5 pb-2.5 border-b border-[#E2ECEC]">
+              <div className="w-8 h-8 rounded-xl bg-[#E9F8F5] text-[#008F89] flex items-center justify-center">
+                <PhoneCall className="w-4 h-4" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-[#14233B]">Thông tin liên hệ & Địa chỉ</h3>
+                <p className="text-xs text-[#68798A]">
+                  Địa chỉ trụ sở và kênh liên lạc chính thức để nhận thông báo từ DanangGo
+                </p>
+              </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-gray-700 mb-1">Email đăng ký *</label>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-teal-500"
-              />
+              <label
+                htmlFor="partner-address"
+                className="block text-xs font-bold text-[#14233B] mb-1.5"
+              >
+                Địa chỉ đăng ký kinh doanh <span className="text-rose-500">*</span>
+              </label>
+              <div className="relative">
+                <MapPin className="w-4 h-4 text-[#68798A] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <input
+                  id="partner-address"
+                  type="text"
+                  required
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  className="w-full h-11 pl-10 pr-4 text-sm text-[#14233B] bg-[#F6FAFA]/60 border border-[#E2ECEC] rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/25 focus:border-[#14B8A6] transition-all font-medium"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div>
+                <label
+                  htmlFor="partner-phone"
+                  className="block text-xs font-bold text-[#14233B] mb-1.5"
+                >
+                  Số điện thoại liên hệ <span className="text-rose-500">*</span>
+                </label>
+                <div className="relative">
+                  <PhoneCall className="w-4 h-4 text-[#68798A] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <input
+                    id="partner-phone"
+                    type="text"
+                    required
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="w-full h-11 pl-10 pr-4 text-sm text-[#14233B] bg-[#F6FAFA]/60 border border-[#E2ECEC] rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/25 focus:border-[#14B8A6] transition-all font-medium"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="partner-email"
+                  className="block text-xs font-bold text-[#14233B] mb-1.5"
+                >
+                  Email đăng ký <span className="text-rose-500">*</span>
+                </label>
+                <div className="relative">
+                  <Mail className="w-4 h-4 text-[#68798A] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <input
+                    id="partner-email"
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full h-11 pl-10 pr-4 text-sm text-[#14233B] bg-[#F6FAFA]/60 border border-[#E2ECEC] rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/25 focus:border-[#14B8A6] transition-all font-medium"
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="flex justify-end pt-4 border-t border-gray-100">
+          {/* C. Nút cập nhật */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-5 border-t border-[#E2ECEC]">
+            <p className="text-xs text-[#68798A]">
+              Các trường đánh dấu <span className="text-rose-500 font-bold">*</span> là thông tin bắt buộc.
+            </p>
             <button
               type="submit"
               disabled={saving}
-              className="flex items-center gap-2 px-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl transition-colors shadow-md"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#008F89] hover:bg-[#073B3A] disabled:opacity-60 text-white font-bold text-xs rounded-xl transition-all duration-200 shadow-md shadow-[#008F89]/20 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
             >
               <Save className="w-4 h-4" />
               {saving ? 'Đang lưu...' : 'Cập nhật hồ sơ'}

@@ -1,3 +1,4 @@
+import HeartButton from "@/components/HeartButton";
 import { Feedback, PlanActions } from "./MessageActions";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
@@ -146,6 +147,7 @@ function RecommendationCard({
       <MenuItems place={place} />
       <StayFacts place={place} />
       <div className={styles.recommendationFooter}>
+        <HeartButton placeId={place.placeId} placeName={place.name} showLabel />
         <Link
           className={styles.recommendationRoute}
           href={`/bando?search=${encodeURIComponent(place.name)}`}

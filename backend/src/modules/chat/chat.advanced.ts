@@ -44,6 +44,7 @@ export async function advancedReply(
   const preferenceChange = /\b(den\s+(?:luc\s*)?\d|gio den|gio ve|ve\s+(?:luc\s*)?\d|taxi|o to|xe may|di bo|xe buyt)\b/.test(n) && !/\b\d+\s*(?:ngay|n\s*\d+\s*d)\b/.test(n);
   if (!targeted && !preferenceChange) return null;
   const latest = [...await scopedMessages()].reverse().find(turn => turn.travelPlan);
+  if (latest?.travelPlan?.source === 'FAVORITES') return {content:'Lịch này lấy từ yêu thích. Bạn yêu cầu lập lại lịch từ yêu thích kèm điều kiện mới để Gô đọc danh sách hiện tại; Gô chưa tự thay bằng địa điểm ngoài danh sách.'};
   if (!targeted) {
     if (!latest?.travelPlan?.revision) return null;
     const result = updateEditedPlanPreferences(latest.travelPlan, message);

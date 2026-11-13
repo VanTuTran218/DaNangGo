@@ -1,12 +1,79 @@
+import nodemailer from 'nodemailer';
 import { AuthError } from '../auth/auth.errors';
+import {
+  buildPartnerApprovalEmail,
+  buildPartnerRejectionEmail,
+} from '../../utils/emailTemplates';
 import {
   findApprovedPartnerProfileId,
   listPartnerProfiles,
   reviewPendingPartnerProfile,
   setPartnerAdminLock,
   type PartnerApprovalStatus,
+  type PartnerFilterStatus,
   type PartnerProfileRow,
 } from './partners.repository';
+
+function createMailTransporter() {
+  const user = process.env.MAIL_USER;
+  const pass = process.env.MAIL_APP_PASSWORD;
+  if (!user || !pass) return null;
+  return nodemailer.createTransport({
+    service: 'gmail',
+    auth: { user, pass },
+  });
+}
+
+async function sendPartnerReviewNotification(input: {
+  email: string;
+  fullName: string;
+  businessName: string;
+  status: 'APPROVED' | 'REJECTED';
+  reason: string | null;
+}): Promise<boolean> {
+  const { subject, html, text } =
+    input.status === 'APPROVED'
+      ? buildPartnerApprovalEmail({
+          userName: input.fullName,
+          businessName: input.businessName,
+        })
+      : buildPartnerRejectionEmail({
+          userName: input.fullName,
+          businessName: input.businessName,
+          reason: input.reason,
+        });
+
+  const transporter = createMailTransporter();
+  if (!transporter) {
+    console.info(
+      `[DEV PARTNER NOTIFICATION] To: ${input.email} | Status: ${input.status} | Subject: ${subject}${
+        input.reason ? ` | Reason: ${input.reason}` : ''
+      }`
+    );
+    return true;
+  }
+
+  try {
+    const fromName = process.env.MAIL_FROM_NAME ?? 'DaNangGo';
+    const fromUser = process.env.MAIL_USER!;
+    await transporter.sendMail({
+      from: `"${fromName}" <${fromUser}>`,
+      to: input.email,
+      subject,
+      html,
+      text,
+    });
+    return true;
+  } catch (err) {
+    console.warn('[Partner Notification Mail Warning] SMTP gửi mail thất bại, ghi nhận thông báo qua hệ thống:', (err as Error)?.message);
+    console.info(
+      `[PARTNER NOTIFICATION] To: ${input.email} | Status: ${input.status} | Subject: ${subject}${
+        input.reason ? ` | Reason: ${input.reason}` : ''
+      }`
+    );
+    return false;
+  }
+}
 
 export interface AdminPartnerProfile {
   id: number;
@@ -47,12 +114,15 @@ function toAdminPartner(row: PartnerProfileRow): AdminPartnerProfile {
 }
 
 export async function listAdminPartners(rawStatus: unknown): Promise<AdminPartnerProfile[]> {
-  let status: PartnerApprovalStatus | undefined;
+  let status: PartnerFilterStatus | undefined;
   if (rawStatus !== undefined) {
-    if (typeof rawStatus !== 'string' || !['ALL', 'PENDING', 'APPROVED', 'REJECTED'].includes(rawStatus)) {
+    if (
+      typeof rawStatus !== 'string' ||
+      !['ALL', 'PENDING', 'APPROVED', 'REJECTED', 'LOCKED'].includes(rawStatus)
+    ) {
       throw new AuthError(400, 'Trạng thái lọc hồ sơ đối tác không hợp lệ.');
     }
-    if (rawStatus !== 'ALL') status = rawStatus as PartnerApprovalStatus;
+    if (rawStatus !== 'ALL') status = rawStatus as PartnerFilterStatus;
   }
   return (await listPartnerProfiles(status)).map(toAdminPartner);
 }
@@ -89,12 +159,23 @@ export async function reviewPartner(input: {
   });
   if (result.outcome === 'NOT_FOUND') throw new AuthError(404, 'Không tìm thấy hồ sơ đối tác.');
   if (result.outcome === 'NOT_PENDING') throw new AuthError(409, 'Hồ sơ này đã được xử lý, không thể xét duyệt lại.');
+
+  // Gửi email thông báo cho đối tác (cả khi DUYỆT và khi TỪ CHỐI kèm lý do)
+  const notificationSent = await sendPartnerReviewNotification({
+    email: result.contact.email,
+    fullName: result.contact.fullName,
+    businessName: result.contact.businessName,
+    status: result.status as 'APPROVED' | 'REJECTED',
+    reason,
+  });
+
   return {
     id: input.partnerId,
     status: result.status,
     reviewedBy: input.adminUserId,
     reviewedAt: result.reviewedAt.toISOString(),
     rejectionReason: reason,
+    notificationSent,
   };
 }
 

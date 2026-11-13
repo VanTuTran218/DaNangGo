@@ -10,7 +10,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { FavoritesProvider } from "@/contexts/FavoritesContext";
 import { Be_Vietnam_Pro, Inter } from "next/font/google";
 
-// ── Font display: Be Vietnam Pro (tiêu đề H1/H2/H3, số liệu nổi bật) ──
+// ── Font chính toàn website: Be Vietnam Pro (Hỗ trợ tiếng Việt đầy đủ, chuẩn Premium Travel) ──
 const beVietnamPro = Be_Vietnam_Pro({
   subsets: ["latin", "vietnamese"],
   weight: ["600", "700", "800"],
@@ -18,7 +18,7 @@ const beVietnamPro = Be_Vietnam_Pro({
   display: "swap",
 });
 
-// ── Font body: Inter (nội dung, mô tả, badge, nút, input) ──
+// ── Font phụ: Inter ──
 const inter = Inter({
   subsets: ["latin", "vietnamese"],
   weight: ["400", "500", "600"],

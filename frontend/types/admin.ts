@@ -39,6 +39,7 @@ export interface AdminUserItem {
 export interface AdminPartnerItem {
   id: string;
   userId: string;
+  name?: string;
   businessName: string;
   serviceType: "STAY" | "TABLE" | "TICKET";
   taxCode: string;

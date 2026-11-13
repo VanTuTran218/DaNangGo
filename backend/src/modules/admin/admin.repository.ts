@@ -115,10 +115,11 @@ export async function approvePartner(
   }
 }
 
-/** Từ chối partner: đặt approval_status = REJECTED, users.status = REJECTED */
+/** Từ chối partner: đặt approval_status = REJECTED và lưu lý do từ chối */
 export async function rejectPartner(
   partnerId: number,
   adminUserId: number,
+  reason?: string | null,
 ): Promise<boolean> {
   const transaction = new sql.Transaction(getPool());
   await transaction.begin();
@@ -138,17 +139,19 @@ export async function rejectPartner(
     await new sql.Request(transaction)
       .input('partnerId', sql.Int, partnerId)
       .input('adminUserId', sql.Int, adminUserId)
+      .input('reason', sql.NVarChar(500), reason ?? null)
       .query(`
         UPDATE dbo.partner_profiles
         SET approval_status = 'REJECTED',
             approved_by = @adminUserId,
-            approved_at = GETDATE()
+            approved_at = GETDATE(),
+            rejection_reason = @reason
         WHERE partner_id = @partnerId
       `);
 
     await new sql.Request(transaction)
       .input('userId', sql.Int, partner.user_id)
-      .query(`UPDATE dbo.users SET status = 'REJECTED' WHERE user_id = @userId`);
+      .query(`UPDATE dbo.users SET status = CASE WHEN admin_locked = 1 THEN 'LOCKED' ELSE 'ACTIVE' END WHERE user_id = @userId`);
 
     await transaction.commit();
     return true;

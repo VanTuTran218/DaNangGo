@@ -1,11 +1,14 @@
 "use client";
 
 import Link from 'next/link';
+import HeartButton from '@/components/HeartButton';
 import Image from "next/image";
-import { Heart, MapPin, Star, ArrowRight } from "lucide-react";
+import { MapPin, Star, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
+import { SpotlightCard, recordSharedPlaceClick } from "@/components/ui/MotionPrimitives";
 
 export interface HotelData {
+  placeId?: number;
   id: number;
   name: string;
   category: string;
@@ -25,30 +28,26 @@ export interface HotelData {
 
 interface HotelCardProps {
   hotel: HotelData;
-  liked: boolean;
-  onLike: () => void;
 }
 
-const BLUR_PLACEHOLDER =
-  "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
-
-export default function HotelCard({ hotel, liked, onLike }: HotelCardProps) {
+export default function HotelCard({ hotel }: HotelCardProps) {
   return (
     <motion.div
+      layout="position"
       whileHover={{ y: -4 }}
       transition={{ duration: 0.25 }}
-      className="group bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 ease-out border border-gray-100 cursor-pointer"
+      className="group bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl hover:shadow-teal-950/10 transition-all duration-300 ease-out border border-gray-100 hover:border-teal-300/80 cursor-pointer"
     >
+      <SpotlightCard>
       {/* Image container */}
-      <div className="relative h-52 overflow-hidden">
+      <div className="relative h-52 overflow-hidden bg-slate-100">
         <Image
           src={hotel.img}
           alt={hotel.name}
           fill
-          className="object-cover group-hover:scale-[1.08] transition-transform duration-500 ease-out"
+          quality={85}
+          className="object-cover group-hover:scale-[1.03] transition-transform duration-500 ease-out"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          placeholder="blur"
-          blurDataURL={BLUR_PLACEHOLDER}
         />
 
         {/* Badge top-left */}
@@ -60,22 +59,7 @@ export default function HotelCard({ hotel, liked, onLike }: HotelCardProps) {
           {hotel.category}
         </div>
 
-        {/* Like button top-right */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onLike();
-          }}
-          className="absolute top-3 right-3 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-md hover:scale-110 active:scale-95 transition-all duration-200"
-          aria-label={liked ? "Bỏ yêu thích" : "Yêu thích"}
-        >
-          <Heart
-            size={15}
-            className={`transition-all duration-200 ${
-              liked ? "fill-red-500 text-red-500 scale-110" : "text-gray-400"
-            }`}
-          />
-        </button>
+        <div className="absolute top-3 right-3"><HeartButton placeId={hotel.placeId} /></div>
 
         {/* Amenity chips bottom of image — glass style */}
         <motion.div className="absolute bottom-3 left-3 flex gap-1.5 flex-wrap overflow-hidden">
@@ -120,7 +104,8 @@ export default function HotelCard({ hotel, liked, onLike }: HotelCardProps) {
           </div>
           <Link
             href={`/places/${hotel.id}`}
-            className="btn-ripple flex items-center gap-1 bg-[#0f2942] hover:bg-[#1a3f5c] text-white text-xs font-semibold px-3 py-2 rounded-xl transition-all group/btn"
+            onClick={() => recordSharedPlaceClick(hotel.id, hotel.img)}
+            className="btn-ripple flex items-center gap-1 bg-[#0f2942] hover:bg-[#1a3f5c] active:scale-[0.98] text-white text-xs font-semibold px-3 py-2 rounded-xl transition-all group/btn"
           >
             Xem chi tiết
             <motion.span
@@ -136,6 +121,7 @@ export default function HotelCard({ hotel, liked, onLike }: HotelCardProps) {
           </Link>
         </div>
       </div>
+      </SpotlightCard>
     </motion.div>
   );
 }

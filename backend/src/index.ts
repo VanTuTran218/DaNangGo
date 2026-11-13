@@ -38,13 +38,18 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // ==================== MIDDLEWARE ====================
-const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+const frontendOrigin = new URL(process.env.FRONTEND_URL || 'http://localhost:3000').origin;
+const allowedOrigins = [frontendOrigin];
+if (process.env.NODE_ENV !== 'production') {
+  if (frontendOrigin === 'http://localhost:3000') allowedOrigins.push('http://localhost:3001');
+  if (frontendOrigin === 'http://localhost:3001') allowedOrigins.push('http://localhost:3000');
+}
 app.use(
   helmet({
     crossOriginResourcePolicy: { policy: 'cross-origin' },
   })
 );
-app.use(cors({ origin: frontendUrl, credentials: true }));
+app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(cookieParser());
 app.use('/uploads/avatars', express.static(path.resolve(process.cwd(), 'uploads', 'avatars'), {
   dotfiles: 'deny',
@@ -56,7 +61,7 @@ app.use('/uploads/avatars', express.static(path.resolve(process.cwd(), 'uploads'
 app.use('/api/webhooks/sepay', sepayWebhookRouter);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(csrfProtection);
+app.use(csrfProtection(allowedOrigins));
 
 // ==================== ROUTES ====================
 app.use('/api/itineraries', itinerariesRouter);

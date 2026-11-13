@@ -37,9 +37,9 @@
    không dùng tailwind.config.ts (deprecated trong v4)
    ====================================================== */
 @theme {
-  /* Font families */
+  /* Font families: Be Vietnam Pro làm font chính cho toàn bộ website */
   --font-family-display: var(--font-display), "Be Vietnam Pro", sans-serif;
-  --font-family-sans: var(--font-body), "Inter", system-ui, sans-serif;
+  --font-family-sans: var(--font-display), var(--font-body), "Be Vietnam Pro", "Inter", system-ui, sans-serif;
 }
 
 /* ====== KEYFRAME ANIMATIONS ====== */
@@ -101,27 +101,27 @@
   100% { background-position: 0% 50%; }
 }
 
-/* Blob trôi lơ lửng — 3 variants */
+/* Blob trôi lơ lửng — 3 variants biên độ nhỏ, chuyển động êm dịu */
 @keyframes blob-float-1 {
   0%, 100% { transform: translate(0, 0) scale(1); }
-  33%       { transform: translate(30px, -40px) scale(1.05); }
-  66%       { transform: translate(-20px, 20px) scale(0.96); }
+  33%       { transform: translate(20px, -25px) scale(1.03); }
+  66%       { transform: translate(-15px, 15px) scale(0.97); }
 }
 @keyframes blob-float-2 {
   0%, 100% { transform: translate(0, 0) scale(1); }
-  40%       { transform: translate(-35px, 25px) scale(1.08); }
-  70%       { transform: translate(20px, -30px) scale(0.95); }
+  40%       { transform: translate(-25px, 18px) scale(1.04); }
+  70%       { transform: translate(15px, -20px) scale(0.96); }
 }
 @keyframes blob-float-3 {
   0%, 100% { transform: translate(0, 0) scale(1); }
-  50%       { transform: translate(25px, 35px) scale(1.06); }
+  50%       { transform: translate(18px, 22px) scale(1.03); }
 }
 
-/* Card xuất hiện: fade-in + trượt lên + scale nhẹ */
+/* Card xuất hiện: fade-in + trượt lên nhẹ (15px) + scale từ 0.98 lên 1 */
 @keyframes auth-card-enter {
   from {
     opacity: 0;
-    transform: translateY(28px) scale(0.97);
+    transform: translateY(15px) scale(0.98);
   }
   to {
     opacity: 1;
@@ -129,12 +129,12 @@
   }
 }
 
-/* Shine (vệt sáng) lướt qua card định kỳ */
+/* Shine: vệt sáng lướt qua card định kỳ */
 @keyframes auth-shine {
   0%   { transform: translateX(-120%) skewX(-15deg); opacity: 0; }
-  8%   { opacity: 0.5; }
-  50%  { opacity: 0.12; }
-  92%  { opacity: 0; }
+  10%  { opacity: 0.35; }
+  50%  { opacity: 0.08; }
+  90%  { opacity: 0; }
   100% { transform: translateX(250%) skewX(-15deg); opacity: 0; }
 }
 
@@ -153,76 +153,74 @@
 
 /* ====== AUTH CARD FRAME UTILITIES ====== */
 
-/* Nền trang auth: gradient dịch chuyển chậm */
+/* Nền trang auth: gradient trắng ngọc trai (#FAFCFD), xanh biển nhạt và kem */
 .auth-bg {
   background: linear-gradient(
     135deg,
-    #f0fdfa 0%,
-    #e0f2fe 20%,
-    #f8fafc 40%,
-    #fef3c7 60%,
-    #ecfdf5 80%,
+    #fafcfd 0%,
+    #f0f9ff 25%,
+    #f8fafc 50%,
+    #fffdfa 75%,
     #f0fdfa 100%
   );
-  background-size: 400% 400%;
-  animation: auth-bg-shift 18s ease infinite;
+  background-size: 250% 250%;
+  animation: auth-bg-shift 24s ease infinite;
 }
 
-/* Blob 1 — teal top-left */
+/* Blob 1 — turquoise top-left */
 .auth-blob-1 {
-  animation: blob-float-1 22s ease-in-out infinite;
+  animation: blob-float-1 26s ease-in-out infinite;
 }
-/* Blob 2 — orange bottom-right */
+/* Blob 2 — sunset orange bottom-right */
 .auth-blob-2 {
-  animation: blob-float-2 28s ease-in-out infinite;
+  animation: blob-float-2 30s ease-in-out infinite;
 }
-/* Blob 3 — cyan mid-center */
+/* Blob 3 — ocean blue mid-center */
 .auth-blob-3 {
-  animation: blob-float-3 18s ease-in-out infinite;
+  animation: blob-float-3 22s ease-in-out infinite;
 }
 
-/* Card wrapper: viền gradient xoay, bo góc lớn, đổ bóng nhiều lớp */
+/* Card entrance animation */
+.auth-card-animate {
+  animation: auth-card-enter 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Card wrapper: bo góc 24-28px, đổ bóng nhiều lớp tự nhiên, background tinh tế */
 .auth-card-frame {
   position: relative;
   border-radius: 1.75rem;
-  /* Đổ bóng nhiều lớp mềm */
+  background: #ffffff;
+  /* Đổ bóng nhiều lớp mềm tự nhiên */
   box-shadow:
-    0 0 0 1px rgba(20, 184, 166, 0.12),
-    0 4px 6px -1px rgba(0, 0, 0, 0.06),
-    0 10px 15px -3px rgba(0, 0, 0, 0.08),
-    0 25px 50px -12px rgba(0, 0, 0, 0.14),
-    0 0 60px -15px rgba(20, 184, 166, 0.15);
-  transition: box-shadow 0.35s ease, transform 0.35s ease;
+    0 0 0 1px rgba(6, 27, 48, 0.04),
+    0 4px 6px -1px rgba(6, 27, 48, 0.03),
+    0 12px 24px -4px rgba(6, 27, 48, 0.06),
+    0 28px 56px -12px rgba(6, 27, 48, 0.10);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
 }
 .auth-card-frame:hover {
-  transform: translateY(-3px);
+  transform: translateY(-2px);
   box-shadow:
-    0 0 0 1px rgba(20, 184, 166, 0.18),
-    0 8px 12px -2px rgba(0, 0, 0, 0.08),
-    0 20px 30px -6px rgba(0, 0, 0, 0.12),
-    0 40px 80px -16px rgba(0, 0, 0, 0.18),
-    0 0 80px -10px rgba(20, 184, 166, 0.22);
+    0 0 0 1px rgba(17, 197, 198, 0.14),
+    0 8px 16px -2px rgba(6, 27, 48, 0.04),
+    0 20px 36px -6px rgba(6, 27, 48, 0.08),
+    0 36px 72px -14px rgba(6, 27, 48, 0.12);
 }
 
-/* Viền gradient xoay chậm: pseudo-element bọc ngoài card */
+/* Viền gradient xanh ngọc & cam cực mỏng quanh card */
 .auth-card-border {
   position: absolute;
-  inset: -2px;
-  border-radius: 1.875rem;
-  background: conic-gradient(
-    from var(--border-angle, 0deg),
-    #14b8a6 0deg,
-    #06b6d4 60deg,
-    #f97316 120deg,
-    #fbbf24 180deg,
-    #14b8a6 240deg,
-    transparent 300deg,
-    transparent 360deg
+  inset: -1px;
+  border-radius: 1.825rem;
+  background: linear-gradient(
+    135deg,
+    rgba(17, 197, 198, 0.5) 0%,
+    rgba(8, 126, 156, 0.25) 40%,
+    rgba(255, 106, 0, 0.35) 80%,
+    rgba(17, 197, 198, 0.3) 100%
   );
-  opacity: 0.45;
+  opacity: 0.85;
   z-index: -1;
-  animation: border-spin 8s linear infinite;
-  @property --border-angle { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
 }
 
 /* Shine: vệt sáng lướt qua định kỳ */
@@ -239,21 +237,34 @@
   position: absolute;
   top: 0;
   left: 0;
-  width: 40%;
+  width: 35%;
   height: 100%;
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(255, 255, 255, 0.18) 50%,
+    rgba(255, 255, 255, 0.15) 50%,
     transparent 100%
   );
-  animation: auth-shine 6s ease-in-out infinite;
-  animation-delay: 2s;
+  animation: auth-shine 8s ease-in-out infinite;
 }
 
-/* Card entrance animation */
-.auth-card-animate {
-  animation: auth-card-enter 0.65s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+/* Thanh cuộn mảnh thanh lịch cho Right Panel */
+.auth-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100, 116, 139, 0.3) transparent;
+}
+.auth-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.auth-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.auth-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.25);
+  border-radius: 9999px;
+}
+.auth-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(17, 197, 198, 0.5);
 }
 
 /* Stat cards stagger */
@@ -354,33 +365,97 @@
   }
 }
 
-/* H1 Hero — tiêu đề chính trang/hero */
-.h1-hero {
+/* ======================================================
+   DANANGGO TYPOGRAPHY SYSTEM (MODERN, MINIMALIST, PREMIUM)
+   Be Vietnam Pro chính — Inter phụ khi cần
+   ====================================================== */
+
+/* H1 Hero — Tiêu đề chính trang: Cân đối, thanh lịch, thoáng đãng, không lấn át cảnh quan */
+.hero-h1, .h1-hero {
   font-family: var(--font-family-display);
-  font-size: clamp(2.5rem, 6vw, 4.5rem);
-  font-weight: 800;
+  font-size: clamp(2rem, 4.2vw, 3.35rem);
+  font-weight: 750;
   letter-spacing: -0.025em;
-  line-height: 1.05;
+  line-height: 1.18;
+  color: #ffffff;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.7), 0 1px 3px rgba(0, 0, 0, 0.85);
 }
 
-/* H2 Section — tiêu đề section quan trọng */
+/* Điểm nhấn xanh Cyan tinh tế, cao cấp (không lòe loẹt, không nhấp nháy liên tục) */
+.hero-highlight-cyan {
+  color: #22d3ee;
+  background: linear-gradient(135deg, #38bdf8 0%, #22d3ee 50%, #06b6d4 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+  filter: drop-shadow(0 2px 10px rgba(34, 211, 238, 0.35));
+}
+
+/* Mô tả Hero: Nghiêng nhẹ, thoáng đãng, dễ đọc */
+.hero-desc {
+  font-family: var(--font-family-sans);
+  font-size: clamp(0.925rem, 1.25vw, 1.075rem);
+  font-style: italic;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.82);
+  line-height: 1.68;
+  letter-spacing: -0.01em;
+  max-width: 38rem;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6);
+}
+
+/* H2 Section — tiêu đề section quan trọng (600–700) */
 .h2-section {
   font-family: var(--font-family-display);
-  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  font-size: clamp(1.75rem, 3vw, 2.35rem);
   font-weight: 700;
   letter-spacing: -0.02em;
-  line-height: 1.2;
+  line-height: 1.25;
 }
 
-/* H3 Card/Block — tiêu đề card và khối nhỏ */
+/* H3 Card/Block — tiêu đề card và khối nhỏ (600) */
 .h3-card {
   font-family: var(--font-family-display);
-  font-size: clamp(1.125rem, 2vw, 1.5rem);
+  font-size: clamp(1.125rem, 1.8vw, 1.4rem);
   font-weight: 600;
-  line-height: 1.3;
+  letter-spacing: -0.015em;
+  line-height: 1.35;
 }
 
-/* Body text — nội dung, mô tả */
+/* Body text — nội dung, mô tả (400–500) */
+.body-text {
+  font-family: var(--font-family-sans);
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.7;
+  letter-spacing: -0.005em;
+}
+
+/* Navigation Link — Trọng lượng 500, thoáng */
+.nav-item-link {
+  font-family: var(--font-family-display);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  transition: color 250ms ease;
+}
+
+/* Button CTA — Trọng lượng 600, nâng nhẹ 2px và shadow tinh tế */
+.btn-cta, .btn-ripple {
+  font-family: var(--font-family-display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  transition: transform 250ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 250ms cubic-bezier(0.22, 1, 0.36, 1), background-color 200ms ease;
+}
+
+.btn-cta:hover, .btn-ripple:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px -4px rgba(249, 115, 22, 0.35);
+}
+
+.btn-cta:active, .btn-ripple:active {
+  transform: translateY(0px);
+}
 .body-text {
   font-family: var(--font-family-sans);
   font-size: 1rem;

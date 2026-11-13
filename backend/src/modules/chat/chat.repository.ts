@@ -227,14 +227,20 @@ export async function searchPlacesForChat(args: {
   tastes?: string[];
   distanceOriginName?: string;
   location?: import("./chat.types").ChatLocation;
-}): Promise<PlaceSearchRow[]> {
+  /** Internal authenticated owner for planning from favorites; never parsed from a prompt. */
+  favoriteUserId?: number;
+}, transaction?: sql.Transaction): Promise<PlaceSearchRow[]> {
   const run = async (useKeywords: boolean): Promise<PlaceSearchRow[]> => {
-    const pool = getPool();
-    const request = pool.request();
+    const request = transaction ? new sql.Request(transaction) : getPool().request();
     request.input("limit", sql.Int, args.limit ?? 10);
     request.input("partySize", sql.Int, args.partySize ?? null);
 
     const where: string[] = ["p.status = 'ACTIVE'", "p.name NOT LIKE N'[[]Mẫu]%'", "p.name NOT LIKE N'[[]Test]%'", "p.name NOT LIKE N'[[]Demo]%'"];
+    if (args.favoriteUserId !== undefined) {
+      if (!Number.isInteger(args.favoriteUserId) || args.favoriteUserId <= 0) throw new Error('Invalid favorites owner');
+      request.input('favoriteUserId', sql.Int, args.favoriteUserId);
+      where.push('EXISTS (SELECT 1 FROM dbo.favorites f WHERE f.place_id=p.place_id AND f.user_id=@favoriteUserId)');
+    }
     if (args.referenceOnly) {
       where.push(
         "p.reference_key IS NOT NULL AND p.reference_checked_at IS NOT NULL",

@@ -1,5 +1,6 @@
 "use client";
 
+import HeartButton from "@/components/HeartButton";
 import Link from "next/link";
 import {
   CalendarDays,
@@ -19,12 +20,15 @@ const money = (value: number | null) =>
 function PlaceLink({ place }: { place: ChatPlaceCard }) {
   return (
     <div className="mt-2 space-y-1 rounded-xl border border-teal-100 bg-white p-2.5">
-      <Link
-        href={`/places/${place.placeId}`}
-        className="block text-[13px] font-semibold text-teal-800 hover:underline"
-      >
-        {place.name}
-      </Link>
+      <div className="flex items-start justify-between gap-2">
+        <Link
+          href={`/places/${place.placeId}`}
+          className="text-[13px] font-semibold text-teal-800 hover:underline"
+        >
+          {place.name}
+        </Link>
+        <HeartButton placeId={place.placeId} placeName={place.name} />
+      </div>
       <p className="text-[11px] leading-relaxed text-slate-600">
         {place.address || place.districtName || "Chưa cập nhật địa chỉ"}
       </p>

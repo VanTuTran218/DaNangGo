@@ -1,3 +1,4 @@
+import HeartButton from "@/components/HeartButton";
 import Link from "next/link";
 import {
   BedDouble,
@@ -65,9 +66,12 @@ export function PlanPlace({ place }: { place: ChatPlaceCard }) {
         )}
       </Link>
       <div className={styles.planPlaceCopy}>
-        <span className={styles.placeType} data-type={place.placeType}>
-          {typeLabels[place.placeType]}
-        </span>
+        <div className="flex items-center justify-between gap-2">
+          <span className={styles.placeType} data-type={place.placeType}>
+            {typeLabels[place.placeType]}
+          </span>
+          <HeartButton placeId={place.placeId} placeName={place.name} />
+        </div>
         <Link href={`/places/${place.placeId}`} className={styles.placeName}>
           {place.name}
         </Link>

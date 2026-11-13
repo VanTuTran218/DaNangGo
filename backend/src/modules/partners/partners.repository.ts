@@ -1,6 +1,7 @@
 import { getPool, sql } from '../../config/db';
 
 export type PartnerApprovalStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+export type PartnerFilterStatus = PartnerApprovalStatus | 'LOCKED';
 
 export interface PartnerProfileRow {
   partner_id: number;
@@ -23,7 +24,7 @@ export interface PartnerProfileRow {
   admin_locked: boolean;
 }
 
-export async function listPartnerProfiles(status?: PartnerApprovalStatus): Promise<PartnerProfileRow[]> {
+export async function listPartnerProfiles(status?: PartnerFilterStatus): Promise<PartnerProfileRow[]> {
   const result = await getPool().request()
     .input('status', sql.VarChar(20), status ?? null)
     .query<PartnerProfileRow>(`
@@ -35,7 +36,9 @@ export async function listPartnerProfiles(status?: PartnerApprovalStatus): Promi
       FROM dbo.partner_profiles AS pp
       INNER JOIN dbo.users AS u ON u.user_id = pp.user_id
       LEFT JOIN dbo.users AS reviewer ON reviewer.user_id = pp.approved_by
-      WHERE @status IS NULL OR pp.approval_status = @status
+      WHERE @status IS NULL
+        OR (@status = 'LOCKED' AND u.admin_locked = 1)
+        OR (@status <> 'LOCKED' AND pp.approval_status = @status AND (@status <> 'APPROVED' OR u.admin_locked = 0))
       ORDER BY CASE WHEN pp.approval_status = 'PENDING' THEN 0 ELSE 1 END,
         CASE WHEN pp.approval_status = 'PENDING' THEN pp.created_at END ASC,
         pp.created_at DESC;
@@ -46,7 +49,16 @@ export async function listPartnerProfiles(status?: PartnerApprovalStatus): Promi
 export type ReviewResult =
   | { outcome: 'NOT_FOUND' }
   | { outcome: 'NOT_PENDING'; currentStatus: string }
-  | { outcome: 'UPDATED'; status: PartnerApprovalStatus; reviewedAt: Date };
+  | {
+      outcome: 'UPDATED';
+      status: PartnerApprovalStatus;
+      reviewedAt: Date;
+      contact: {
+        email: string;
+        fullName: string;
+        businessName: string;
+      };
+    };
 
 export async function reviewPendingPartnerProfile(input: {
   partnerId: number;
@@ -60,9 +72,11 @@ export async function reviewPendingPartnerProfile(input: {
   try {
     const selected = await new sql.Request(transaction)
       .input('partnerId', sql.Int, input.partnerId)
-      .query<{ approval_status: string }>(`
-        SELECT approval_status FROM dbo.partner_profiles WITH (UPDLOCK, HOLDLOCK)
-        WHERE partner_id = @partnerId;
+      .query<{ approval_status: string; business_name: string; email: string; full_name: string }>(`
+        SELECT pp.approval_status, pp.business_name, u.email, u.full_name
+        FROM dbo.partner_profiles AS pp WITH (UPDLOCK, HOLDLOCK)
+        INNER JOIN dbo.users AS u ON u.user_id = pp.user_id
+        WHERE pp.partner_id = @partnerId;
       `);
     const current = selected.recordset[0];
     if (!current) {
@@ -70,7 +84,7 @@ export async function reviewPendingPartnerProfile(input: {
       finished = true;
       return { outcome: 'NOT_FOUND' };
     }
-    if (current.approval_status !== 'PENDING') {
+    if (current.approval_status !== 'PENDING' && current.approval_status !== 'PENDING_APPROVAL') {
       await transaction.rollback();
       finished = true;
       return { outcome: 'NOT_PENDING', currentStatus: current.approval_status };
@@ -89,27 +103,13 @@ export async function reviewPendingPartnerProfile(input: {
             rejection_reason = @reason
         OUTPUT INSERTED.approval_status, INSERTED.approved_at
         FROM dbo.partner_profiles AS pp
-        WHERE pp.partner_id = @partnerId AND pp.approval_status = 'PENDING';
+        WHERE pp.partner_id = @partnerId AND pp.approval_status IN ('PENDING', 'PENDING_APPROVAL');
 
-        IF @status = 'APPROVED'
-          UPDATE u SET status = CASE WHEN u.admin_locked = 1 THEN 'LOCKED' ELSE 'ACTIVE' END,
-            failed_login_count = 0, locked_until = NULL
-          FROM dbo.users AS u
-          INNER JOIN dbo.partner_profiles AS profile ON profile.user_id = u.user_id
-          WHERE profile.partner_id = @partnerId;
-
-        IF @status = 'REJECTED'
-          UPDATE u SET status = 'LOCKED', locked_until = NULL,
-            failed_login_count = 0
-          FROM dbo.users AS u
-          INNER JOIN dbo.partner_profiles AS profile ON profile.user_id = u.user_id
-          WHERE profile.partner_id = @partnerId;
-
-        IF @status = 'REJECTED'
-          UPDATE rt SET revoked_at = SYSUTCDATETIME()
-          FROM dbo.refresh_tokens AS rt
-          INNER JOIN dbo.partner_profiles AS profile ON profile.user_id = rt.user_id
-          WHERE profile.partner_id = @partnerId AND rt.revoked_at IS NULL;
+        UPDATE u SET status = CASE WHEN u.admin_locked = 1 THEN 'LOCKED' ELSE 'ACTIVE' END,
+          failed_login_count = 0, locked_until = NULL
+        FROM dbo.users AS u
+        INNER JOIN dbo.partner_profiles AS profile ON profile.user_id = u.user_id
+        WHERE profile.partner_id = @partnerId;
       `);
     const row = updated.recordset[0];
     if (!row) {
@@ -119,7 +119,16 @@ export async function reviewPendingPartnerProfile(input: {
     }
     await transaction.commit();
     finished = true;
-    return { outcome: 'UPDATED', status: row.approval_status, reviewedAt: row.approved_at };
+    return {
+      outcome: 'UPDATED',
+      status: row.approval_status,
+      reviewedAt: row.approved_at,
+      contact: {
+        email: current.email,
+        fullName: current.full_name,
+        businessName: current.business_name,
+      },
+    };
   } catch (error) {
     if (!finished) {
       try { await transaction.rollback(); } catch { /* keep the database error */ }

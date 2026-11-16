@@ -1331,12 +1331,24 @@ function AmThucContent() {
             <div>
               <h4 className="text-white font-semibold text-sm mb-4">Tiện ích</h4>
               <ul className="space-y-2.5">
-                {['Tạo lịch trình', 'Bản đồ thành phố', 'Thời tiết', 'Đặt vé online', 'Hỏi đáp'].map(
-                  (link) => (
-                    <li key={link}>
-                      <a href="#" className="text-sm hover:text-white transition-colors">
-                        {link}
-                      </a>
+                {[
+                  { label: 'Tạo lịch trình', href: '/lich-trinh/tao-moi' },
+                  { label: 'Bản đồ thành phố', href: '/bando' },
+                  { label: 'Thời tiết', href: '/thoi-tiet' },
+                  { label: 'Đặt vé online', href: '#' },
+                  { label: 'Hỏi đáp', href: '/chat' },
+                ].map(
+                  (item) => (
+                    <li key={item.label}>
+                      {item.href === '#' ? (
+                        <a href="#" className="text-sm hover:text-white transition-colors">
+                          {item.label}
+                        </a>
+                      ) : (
+                        <Link href={item.href} className="text-sm hover:text-white transition-colors">
+                          {item.label}
+                        </Link>
+                      )}
                     </li>
                   )
                 )}

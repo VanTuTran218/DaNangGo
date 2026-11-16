@@ -35,8 +35,20 @@ export default function Footer() {
             <h4 className="text-white font-semibold text-sm mb-4">Tiện ích</h4>
             <ul className="space-y-2.5">
               <li><Link href="/khao-sat" className="text-sm hover:text-white transition-colors">Góp ý & khảo sát</Link></li>
-              {['Tạo lịch trình','Bản đồ thành phố','Thời tiết','Đặt vé online','Hỏi đáp'].map(l => (
-                <li key={l}><a href="#" className="text-sm hover:text-white transition-colors">{l}</a></li>
+              {[
+                { label: 'Tạo lịch trình', href: '/lich-trinh/tao-moi' },
+                { label: 'Bản đồ thành phố', href: '/bando' },
+                { label: 'Thời tiết', href: '/thoi-tiet' },
+                { label: 'Đặt vé online', href: '#' },
+                { label: 'Hỏi đáp', href: '/chat' },
+              ].map(item => (
+                <li key={item.label}>
+                  {item.href === '#' ? (
+                    <a href="#" className="text-sm hover:text-white transition-colors">{item.label}</a>
+                  ) : (
+                    <Link href={item.href} className="text-sm hover:text-white transition-colors">{item.label}</Link>
+                  )}
+                </li>
               ))}
             </ul>
           </div>

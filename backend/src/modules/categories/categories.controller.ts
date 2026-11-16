@@ -53,3 +53,16 @@ export async function getAttractionCategories(_req: Request, res: Response) {
     return serverError(res, err);
   }
 }
+
+/**
+ * GET /amenities (hoặc /api/amenities)
+ * Lấy danh sách tiện nghi lưu trú
+ */
+export async function getAmenities(_req: Request, res: Response) {
+  try {
+    const data = await service.getAmenities();
+    return ok(res, data, 'Lấy danh sách tiện nghi thành công');
+  } catch (err) {
+    return serverError(res, err);
+  }
+}

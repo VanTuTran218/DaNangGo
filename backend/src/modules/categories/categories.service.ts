@@ -3,6 +3,7 @@ import {
   findCuisines,
   findTastes,
   findAttractionCategories,
+  findAmenities,
   type CategoryItem,
 } from './categories.repository';
 
@@ -19,6 +20,7 @@ const cache: {
   cuisines?: CacheEntry<CategoryItem[]>;
   tastes?: CacheEntry<CategoryItem[]>;
   attractionCategories?: CacheEntry<CategoryItem[]>;
+  amenities?: CacheEntry<CategoryItem[]>;
 } = {};
 
 function isCacheValid<T>(entry?: CacheEntry<T>): entry is CacheEntry<T> {
@@ -75,6 +77,18 @@ export async function getAttractionCategories(): Promise<CategoryItem[]> {
 }
 
 /**
+ * Lấy danh sách tiện nghi lưu trú (có server cache)
+ */
+export async function getAmenities(): Promise<CategoryItem[]> {
+  if (isCacheValid(cache.amenities)) {
+    return cache.amenities.data;
+  }
+  const data = await findAmenities();
+  cache.amenities = { data, cachedAt: Date.now() };
+  return data;
+}
+
+/**
  * Xóa cache thủ công khi có thay đổi danh mục (nếu cần)
  */
 export function clearCategoryCache(): void {
@@ -82,4 +96,5 @@ export function clearCategoryCache(): void {
   delete cache.cuisines;
   delete cache.tastes;
   delete cache.attractionCategories;
+  delete cache.amenities;
 }

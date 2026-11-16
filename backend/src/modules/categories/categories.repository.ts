@@ -3,6 +3,20 @@ import { getPool } from '../../config/db';
 export interface CategoryItem {
   id: number;
   name: string;
+  icon?: string | null;
+}
+
+/**
+ * Lấy danh sách tiện nghi lưu trú, sắp xếp theo ID
+ */
+export async function findAmenities(): Promise<CategoryItem[]> {
+  const pool = getPool();
+  const result = await pool.request().query(`
+    SELECT amenity_id AS id, name, icon
+    FROM amenities
+    ORDER BY amenity_id ASC
+  `);
+  return result.recordset as CategoryItem[];
 }
 
 /**

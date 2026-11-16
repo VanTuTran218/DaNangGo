@@ -79,6 +79,9 @@ export interface PlaceSearchItem {
   category_name_attraction?: string | null;
   accommodation_type?: string | null;
   star_rating?: number | null;
+  original_price?: number | null;
+  max_capacity?: number | null;
+  amenity_names?: string[];
 }
 
 export interface MenuItemTaste {
@@ -172,9 +175,18 @@ export interface SearchPlacesQuery {
   taste_id?: number;
   category_id?: number;
   open_now?: boolean;
+  capacity?: number;
+  amenity_ids?: string | number[];
+  accommodation_type?: string;
   sort?: PlaceSortOption;
   page?: number;
   limit?: number;
+}
+
+export interface MasterCategoryItem {
+  id: number;
+  name: string;
+  icon?: string | null;
 }
 
 export interface PaginatedPlacesResult {
@@ -205,6 +217,18 @@ export async function getPlaces(
   if (query.taste_id) params.append('taste_id', String(query.taste_id));
   if (query.category_id) params.append('category_id', String(query.category_id));
   if (query.open_now !== undefined) params.append('open_now', String(query.open_now));
+  if (query.capacity !== undefined && Number(query.capacity) > 0) {
+    params.append('capacity', String(query.capacity));
+  }
+  if (query.amenity_ids !== undefined) {
+    const rawIds = Array.isArray(query.amenity_ids)
+      ? query.amenity_ids.filter((id) => Number(id) > 0).join(',')
+      : String(query.amenity_ids).trim();
+    if (rawIds) params.append('amenity_ids', rawIds);
+  }
+  if (query.accommodation_type && query.accommodation_type.trim()) {
+    params.append('accommodation_type', query.accommodation_type.trim().toUpperCase());
+  }
   if (query.sort) params.append('sort', query.sort);
   if (query.page) params.append('page', String(query.page));
   if (query.limit) params.append('limit', String(query.limit));
@@ -219,6 +243,16 @@ export async function getPlaces(
     limit: 10,
     total_pages: 0,
   };
+}
+
+export async function getDistricts(): Promise<MasterCategoryItem[]> {
+  const res = await apiRequest<MasterCategoryItem[]>('/api/districts');
+  return res.data || [];
+}
+
+export async function getAmenities(): Promise<MasterCategoryItem[]> {
+  const res = await apiRequest<MasterCategoryItem[]>('/api/amenities');
+  return res.data || [];
 }
 
 /**

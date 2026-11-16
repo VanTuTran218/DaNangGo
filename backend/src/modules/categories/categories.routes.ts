@@ -11,5 +11,6 @@ router.get('/districts', controller.getDistricts);
 router.get('/cuisines', controller.getCuisines);
 router.get('/tastes', controller.getTastes);
 router.get('/attraction-categories', controller.getAttractionCategories);
+router.get('/amenities', controller.getAmenities);
 
 export default router;

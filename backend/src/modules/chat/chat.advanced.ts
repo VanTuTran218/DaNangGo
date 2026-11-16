@@ -1,3 +1,4 @@
+import { airportTimingAnswer } from "./chat-airport-timing";
 import { normalize } from "../ai/ai.rules";
 import { conversationMessages } from "./chat.history";
 import { comparisonNames, comparePlaces, resolvePlaceName } from "./chat.compare";
@@ -23,6 +24,10 @@ export async function advancedReply(
     const reset = messages.map(turn => turn.sender === "USER" && isRestart(turn.content)).lastIndexOf(true);
     return messages.slice(reset + 1);
   };
+  if (airportTimingAnswer(n)) {
+    const latest = [...await scopedMessages()].reverse().find(turn => turn.travelPlan);
+    return { content: airportTimingAnswer(n, latest?.travelPlan)! };
+  }
   const comparative = /\b(noi nao|cho nao|toi uu tien (?:gia|vi tri|trai nghiem)|gan bien hon|re hon)\b/.test(n);
   const lastPair = comparative ? [...await scopedMessages()].reverse().find(turn => turn.comparison)?.comparison?.places : undefined;
   if (/\bso sanh\b/.test(n) || lastPair?.length === 2) {

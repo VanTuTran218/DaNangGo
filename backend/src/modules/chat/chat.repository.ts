@@ -215,6 +215,7 @@ export interface PlaceSearchRow extends ChatPlaceCard {
  * Nếu lọc theo từ khóa không ra kết quả, thử lại chỉ với loại + quận + ngân sách.
  */
 export async function searchPlacesForChat(args: {
+  placeId?: number;
   placeType?: "ACCOMMODATION" | "RESTAURANT" | "ATTRACTION";
   district?: string | null;
   budget?: number | null;
@@ -236,6 +237,10 @@ export async function searchPlacesForChat(args: {
     request.input("partySize", sql.Int, args.partySize ?? null);
 
     const where: string[] = ["p.status = 'ACTIVE'", "p.name NOT LIKE N'[[]Mẫu]%'", "p.name NOT LIKE N'[[]Test]%'", "p.name NOT LIKE N'[[]Demo]%'"];
+    if (args.placeId !== undefined) {
+      request.input("exactPlaceId", sql.Int, args.placeId);
+      where.push("p.place_id = @exactPlaceId");
+    }
     if (args.favoriteUserId !== undefined) {
       if (!Number.isInteger(args.favoriteUserId) || args.favoriteUserId <= 0) throw new Error('Invalid favorites owner');
       request.input('favoriteUserId', sql.Int, args.favoriteUserId);
@@ -443,17 +448,20 @@ export async function getRecentChatMessages(
 
 export async function findChatAnchor(
   name: string,
+  restaurant = false,
 ): Promise<{ latitude: number; longitude: number } | null> {
   const result = await getPool()
     .request()
-    .input("name", sql.NVarChar(100), `%${name}%`).query<{
+    .input("name", sql.NVarChar(200), restaurant ? name : `%${name}%`)
+    .input("restaurant", sql.Bit, restaurant).query<{
     latitude: number;
     longitude: number;
   }>(`
- SELECT TOP(1) latitude,longitude FROM dbo.places
- WHERE status='ACTIVE' AND place_type='ATTRACTION' AND name COLLATE Latin1_General_CI_AI LIKE @name
+ SELECT TOP(2) latitude,longitude FROM dbo.places
+ WHERE status='ACTIVE' AND ((@restaurant=0 AND place_type='ATTRACTION' AND name COLLATE Latin1_General_CI_AI LIKE @name)
+ OR (@restaurant=1 AND place_type='RESTAURANT' AND name COLLATE Latin1_General_CI_AI = @name))
  AND latitude BETWEEN -90 AND 90 AND longitude BETWEEN -180 AND 180 ORDER BY place_id`);
-  const value = result.recordset[0];
+  const value = restaurant && result.recordset.length !== 1 ? undefined : result.recordset[0];
   return value
     ? { latitude: Number(value.latitude), longitude: Number(value.longitude) }
     : null;

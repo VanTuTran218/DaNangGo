@@ -1,3 +1,4 @@
+import RouteDirectionsModal from "@/components/places/RouteDirectionsModal";
 import HeartButton from "@/components/HeartButton";
 import { Feedback, PlanActions } from "./MessageActions";
 import { useEffect, useRef, useState, type ReactNode } from "react";
@@ -86,10 +87,13 @@ function CopyMessage({ message }: { message: ChatMessage }) {
 function RecommendationCard({
   place,
   onGoToPlace,
+  onAdjust,
 }: {
   place: ChatPlaceCard;
+  onAdjust: (text: string) => void;
   onGoToPlace: (place: ChatPlaceCard) => void;
 }) {
+  const [routeOpen, setRouteOpen] = useState(false);
   const label =
     place.placeType === "ACCOMMODATION"
       ? "Lưu trú"
@@ -148,15 +152,33 @@ function RecommendationCard({
       <StayFacts place={place} />
       <div className={styles.recommendationFooter}>
         <HeartButton placeId={place.placeId} placeName={place.name} showLabel />
-        <Link
+        {place.routeOrigin ? (
+          <button type="button" className={styles.recommendationRoute} onClick={() => setRouteOpen(true)}>
+            <Navigation size={12} />
+            Xem đường đi
+          </button>
+        ) : <Link
           className={styles.recommendationRoute}
           href={`/bando?search=${encodeURIComponent(place.name)}`}
         >
           <Navigation size={12} />
           <span>Chỉ đường trên bản đồ</span>
           <ArrowUpRight size={12} />
-        </Link>
+        </Link>}
+        {place.routeOrigin && (
+          <button type="button" className={styles.recommendationRoute} onClick={() => onAdjust(`Xem trước thêm điểm #${place.placeId}`)}>
+            Thêm vào lịch
+          </button>
+        )}
       </div>
+      {routeOpen && place.routeOrigin && (
+        <RouteDirectionsModal
+          isOpen
+          onClose={() => setRouteOpen(false)}
+          fixedOrigin={place.routeOrigin}
+          destination={{ place_id: place.placeId, name: place.name, address: place.address }}
+        />
+      )}
     </article>
   );
 }
@@ -222,6 +244,7 @@ export default function MessageBubble({
                 key={place.placeId}
                 place={place}
                 onGoToPlace={onGoToPlace}
+                onAdjust={onAdjust}
               />
             ))}
           </div>

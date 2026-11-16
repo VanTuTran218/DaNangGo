@@ -21,6 +21,7 @@ import { getRouteDirections, TravelOption, TravelMode } from '@/lib/api/routes';
 interface RouteDirectionsModalProps {
   isOpen: boolean;
   onClose: () => void;
+  fixedOrigin?: { name: string; latitude: number; longitude: number };
   destination: {
     place_id: number;
     name: string;
@@ -96,6 +97,7 @@ export default function RouteDirectionsModal({
   isOpen,
   onClose,
   destination,
+  fixedOrigin,
 }: RouteDirectionsModalProps) {
   const [originType, setOriginType] = useState<'current' | 'preset'>('current');
   const [selectedPreset, setSelectedPreset] = useState(POPULAR_ORIGINS[1].coords);
@@ -104,6 +106,8 @@ export default function RouteDirectionsModal({
   const [loading, setLoading] = useState(false);
   const [options, setOptions] = useState<TravelOption[]>([]);
   const [error, setError] = useState<string | null>(null);
+
+  const fixedCoords = fixedOrigin ? `${fixedOrigin.latitude},${fixedOrigin.longitude}` : undefined;
 
   // Lấy vị trí GPS của người dùng
   const detectUserLocation = () => {
@@ -152,17 +156,19 @@ export default function RouteDirectionsModal({
 
   useEffect(() => {
     if (isOpen) {
-      if (originType === 'current') {
+      if (fixedCoords) {
+        fetchRoute(fixedCoords);
+      } else if (originType === 'current') {
         detectUserLocation();
       } else {
         fetchRoute(selectedPreset);
       }
     }
-  }, [isOpen, originType, selectedPreset]);
+  }, [isOpen, originType, selectedPreset, fixedCoords, destination.place_id]);
 
   if (!isOpen) return null;
 
-  const currentOriginCoords = originType === 'current' ? userCoords || selectedPreset : selectedPreset;
+  const currentOriginCoords = fixedCoords ?? (originType === 'current' ? userCoords || selectedPreset : selectedPreset);
 
   const googleMapsUrl = (googleMode = 'driving') => {
     const dest = destination.latitude && destination.longitude
@@ -203,6 +209,7 @@ export default function RouteDirectionsModal({
             <label className="text-xs font-bold uppercase tracking-wider text-gray-500">
               Điểm xuất phát (Điểm đi)
             </label>
+            {fixedOrigin ? <p className="mt-2 text-sm font-semibold text-gray-900">{fixedOrigin.name}</p> : <>
             <div className="mt-3 flex flex-wrap gap-2">
               <button
                 type="button"
@@ -256,6 +263,7 @@ export default function RouteDirectionsModal({
                 ✓ Đã lấy tọa độ GPS của bạn: <span className="font-mono font-medium">{userCoords}</span>
               </p>
             ) : null}
+            </>}
           </div>
 
           {/* Thông báo lỗi nếu có */}

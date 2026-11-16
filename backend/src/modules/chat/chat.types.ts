@@ -15,6 +15,7 @@ export interface ChatPlaceCard {
   reason?: string;
   distanceKm?: number;
   distanceOriginName?: string;
+  routeOrigin?: { name: string; latitude: number; longitude: number };
   stayFacts?: import("./chat.stay-facts").ChatStayFacts;
   menuItems?: { id: number; name: string; price: number | null }[];
 }

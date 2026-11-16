@@ -16,6 +16,7 @@ export interface ChatPlaceCard {
   reason?: string;
   distanceKm?: number;
   distanceOriginName?: string;
+  routeOrigin?: { name: string; latitude: number; longitude: number };
   stayFacts?: {
     hours?: {
       checkIn: string;

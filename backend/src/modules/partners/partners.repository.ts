@@ -2,6 +2,7 @@ import { getPool, sql } from '../../config/db';
 
 export type PartnerApprovalStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 export type PartnerFilterStatus = PartnerApprovalStatus | 'LOCKED';
+export type PartnerListStatus = PartnerFilterStatus;
 
 export interface PartnerProfileRow {
   partner_id: number;
@@ -38,7 +39,7 @@ export async function listPartnerProfiles(status?: PartnerFilterStatus): Promise
       LEFT JOIN dbo.users AS reviewer ON reviewer.user_id = pp.approved_by
       WHERE @status IS NULL
         OR (@status = 'LOCKED' AND u.admin_locked = 1)
-        OR (@status <> 'LOCKED' AND pp.approval_status = @status AND (@status <> 'APPROVED' OR u.admin_locked = 0))
+        OR (@status <> 'LOCKED' AND pp.approval_status = @status AND u.admin_locked = 0)
       ORDER BY CASE WHEN pp.approval_status = 'PENDING' THEN 0 ELSE 1 END,
         CASE WHEN pp.approval_status = 'PENDING' THEN pp.created_at END ASC,
         pp.created_at DESC;

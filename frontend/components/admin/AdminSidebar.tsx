@@ -13,9 +13,11 @@ import {
   X,
   ShieldCheck,
   CircleDollarSign,
+  CalendarDays,
 } from 'lucide-react';
 
 const ADMIN_NAV = [
+  { href: '/admin/su-kien', label: 'Sự kiện', icon: CalendarDays },
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/doanh-thu-goi', label: 'Doanh thu & Gói đối tác', icon: CircleDollarSign },
   { href: '/admin/nguoi-dung', label: 'Quản lý người dùng', icon: Users },

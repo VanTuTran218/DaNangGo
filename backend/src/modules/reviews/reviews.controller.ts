@@ -57,8 +57,7 @@ export async function create(req: Request, res: Response) {
     );
     res.status(201).json({
       success: true,
-      message:
-        "Đánh giá của bạn đang chờ phê duyệt. Sau khi admin duyệt, đánh giá sẽ hiển thị trên trang chi tiết địa điểm.",
+      message: "Đánh giá của bạn đã được đăng và hiển thị trên trang chi tiết địa điểm.",
       data,
     });
   } catch (error) {
@@ -223,8 +222,8 @@ export async function adminModerate(req: Request, res: Response) {
       data,
       message:
         data.status === "APPROVED"
-          ? "Đã duyệt đánh giá."
-          : "Đã từ chối/ẩn đánh giá.",
+          ? "Đã hiển thị lại đánh giá."
+          : "Đã ẩn đánh giá.",
     });
   } catch (error) {
     handleError(res, error);
@@ -234,16 +233,11 @@ export async function adminModerate(req: Request, res: Response) {
 export async function adminDelete(req: Request, res: Response) {
   const reviewId = getReviewId(req, res);
   if (reviewId === null) return;
-  // clearCooldown=true cho phép admin xóa cooldown của user (ví dụ: review bị xóa do lỗi hệ thống)
-  // để user có thể review lại địa điểm ngay lập tức. Mặc định: false (cooldown vẫn còn hiệu lực).
-  const clearCooldown = req.query["clearCooldown"] === "true";
   try {
-    await service.removeReview(reviewId, { clearCooldown });
+    await service.removeReview(reviewId);
     res.json({
       success: true,
-      message: clearCooldown
-        ? "Đã xóa đánh giá và đặt lại thời gian chờ của người dùng."
-        : "Đã xóa đánh giá.",
+      message: "Đã xóa đánh giá.",
     });
   } catch (error) {
     handleError(res, error);

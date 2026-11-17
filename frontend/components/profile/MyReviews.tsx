@@ -6,8 +6,8 @@ import ReviewPhotoGrid from "@/components/places/ReviewPhotoGrid";
 import { getMyReviews, type MyReview } from "@/lib/api/reviews";
 
 const statusLabel = {
-  PENDING: "Đang chờ duyệt",
-  APPROVED: "Đã duyệt",
+  PENDING: "Đánh giá cũ chưa được chuyển trạng thái",
+  APPROVED: "Đang hiển thị",
   HIDDEN: "Đang ẩn",
 };
 

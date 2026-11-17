@@ -112,8 +112,7 @@ export default function FeedbackReadiness() {
       {report.data && (
         <>
           <p className="text-sm text-slate-600">
-            {report.data.counts.approvedReviews} đánh giá đã duyệt ·{" "}
-            {report.data.counts.pendingReviews} đánh giá chờ duyệt ·{" "}
+            {report.data.counts.approvedReviews} đánh giá đang hiển thị ·{" "}
             {report.data.counts.submittedResponses} phiếu khảo sát đã gửi ·{" "}
             {report.data.counts.textAnswers} góp ý văn bản.
           </p>
@@ -188,17 +187,16 @@ export default function FeedbackReadiness() {
             <p className="mt-1 text-xs text-slate-500">
               Hiển thị {report.data.places.length}/
               {report.data.counts.placesTotal} địa điểm công khai, ưu tiên nơi
-              đã có đánh giá. Đánh giá mới cần quản trị viên duyệt trước khi AI
-              tổng hợp.
+              đã có đánh giá. Đánh giá mới được hiển thị ngay sau khi gửi.
             </p>
             <div className="mt-3 grid max-h-[560px] gap-3 overflow-auto md:grid-cols-2">
               {report.data.places.map((place) => (
                 <div key={place.id} className="min-w-0 rounded-xl border p-4">
                   <h4 className="text-sm font-semibold">{place.name}</h4>
                   <p className="mt-1 text-xs text-slate-500">
-                    {place.approved} đã duyệt · {place.pending} chờ duyệt ·{" "}
+                    {place.approved} đang hiển thị ·{" "}
                     {place.remaining
-                      ? `Cần thêm ${place.remaining} đã duyệt để tổng hợp`
+                      ? `Cần thêm ${place.remaining} đánh giá hiển thị để tổng hợp`
                       : "Đủ điều kiện tổng hợp"}
                   </p>
                   <p className="mt-1 text-xs text-slate-500">

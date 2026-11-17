@@ -121,7 +121,7 @@ export default function ReviewSection({
             comment.trim(),
             selectedImages.map(({ file }) => file),
           )
-        ).message ?? "Đánh giá đã được gửi.",
+        ).message ?? "Đánh giá đã được đăng.",
       );
       setRating(0);
       setComment("");
@@ -247,7 +247,7 @@ export default function ReviewSection({
       <div className="grid gap-6 pt-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(300px,0.85fr)]">
         <div>
           <h3 className="mb-4 font-semibold text-gray-900">
-            Nhận xét đã được duyệt
+            Nhận xét
           </h3>
           {loading ? (
             <p className="text-sm text-gray-500">Đang tải đánh giá...</p>
@@ -269,7 +269,7 @@ export default function ReviewSection({
           data?.reviews.length === 0 &&
           !ownApprovedReview ? (
             <p className="text-sm text-gray-500">
-              Chưa có đánh giá nào được duyệt.
+              Chưa có đánh giá nào.
             </p>
           ) : null}
           <div className="space-y-3">
@@ -395,7 +395,7 @@ export default function ReviewSection({
           ) : null}
           {!authLoading && user?.role === "USER" && myReview && myReview.status !== "APPROVED" ? (
             <article className="mt-4 rounded-2xl border border-teal-100 bg-white p-4 shadow-sm">
-              <p className="text-sm font-semibold text-gray-700">{myReview.status === "PENDING" ? "Đang chờ duyệt" : "Đang ẩn"}</p>
+              <p className="text-sm font-semibold text-gray-700">{myReview.status === "PENDING" ? "Đánh giá cũ chưa được chuyển trạng thái" : "Đang ẩn"}</p>
               <p className="mt-2 text-amber-500">{"★".repeat(myReview.rating)}{"☆".repeat(5 - myReview.rating)}</p>
               <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-gray-700">{myReview.comment}</p>
               <ReviewPhotoGrid images={myReview.images ?? []} />

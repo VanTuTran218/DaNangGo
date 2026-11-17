@@ -16,6 +16,7 @@ const SCROLL_THRESHOLD = 24;
 const NAV_LINKS = [
   { href: "/", label: "Trang chủ" },
   { href: "/khampha", label: "Khám phá" },
+  { href: "/su-kien", label: "Sự kiện" },
   { href: "/luutru", label: "Lưu trú" },
   { href: "/amthuc", label: "Ẩm thực" },
   { href: "/diemdulich", label: "Điểm du lịch" },

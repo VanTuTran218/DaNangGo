@@ -34,6 +34,7 @@ import Reveal from "@/components/ui/Reveal";
 import AnimatedCounter from "@/components/ui/AnimatedCounter";
 import { Magnetic, SpotlightCard, recordSharedPlaceClick } from "@/components/ui/MotionPrimitives";
 import BudgetRecommendation from "@/components/home/BudgetRecommendation";
+import WeekendEventsSection from "@/components/home/WeekendEventsSection";
 import HomeHero from "@/components/home/HomeHero";
 import { useAuth } from "@/contexts/AuthContext";
 import { getManagedItineraries, type ManagedItineraryListItem } from "@/lib/api/itineraries";
@@ -434,6 +435,11 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* ============================================================
+          3B. WEEKEND EVENTS — "Cuối tuần này ở Đà Nẵng"
+          ============================================================ */}
+      <WeekendEventsSection />
 
       {/* ============================================================
           4. STORY — "Câu chuyện & Cảm hứng Du lịch"

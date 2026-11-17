@@ -149,7 +149,7 @@ export async function findApprovedReviews(
   };
 }
 
-export async function insertPendingReview(
+export async function insertApprovedReview(
   placeId: number,
   userId: number,
   rating: number,
@@ -192,7 +192,7 @@ export async function insertPendingReview(
       .input("comment", sql.NVarChar(1000), comment).query(`
         INSERT INTO reviews (user_id, place_id, rating, comment, status)
         OUTPUT INSERTED.review_id
-        VALUES (@user_id, @place_id, @rating, @comment, 'PENDING')
+        VALUES (@user_id, @place_id, @rating, @comment, 'APPROVED')
       `);
     const reviewId = (result.recordset[0] as { review_id: number }).review_id;
     await transaction.request()
@@ -215,6 +215,7 @@ export async function insertPendingReview(
         .query(`INSERT INTO review_images (review_id, image_order, mime_type, image_data)
           VALUES (@review_id, @image_order, @mime_type, @image_data)`);
     }
+    await recalculatePlaceReviewSummary(transaction, placeId);
     await transaction.commit();
     return { reviewId };
   } catch (error) {
@@ -340,8 +341,7 @@ export async function findAdminReviews(
     INNER JOIN places p ON p.place_id = r.place_id
     INNER JOIN users u ON u.user_id = r.user_id
     ${where}
-    ORDER BY CASE WHEN r.status = 'PENDING' THEN 0 ELSE 1 END,
-      r.created_at DESC, r.review_id DESC
+    ORDER BY r.created_at DESC, r.review_id DESC
   `);
   return attachReviewImages(
     result.recordset as Omit<AdminReviewRow, "images">[],
@@ -397,26 +397,24 @@ export async function editReviewComment(reviewId: number, comment: string): Prom
 
 export async function deleteReviewTx(
   reviewId: number,
-  opts: { clearCooldown?: boolean } = {},
 ): Promise<boolean> {
   const transaction = getPool().transaction();
   await transaction.begin();
   try {
-    // Lấy place_id và user_id trước khi xóa để có thể xóa cooldown nếu cần.
     const meta = await transaction
       .request()
       .input("review_id", sql.Int, reviewId)
       .query(
-        "SELECT place_id, user_id FROM reviews WITH (UPDLOCK, HOLDLOCK) WHERE review_id = @review_id",
+        "SELECT place_id FROM reviews WITH (UPDLOCK, HOLDLOCK) WHERE review_id = @review_id",
       );
     const row = meta.recordset[0] as
-      | { place_id: number; user_id: number }
+      | { place_id: number }
       | undefined;
     if (!row) {
       await transaction.rollback();
       return false;
     }
-    const { place_id: placeId, user_id: userId } = row;
+    const { place_id: placeId } = row;
 
     // Khóa place để cập nhật summary nhất quán với các luồng khác.
     await transaction
@@ -438,18 +436,6 @@ export async function deleteReviewTx(
     if (!result.rowsAffected[0]) {
       await transaction.rollback();
       return false;
-    }
-
-    // Nếu admin yêu cầu xóa cooldown (ví dụ: xóa review do lỗi hệ thống),
-    // user sẽ có thể review lại địa điểm đó ngay lập tức.
-    if (opts.clearCooldown) {
-      await transaction
-        .request()
-        .input("user_id", sql.Int, userId)
-        .input("place_id", sql.Int, placeId)
-        .query(
-          "DELETE FROM review_cooldowns WHERE user_id = @user_id AND place_id = @place_id",
-        );
     }
 
     await recalculatePlaceReviewSummary(transaction, placeId);
@@ -489,16 +475,7 @@ async function lockReviewPlace(
  * nếu không có review APPROVED thì cả hai bằng 0. Hàm nhận transaction đang mở từ caller,
  * không tự mở/commit/rollback transaction; lỗi truy vấn được truyền lên caller.
  *
- * Bàn giao cho Tin — luồng hiện tại:
- * - Admin: API /api/admin/reviews → controller → moderateReview → updateReviewStatusTx.
- *   Repository mở transaction, khóa review rồi place, đổi trạng thái APPROVED/HIDDEN, gọi hàm
- *   này rồi mới commit. Đây là nơi hiện tại tính lại summary cho luồng duyệt/ẩn.
- *
- * Khi thêm/đổi API duyệt hoặc ẩn, giữ việc đổi trạng thái và gọi hàm này trong cùng transaction,
- * gọi sau khi đổi trạng thái và trước commit. Nếu cập nhật review hoặc summary lỗi, rollback
- * transaction để review và summary không bị lệch. Nếu caller khác sửa/xóa review APPROVED, caller
- * đó cũng phải gọi hàm này trong transaction của thao tác. Giữ thứ tự khóa review rồi place để
- * đồng nhất với các luồng hiện có khi nhiều cập nhật cùng địa điểm chạy đồng thời.
+ * Gọi sau khi tạo, đổi trạng thái hoặc xóa review và trước commit để summary nhất quán.
  */
 export async function recalculatePlaceReviewSummary(
   transaction: sql.Transaction,

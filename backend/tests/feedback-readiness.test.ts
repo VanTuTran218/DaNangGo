@@ -37,7 +37,7 @@ test("Bốn tính năng chỉ sẵn sàng theo dữ kiện riêng của chúng",
     ...empty,
     summaryReadyPlaces: 1,
     partnerReplyReviews: 2,
-    pendingReviews: 3,
+    approvedReviews: 3,
     textAnswers: 4,
   });
   assert.deepEqual(

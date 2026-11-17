@@ -3,7 +3,7 @@ import {
   findApprovedReviews,
   findAdminReviews,
   findPlaceSummary,
-  insertPendingReview,
+  insertApprovedReview,
   isActivePlace,
   updateReviewStatusTx,
   deleteReviewTx,
@@ -104,7 +104,7 @@ export async function createReview(
       400,
       input.error.issues[0]?.message ?? "Dữ liệu đánh giá không hợp lệ.",
     );
-  const result = await insertPendingReview(
+  const result = await insertApprovedReview(
     placeId,
     userId,
     input.data.rating,
@@ -182,11 +182,8 @@ export async function moderateReview(
   return { status: parsed.data.status };
 }
 
-export async function removeReview(
-  reviewId: number,
-  opts: { clearCooldown?: boolean } = {},
-) {
-  const deleted = await deleteReviewTx(reviewId, opts);
+export async function removeReview(reviewId: number) {
+  const deleted = await deleteReviewTx(reviewId);
   if (!deleted) throw new ReviewError(404, "Không tìm thấy đánh giá.");
 }
 

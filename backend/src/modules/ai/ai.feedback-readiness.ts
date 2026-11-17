@@ -34,11 +34,11 @@ export function feedbackFeatures(counts: FeedbackCounts) {
     {
       key: "moderation",
       label: "Hỗ trợ kiểm duyệt",
-      ready: counts.pendingReviews > 0,
-      available: counts.pendingReviews,
-      unit: "đánh giá chờ duyệt",
+      ready: counts.approvedReviews > 0,
+      available: counts.approvedReviews,
+      unit: "đánh giá đang hiển thị",
       requirement:
-        "Có đánh giá chờ duyệt; quản trị viên tự quyết định sau khi đọc gợi ý AI.",
+        "Có đánh giá đang hiển thị; AI chỉ đưa ra gợi ý để quản trị viên xem xét.",
       href: "/admin/danh-gia",
     },
     {

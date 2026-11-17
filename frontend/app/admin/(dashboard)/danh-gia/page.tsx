@@ -12,14 +12,14 @@ import type { AdminReviewItem } from "@/types/admin";
 import DataTable, { Column } from "@/components/ui/DataTable";
 import StatusBadge from "@/components/ui/StatusBadge";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
-import { Check, Eye, EyeOff, Pencil, Trash2, Star, X, XCircle } from "lucide-react";
+import { Eye, EyeOff, Pencil, Trash2, Star, X } from "lucide-react";
 import { AiModeration } from "@/components/ai/AiTools";
 import ReviewPhotoGrid from "@/components/places/ReviewPhotoGrid";
 
 export default function AdminReviewsPage() {
   const [starFilter, setStarFilter] = useState<number | "ALL">("ALL");
   const [statusFilter, setStatusFilter] = useState<
-    "ALL" | "PENDING" | "APPROVED" | "HIDDEN"
+    "ALL" | "APPROVED" | "HIDDEN"
   >("ALL");
   const [deletingReview, setDeletingReview] = useState<AdminReviewItem | null>(
     null,
@@ -140,7 +140,7 @@ export default function AdminReviewsPage() {
     {
       key: "status",
       header: "Trạng thái",
-      render: (r) => <StatusBadge status={r.status} />,
+      render: (r) => <StatusBadge status={r.status} customLabel={r.status === "APPROVED" ? "Đang hiển thị" : r.status === "HIDDEN" ? "Đang ẩn" : "Trạng thái cũ"} />,
     },
     {
       key: "createdAt",
@@ -162,36 +162,15 @@ export default function AdminReviewsPage() {
           >
             <Pencil className="w-4 h-4" />
           </button>
-          {r.status === "PENDING" ? (
-            <>
-              <button
-                onClick={() => handleToggleStatus(r)}
-                disabled={actionLoading}
-                title="Duyệt đánh giá"
-                aria-label="Duyệt đánh giá"
-                className="p-1.5 rounded-lg text-teal-700 hover:bg-teal-50 disabled:opacity-50"
-              >
-                <Check className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => void handleSetStatus(r, "HIDDEN")}
-                disabled={actionLoading}
-                title="Từ chối đánh giá"
-                aria-label="Từ chối đánh giá"
-                className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 disabled:opacity-50"
-              >
-                <XCircle className="w-4 h-4" />
-              </button>
-            </>
-          ) : (
+          {r.status !== "PENDING" ? (
             <button
               onClick={() => handleToggleStatus(r)}
               disabled={actionLoading}
               title={
-                r.status === "APPROVED" ? "Ẩn đánh giá" : "Duyệt lại đánh giá"
+                r.status === "APPROVED" ? "Ẩn đánh giá" : "Hiển thị lại đánh giá"
               }
               aria-label={
-                r.status === "APPROVED" ? "Ẩn đánh giá" : "Duyệt lại đánh giá"
+                r.status === "APPROVED" ? "Ẩn đánh giá" : "Hiển thị lại đánh giá"
               }
               className={`p-1.5 rounded-lg transition-colors ${r.status === "APPROVED" ? "text-amber-600 hover:bg-amber-50" : "text-teal-600 hover:bg-teal-50"}`}
             >
@@ -201,7 +180,7 @@ export default function AdminReviewsPage() {
                 <Eye className="w-4 h-4" />
               )}
             </button>
-          )}
+          ) : null}
           <button
             onClick={() => setDeletingReview(r)}
             title="Xóa vĩnh viễn"
@@ -218,11 +197,10 @@ export default function AdminReviewsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">
-          Kiểm duyệt đánh giá
+          Quản lý đánh giá
         </h1>
         <p className="text-sm text-gray-500">
-          Duyệt đánh giá của người dùng trước khi hiển thị trên trang chi tiết
-          địa điểm.
+          Đánh giá được hiển thị ngay sau khi gửi. Bạn có thể sửa, ẩn, hiện lại hoặc xóa.
         </p>
       </div>
 
@@ -291,9 +269,8 @@ export default function AdminReviewsPage() {
                 className="px-3 py-2 text-xs font-semibold bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
               >
                 <option value="ALL">Tất cả trạng thái</option>
-                <option value="PENDING">Chờ duyệt</option>
-                <option value="APPROVED">Đã duyệt</option>
-                <option value="HIDDEN">Đã từ chối / ẩn</option>
+                <option value="APPROVED">Đang hiển thị</option>
+                <option value="HIDDEN">Đang ẩn</option>
               </select>
             </>
           }

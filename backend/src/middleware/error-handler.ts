@@ -21,6 +21,19 @@ export const errorHandler: ErrorRequestHandler = (error: unknown, _req, res, _ne
     });
     return;
   }
+  // Xử lý custom error objects (throw { statusCode, message, errors })
+  if (typeof error === 'object' && error !== null && 'statusCode' in error) {
+    const err = error as { statusCode: number; message: string; errors?: Record<string, string> };
+    const response: { success: boolean; message: string; errors?: Record<string, string> } = {
+      success: false,
+      message: err.message,
+    };
+    if (err.errors) {
+      response.errors = err.errors;
+    }
+    res.status(err.statusCode).json(response);
+    return;
+  }
   console.error('Lỗi API:', error);
   res.status(500).json({ success: false, message: 'Đã xảy ra lỗi máy chủ. Vui lòng thử lại sau.' });
 };

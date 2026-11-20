@@ -28,6 +28,7 @@ import recommendationsRouter from './modules/recommendations/recommendations.rou
 import chatRouter from './modules/chat/chat.routes';
 import { surveysRouter,adminSurveysRouter } from './modules/surveys/surveys.routes';
 import { aiRouter } from './modules/ai/ai.routes';
+import { eventsPublicRouter, eventsAdminRouter } from './modules/events/events.routes';
 import { csrfProtection } from './middleware/csrf.middleware';
 import { errorHandler } from './middleware/error-handler';
 
@@ -72,6 +73,8 @@ app.use('/api/chat', chatRouter);
 app.use('/api/ai', aiRouter);
 app.use('/api/surveys', surveysRouter);
 app.use('/api/admin/surveys', adminSurveysRouter);
+app.use('/api/events', eventsPublicRouter);
+app.use('/api/admin/events', eventsAdminRouter);
 app.use('/api/recommendations', recommendationsRouter);
 app.use('/api/places', placesRouter);
 app.use('/api/admin/reviews', adminReviewsRouter);

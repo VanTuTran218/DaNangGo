@@ -112,6 +112,11 @@ export default function PartnerPlacesPage() {
     }
   };
 
+  const isStayPartner = profile?.serviceType === 'STAY';
+  const isTicketPartner = profile?.serviceType === 'TICKET';
+  const isSelectedAccommodation =
+    selectedPlace?.category === 'luutru' || selectedPlace?.placeType === 'ACCOMMODATION';
+
   return (
     <div className="space-y-6">
       <ToastNotification toast={toast} onClose={() => setToast(null)} />
@@ -122,13 +127,25 @@ export default function PartnerPlacesPage() {
           { label: 'Partner', href: '/partner' },
           { label: 'Cơ sở của tôi' },
         ]}
-        title="Danh sách quán của tôi"
-        description="Theo dõi hoạt động, quản lý hiển thị và cập nhật thông tin các quán ăn, nhà hàng của bạn."
+        title={
+          isStayPartner
+            ? 'Danh sách cơ sở lưu trú'
+            : isTicketPartner
+            ? 'Danh sách điểm tham quan'
+            : 'Danh sách cơ sở của tôi'
+        }
+        description={
+          isStayPartner
+            ? 'Theo dõi hoạt động, quản lý hiển thị và cập nhật thông tin các khách sạn, homestay, resort của bạn.'
+            : isTicketPartner
+            ? 'Theo dõi hoạt động, quản lý hiển thị và cập nhật thông tin các điểm tham quan, trải nghiệm du lịch của bạn.'
+            : 'Theo dõi hoạt động, quản lý hiển thị và cập nhật thông tin các cơ sở dịch vụ ẩm thực, lưu trú của bạn.'
+        }
         backgroundImage="/images/partner/danang-dragon-bridge-night.jpg"
         action={
           !isLocked
             ? {
-                label: '+ Thêm quán mới',
+                label: isStayPartner ? '+ Thêm nơi lưu trú mới' : '+ Thêm cơ sở mới',
                 href: '/partner/co-so/tao-moi',
                 icon: <Plus className="w-4 h-4" />,
               }
@@ -142,6 +159,7 @@ export default function PartnerPlacesPage() {
         active={stats.active}
         pending={stats.pending}
         locked={stats.locked}
+        serviceType={profile?.serviceType}
       />
 
       {/* 3. Thanh tìm kiếm và bộ lọc trạng thái */}
@@ -151,7 +169,11 @@ export default function PartnerPlacesPage() {
             type="text"
             value={searchKeyword}
             onChange={(e) => setSearchKeyword(e.target.value)}
-            placeholder="Tìm kiếm theo tên quán, địa chỉ..."
+            placeholder={
+              isStayPartner
+                ? 'Tìm kiếm theo tên khách sạn, nơi lưu trú, địa chỉ...'
+                : 'Tìm kiếm theo tên cơ sở, địa chỉ...'
+            }
             className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm text-[#14233B] placeholder:text-[#68798A]/80 bg-[#F6FAFA] border border-[#E2ECEC] rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/30 focus:border-[#14B8A6] transition-all"
           />
           <Search className="w-4 h-4 text-[#68798A] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -171,6 +193,7 @@ export default function PartnerPlacesPage() {
         error={error}
         onReload={reload}
         isAccountLocked={isLocked}
+        serviceType={profile?.serviceType}
         onSelectDetail={setSelectedPlace}
         onToggleStatus={openToggleConfirm}
       />
@@ -187,11 +210,11 @@ export default function PartnerPlacesPage() {
         onClose={() => setConfirmDialog({ isOpen: false, place: null, targetStatus: 'HIDDEN' })}
         onConfirm={handleConfirmToggleStatus}
         loading={actionLoading}
-        title={confirmDialog.targetStatus === 'HIDDEN' ? 'Ẩn quán ăn này' : 'Mở hiển thị quán ăn'}
+        title={confirmDialog.targetStatus === 'HIDDEN' ? 'Ẩn cơ sở này' : 'Mở hiển thị cơ sở'}
         description={
           confirmDialog.targetStatus === 'HIDDEN'
             ? `Bạn có chắc chắn muốn ẩn cơ sở "${confirmDialog.place?.name}"? Địa điểm này sẽ tạm ngừng xuất hiện trên các trang tìm kiếm công khai của du khách.`
-            : `Bạn có muốn mở hiển thị lại cơ sở "${confirmDialog.place?.name}" trên DaNangGo để khách du lịch tìm kiếm và đặt bàn?`
+            : `Bạn có muốn mở hiển thị lại cơ sở "${confirmDialog.place?.name}" trên DaNangGo để khách du lịch tìm kiếm và đặt chỗ?`
         }
         confirmText={confirmDialog.targetStatus === 'HIDDEN' ? 'Xác nhận Ẩn' : 'Mở hiển thị'}
         cancelText="Hủy bỏ"
@@ -236,16 +259,19 @@ export default function PartnerPlacesPage() {
                   {selectedPlace.description || 'Chưa có mô tả chi tiết.'}
                 </p>
                 <p>
-                  <span className="font-bold text-[#68798A]">Khoảng giá:</span>{' '}
+                  <span className="font-bold text-[#68798A]">
+                    {isSelectedAccommodation ? 'Giá từ:' : 'Khoảng giá:'}
+                  </span>{' '}
                   <span className="font-bold text-[#FF8A24]">
                     ₫{selectedPlace.priceMin?.toLocaleString('vi-VN') || 0}{' '}
                     {selectedPlace.priceMax
                       ? `- ₫${selectedPlace.priceMax.toLocaleString('vi-VN')}`
                       : ''}
+                    {isSelectedAccommodation ? ' / đêm' : ''}
                   </span>
                 </p>
                 <p>
-                  <span className="font-bold text-[#68798A]">Giờ mở cửa:</span>{' '}
+                  <span className="font-bold text-[#68798A]">Giờ phục vụ:</span>{' '}
                   {selectedPlace.openHours}
                 </p>
                 <p>
@@ -254,7 +280,9 @@ export default function PartnerPlacesPage() {
                 </p>
                 {selectedPlace.bookingUrl && (
                   <p>
-                    <span className="font-bold text-[#68798A]">URL đặt bàn:</span>{' '}
+                    <span className="font-bold text-[#68798A]">
+                      {isSelectedAccommodation ? 'URL đặt phòng:' : 'URL đặt bàn:'}
+                    </span>{' '}
                     <a
                       href={selectedPlace.bookingUrl}
                       target="_blank"

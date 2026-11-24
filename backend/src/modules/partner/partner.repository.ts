@@ -19,6 +19,7 @@ export interface PartnerProfileRow {
 
 export interface PartnerPlaceRow {
   place_id: number;
+  place_type?: string | null;
   name: string;
   description: string | null;
   address: string | null;
@@ -41,6 +42,9 @@ export interface PartnerPlaceRow {
   cuisine_name: string | null;
   price_min: number | null;
   price_max: number | null;
+  accommodation_type?: string | null;
+  star_rating?: number | null;
+  acc_price_from?: number | null;
   images?: string[];
 }
 
@@ -168,6 +172,7 @@ export async function findPlacesByPartnerId(
   const result = await req.query<PartnerPlaceRow>(`
     SELECT 
       p.place_id,
+      p.place_type,
       p.name,
       p.description,
       p.address,
@@ -189,9 +194,13 @@ export async function findPlacesByPartnerId(
       r.cuisine_id,
       c.name AS cuisine_name,
       r.price_min,
-      r.price_max
+      r.price_max,
+      a.accommodation_type,
+      a.star_rating,
+      (SELECT MIN(rt.price_per_night) FROM dbo.room_types rt WHERE rt.place_id = p.place_id AND rt.status = 'ACTIVE') AS acc_price_from
     FROM places p
     LEFT JOIN restaurants r ON r.place_id = p.place_id
+    LEFT JOIN accommodations a ON a.place_id = p.place_id
     LEFT JOIN districts d ON d.district_id = p.district_id
     LEFT JOIN cuisines c ON c.cuisine_id = r.cuisine_id
     WHERE p.partner_id = @partnerId
@@ -237,6 +246,7 @@ export async function findPlaceByPartnerAndPlaceId(
     .query<PartnerPlaceRow>(`
       SELECT 
         p.place_id,
+        p.place_type,
         p.name,
         p.description,
         p.address,
@@ -258,9 +268,13 @@ export async function findPlaceByPartnerAndPlaceId(
         r.cuisine_id,
         c.name AS cuisine_name,
         r.price_min,
-        r.price_max
+        r.price_max,
+        a.accommodation_type,
+        a.star_rating,
+        (SELECT MIN(rt.price_per_night) FROM dbo.room_types rt WHERE rt.place_id = p.place_id AND rt.status = 'ACTIVE') AS acc_price_from
       FROM places p
       LEFT JOIN restaurants r ON r.place_id = p.place_id
+      LEFT JOIN accommodations a ON a.place_id = p.place_id
       LEFT JOIN districts d ON d.district_id = p.district_id
       LEFT JOIN cuisines c ON c.cuisine_id = r.cuisine_id
       WHERE p.partner_id = @partnerId AND p.place_id = @placeId

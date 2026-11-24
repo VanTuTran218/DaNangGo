@@ -2,13 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Store, CheckCircle2, Clock, Lock } from 'lucide-react';
+import { Store, Building2, CheckCircle2, Clock, Lock } from 'lucide-react';
+import type { ServiceType } from '@/types/partner';
 
 interface StatsRowProps {
   total: number;
   active: number;
   pending: number;
   locked: number;
+  serviceType?: ServiceType;
 }
 
 function Counter({ target }: { target: number }) {
@@ -42,13 +44,22 @@ function Counter({ target }: { target: number }) {
   return <span>{count.toLocaleString('vi-VN')}</span>;
 }
 
-export default function StatsRow({ total, active, pending, locked }: StatsRowProps) {
+export default function StatsRow({ total, active, pending, locked, serviceType }: StatsRowProps) {
+  const totalTitle =
+    serviceType === 'STAY'
+      ? 'Tổng cơ sở lưu trú'
+      : serviceType === 'TICKET'
+      ? 'Tổng điểm tham quan'
+      : serviceType === 'TABLE'
+      ? 'Tổng quán ăn'
+      : 'Tổng cơ sở';
+
   const items = [
     {
-      title: 'Tổng quán ăn',
+      title: totalTitle,
       value: total,
       desc: 'Cơ sở đã đăng ký',
-      icon: Store,
+      icon: serviceType === 'STAY' ? Building2 : Store,
       iconBg: 'bg-[#E9F8F5] text-[#008F89] border-[#BDE8E0]',
       accentBar: 'bg-[#008F89]',
     },

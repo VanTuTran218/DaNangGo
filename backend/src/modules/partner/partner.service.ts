@@ -61,22 +61,26 @@ export async function updatePartnerProfile(
 }
 
 export function mapPartnerPlace(row: PartnerPlaceRow) {
+  const isAccommodation = row.place_type === 'ACCOMMODATION';
+  const isAttraction = row.place_type === 'ATTRACTION';
   return {
     id: String(row.place_id),
     placeId: row.place_id,
     name: row.name,
-    category: 'amthuc' as const,
-    placeType: 'RESTAURANT',
+    category: isAccommodation ? ('luutru' as const) : isAttraction ? ('diemdulich' as const) : ('amthuc' as const),
+    placeType: (row.place_type || 'RESTAURANT') as 'RESTAURANT' | 'ACCOMMODATION' | 'ATTRACTION',
+    accommodationType: isAccommodation ? (row.accommodation_type || 'HOTEL') : undefined,
+    starRating: isAccommodation ? (row.star_rating ?? undefined) : undefined,
     description: row.description || '',
     address: row.address || '',
     area: row.district_name || 'Đà Nẵng',
     districtId: row.district_id,
     cuisineId: row.cuisine_id,
     cuisineName: row.cuisine_name,
-    priceMin: row.price_min ?? 0,
-    priceMax: row.price_max ?? undefined,
-    priceUnit: 'món',
-    openHours: '08:00 - 22:00',
+    priceMin: isAccommodation ? Number(row.acc_price_from ?? row.price_min ?? 0) : (row.price_min ?? 0),
+    priceMax: isAccommodation ? undefined : (row.price_max ?? undefined),
+    priceUnit: isAccommodation ? 'đêm' : 'món',
+    openHours: isAccommodation ? '24/7' : '08:00 - 22:00',
     openDays: ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ Nhật'],
     amenities: ['Wifi miễn phí', 'Điều hòa', 'Thanh toán thẻ'],
     images:

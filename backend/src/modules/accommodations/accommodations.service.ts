@@ -224,10 +224,13 @@ export async function listMine(actor: Actor) {
     .request()
     .input("partnerId", sql.Int, actor.partnerId).query(`
     SELECT p.place_id, p.name, p.status, p.view_count, p.avg_rating, p.review_count,
+           a.accommodation_type,
            MIN(rt.price_per_night) AS price_from
-    FROM dbo.places p LEFT JOIN dbo.room_types rt ON rt.place_id = p.place_id AND rt.status = 'ACTIVE'
+    FROM dbo.places p
+    LEFT JOIN dbo.accommodations a ON a.place_id = p.place_id
+    LEFT JOIN dbo.room_types rt ON rt.place_id = p.place_id AND rt.status = 'ACTIVE'
     WHERE p.place_type = 'ACCOMMODATION' AND (@partnerId IS NULL OR p.partner_id = @partnerId)
-    GROUP BY p.place_id, p.name, p.status, p.view_count, p.avg_rating, p.review_count
+    GROUP BY p.place_id, p.name, p.status, p.view_count, p.avg_rating, p.review_count, a.accommodation_type
     ORDER BY p.place_id DESC`);
   return r.recordset;
 }

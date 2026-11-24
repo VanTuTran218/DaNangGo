@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import type { PartnerPlace } from '@/types/partner';
+import type { PartnerPlace, ServiceType } from '@/types/partner';
 import PartnerStatusBadge from '@/components/partner/PartnerStatusBadge';
 import {
   Eye,
@@ -15,6 +15,7 @@ import {
   MapPin,
   Utensils,
   UtensilsCrossed,
+  Bed,
   Plus,
   RefreshCw,
   AlertCircle,
@@ -26,6 +27,7 @@ interface PlacesTableProps {
   error?: string | null;
   onReload?: () => void;
   isAccountLocked?: boolean;
+  serviceType?: ServiceType;
   onSelectDetail: (place: PartnerPlace) => void;
   onToggleStatus: (place: PartnerPlace, targetStatus: 'ACTIVE' | 'HIDDEN') => void;
 }
@@ -36,6 +38,7 @@ export default function PlacesTable({
   error = null,
   onReload,
   isAccountLocked = false,
+  serviceType = 'TABLE',
   onSelectDetail,
   onToggleStatus,
 }: PlacesTableProps) {
@@ -108,12 +111,20 @@ export default function PlacesTable({
         </div>
 
         <div className="relative z-10 w-16 h-16 rounded-full bg-[#E9F8F5] border border-[#BDE8E0] text-[#008F89] flex items-center justify-center mx-auto">
-          <Utensils className="w-7 h-7" />
+          {serviceType === 'STAY' ? <Bed className="w-7 h-7" /> : <Utensils className="w-7 h-7" />}
         </div>
         <div className="relative z-10 max-w-md mx-auto">
-          <h3 className="text-lg font-bold text-[#14233B]">Chưa có quán ăn nào</h3>
+          <h3 className="text-lg font-bold text-[#14233B]">
+            {serviceType === 'STAY'
+              ? 'Chưa có cơ sở lưu trú nào'
+              : serviceType === 'TICKET'
+              ? 'Chưa có điểm tham quan nào'
+              : 'Chưa có quán ăn nào'}
+          </h3>
           <p className="text-xs sm:text-sm text-[#68798A] mt-1.5 leading-relaxed">
-            Bạn chưa đăng tải cơ sở nào trong danh mục hoặc trạng thái này. Hãy bắt đầu bằng cách thêm quán đầu tiên để đón khách du lịch Đà Nẵng!
+            {serviceType === 'STAY'
+              ? 'Bạn chưa đăng tải cơ sở lưu trú nào trong danh mục hoặc trạng thái này. Hãy bắt đầu bằng cách thêm nơi lưu trú đầu tiên để đón khách du lịch Đà Nẵng!'
+              : 'Bạn chưa đăng tải cơ sở nào trong danh mục hoặc trạng thái này. Hãy bắt đầu bằng cách thêm cơ sở đầu tiên để đón khách du lịch Đà Nẵng!'}
           </p>
         </div>
         {!isAccountLocked && (
@@ -122,7 +133,8 @@ export default function PlacesTable({
               href="/partner/co-so/tao-moi"
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#FF8A24] hover:bg-[#f07b16] text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-[#FF8A24]/20 active:scale-95"
             >
-              <Plus className="w-4 h-4" /> Thêm quán đầu tiên
+              <Plus className="w-4 h-4" />{' '}
+              {serviceType === 'STAY' ? 'Thêm cơ sở lưu trú đầu tiên' : 'Thêm quán đầu tiên'}
             </Link>
           </div>
         )}
@@ -140,6 +152,7 @@ export default function PlacesTable({
             const isPlaceLocked = place.status === 'LOCKED';
             const isActive = place.status === 'ACTIVE' || place.status === 'APPROVED';
             const isHidden = place.status === 'HIDDEN';
+            const isAcc = place.category === 'luutru' || place.placeType === 'ACCOMMODATION';
 
             return (
               <motion.div
@@ -157,7 +170,7 @@ export default function PlacesTable({
                       <Image src={place.images[0]} alt={place.name} fill className="object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-[#008F89] font-bold text-xs bg-[#E9F8F5]">
-                        <Utensils className="w-5 h-5" />
+                        {isAcc ? <Bed className="w-5 h-5" /> : <Utensils className="w-5 h-5" />}
                       </div>
                     )}
                   </div>
@@ -173,6 +186,7 @@ export default function PlacesTable({
                     <p className="text-xs font-bold text-[#FF8A24] mt-1">
                       ₫{place.priceMin?.toLocaleString('vi-VN') || 0}{' '}
                       {place.priceMax ? `- ₫${place.priceMax.toLocaleString('vi-VN')}` : ''}
+                      {isAcc ? ' / đêm' : ''}
                     </p>
                   </div>
                 </div>
@@ -195,7 +209,7 @@ export default function PlacesTable({
                     {isPlaceLocked ? (
                       <button
                         disabled
-                        title="Quán đang bị Admin khóa"
+                        title="Cơ sở đang bị Admin khóa"
                         className="p-2 rounded-xl bg-rose-50 text-rose-400 cursor-not-allowed"
                       >
                         <Lock className="w-4 h-4" />
@@ -218,11 +232,11 @@ export default function PlacesTable({
 
                     {!isAccountLocked && (
                       <Link
-                        href={`/partner/co-so/${place.id}/sua?tab=menu`}
-                        title="Quản lý thực đơn món ăn"
+                        href={`/partner/co-so/${place.id}/sua?tab=${isAcc ? 'rooms' : 'menu'}`}
+                        title={isAcc ? 'Quản lý loại phòng & bảng giá' : 'Quản lý thực đơn món ăn'}
                         className="p-2 rounded-xl bg-[#E9F8F5] text-[#008F89] hover:bg-[#BDE8E0]/50 active:scale-95"
                       >
-                        <UtensilsCrossed className="w-4 h-4" />
+                        {isAcc ? <Bed className="w-4 h-4" /> : <UtensilsCrossed className="w-4 h-4" />}
                       </Link>
                     )}
 
@@ -261,7 +275,7 @@ export default function PlacesTable({
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="border-b border-[#E2ECEC] bg-[#EEF7F6]/90 text-[#073B3A] uppercase text-[11px] font-bold tracking-wider">
-              <th className="py-4 px-6">Tên cơ sở / Ẩm thực</th>
+              <th className="py-4 px-6">Tên cơ sở & Phân loại</th>
               <th className="py-4 px-4 text-center">Trạng thái</th>
               <th className="py-4 px-4 text-center">Lượt xem</th>
               <th className="py-4 px-6 text-right">Thao tác</th>
@@ -273,6 +287,7 @@ export default function PlacesTable({
                 const isPlaceLocked = place.status === 'LOCKED';
                 const isActive = place.status === 'ACTIVE' || place.status === 'APPROVED';
                 const isHidden = place.status === 'HIDDEN';
+                const isAcc = place.category === 'luutru' || place.placeType === 'ACCOMMODATION';
 
                 return (
                   <motion.tr
@@ -297,7 +312,7 @@ export default function PlacesTable({
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-[#008F89] font-bold text-xs bg-[#E9F8F5]">
-                              <Utensils className="w-5 h-5" />
+                              {isAcc ? <Bed className="w-5 h-5" /> : <Utensils className="w-5 h-5" />}
                             </div>
                           )}
                         </div>
@@ -317,12 +332,25 @@ export default function PlacesTable({
                               {place.priceMax
                                 ? `- ₫${place.priceMax.toLocaleString('vi-VN')}`
                                 : ''}
+                              {isAcc ? ' / đêm' : ''}
                             </span>
-                            {place.cuisineName && (
+                            {place.cuisineName ? (
                               <span className="text-[11px] font-semibold text-[#008F89] bg-[#E9F8F5] border border-[#BDE8E0]/80 px-2.5 py-0.5 rounded-lg">
                                 {place.cuisineName}
                               </span>
-                            )}
+                            ) : isAcc ? (
+                              <span className="text-[11px] font-semibold text-[#008F89] bg-[#E9F8F5] border border-[#BDE8E0]/80 px-2.5 py-0.5 rounded-lg">
+                                {place.accommodationType === 'HOMESTAY'
+                                  ? 'Homestay'
+                                  : place.accommodationType === 'RESORT'
+                                  ? 'Resort'
+                                  : place.accommodationType === 'HOSTEL'
+                                  ? 'Hostel'
+                                  : place.accommodationType === 'APARTMENT'
+                                  ? 'Căn hộ'
+                                  : 'Khách sạn'}
+                              </span>
+                            ) : null}
                           </div>
                         </div>
                       </div>
@@ -375,7 +403,7 @@ export default function PlacesTable({
                                   transition={{ duration: 0.15 }}
                                   className="absolute bottom-full right-0 mb-2 z-50 w-52 p-2.5 bg-[#14233B] text-white text-[11px] font-semibold rounded-xl shadow-xl text-center leading-snug pointer-events-none"
                                 >
-                                  Quán đang bị Admin khóa - không thể chỉnh sửa
+                                  Cơ sở đang bị Admin khóa - không thể chỉnh sửa
                                   <div className="absolute top-full right-3 border-4 border-transparent border-t-[#14233B]" />
                                 </motion.div>
                               )}
@@ -393,21 +421,21 @@ export default function PlacesTable({
                         ) : (
                           <Link
                             href={`/partner/co-so/${place.id}/sua`}
-                            title="Chỉnh sửa quán"
+                            title="Chỉnh sửa cơ sở"
                             className="w-9 h-9 rounded-xl inline-flex items-center justify-center text-[#087CB2] bg-sky-50 border border-sky-200/80 hover:bg-sky-100 active:scale-95 transition-all"
                           >
                             <Edit3 className="w-4 h-4" />
                           </Link>
                         )}
 
-                        {/* Nút Quản lý thực đơn */}
+                        {/* Nút Quản lý thực đơn hoặc loại phòng */}
                         {!isAccountLocked && (
                           <Link
-                            href={`/partner/co-so/${place.id}/sua?tab=menu`}
-                            title="Quản lý thực đơn món ăn (Tự động đồng bộ giá)"
+                            href={`/partner/co-so/${place.id}/sua?tab=${isAcc ? 'rooms' : 'menu'}`}
+                            title={isAcc ? 'Quản lý loại phòng & bảng giá' : 'Quản lý thực đơn món ăn (Tự động đồng bộ giá)'}
                             className="w-9 h-9 rounded-xl inline-flex items-center justify-center text-[#008F89] bg-[#E9F8F5] border border-[#BDE8E0] hover:bg-[#008F89] hover:text-white active:scale-95 transition-all"
                           >
-                            <UtensilsCrossed className="w-4 h-4" />
+                            {isAcc ? <Bed className="w-4 h-4" /> : <UtensilsCrossed className="w-4 h-4" />}
                           </Link>
                         )}
 
@@ -416,7 +444,7 @@ export default function PlacesTable({
                           <button
                             disabled
                             type="button"
-                            title="Quán đang bị Admin khóa - Chỉ Admin mới có quyền mở khóa"
+                            title="Cơ sở đang bị Admin khóa - Chỉ Admin mới có quyền mở khóa"
                             className="w-9 h-9 rounded-xl inline-flex items-center justify-center bg-slate-100 text-slate-300 cursor-not-allowed"
                           >
                             <Lock className="w-4 h-4 text-slate-300" />
@@ -432,7 +460,7 @@ export default function PlacesTable({
                         ) : isActive ? (
                           <button
                             onClick={() => onToggleStatus(place, 'HIDDEN')}
-                            title="Ẩn quán này khỏi website"
+                            title="Ẩn cơ sở này khỏi website"
                             type="button"
                             className="inline-flex items-center gap-1.5 h-9 px-3 rounded-xl bg-amber-50 border border-amber-200/90 text-amber-700 hover:bg-amber-100 font-bold text-xs transition-all active:scale-95"
                           >
@@ -442,7 +470,7 @@ export default function PlacesTable({
                         ) : isHidden ? (
                           <button
                             onClick={() => onToggleStatus(place, 'ACTIVE')}
-                            title="Mở hiển thị lại quán trên website"
+                            title="Mở hiển thị lại cơ sở trên website"
                             type="button"
                             className="inline-flex items-center gap-1.5 h-9 px-3 rounded-xl bg-[#E9F8F5] border border-[#BDE8E0] text-[#008F89] hover:bg-[#008F89] hover:text-white font-bold text-xs transition-all active:scale-95"
                           >
@@ -453,7 +481,7 @@ export default function PlacesTable({
                           <button
                             disabled
                             type="button"
-                            title="Quán đang chờ phê duyệt"
+                            title="Cơ sở đang chờ phê duyệt"
                             className="w-9 h-9 rounded-xl inline-flex items-center justify-center bg-amber-50 text-amber-400 cursor-not-allowed"
                           >
                             <Clock className="w-4 h-4" />

@@ -1,6 +1,6 @@
 import type { User, UserRole } from "@/types/user";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export interface ApiEnvelope<T> {
   success: boolean;
@@ -10,13 +10,18 @@ export interface ApiEnvelope<T> {
 }
 
 export class ApiError extends Error {
+  readonly status: number;
+  readonly raw?: Record<string, unknown>;
+
   constructor(
     message: string,
-    public readonly status: number,
-    public readonly raw?: Record<string, unknown>,
+    status: number,
+    raw?: Record<string, unknown>,
   ) {
     super(message);
     this.name = "ApiError";
+    this.status = status;
+    this.raw = raw;
   }
 }
 

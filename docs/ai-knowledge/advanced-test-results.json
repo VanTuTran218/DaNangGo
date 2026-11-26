@@ -4,20 +4,20 @@
   "tests": 12,
   "results": [
     {
-      "test": "So sánh cơ sở thật, không bịa giá",
-      "question": "So sánh Hilton với Furama",
-      "answer": "Gô so sánh Hilton Da Nang và Furama Resort Danang từ dữ liệu DaNangGo. Ô còn thiếu giữ nguyên là chưa có dữ liệu. Bạn ưu tiên giá, khu vực hay thời lượng để Gô giúp cân nhắc?",
+      "test": "So sánh hai cơ sở thật, không bịa giá",
+      "question": "So sánh Banana Flower Homestay với Dolphin Hotel and Apartment",
+      "answer": "Gô so sánh Banana Flower Homestay và Dolphin Hotel and Apartment từ dữ liệu DaNangGo. Ô còn thiếu giữ nguyên là chưa có dữ liệu. Bạn ưu tiên giá, khu vực hay thời lượng để Gô giúp cân nhắc?",
       "plan": false,
       "comparison": true,
-      "durationMs": 119
+      "durationMs": 109
     },
     {
       "test": "So sánh tham chiếu hai cơ sở ở lượt trước",
       "question": "So sánh hai chỗ này",
-      "answer": "Gô so sánh Hilton Da Nang và Furama Resort Danang từ dữ liệu DaNangGo. Ô còn thiếu giữ nguyên là chưa có dữ liệu. Bạn ưu tiên giá, khu vực hay thời lượng để Gô giúp cân nhắc?",
+      "answer": "Gô so sánh Banana Flower Homestay và Dolphin Hotel and Apartment từ dữ liệu DaNangGo. Ô còn thiếu giữ nguyên là chưa có dữ liệu. Bạn ưu tiên giá, khu vực hay thời lượng để Gô giúp cân nhắc?",
       "plan": false,
       "comparison": true,
-      "durationMs": 9
+      "durationMs": 17
     },
     {
       "test": "Tên không tồn tại không tạo địa điểm",
@@ -25,7 +25,7 @@
       "answer": "Gô chưa xác định duy nhất cả hai địa điểm trong dữ liệu công khai. Bạn nêu tên đầy đủ/chi nhánh; Gô chưa dựng bảng để tránh so nhầm cơ sở.",
       "plan": false,
       "comparison": false,
-      "durationMs": 4
+      "durationMs": 7
     },
     {
       "test": "Lập lịch nền từ SQL thật",
@@ -33,7 +33,7 @@
       "answer": "Gô lên trước lịch 3 ngày cho 2 người, tổng ngân sách bạn đưa ra 6.000.000đ. Các buổi được cân đối theo giờ đến/về và nhịp đi bạn đã cung cấp; buổi không còn thời gian sẽ không xếp hoạt động.\n\nĐể chỉnh lịch sát hơn, bạn bổ sung giúp Gô:\n• Bạn di chuyển bằng ô tô, xe máy, taxi, xe buýt hay đi bộ?",
       "plan": true,
       "comparison": false,
-      "durationMs": 82
+      "durationMs": 58
     },
     {
       "test": "Bỏ mục ngày 2, giữ nguyên ngày 1 và 3",
@@ -41,7 +41,7 @@
       "answer": "Đã bỏ Danh Thắng Ngũ Hành Sơn khỏi ngày 2. Các mục khác được giữ nguyên; Gô đã tính lại chi phí vé, khoản dự phòng vẫn giữ.",
       "plan": true,
       "comparison": false,
-      "durationMs": 29
+      "durationMs": 34
     },
     {
       "test": "Đổi phương tiện không làm lại lịch đã chỉnh",
@@ -49,7 +49,7 @@
       "answer": "Đã cập nhật giờ/phương tiện và giữ các chỉnh sửa trước đó. Chưa tự thêm điểm để lấp giờ trống.",
       "plan": true,
       "comparison": false,
-      "durationMs": 5
+      "durationMs": 4
     },
     {
       "test": "Chỉ thay bữa trưa ngày 2",
@@ -57,7 +57,7 @@
       "answer": "Đã thay Hải Sản Tươi Sống Mỹ Khê bằng Bánh Xèo Bà Ba vào ngày 2, buổi trưa. Những mục khác giữ nguyên. Chi phí vé được tính lại từ dữ liệu đã biết; các khoản chưa biết vẫn để chưa xác định.",
       "plan": true,
       "comparison": false,
-      "durationMs": 14
+      "durationMs": 11
     },
     {
       "test": "Chuyển mục cụ thể sang buổi trống",
@@ -65,7 +65,7 @@
       "answer": "Đã chuyển Bãi Biển Mỹ Khê sang ngày 2, buổi sáng. Các ngày và mục khác được giữ nguyên; thời gian này vẫn là đề xuất, cần kiểm tra giờ hoạt động.",
       "plan": true,
       "comparison": false,
-      "durationMs": 8
+      "durationMs": 12
     },
     {
       "test": "Tham chiếu mơ hồ phải hỏi lại",
@@ -81,7 +81,7 @@
       "answer": "Lịch hiện có 3 ngày; ngày cần sửa chưa hợp lệ. Gô giữ nguyên lịch.",
       "plan": false,
       "comparison": false,
-      "durationMs": 5
+      "durationMs": 10
     },
     {
       "test": "Reset bỏ điều kiện/chỉnh sửa cũ",

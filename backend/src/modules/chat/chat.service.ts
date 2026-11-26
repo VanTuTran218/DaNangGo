@@ -1,3 +1,5 @@
+import { eventReply } from "./chat.events";
+import { isTomorrowPreparation } from "./chat.prepare";
 import { editTravelPlan, updateEditedPlanPreferences, withPlanItemIds } from "./chat.plan-edit";
 import { clock, minutes as clockMinutes } from "./chat.trip-preferences";
 import { randomUUID } from "node:crypto";
@@ -76,6 +78,7 @@ import {
 import {
   buildTravelPlan,
   consultationText,
+  pickAcrossDistricts,
   planIntroduction,
   placeCard,
 } from "./chat.advisor";
@@ -333,6 +336,7 @@ export async function processUserMessage(
     knowledge = null;
   }
   // A live-data limitation does not discard a separate, answerable request.
+  if (!profileAnswer && knowledge?.intentKey === "RT_EVENT") knowledge = await eventReply(rawMsg, options?.now);
   const liveNotice = knowledge?.intentKey.startsWith("RT_") && dialogue.needs.length > 0 && /\b(goi y|tim|len lich|lap lich|len ke hoach)\b/.test(analysisText) ? knowledge : null;
   if (liveNotice) { metadataWarnings.push(liveNotice.content); knowledge = null; }
   if (isRestart(rawMsg)) advisorState = {
@@ -358,11 +362,11 @@ export async function processUserMessage(
     excludedNames: exclusions,
   };
   dialogue.context.excludedPlaces = exclusions;
-  const advanced = !knowledge || ["COMPARE_TWO", "COMPARE_PARTIAL_EDIT"].includes(knowledge.intentKey) ? await advancedReply(rawMsg, sessionId, input, {
+  const advanced = isTomorrowPreparation(analysisText) || !knowledge || ["COMPARE_TWO", "COMPARE_PARTIAL_EDIT"].includes(knowledge.intentKey) ? await advancedReply(rawMsg, sessionId, input, {
     dietaryRestricted: dietRestricted,
     excludedNames: exclusions,
     excludedIds: advisorState?.excludedStayIds,
-  }) : null;
+  }, { now: options?.now, fetcher: options?.weatherFetcher }) : null;
   if (advanced) knowledge = null;
   const localIntent = request.intent;
   const analyzed =
@@ -396,8 +400,9 @@ export async function processUserMessage(
   let cards: ChatPlaceCard[] = [];
   let planningIssue = false;
 
+  const hasNamedMapAnchor = /\b(?:gan |dang o (?:gan )?)(?:my khe|cau rong)\b/.test(analysisText);
   const missingLocation =
-    /quanh|gần đây|gần tôi|gần vị trí|lân cận/i.test(rawMsg) && !input.location;
+    /quanh|gần đây|gần tôi|gần vị trí|lân cận/i.test(rawMsg) && !input.location && !hasNamedMapAnchor;
   const unsupportedDays = request.trip && unsupportedTripDays(rawMsg);
   let rescuePreview: AdvisorState["rescuePreview"];
   let weatherResult: WeatherChatResult | null = null;
@@ -550,7 +555,7 @@ export async function processUserMessage(
     }
   }
   const previousNearby = advisorState?.nearbyContext;
-  const areaMatch = /\b(?:gan|dang o) (cau rong|my khe)\b/.exec(analysisText);
+  const areaMatch = /\b(?:gan |dang o (?:gan )?)(cau rong|my khe)\b/.exec(analysisText);
   const area = areaMatch?.[1] === "cau rong" ? "Cầu Rồng" : areaMatch ? "Mỹ Khê" : undefined;
   const selectingRestaurant = previousNearby && /\b(chon|lay|an o|den quan)\b/.test(analysisText)
     ? previousNearby.offered.filter(name => analysisText.includes(normalize(name)))
@@ -561,23 +566,24 @@ export async function processUserMessage(
   const walking = /\bdi bo\b/.test(analysisText);
   const indoor = /\b(trong nha|neu mua thi sao)\b/.test(analysisText);
   const moved = area && /\bdang o\b/.test(analysisText);
+  const asksAroundNamedArea = Boolean(area && /\b(quanh day|gan day|xung quanh|co gi gan day)\b/.test(analysisText));
   const coffeeNearby = previousNearby && /\b(ca phe|cafe)\b/.test(analysisText) && /\b(gan day|gan do|quanh day)\b/.test(analysisText);
   const minutesMatch = /\b(\d{1,4})\s*phut\b/.exec(analysisText);
   const minutes = minutesMatch ? Number(minutesMatch[1]) : 0;
   const remainingMinutes = minutes > 0 && minutes <= 1440 ? minutes : undefined;
   const needsNearby = Boolean(previousNearby?.checkin && (closer || alternative || walking || indoor));
-  const nearbyCheckin = previousNearby && !area && !request.trip && (
+  const nearbyCheckin = !request.trip && (asksAroundNamedArea || Boolean(previousNearby && !area && (
     /\b(an xong|tam xong)\b.*\b(check[ -]in|chup|di dau|ghe dau)\b/.test(analysisText) ||
     /\b(di dau tiep|ghe dau tiep)\b/.test(analysisText) ||
     needsNearby || previousNearby.checkin && remainingMinutes !== undefined || previousNearby.checkin && /^(?:cho nao|cho |mien phi|buoi toi|view dep)/.test(analysisText)
       && /\b(mien phi|buoi toi|view dep)\b/.test(analysisText)
-  );
+  )));
   let nearbyContext: AdvisorState["nearbyContext"];
   if (profileAnswer) {
     replyContent = profileAnswer.content;
   } else if (arrivalRescue || addingPlace || applyRescue || closedRescue) {
     // The preview or confirmed edit was prepared from the latest chat plan above.
-  } else if (moved) {
+  } else if (moved && !nearbyCheckin) {
     nearbyContext = { area, offered: [], checkin: false, free: false, evening: false };
     replyContent = `Gô sẽ dùng ${area} làm mốc cho lượt tìm tiếp theo.`;
   } else if (coffeeNearby) {
@@ -612,22 +618,24 @@ export async function processUserMessage(
   } else if (previousNearby && selectingRestaurant.length === 1 && !nearbyCheckin) {
     nearbyContext = { ...previousNearby, restaurant: selectingRestaurant[0]!, checkin: false, free: false, evening: false };
     replyContent = `Gô sẽ dùng ${nearbyContext.restaurant} làm mốc nếu bạn muốn tìm điểm ghé tiếp.`;
-  } else if (nearbyCheckin && walking) {
+  } else if (nearbyCheckin && walking && previousNearby) {
     nearbyContext = previousNearby;
     replyContent = `Gô đang dùng ${previousNearby.restaurant ?? previousNearby.area} làm mốc. Khoảng cách đã hiển thị là đường chim bay. Bạn chọn điểm đến trên bản đồ và xem tuyến đi bộ để kiểm tra.`;
-  } else if (nearbyCheckin && alternative && (previousNearby.shown?.length ?? 0) > 1 && namedNearby.length !== 1 && !/\bcho khac\b/.test(analysisText)) {
+  } else if (nearbyCheckin && alternative && previousNearby && (previousNearby.shown?.length ?? 0) > 1 && namedNearby.length !== 1 && !/\bcho khac\b/.test(analysisText)) {
     nearbyContext = previousNearby;
     replyContent = "Bạn cho Gô tên điểm đang đóng cửa để Gô bỏ đúng điểm nhé?";
   } else if (nearbyCheckin) {
+    const baseNearby = previousNearby ?? { area: area!, offered: [], checkin: false, free: false, evening: false };
     nearbyContext = {
-      ...previousNearby,
+      ...baseNearby,
+      area: area ?? baseNearby.area,
       checkin: true,
-      minutes: remainingMinutes ?? previousNearby.minutes,
-      indoor: previousNearby.indoor || indoor,
-      budget: intent.budget ?? previousNearby.budget,
-      rejected: [...new Set([...(previousNearby.rejected ?? []), ...(alternative ? (namedNearby.length === 1 ? namedNearby : previousNearby.shown ?? []).map(place => place.id) : [])])].slice(-60),
-      free: previousNearby.free || /\bmien phi\b/.test(analysisText),
-      evening: previousNearby.evening || /\b(buoi toi|toi nay)\b/.test(analysisText),
+      minutes: remainingMinutes ?? baseNearby.minutes,
+      indoor: baseNearby.indoor || indoor,
+      budget: intent.budget ?? baseNearby.budget,
+      rejected: [...new Set([...(baseNearby.rejected ?? []), ...(alternative ? (namedNearby.length === 1 ? namedNearby : previousNearby?.shown ?? []).map(place => place.id) : [])])].slice(-60),
+      free: baseNearby.free || /\bmien phi\b/.test(analysisText),
+      evening: baseNearby.evening || /\b(buoi toi|toi nay)\b/.test(analysisText),
     };
     const origin = nearbyContext.restaurant ?? nearbyContext.area;
     const coordinates = await findChatAnchor(origin, Boolean(nearbyContext.restaurant));
@@ -638,7 +646,7 @@ export async function processUserMessage(
       distanceOriginName: origin,
       limit: 10,
     }) : [];
-    const previousDistances = (previousNearby.shown ?? []).flatMap(place => place.km === null ? [] : [place.km]);
+    const previousDistances = (previousNearby?.shown ?? []).flatMap(place => place.km === null ? [] : [place.km]);
     const closerThan = previousDistances.length ? Math.min(...previousDistances) : null;
     const context = nearbyContext;
     const matches = rows.filter(row =>
@@ -661,7 +669,7 @@ export async function processUserMessage(
     const eveningNotice = nearbyContext.evening ? " Gô chưa xác minh các điểm này phù hợp hoặc mở cửa buổi tối." : "";
     const freeNotice = nearbyContext.free ? " Mức 0đ là giá trong danh mục; bạn nên kiểm tra điều kiện áp dụng." : "";
     replyContent = cards.length
-      ? `Đi đâu tiếp quanh ${origin}? Gô gợi ý ${cards[0]!.name}.${cards[1] ? ` Dự phòng: ${cards[1].name}.` : ""}${timeNotice}${freeNotice}${eveningNotice}${context.budget !== undefined ? " Gô chỉ lọc theo giá điểm tham quan; các khoản khác cần tính riêng." : ""}`
+      ? `Đi đâu tiếp quanh mốc ${origin}? Gô gợi ý ${cards[0]!.name}.${cards[1] ? ` Dự phòng: ${cards[1].name}.` : ""}${timeNotice}${freeNotice}${eveningNotice}${context.budget !== undefined ? " Gô chỉ lọc theo giá điểm tham quan; các khoản khác cần tính riêng." : ""}`
       : `Gô chưa tìm được điểm ${closer ? "gần hơn" : context.indoor ? "trong nhà" : "check-in phù hợp"} trong dữ liệu quanh ${origin}${context.minutes === undefined ? "" : ` với ${context.minutes} phút còn lại`}. Bạn muốn mở rộng khu vực không?`;
   } else if (multiple && !multiPlanning) {
     const result = dialogue.pendingQuestions.length ? { content: `Gô sẽ phối hợp ${dialogue.needs.map(need => ({ food: "ăn uống", sight: "tham quan", stay: "lưu trú" })[need]).join(", ")}. Để gợi ý đúng ngân sách và thời gian, bạn xác nhận giúp Gô:\n${dialogue.pendingQuestions.map(question => "• " + question.replace("tổng cả nhóm", "tổng cho cả nhóm")).join("\n")}`, groups: [], questions: dialogue.pendingQuestions, warnings: [] } : await multiNeedReply(dialogue, rawMsg, input.location);
@@ -799,6 +807,14 @@ export async function processUserMessage(
     const foodArea = placeType === "RESTAURANT" ? area : undefined;
     const anchorName = foodArea ?? (nearMyKhe ? "Mỹ Khê" : undefined);
     const anchor = anchorName ? await findChatAnchor(anchorName) : null;
+    const diversifyDistricts =
+      Boolean(placeType) &&
+      !intent.district &&
+      !area &&
+      !nearMyKhe &&
+      !input.location &&
+      !intent.keywords.length &&
+      !request.cheap;
     if (foodArea) nearbyContext = { area: foodArea, offered: [], checkin: false, free: false, evening: false };
     let retrieved = await searchPlacesForChat({
       placeType,
@@ -807,7 +823,7 @@ export async function processUserMessage(
       keywords: anchor
         ? intent.keywords.filter((k) => normalize(k) !== normalize(anchorName ?? ""))
         : intent.keywords,
-      limit: 10,
+      limit: diversifyDistricts ? 30 : 10,
       strictKeywords: true,
       cheapestFirst: request.cheap,
       tastes: placeType === "RESTAURANT" ? intent.tastes : [],
@@ -841,12 +857,15 @@ export async function processUserMessage(
       }
     }
     // Recheck category and budget even when a repository/provider returns unexpected data.
-    const rows = retrieved.filter(
+    const eligibleRows = retrieved.filter(
       (row) =>
         (!placeType || row.placeType === placeType) &&
         !isExcluded(row.name, exclusions) &&
         (budget == null || (row.priceMin !== null && row.priceMin <= budget)),
     );
+    const rows = diversifyDistricts
+      ? pickAcrossDistricts(eligibleRows, 3)
+      : eligibleRows;
     const byId = new Map(rows.map((r) => [r.placeId, r]));
     onProgress?.({
       type: "candidates",
@@ -857,15 +876,18 @@ export async function processUserMessage(
       text: "Đã tra cứu dữ liệu, Gô đang soạn câu trả lời…",
     });
 
-    // 3. Gemini trả lời dựa trên <PLACES>
-    const raw = await prompt(
-      buildChatPrompt({
-        message: rawMsg,
-        places: rows.map(toPlaceContext),
-        history,
-        intent,
-      }),
-    );
+    // Gợi ý theo quận dùng trực tiếp dữ liệu đã chọn để giữ đủ các khu vực.
+    const useCatalogRecommendations = diversifyDistricts && rows.length > 0;
+    const raw = useCatalogRecommendations
+      ? null
+      : await prompt(
+          buildChatPrompt({
+            message: rawMsg,
+            places: rows.map(toPlaceContext),
+            history,
+            intent,
+          }),
+        );
 
     let answered = false;
     if (raw) {
@@ -893,7 +915,8 @@ export async function processUserMessage(
       } else {
         replyContent = FALLBACK_MESSAGES.noResult;
       }
-      console.log("[ChatService] Dùng phương án dự phòng");
+      if (!useCatalogRecommendations)
+        console.log("[ChatService] Dùng phương án dự phòng");
     }
   }
 
@@ -1000,7 +1023,7 @@ export async function processUserMessage(
     catch { metadataWarnings.push("Chưa tải được tên món trong menu; Gô không tự tạo món hoặc giá món."); }
   }
   const staySources = allCards.flatMap(card => [card.stayFacts?.hours, ...(card.stayFacts?.rooms ?? []), ...(card.stayFacts?.publicRates ?? [])].flatMap(fact => fact ? [{ url: fact.sourceUrl, checkedOn: fact.checkedOn, label: card.name, scope: "Thông tin lưu trú công bố; chưa xác nhận giá hoặc phòng theo ngày" }] : []));
-  const sources = [...staySources, ...(weatherResult?.sources ?? [])];
+  const sources = [...staySources, ...(advanced?.sources ?? []), ...(weatherResult?.sources ?? [])];
   const metadata: ResponseMetadata = { intent: kind, secondaryIntents: [...dialogue.needs.map(need => ({ food: "FOOD", sight: "SIGHT", stay: "STAY" })[need]), ...(liveNotice ? [liveNotice.intentKey === "RT_WEATHER" ? "WEATHER" : liveNotice.intentKey === "RT_EVENT" ? "EVENT" : "LIVE_DATA"] : []), ...(weatherResult?.multiNeedPrefix ? ["WEATHER"] : [])], needsClarification: responseQuestions.length > 0, questions: responseQuestions,
     confirmedContext: dialogue.context, profileSuggestions: suggestions, sources: [...new Map(sources.map(source => [source.url + source.checkedOn, source])).values()], warnings: metadataWarnings };
   if (nearbyContext && area && !nearbyContext.checkin) {

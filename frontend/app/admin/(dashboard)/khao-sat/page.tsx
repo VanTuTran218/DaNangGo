@@ -9,6 +9,8 @@ import {
   createAdminSurvey,
   updateAdminSurvey,
   deleteAdminSurvey,
+  getAdminSurveyAutomationStats,
+  dispatchAdminTripSurveyInvites,
 } from "@/lib/api/admin";
 import type { AdminSurveyItem, SurveyQuestion } from "@/types/admin";
 import DataTable, { Column } from "@/components/ui/DataTable";
@@ -22,6 +24,9 @@ import {
   ToggleLeft,
   ToggleRight,
   X,
+  MailCheck,
+  Award,
+  Send,
 } from "lucide-react";
 
 function surveyQuestionUnit(survey: AdminSurveyItem, code: string) {
@@ -62,6 +67,25 @@ export default function AdminSurveysPage() {
     error,
     reload,
   } = useAsyncData(getAdminSurveys);
+
+  const {
+    data: automationStats,
+    reload: reloadAutomation,
+  } = useAsyncData(getAdminSurveyAutomationStats);
+  const [dispatchingInvites, setDispatchingInvites] = useState(false);
+
+  const handleDispatchTripInvites = async () => {
+    setDispatchingInvites(true);
+    try {
+      const res = await dispatchAdminTripSurveyInvites();
+      showToast(res.message);
+      reloadAutomation();
+    } catch (err: any) {
+      showToast(err?.message || "Chưa gửi được lời mời khảo sát", "error");
+    } finally {
+      setDispatchingInvites(false);
+    }
+  };
 
   const showToast = (
     message: string,
@@ -266,6 +290,89 @@ export default function AdminSurveysPage() {
       </div>
 
       <AiSurveyReport />
+
+      {/* Khối theo dõi Thư Tri Ân Tự Động & Lời Mời Sau Chuyến Đi */}
+      <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-xs space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
+              <Award className="w-5 h-5 text-teal-600" />
+              Tự động hóa Thư Tri Ân & Lời Mời Sau Chuyến Đi
+            </h2>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Hệ thống tự động gửi Chứng nhận Đại sứ Du lịch + Mã quà tri ân ngay khi du khách gửi khảo sát, và tự gửi email mời khảo sát khi lịch trình Đà Nẵng kết thúc.
+            </p>
+          </div>
+          <button
+            type="button"
+            disabled={dispatchingInvites}
+            onClick={handleDispatchTripInvites}
+            className="flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl transition-colors disabled:opacity-50 cursor-pointer"
+          >
+            <Send className="w-3.5 h-3.5" />
+            {dispatchingInvites
+              ? "Đang quét lịch trình..."
+              : "Quét & gửi lời mời chuyến đi đã kết thúc"}
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="p-4 rounded-xl bg-teal-50/60 border border-teal-100 flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold text-teal-800">
+                Thư tri ân & Chứng nhận đã cấp
+              </p>
+              <p className="text-2xl font-black text-teal-900 mt-1">
+                {automationStats?.appreciationTotal ?? 0}
+              </p>
+            </div>
+            <Award className="w-8 h-8 text-teal-600/70" />
+          </div>
+          <div className="p-4 rounded-xl bg-cyan-50/60 border border-cyan-100 flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold text-cyan-800">
+                Email mời khảo sát sau lịch trình
+              </p>
+              <p className="text-2xl font-black text-cyan-900 mt-1">
+                {automationStats?.tripInvitesTotal ?? 0}
+              </p>
+            </div>
+            <MailCheck className="w-8 h-8 text-cyan-600/70" />
+          </div>
+        </div>
+
+        {Boolean(automationStats?.recentAppreciations?.length) && (
+          <div className="pt-2 border-t border-gray-100">
+            <p className="text-xs font-bold text-gray-700 mb-2">
+              Chứng nhận tri ân cấp gần đây (Email đã ẩn danh):
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              {automationStats!.recentAppreciations.slice(0, 4).map((item) => (
+                <div
+                  key={item.certificateCode}
+                  className="text-xs bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 flex items-center justify-between gap-2"
+                >
+                  <div>
+                    <span className="font-bold text-gray-900">
+                      {item.recipientName}
+                    </span>{" "}
+                    <span className="text-gray-500">({item.maskedEmail})</span>
+                    {item.originLabel && (
+                      <span className="text-teal-700 font-semibold">
+                        {" "}
+                        • {item.originLabel}
+                      </span>
+                    )}
+                  </div>
+                  <span className="font-mono font-bold text-teal-800 bg-white px-2 py-0.5 rounded border border-gray-200">
+                    {item.certificateCode}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
 
       {toast && (
         <div

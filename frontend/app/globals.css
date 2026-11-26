@@ -515,13 +515,16 @@
   animation: gradient-shift 6s linear infinite;
 }
 
-/* ====== GLOBAL ====== */
+/* ── GLOBAL ====== */
 html {
   scroll-behavior: smooth;
 }
 
 body {
   font-family: var(--font-family-sans);
+  /* Deep Ocean background — prevents white flash during dark-hero page transitions.
+     Light-background pages (admin, partner, auth forms) override via their own wrappers. */
+  background-color: #06151C;
 }
 
 /* Respect reduced motion — disable ALL animations/transitions */
@@ -598,4 +601,1516 @@ body {
   stroke-dasharray: 20;
   stroke-dashoffset: 20;
   animation: draw-check 0.25s forwards ease-out;
+}
+
+/* ======================================================
+   HOMEPAGE LUXURY DESIGN SYSTEM (MAX PING 4.0 — QUIET LUXURY & EDITORIAL)
+   + DANANGGO CINEMATIC COASTAL EXPEDITION (WHITE DESERT INSPIRED)
+   Scoped to Homepage & Cinematic Content Wrapper only (Zero impact on Navbar)
+   ====================================================== */
+:root {
+  --home-bg-primary: #F8F8F4;      /* Ocean White */
+  --home-bg-secondary: #F1EFE7;    /* Coastal Ivory */
+  --home-bg-sand: #E7E2D6;         /* Sand Mist */
+  --home-surface: #FFFFFF;         /* Card Surface */
+  --home-text-primary: #202B30;    /* Charcoal */
+  --home-text-secondary: #4E5E63;  /* Coastal Slate */
+  --home-accent-primary: #216B70;  /* Ocean Teal */
+  --home-accent-muted: #5E9898;    /* Muted Turquoise */
+  --home-accent-mist: #BCD3D1;     /* Sea Mist */
+  --home-accent-orange: #E87B39;   /* Expedition Orange */
+  --home-accent-gold: #C9B580;     /* Champagne Gold (V6.0) */
+  --home-accent-soft-gold: #E6D9B7;/* Soft Gold (V6.0) */
+  --home-surface-pearl: #FFFDF5;   /* Pearl White (V6.0) */
+  --home-surface-ivory: #F8F7F2;   /* Ivory White (V6.0) */
+  --home-bg-dark: #102832;         /* Deep Navy */
+  --home-bg-ink: #162E38;          /* Ocean Ink */
+  --home-bg-footer: #102832;       /* Deep Navy */
+  --home-border-subtle: #DEDAD2;   /* Architectural Divider */
+  --font-editorial-serif: var(--font-serif-editorial), "Playfair Display", Georgia, serif;
+  --font-editorial-sans: var(--font-display), "Be Vietnam Pro", system-ui, sans-serif;
+  --font-condensed: var(--font-display), "Be Vietnam Pro", system-ui, sans-serif;
+  --font-expedition-condensed: var(--font-condensed), "Be Vietnam Pro", system-ui, sans-serif;
+}
+
+.home-luxury-root,
+.dananggo-cinematic-content {
+  background-color: var(--home-bg-primary);
+  color: var(--home-text-primary);
+  font-family: var(--font-editorial-sans);
+}
+
+/* Consistent max-width & responsive gutters (16-24px mobile, 24-40px tablet, 48-80px desktop) */
+.home-container,
+.cinematic-container {
+  width: 100%;
+  max-width: 1480px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+@media (min-width: 640px) {
+  .home-container,
+  .cinematic-container {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .home-container,
+  .cinematic-container {
+    padding-left: 56px;
+    padding-right: 56px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .home-container,
+  .cinematic-container {
+    padding-left: 72px;
+    padding-right: 72px;
+  }
+}
+
+/* 12-Column Disciplined Layout Grid (Desktop 12, Tablet 8, Mobile 4) */
+.cinematic-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .cinematic-grid {
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    gap: 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .cinematic-grid {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 28px;
+  }
+}
+
+/* Editorial & Expedition Typography */
+.home-serif {
+  font-family: var(--font-editorial-serif);
+}
+
+.home-sans {
+  font-family: var(--font-editorial-sans);
+}
+
+.cinematic-condensed {
+  font-family: var(--font-expedition-condensed);
+}
+
+/* Monumental Display Typography (White Desert Inspired) — Vietnamese diacritic safe */
+.cinematic-monumental {
+  font-family: var(--font-expedition-condensed);
+  font-size: clamp(72px, 13vw, 220px);
+  font-weight: 700;
+  line-height: 0.94;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  padding-top: 0.14em;
+  padding-bottom: 0.04em;
+}
+
+/* Hero Headline: Strong Display Contrast (Vietnamese diacritic safe) */
+.home-hero-headline {
+  font-family: var(--font-expedition-condensed);
+  font-size: clamp(2.5rem, 5.4vw, 5.25rem);
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -0.015em;
+  text-transform: uppercase;
+  color: #F8F8F4;
+}
+
+/* Section Heading: clamp(32px, 4.4vw, 64px) with generous line-height 1.18 for Vietnamese diacritics (Phần 13.8, 14.1 & 15) */
+.home-section-heading,
+.cinematic-section-heading {
+  font-family: var(--font-expedition-condensed);
+  font-size: clamp(2rem, 4.2vw, 3.85rem);
+  font-weight: 700;
+  line-height: 1.18;
+  letter-spacing: -0.012em;
+  text-transform: uppercase;
+  color: var(--home-text-primary);
+  text-wrap: balance;
+}
+
+/* Subheading / Featured Article Title: 24–36px */
+.home-article-title,
+.cinematic-subheading {
+  font-family: var(--font-editorial-serif);
+  font-size: clamp(1.55rem, 2.35vw, 2.2rem);
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--home-text-primary);
+  text-wrap: balance;
+}
+
+/* Featured Event Title: 26–36px on desktop with 1.34 line-height so multi-line Vietnamese titles breathe (Phần 14.3) */
+.home-event-featured-title {
+  font-family: var(--font-editorial-serif);
+  font-size: clamp(1.5rem, 2.25vw, 2.2rem);
+  font-weight: 500;
+  line-height: 1.34;
+  letter-spacing: -0.01em;
+  color: var(--home-text-primary);
+  text-wrap: balance;
+}
+
+/* Card Title: 18–21px with 1.42 line-height */
+.home-card-title {
+  font-family: var(--font-editorial-sans);
+  font-size: clamp(1.0625rem, 1.2vw, 1.25rem);
+  font-weight: 600;
+  line-height: 1.42;
+  letter-spacing: -0.01em;
+  color: var(--home-text-primary);
+}
+
+/* Statistics Number: Condensed Monumental */
+.home-stat-number {
+  font-family: var(--font-expedition-condensed);
+  font-size: clamp(2.75rem, 4.5vw, 4.25rem);
+  font-weight: 700;
+  line-height: 0.98;
+  letter-spacing: -0.02em;
+  color: var(--home-accent-primary);
+}
+
+.home-eyebrow,
+.cinematic-caption {
+  font-family: var(--font-editorial-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  line-height: 1.5;
+}
+
+.home-body,
+.cinematic-body {
+  font-family: var(--font-editorial-sans);
+  font-size: clamp(0.9375rem, 1.05vw, 1.0625rem);
+  font-weight: 400;
+  line-height: 1.72;
+  color: var(--home-text-secondary);
+}
+
+/* Subtle architectural grain pattern for luxury dark campaign sections */
+.home-luxury-campaign-bg {
+  background-color: var(--home-bg-dark);
+  background-image:
+    radial-gradient(circle at 18% 22%, rgba(232, 123, 57, 0.12) 0%, transparent 48%),
+    radial-gradient(circle at 84% 78%, rgba(33, 107, 112, 0.35) 0%, transparent 52%);
+}
+
+/* Thin underline animation for Homepage editorial links (Left to Right sweep, 300ms) */
+.home-editorial-link,
+.cinematic-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-editorial-sans);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--home-accent-primary);
+  padding-bottom: 4px;
+  transition: color 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.home-editorial-link::before,
+.cinematic-link::before {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background-color: rgba(33, 107, 112, 0.25);
+}
+
+.home-editorial-link::after,
+.cinematic-link::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background-color: var(--home-accent-primary);
+  transform: scaleX(0);
+  transform-origin: right center;
+  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.home-editorial-link:hover,
+.cinematic-link:hover {
+  color: #102832;
+}
+
+.home-editorial-link:hover::after,
+.cinematic-link:hover::after {
+  transform: scaleX(1);
+  transform-origin: left center;
+}
+
+/* Technical Hairlines & Coordinates */
+.cinematic-hairline-h {
+  height: 1px;
+  width: 100%;
+  background-color: var(--home-border-subtle);
+}
+
+.cinematic-hairline-v {
+  width: 1px;
+  height: 100%;
+  background-color: var(--home-border-subtle);
+}
+
+/* ======================================================
+   V6.0 ULTRA PREMIUM VISUAL POLISH — CHAMPAGNE SHIMMER & BORDER LIGHT SWEEP
+   Scoped strictly to Homepage & luxury components (Zero impact on Navbar)
+   ====================================================== */
+
+/* 1. Premium Card Surface (Deep Ocean Full-Bleed Exhibition Frame + Dynamic Soft Shadow) */
+.luxury-card-surface {
+  position: relative;
+  background-color: #091d26;
+  border: 1px solid rgba(230, 217, 183, 0.24);
+  border-radius: 14px;
+  box-shadow: 0 20px 48px rgba(6, 18, 24, 0.42);
+  transition:
+    transform 0.48s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.48s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .luxury-card-surface:hover,
+  .luxury-card-surface:focus-within {
+    transform: translateY(-5px);
+    border-color: rgba(230, 217, 183, 0.78);
+    box-shadow:
+      0 28px 64px rgba(6, 18, 24, 0.58),
+      0 0 0 1px rgba(230, 217, 183, 0.2),
+      0 6px 22px rgba(201, 181, 128, 0.18);
+  }
+}
+
+/* 2. Luxury Border Light Sweep (One-shot Champagne Gold / Pearl reflection along border on hover OR reveal completion — Phần 06.2 & V8.1 Phần 05/08) */
+.luxury-border-sweep {
+  position: relative;
+}
+
+.luxury-border-sweep::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    transparent 35%,
+    rgba(201, 181, 128, 0.52) 45%,
+    rgba(235, 224, 198, 0.68) 49%,
+    rgba(232, 123, 57, 0.45) 53%,
+    rgba(94, 152, 152, 0.42) 57%,
+    transparent 66%,
+    transparent 100%
+  );
+  background-size: 260% 260%;
+  background-position: 130% 130%;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 25;
+  transition: opacity 0.35s ease;
+}
+
+.luxury-border-sweep.is-reveal-sweeping::before {
+  opacity: 0.85;
+  background-position: -30% -30%;
+  transition:
+    background-position 1.55s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.35s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .luxury-border-sweep:hover::before {
+    opacity: 0.8;
+    background-position: -30% -30%;
+    transition:
+      background-position 1.45s cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 0.25s ease;
+  }
+  .luxury-border-sweep:active::before {
+    opacity: 0;
+    transition: opacity 0.12s ease;
+  }
+}
+
+/* V8.1 ORYZO Outline-to-Solid Heading & Number Typography Construction (Phần 06 & 12) */
+.oryzo-outline-heading {
+  position: relative;
+  color: transparent;
+  -webkit-text-stroke: 1.25px rgba(16, 40, 50, 0.42);
+  transition:
+    color 0.95s cubic-bezier(0.22, 1, 0.36, 1),
+    -webkit-text-stroke-color 0.95s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.oryzo-outline-heading.is-solid {
+  color: var(--home-text-primary);
+  -webkit-text-stroke: 1.25px transparent;
+}
+
+.oryzo-card-number {
+  font-family: var(--font-expedition-condensed);
+  font-weight: 700;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(255, 253, 245, 0.78);
+  transition:
+    color 0.85s cubic-bezier(0.22, 1, 0.36, 1),
+    -webkit-text-stroke-color 0.85s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.oryzo-card-number.is-solid,
+.group:hover .oryzo-card-number {
+  color: rgba(255, 253, 245, 0.94);
+  -webkit-text-stroke: 1px rgba(201, 181, 128, 0.45);
+}
+
+/* 3. Premium Shimmer Sweep across Image or Panel Surface (115deg diagonal, 8–11% opacity, 1.35s one-shot — Phần 06.3) */
+.luxury-shimmer-frame {
+  position: relative;
+  overflow: hidden;
+}
+
+.luxury-shimmer-frame::after {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    transparent 43%,
+    rgba(230, 217, 183, 0.03) 47%,
+    rgba(230, 217, 183, 0.075) 50%,
+    rgba(230, 217, 183, 0.03) 53%,
+    transparent 57%,
+    transparent 100%
+  );
+  transform: translateX(-115%) rotate(0.001deg);
+  pointer-events: none;
+  z-index: 12;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .group:hover .luxury-shimmer-frame::after,
+  .luxury-shimmer-frame:hover::after {
+    transform: translateX(115%) rotate(0.001deg);
+    transition: transform 1.35s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+}
+
+/* 4. Signature Typography Shimmer (One-shot light sweep on viewport entry or hover — Phần 08) */
+@keyframes text-light-sweep {
+  0% {
+    background-position: 135% 50%;
+  }
+  100% {
+    background-position: -35% 50%;
+  }
+}
+
+/* Light Background Variant: Deep Charcoal -> Ocean Teal / Champagne Gold highlight -> Deep Charcoal (Phần 08.3) */
+.text-shimmer-light {
+  color: var(--home-text-primary);
+}
+
+@supports (-webkit-background-clip: text) or (background-clip: text) {
+  .text-shimmer-light.is-shimmering,
+  .text-shimmer-light:hover {
+    background-image: linear-gradient(
+      110deg,
+      #202B30 0%,
+      #202B30 40%,
+      #216B70 47%,
+      #B89E64 50%,
+      #216B70 53%,
+      #202B30 60%,
+      #202B30 100%
+    );
+    background-size: 250% 100%;
+    background-position: -35% 50%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: text-light-sweep 1.85s cubic-bezier(0.22, 1, 0.36, 1) 1 forwards;
+  }
+}
+
+/* Dark Background Variant: Ivory White -> Pearl / Soft Champagne Gold highlight -> Ivory White (Phần 08.4) */
+.text-shimmer-dark {
+  color: #F8F8F4;
+}
+
+@supports (-webkit-background-clip: text) or (background-clip: text) {
+  .text-shimmer-dark.is-shimmering,
+  .text-shimmer-dark:hover {
+    background-image: linear-gradient(
+      110deg,
+      #F8F8F4 0%,
+      #F8F8F4 40%,
+      #E6D9B7 47%,
+      #FFFDF5 50%,
+      #C9B580 53%,
+      #F8F8F4 60%,
+      #F8F8F4 100%
+    );
+    background-size: 250% 100%;
+    background-position: -35% 50%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: text-light-sweep 1.85s cubic-bezier(0.22, 1, 0.36, 1) 1 forwards;
+  }
+}
+
+/* Accent Gold Variant (for VIP 25% badge & Statistics numbers) */
+.text-shimmer-gold {
+  color: var(--home-accent-orange);
+}
+
+@supports (-webkit-background-clip: text) or (background-clip: text) {
+  .text-shimmer-gold.is-shimmering,
+  .text-shimmer-gold:hover {
+    background-image: linear-gradient(
+      110deg,
+      #E87B39 0%,
+      #E87B39 38%,
+      #E6D9B7 48%,
+      #FFFDF5 50%,
+      #C9B580 52%,
+      #E87B39 62%,
+      #E87B39 100%
+    );
+    background-size: 250% 100%;
+    background-position: -35% 50%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: text-light-sweep 1.9s cubic-bezier(0.22, 1, 0.36, 1) 1 forwards;
+  }
+}
+
+/* Button one-shot reflection sweep on hover (Phần 11) */
+.luxury-btn-sweep {
+  position: relative;
+  overflow: hidden;
+}
+
+.luxury-btn-sweep::after {
+  content: "";
+  position: absolute;
+  inset: -10%;
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    transparent 38%,
+    rgba(255, 253, 245, 0.28) 50%,
+    transparent 62%,
+    transparent 100%
+  );
+  transform: translateX(-120%);
+  pointer-events: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .luxury-btn-sweep:hover::after {
+    transform: translateX(120%);
+    transition: transform 0.85s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+}
+
+/* Pure-GPU ambient drift animations for /khampha atmospheric backdrop */
+@keyframes explore-orb-drift-a {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50%      { transform: translate3d(-36px, 26px, 0) scale(1.06); }
+}
+@keyframes explore-orb-drift-b {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50%      { transform: translate3d(42px, -28px, 0) scale(1.07); }
+}
+@keyframes explore-orb-drift-c {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50%      { transform: translate3d(-28px, -22px, 0) scale(1.05); }
+}
+@keyframes explore-hero-mist {
+  0%, 100% { transform: translate3d(-2%, 0, 0) scale(1); opacity: 0.42; }
+  50%      { transform: translate3d(2.5%, -1.5%, 0) scale(1.04); opacity: 0.62; }
+}
+
+.explore-orb-a {
+  animation: explore-orb-drift-a 18s ease-in-out infinite;
+}
+.explore-orb-b {
+  animation: explore-orb-drift-b 22s ease-in-out infinite;
+}
+.explore-orb-c {
+  animation: explore-orb-drift-c 20s ease-in-out infinite;
+}
+.explore-hero-mist {
+  animation: explore-hero-mist 16s ease-in-out infinite;
+}
+.explore-ambient-paused .explore-orb-a,
+.explore-ambient-paused .explore-orb-b,
+.explore-ambient-paused .explore-orb-c,
+.explore-ambient-paused .explore-hero-mist {
+  animation-play-state: paused;
+}
+
+/* ======================================================
+   LUMINOUS ATELIER LENS — BESPOKE 3D DEPTH, SPOTLIGHT & GALLERY FOCUS (/khampha)
+   100% GPU-composited, zero React re-renders on mousemove
+   ====================================================== */
+.explore-card-item {
+  --rx: 0deg;
+  --ry: 0deg;
+  --mx: 50%;
+  --my: 50%;
+  --px: 0px;
+  --py: 0px;
+  --spot-opacity: 0;
+  -webkit-tap-highlight-color: transparent;
+  transform: perspective(1100px) rotateX(var(--rx)) rotateY(var(--ry)) translate3d(0, 0, 0);
+  transform-style: preserve-3d;
+  transition:
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.explore-card-item.is-tilting {
+  transition:
+    transform 0.14s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.35s ease,
+    box-shadow 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  /* Override base card translateY so 3D tilt + lift compose seamlessly */
+  .explore-card-item.luxury-card-surface:hover {
+    transform: perspective(1100px) rotateX(var(--rx)) rotateY(var(--ry)) translate3d(0, -6px, 0);
+    border-color: rgba(230, 217, 183, 0.62);
+    box-shadow:
+      0 28px 64px rgba(5, 16, 22, 0.52),
+      0 0 0 1px rgba(230, 217, 183, 0.16),
+      0 8px 24px rgba(201, 181, 128, 0.14);
+  }
+
+  /* Calm tactile press on click — zero glare, gentle settle */
+  .explore-card-item.luxury-card-surface:active {
+    transform: perspective(1100px) rotateX(0deg) rotateY(0deg) translate3d(0, -2px, 0) scale(0.992);
+    border-color: rgba(201, 181, 128, 0.48);
+    box-shadow: 0 16px 36px rgba(5, 16, 22, 0.44);
+    transition: transform 0.15s ease-out, box-shadow 0.15s ease-out, border-color 0.15s ease-out;
+  }
+
+  .explore-card-item:active .explore-card-spotlight {
+    opacity: 0 !important;
+    transition: opacity 0.1s ease;
+  }
+
+  /* Gallery Museum Focus: siblings gently recede ONLY while a card is actively hovered */
+  .explore-card-grid:has(.explore-card-item:hover) .explore-card-item:not(:hover) {
+    opacity: 0.86;
+    filter: saturate(0.88);
+  }
+
+  /* 2.5D Inner photo depth counter-parallax on hover */
+  .explore-card-item .explore-card-media {
+    transform: translate3d(var(--px), var(--py), 0) scale(1);
+    transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .explore-card-item.is-tilting .explore-card-media {
+    transform: translate3d(var(--px), var(--py), 0) scale(1.065);
+    transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .explore-card-item:hover .explore-card-media {
+    transform: translate3d(var(--px), var(--py), 0) scale(1.065);
+  }
+
+  /* Whisper-soft Champagne specular sheen (refined satin, never glaring) */
+  .explore-card-spotlight {
+    opacity: var(--spot-opacity);
+    background: radial-gradient(
+      300px circle at var(--mx) var(--my),
+      rgba(201, 181, 128, 0.09) 0%,
+      rgba(232, 123, 57, 0.035) 42%,
+      transparent 72%
+    );
+    transition: opacity 0.35s ease;
+  }
+
+  /* Editorial Leica-style corner viewfinder brackets unfolding on hover */
+  .explore-corner-bracket {
+    opacity: 0;
+    transform: scale(0.84);
+    transition:
+      opacity 0.38s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .explore-card-item:hover .explore-corner-bracket {
+    opacity: 0.72;
+    transform: scale(1);
+  }
+  .explore-card-item:active .explore-corner-bracket {
+    opacity: 0.45;
+  }
+
+  /* Double-arrow slot kinetic glide on "CHI TIẾT ->" */
+  .explore-arrow-out {
+    transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.28s ease;
+  }
+  .explore-arrow-in {
+    transform: translateX(-115%);
+    opacity: 0;
+    transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.28s ease;
+  }
+  .explore-card-item:hover .explore-arrow-out {
+    transform: translateX(115%);
+    opacity: 0;
+  }
+  .explore-card-item:hover .explore-arrow-in {
+    transform: translateX(0);
+    opacity: 1;
+  }
+
+  /* Whisper-soft cursor sheen inside the /khampha Concierge Console */
+  .explore-concierge-console {
+    --cx: 50%;
+    --cy: 50%;
+    --c-spot: 0;
+  }
+  .explore-concierge-spotlight {
+    opacity: var(--c-spot);
+    background: radial-gradient(
+      420px circle at var(--cx) var(--cy),
+      rgba(201, 181, 128, 0.085) 0%,
+      rgba(33, 107, 112, 0.05) 42%,
+      transparent 72%
+    );
+    transition: opacity 0.4s ease;
+  }
+
+  /* Tier 1: Constellation Lantern Moonlight Sweep */
+  .mystery-atlas-canvas {
+    --lx: 50%;
+    --ly: 50%;
+    --l-op: 0;
+  }
+  .mystery-atlas-lantern {
+    opacity: var(--l-op);
+    background: radial-gradient(
+      290px circle at var(--lx) var(--ly),
+      rgba(230, 217, 183, 0.14) 0%,
+      rgba(105, 165, 163, 0.08) 44%,
+      transparent 74%
+    );
+    transition: opacity 0.4s ease;
+  }
+
+  /* Tier 2: Veil Reveal — Cursor Physically Dissolves Nocturnal Mist */
+  .mystery-veil-card {
+    --vx: 50%;
+    --vy: 42%;
+    --v-open: 0;
+  }
+  .mystery-veil-mist {
+    -webkit-mask-image: radial-gradient(
+      circle 185px at var(--vx) var(--vy),
+      rgba(0, 0, 0, 0.06) 0%,
+      rgba(0, 0, 0, 0.25) 46%,
+      rgba(0, 0, 0, 0.94) 100%
+    );
+    mask-image: radial-gradient(
+      circle 185px at var(--vx) var(--vy),
+      rgba(0, 0, 0, 0.06) 0%,
+      rgba(0, 0, 0, 0.25) 46%,
+      rgba(0, 0, 0, 0.94) 100%
+    );
+    transition: opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .mystery-veil-card:not(:hover) .mystery-veil-mist {
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+  .mystery-veil-card:hover .mystery-veil-mist {
+    opacity: 0.72;
+  }
+  .mystery-veil-ring {
+    opacity: var(--v-open);
+    left: var(--vx);
+    top: var(--vy);
+    transform: translate(-50%, -50%);
+    transition: opacity 0.3s ease;
+  }
+}
+
+.explore-concierge-console {
+  -webkit-backdrop-filter: blur(26px) saturate(148%);
+  backdrop-filter: blur(26px) saturate(148%);
+}
+
+/* ======================================================
+   NOCTURNAL FESTIVAL TICKET STUB & FROSTED EVENTS CONSOLE (/su-kien)
+   100% GPU-composited, zero glare on click
+   ====================================================== */
+.events-console-glass {
+  --ex: 50%;
+  --ey: 50%;
+  --e-spot: 0;
+  -webkit-backdrop-filter: blur(26px) saturate(148%);
+  backdrop-filter: blur(26px) saturate(148%);
+}
+
+.luutru-console-glass {
+  --lx: 50%;
+  --ly: 50%;
+  --l-spot: 0;
+  -webkit-backdrop-filter: blur(26px) saturate(148%);
+  backdrop-filter: blur(26px) saturate(148%);
+}
+
+.amthuc-console-glass {
+  --ax: 50%;
+  --ay: 50%;
+  --a-spot: 0;
+  -webkit-backdrop-filter: blur(26px) saturate(148%);
+  backdrop-filter: blur(26px) saturate(148%);
+}
+
+.diemdulich-console-glass {
+  --dx: 50%;
+  --dy: 50%;
+  --d-spot: 0;
+  -webkit-backdrop-filter: blur(26px) saturate(148%);
+  backdrop-filter: blur(26px) saturate(148%);
+}
+
+.bando-console-glass {
+  --bx: 50%;
+  --by: 50%;
+  --b-spot: 0;
+  -webkit-backdrop-filter: blur(26px) saturate(148%);
+  backdrop-filter: blur(26px) saturate(148%);
+}
+
+/* Nocturnal Cartography Tile Filter — transforms street tiles to deep-ocean obsidian without inverting pins/HUD */
+.bando-map-nocturnal .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(192deg) brightness(0.86) contrast(1.04) saturate(0.76);
+  transition: filter 0.35s ease;
+}
+
+.bando-leaflet-container .leaflet-container {
+  background: #071922;
+  font-family: inherit;
+}
+
+.bando-leaflet-container .leaflet-control-attribution {
+  background: rgba(6, 21, 28, 0.78) !important;
+  color: rgba(203, 217, 218, 0.72) !important;
+  backdrop-filter: blur(10px);
+  border-top-left-radius: 8px;
+  padding: 2px 8px !important;
+  font-size: 10px !important;
+}
+
+.bando-leaflet-container .leaflet-control-attribution a {
+  color: #e6d9b7 !important;
+}
+
+.bando-leaflet-container .leaflet-tooltip {
+  background: rgba(6, 21, 28, 0.92);
+  color: #fffdf5;
+  border: 1px solid rgba(230, 217, 183, 0.32);
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 8px;
+  box-shadow: 0 10px 26px rgba(2, 10, 15, 0.45);
+}
+
+.bando-leaflet-container .leaflet-tooltip-top::before {
+  border-top-color: rgba(6, 21, 28, 0.92);
+}
+
+.bando-sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(230, 217, 183, 0.28) rgba(6, 21, 28, 0.4);
+}
+.bando-sidebar-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.bando-sidebar-scroll::-webkit-scrollbar-track {
+  background: rgba(6, 21, 28, 0.35);
+}
+.bando-sidebar-scroll::-webkit-scrollbar-thumb {
+  background: rgba(230, 217, 183, 0.26);
+  border-radius: 999px;
+}
+.bando-sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(230, 217, 183, 0.45);
+}
+
+/* Dark-glass autofill guard for /dang-nhap & /quen-mat-khau inputs */
+.auth-dark-input:-webkit-autofill,
+.auth-dark-input:-webkit-autofill:hover,
+.auth-dark-input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #fffdf5 !important;
+  -webkit-box-shadow: 0 0 0 1000px #0a202b inset !important;
+  box-shadow: 0 0 0 1000px #0a202b inset !important;
+  caret-color: #fffdf5;
+  transition: background-color 9999s ease-out 0s;
+}
+
+.map-user-dot {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+  background: #38bdf8;
+  border: 3px solid #fffdf5;
+  box-shadow: 0 0 0 6px rgba(56, 189, 248, 0.28), 0 4px 12px rgba(2, 10, 15, 0.5);
+}
+
+.event-ticket-card {
+  --rx: 0deg;
+  --ry: 0deg;
+  --mx: 50%;
+  --my: 50%;
+  --px: 0px;
+  --py: 0px;
+  --spot-opacity: 0;
+  -webkit-tap-highlight-color: transparent;
+  transform: perspective(1100px) rotateX(var(--rx)) rotateY(var(--ry)) translate3d(0, 0, 0);
+  transform-style: preserve-3d;
+  transition:
+    transform 0.52s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.38s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.48s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.event-ticket-card.is-tilting {
+  transition:
+    transform 0.14s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.32s ease,
+    box-shadow 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .events-console-spotlight {
+    opacity: var(--e-spot);
+    background: radial-gradient(
+      420px circle at var(--ex) var(--ey),
+      rgba(201, 181, 128, 0.085) 0%,
+      rgba(232, 123, 57, 0.045) 42%,
+      transparent 72%
+    );
+    transition: opacity 0.4s ease;
+  }
+
+  .luutru-console-spotlight {
+    opacity: var(--l-spot);
+    background: radial-gradient(
+      420px circle at var(--lx) var(--ly),
+      rgba(201, 181, 128, 0.09) 0%,
+      rgba(33, 107, 112, 0.055) 42%,
+      transparent 72%
+    );
+    transition: opacity 0.4s ease;
+  }
+
+  .amthuc-console-spotlight {
+    opacity: var(--a-spot);
+    background: radial-gradient(
+      420px circle at var(--ax) var(--ay),
+      rgba(232, 123, 57, 0.08) 0%,
+      rgba(201, 181, 128, 0.06) 42%,
+      transparent 72%
+    );
+    transition: opacity 0.4s ease;
+  }
+
+  .diemdulich-console-spotlight {
+    opacity: var(--d-spot);
+    background: radial-gradient(
+      420px circle at var(--dx) var(--dy),
+      rgba(105, 165, 163, 0.085) 0%,
+      rgba(201, 181, 128, 0.06) 42%,
+      transparent 72%
+    );
+    transition: opacity 0.4s ease;
+  }
+
+  .event-ticket-card:hover {
+    transform: perspective(1100px) rotateX(var(--rx)) rotateY(var(--ry)) translate3d(0, -6px, 0);
+    border-color: rgba(230, 217, 183, 0.6);
+    box-shadow:
+      0 28px 64px rgba(3, 12, 17, 0.56),
+      0 0 0 1px rgba(230, 217, 183, 0.14),
+      0 8px 24px rgba(201, 181, 128, 0.12);
+  }
+
+  .event-ticket-card:active {
+    transform: perspective(1100px) rotateX(0deg) rotateY(0deg) translate3d(0, -2px, 0) scale(0.992);
+    border-color: rgba(201, 181, 128, 0.46);
+    box-shadow: 0 16px 36px rgba(3, 12, 17, 0.45);
+    transition: transform 0.15s ease-out, box-shadow 0.15s ease-out, border-color 0.15s ease-out;
+  }
+
+  .event-ticket-card:active .event-ticket-spotlight {
+    opacity: 0 !important;
+  }
+
+  .event-ticket-grid:has(.event-ticket-card:hover) .event-ticket-card:not(:hover) {
+    opacity: 0.88;
+    filter: saturate(0.9);
+  }
+
+  .event-ticket-card .event-ticket-media {
+    transform: translate3d(var(--px), var(--py), 0) scale(1);
+    transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .event-ticket-card.is-tilting .event-ticket-media,
+  .event-ticket-card:hover .event-ticket-media {
+    transform: translate3d(var(--px), var(--py), 0) scale(1.06);
+  }
+
+  .event-ticket-spotlight {
+    opacity: var(--spot-opacity);
+    background: radial-gradient(
+      290px circle at var(--mx) var(--my),
+      rgba(201, 181, 128, 0.085) 0%,
+      rgba(232, 123, 57, 0.035) 42%,
+      transparent 72%
+    );
+    transition: opacity 0.35s ease;
+  }
+
+  .event-ticket-card:hover .explore-corner-bracket {
+    opacity: 0.72;
+    transform: scale(1);
+  }
+  .event-ticket-card:hover .explore-arrow-out {
+    transform: translateX(115%);
+    opacity: 0;
+  }
+  .event-ticket-card:hover .explore-arrow-in {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .event-ticket-card,
+  .event-ticket-card:hover {
+    transform: none !important;
+  }
+  .event-ticket-grid:has(.event-ticket-card:hover) .event-ticket-card:not(:hover) {
+    opacity: 1;
+    filter: none;
+  }
+  .event-ticket-spotlight {
+    display: none;
+  }
+}
+
+@keyframes astrolabe-spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+@keyframes astrolabe-spin-reverse {
+  from { transform: rotate(360deg); }
+  to   { transform: rotate(0deg); }
+}
+@keyframes star-pulse-soft {
+  0%, 100% { transform: scale(1); opacity: 0.55; }
+  50%      { transform: scale(1.65); opacity: 0.12; }
+}
+
+.astrolabe-ring-cw {
+  animation: astrolabe-spin-slow 48s linear infinite;
+}
+.astrolabe-ring-ccw {
+  animation: astrolabe-spin-reverse 34s linear infinite;
+}
+.astrolabe-ring-fast {
+  animation: astrolabe-spin-slow 2.2s linear infinite;
+}
+.constellation-star-halo {
+  animation: star-pulse-soft 3.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .astrolabe-ring-cw,
+  .astrolabe-ring-ccw,
+  .astrolabe-ring-fast,
+  .constellation-star-halo {
+    animation: none;
+  }
+  .mystery-veil-mist {
+    -webkit-mask-image: none !important;
+    mask-image: none !important;
+    opacity: 0.35 !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .explore-orb-a,
+  .explore-orb-b,
+  .explore-orb-c,
+  .explore-hero-mist {
+    animation: none;
+  }
+  .explore-card-item,
+  .explore-card-item.luxury-card-surface:hover,
+  .explore-card-item.luxury-card-surface:focus-within {
+    transform: none !important;
+  }
+  .explore-card-grid:has(.explore-card-item:hover) .explore-card-item:not(:hover) {
+    opacity: 1;
+    filter: none;
+  }
+  .explore-card-spotlight,
+  .explore-corner-bracket {
+    display: none;
+  }
+  .luxury-card-surface:hover,
+  .luxury-card-surface:focus-within {
+    transform: none;
+  }
+  .luxury-border-sweep::before,
+  .luxury-shimmer-frame::after,
+  .luxury-btn-sweep::after {
+    display: none;
+  }
+  .text-shimmer-light.is-shimmering,
+  .text-shimmer-light:hover,
+  .text-shimmer-dark.is-shimmering,
+  .text-shimmer-dark:hover,
+  .text-shimmer-gold.is-shimmering,
+  .text-shimmer-gold:hover {
+    animation: none;
+    background-image: none;
+    -webkit-text-fill-color: currentColor;
+  }
+}
+
+/* ======================================================
+   DANANGGO MOTION UPGRADE V2.0 — PAGE TRANSITION, SCROLL REVEAL,
+   CARD HOVER POLISH, IMAGE INTERACTIONS & PERFORMANCE
+   100% GPU-composited: transform + opacity only. Zero layout thrash.
+   ====================================================== */
+
+/* ── PAGE TRANSITION LOADING INDICATOR ─────────────────────────────────────── */
+/* Teal progress bar chạy ngang top khi chuyển trang */
+@keyframes page-load-bar {
+  0%   { transform: scaleX(0.0); opacity: 1; }
+  60%  { transform: scaleX(0.78); opacity: 1; }
+  90%  { transform: scaleX(0.95); opacity: 1; }
+  100% { transform: scaleX(1.0); opacity: 0; }
+}
+
+.page-transition-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 9999;
+  transform-origin: left center;
+  background: linear-gradient(90deg, #2DD4BF 0%, #216B70 50%, #E87B39 100%);
+  animation: page-load-bar 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  pointer-events: none;
+}
+
+/* ── SCROLL-REVEAL UTILITY SYSTEM ───────────────────────────────────────────── */
+/* Pure CSS scroll-reveal for elements that DON'T use framer-motion.
+   Add .reveal-on-scroll via JS IntersectionObserver in a custom hook,
+   or use class .is-revealed to trigger. */
+
+.reveal-fade-up {
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal-fade-left {
+  opacity: 0;
+  transform: translateX(-20px);
+  transition:
+    opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal-fade-right {
+  opacity: 0;
+  transform: translateX(20px);
+  transition:
+    opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal-scale {
+  opacity: 0;
+  transform: scale(0.96);
+  transition:
+    opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal-fade-up.is-revealed,
+.reveal-fade-left.is-revealed,
+.reveal-fade-right.is-revealed,
+.reveal-scale.is-revealed {
+  opacity: 1;
+  transform: none;
+}
+
+/* Stagger delays for sibling reveals */
+.reveal-delay-1 { transition-delay: 0.08s; }
+.reveal-delay-2 { transition-delay: 0.16s; }
+.reveal-delay-3 { transition-delay: 0.24s; }
+.reveal-delay-4 { transition-delay: 0.32s; }
+.reveal-delay-5 { transition-delay: 0.40s; }
+.reveal-delay-6 { transition-delay: 0.48s; }
+
+/* ── PREMIUM CARD HOVER INTERACTIONS ────────────────────────────────────────── */
+/* Light-surface card: lift + deepen shadow on hover */
+.card-hover-lift {
+  transition:
+    transform 0.38s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card-hover-lift:hover {
+    transform: translateY(-5px) scale(1.005);
+    box-shadow:
+      0 20px 48px -8px rgba(16, 40, 50, 0.16),
+      0 8px 20px -4px rgba(16, 40, 50, 0.08);
+  }
+  .card-hover-lift:active {
+    transform: translateY(-2px) scale(1.002);
+    transition-duration: 0.12s;
+  }
+}
+
+/* Dark-surface card: glow on hover */
+.card-hover-glow {
+  transition:
+    transform 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card-hover-glow:hover {
+    transform: translateY(-4px);
+    box-shadow:
+      0 24px 56px rgba(4, 16, 23, 0.55),
+      0 0 0 1px rgba(45, 212, 191, 0.22),
+      0 6px 24px rgba(45, 212, 191, 0.10);
+    border-color: rgba(45, 212, 191, 0.3) !important;
+  }
+}
+
+/* ── IMAGE ZOOM ON HOVER ─────────────────────────────────────────────────────── */
+/* Zoom nhẹ ảnh bên trong container khi hover card — không thay đổi kích thước container */
+.img-zoom-container {
+  overflow: hidden;
+}
+
+.img-zoom-container img,
+.img-zoom-container .img-zoom-target {
+  transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .img-zoom-container:hover img,
+  .img-zoom-container:hover .img-zoom-target,
+  .group:hover .img-zoom-target {
+    transform: scale(1.06);
+  }
+}
+
+/* Faster zoom cho cards nhỏ (amthuc, luutru restaurant cards) */
+.img-zoom-fast img,
+.img-zoom-fast .img-zoom-target {
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ── BUTTON INTERACTIONS ─────────────────────────────────────────────────────── */
+/* Teal CTA button: press down effect */
+.btn-press {
+  transition:
+    transform 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.22s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn-press:hover {
+    transform: translateY(-2px);
+  }
+}
+.btn-press:active {
+  transform: translateY(1px) scale(0.985);
+  transition-duration: 0.08s;
+}
+
+/* Orange/Ember CTA: warm shadow on hover */
+.btn-ember {
+  transition:
+    transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn-ember:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px -6px rgba(232, 123, 57, 0.42);
+  }
+}
+.btn-ember:active {
+  transform: translateY(0px);
+  transition-duration: 0.08s;
+}
+
+/* ── SKELETON SHIMMER LOADING ─────────────────────────────────────────────────── */
+/* Skeleton pulse cho image placeholders */
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.5; }
+  50%       { opacity: 0.85; }
+}
+
+.skeleton-pulse {
+  animation: skeleton-pulse 1.6s ease-in-out infinite;
+  background: linear-gradient(90deg, #e5e7eb 0%, #f3f4f6 50%, #e5e7eb 100%);
+  background-size: 200% 100%;
+}
+
+.skeleton-pulse-dark {
+  animation: skeleton-pulse 1.6s ease-in-out infinite;
+  background: linear-gradient(90deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.05) 100%);
+  background-size: 200% 100%;
+}
+
+/* ── FOCUS STATES (Accessibility) ─────────────────────────────────────────────── */
+/* Teal focus ring consistent across all interactive elements */
+.focus-teal:focus-visible {
+  outline: 2px solid #2DD4BF;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── SCROLL INDICATOR ANIMATION ───────────────────────────────────────────────── */
+@keyframes scroll-bounce {
+  0%, 100% { transform: translateY(0); opacity: 0.6; }
+  50%       { transform: translateY(6px); opacity: 1; }
+}
+
+.scroll-indicator {
+  animation: scroll-bounce 1.8s ease-in-out infinite;
+}
+
+/* ── SMOOTH IMAGE FADE-IN ON LOAD ─────────────────────────────────────────────── */
+/* Dùng cho <img> với onLoad handler thêm class .img-loaded */
+.img-fade-in {
+  opacity: 0;
+  transition: opacity 0.45s ease;
+}
+.img-fade-in.img-loaded {
+  opacity: 1;
+}
+
+/* ── TAG / CHIP HOVER ──────────────────────────────────────────────────────────── */
+.chip-interactive {
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .chip-interactive:hover {
+    transform: translateY(-1px);
+  }
+}
+
+/* ── SECTION DIVIDER ANIMATE ──────────────────────────────────────────────────── */
+/* Thin line expands from center on scroll */
+@keyframes line-expand-center {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+.divider-animate {
+  transform-origin: center;
+  animation: line-expand-center 0.95s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-play-state: paused;
+}
+.divider-animate.is-revealed {
+  animation-play-state: running;
+}
+
+/* ── PARALLAX DEPTH HINT ───────────────────────────────────────────────────────── */
+/* Applied to background elements for subtle GPU parallax via CSS transform */
+.parallax-slow {
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+/* ── GLASS PANEL POLISH ───────────────────────────────────────────────────────── */
+/* Consistent frosted glass for modals, dropdowns, tooltips */
+.glass-panel {
+  background: rgba(7, 24, 33, 0.88);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border: 1px solid rgba(230, 217, 183, 0.18);
+}
+
+.glass-panel-light {
+  background: rgba(255, 253, 245, 0.92);
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  border: 1px solid rgba(16, 40, 50, 0.08);
+}
+
+/* ── TEAL UNDERLINE LINK ──────────────────────────────────────────────────────── */
+/* Smooth left-to-right underline sweep, shared across all text links */
+.link-underline-teal {
+  position: relative;
+  display: inline;
+  text-decoration: none;
+}
+
+.link-underline-teal::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .link-underline-teal:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+}
+
+/* ── RATING STAR INTERACTION ──────────────────────────────────────────────────── */
+.star-interactive {
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@media (hover: hover) and (pointer: fine) {
+  .star-interactive:hover {
+    transform: scale(1.25);
+  }
+}
+
+/* ── BACK TO TOP BUTTON ───────────────────────────────────────────────────────── */
+@keyframes fab-pop-in {
+  from { opacity: 0; transform: scale(0.7) translateY(12px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+.fab-enter {
+  animation: fab-pop-in 0.38s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* ── REDUCED MOTION: Disable all new animations above ────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .page-transition-bar,
+  .reveal-fade-up,
+  .reveal-fade-left,
+  .reveal-fade-right,
+  .reveal-scale {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .card-hover-lift:hover,
+  .card-hover-glow:hover {
+    transform: none !important;
+    box-shadow: none !important;
+  }
+  .img-zoom-container:hover img,
+  .img-zoom-container:hover .img-zoom-target,
+  .group:hover .img-zoom-target {
+    transform: none !important;
+  }
+  .btn-press:hover,
+  .btn-ember:hover {
+    transform: none !important;
+    box-shadow: none !important;
+  }
+  .scroll-indicator {
+    animation: none !important;
+  }
+  .divider-animate {
+    animation: none !important;
+    transform: none !important;
+  }
+  .chip-interactive:hover {
+    transform: none !important;
+  }
+  .fab-enter {
+    animation: none !important;
+  }
+  .skeleton-pulse,
+  .skeleton-pulse-dark {
+    animation: none !important;
+    opacity: 0.6;
+  }
 }

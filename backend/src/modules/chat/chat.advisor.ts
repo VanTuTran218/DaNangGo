@@ -644,6 +644,24 @@ export function planIntroduction(plan: ChatTravelPlan) {
   return `Mình lên trước lịch ${plan.dayCount} ngày${plan.guestCount ? ` cho ${plan.guestCount} người` : ""}${plan.budget ? `, tổng ngân sách bạn đưa ra ${money(plan.budget)}` : ""}. Các buổi được cân đối theo giờ đến/về và nhịp đi bạn đã cung cấp; buổi không còn thời gian sẽ không xếp hoạt động.\n\n${plan.questions?.length ? "Để chỉnh lịch sát hơn, bạn bổ sung giúp mình:\n" + plan.questions.map((q) => "• " + q).join("\n") : "Bạn có thể nhắn đổi giờ đến/về, đổi phương tiện, thêm điểm hoặc điều chỉnh nhịp đi ngay trong cuộc trò chuyện này."}`;
 }
 
+export function pickAcrossDistricts(rows: PlaceSearchRow[], limit: number) {
+  const districts = new Set<string>();
+  const preferred: PlaceSearchRow[] = [];
+  const remaining: PlaceSearchRow[] = [];
+
+  for (const row of rows) {
+    const district = row.districtName?.trim();
+    if (district && !districts.has(district)) {
+      districts.add(district);
+      preferred.push(row);
+    } else {
+      remaining.push(row);
+    }
+  }
+
+  return [...preferred, ...remaining].slice(0, limit);
+}
+
 export function consultationText(
   rows: PlaceSearchRow[],
   category: string,

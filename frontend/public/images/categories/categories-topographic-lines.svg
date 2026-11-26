@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" fill="none" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="catTopoGold" x1="0%" y1="30%" x2="100%" y2="70%">
+      <stop offset="0%" stop-color="#C9B580" stop-opacity="0" />
+      <stop offset="25%" stop-color="#C9B580" stop-opacity="0.24" />
+      <stop offset="55%" stop-color="#FFF8E9" stop-opacity="0.32" />
+      <stop offset="82%" stop-color="#69A5A3" stop-opacity="0.22" />
+      <stop offset="100%" stop-color="#216B70" stop-opacity="0" />
+    </linearGradient>
+    <linearGradient id="catTopoTeal" x1="0%" y1="70%" x2="100%" y2="20%">
+      <stop offset="0%" stop-color="#216B70" stop-opacity="0" />
+      <stop offset="30%" stop-color="#69A5A3" stop-opacity="0.20" />
+      <stop offset="70%" stop-color="#C9B580" stop-opacity="0.18" />
+      <stop offset="100%" stop-color="#216B70" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+  <!-- Coastal topographic elevation lines inspired by Son Tra & My Khe bay -->
+  <g stroke-linecap="round">
+    <path d="M-120 190 C210 95 490 270 830 175 C1170 80 1390 235 1720 135" stroke="url(#catTopoGold)" stroke-width="1" />
+    <path d="M-120 265 C245 170 530 345 875 245 C1220 145 1425 300 1720 205" stroke="url(#catTopoTeal)" stroke-width="0.85" />
+    <path d="M-100 620 C275 510 610 695 965 580 C1320 465 1480 620 1720 535" stroke="url(#catTopoGold)" stroke-width="0.9" />
+    <path d="M-100 705 C315 595 655 770 1005 660 C1355 550 1515 695 1720 615" stroke="url(#catTopoTeal)" stroke-width="0.75" stroke-dasharray="4 10" />
+    <circle cx="240" cy="450" r="340" stroke="#C9B580" stroke-opacity="0.09" stroke-width="0.75" />
+    <circle cx="1360" cy="420" r="410" stroke="#69A5A3" stroke-opacity="0.09" stroke-width="0.75" stroke-dasharray="3 9" />
+  </g>
+</svg>

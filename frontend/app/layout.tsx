@@ -4,17 +4,27 @@ import Navbar from "@/components/layout/Navbar";
 import IntroOverlay from "@/components/layout/IntroOverlay";
 import ChatBox from "@/components/chat/ChatBox";
 import LenisProvider from "@/providers/LenisProvider";
+import ScrollRevealProvider from "@/providers/ScrollRevealProvider";
 import { HeroSlideProvider } from "@/contexts/HeroSlideContext";
 import { NavbarHeroProvider } from "@/contexts/NavbarHeroContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { FavoritesProvider } from "@/contexts/FavoritesContext";
-import { Be_Vietnam_Pro, Inter } from "next/font/google";
+import { Be_Vietnam_Pro, Inter, Playfair_Display } from "next/font/google";
 
 // ── Font chính toàn website: Be Vietnam Pro (Hỗ trợ tiếng Việt đầy đủ, chuẩn Premium Travel) ──
 const beVietnamPro = Be_Vietnam_Pro({
   subsets: ["latin", "vietnamese"],
-  weight: ["600", "700", "800"],
+  weight: ["400", "500", "600", "700", "800"],
   variable: "--font-display",
+  display: "swap",
+});
+
+// ── Font Editorial Serif cho Homepage Luxury: Playfair Display ──
+const playfairDisplay = Playfair_Display({
+  subsets: ["latin", "vietnamese"],
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
+  variable: "--font-serif-editorial",
   display: "swap",
 });
 
@@ -31,6 +41,16 @@ export const metadata: Metadata = {
   description:
     "Khám phá Đà Nẵng với DanangGo — cẩm nang du lịch đầy đủ nhất về điểm đến, ẩm thực, lưu trú và lịch trình gợi ý.",
   keywords: "Đà Nẵng, du lịch, cẩm nang, bãi biển Mỹ Khê, Bà Nà Hills",
+  icons: {
+    icon: [
+      { url: "/images/branding/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/images/branding/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/images/branding/favicon-48x48.png", sizes: "48x48", type: "image/png" },
+    ],
+    apple: [
+      { url: "/images/branding/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
   openGraph: {
     title: "DanangGo — Cẩm nang du lịch Đà Nẵng",
     description: "Khám phá Đà Nẵng với cẩm nang du lịch đầy đủ nhất.",
@@ -45,12 +65,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html
+      <html
       lang="vi"
       data-scroll-behavior="smooth"
-      className={`${beVietnamPro.variable} ${inter.variable}`}
+      className={`${beVietnamPro.variable} ${inter.variable} ${playfairDisplay.variable}`}
     >
-      <body className="bg-gray-50 text-gray-900 antialiased">
+      <body className="text-gray-900 antialiased">
         {/*
           IntroOverlay — renders on client-only (useEffect checks sessionStorage)
           Server-side: returns null → no SEO impact, content renders normally
@@ -66,6 +86,9 @@ export default function RootLayout({
             <HeroSlideProvider>
               <NavbarHeroProvider>
                 <LenisProvider>
+                  {/* CSS Scroll Reveal (IntersectionObserver — toàn trang) */}
+                  <ScrollRevealProvider />
+
                   {/* Fixed Navbar */}
                   <Navbar />
 

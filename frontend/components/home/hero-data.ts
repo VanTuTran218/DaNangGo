@@ -1,13 +1,15 @@
-export const INTERVAL_MS = 3500; // 3.5 giây thư thái, cho người dùng đủ thời gian đọc khi chữ chạy chậm
-export const FADE_MS = 1000;     // 1 giây crossfade mượt mà
-export const KEN_BURNS_MS = INTERVAL_MS + FADE_MS; // 4500ms chuyển động êm dịu
-export const SHOW_INDICATORS = true;
+export const INTERVAL_MS = 4500; // 4.5 giây tự động chuyển slide mượt mà
+export const FADE_MS = 1200;     // 1.2 giây crossfade điện ảnh mượt mà giữa các ảnh nền
+export const KEN_BURNS_MS = INTERVAL_MS + FADE_MS; // 5700ms chuyển động zoom nhẹ liên tục
+export const SHOW_INDICATORS = false;
 
 export interface HeroSlideData {
   id: number;
   image: string;
   alt: string;
   locationName: string;
+  metaTag: string;
+  exploreHref: string;
   objectPosition: string;
   badge: string;
   line1: string;
@@ -23,8 +25,10 @@ export const HERO_SLIDES: HeroSlideData[] = [
       "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?q=90&w=2560&auto=format&fit=crop",
     alt: "Cầu Vàng trên Bà Nà Hills, Đà Nẵng",
     locationName: "Cầu Vàng Bà Nà Hills",
-    objectPosition: "50% 50%",
-    badge: "CẨM NANG DU LỊCH ĐÀ NẴNG 2025",
+    metaTag: "22°C · Đỉnh núi mây phủ",
+    exploreHref: "/diemdulich",
+    objectPosition: "62% 42%",
+    badge: "CẨM NANG DU LỊCH ĐÀ NẴNG 2026",
     line1: "Khám Phá Đà Nẵng",
     line2: "Thiên Đường Biển",
     line3: "& Văn Hóa Miền Trung",
@@ -37,7 +41,9 @@ export const HERO_SLIDES: HeroSlideData[] = [
       "https://images.unsplash.com/photo-1733041449281-9f5c8cd67780?q=90&w=2560&auto=format&fit=crop",
     alt: "Phố cổ Hội An về đêm với thuyền đèn lồng trên sông Hoài",
     locationName: "Phố Cổ Hội An",
-    objectPosition: "50% 50%",
+    metaTag: "25°C · Đêm đèn lồng",
+    exploreHref: "/khampha",
+    objectPosition: "58% 52%",
     badge: "DI SẢN VĂN HÓA THẾ GIỚI",
     line1: "Phố Cổ Hội An",
     line2: "Đêm Đèn Lồng Lung Linh",
@@ -51,7 +57,9 @@ export const HERO_SLIDES: HeroSlideData[] = [
       "https://images.unsplash.com/photo-1701396173275-835886dd72ce?q=90&w=2560&auto=format&fit=crop",
     alt: "Cầu Rồng Đà Nẵng rực sáng về đêm bên sông Hàn",
     locationName: "Cầu Rồng Sông Hàn",
-    objectPosition: "50% 50%",
+    metaTag: "27°C · Phun lửa T7 & CN",
+    exploreHref: "/diemdulich",
+    objectPosition: "60% 48%",
     badge: "BIỂU TƯỢNG ĐÀ NẴNG VỀ ĐÊM",
     line1: "Cầu Rồng Đà Nẵng",
     line2: "Thành Phố Rực Sáng",

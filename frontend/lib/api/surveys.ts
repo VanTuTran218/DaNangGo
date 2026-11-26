@@ -1,10 +1,10 @@
-import { apiPost } from "./client";
+import { apiPost, apiRequest } from "./client";
 import type {
   FullSurveyFormData,
   QuickSurveyFormData,
 } from "@/constants/survey";
 
-const DRAFT_STORAGE_KEY = "dananggo_survey_full_draft_v1";
+const DRAFT_STORAGE_KEY = "dananggo_survey_full_draft_v2";
 const INVITE_META_KEY = "dananggo_survey_invite_meta_v1";
 
 export interface SurveyInviteMeta {
@@ -203,6 +203,34 @@ export interface SurveySubmitPayload {
   metadata?: Record<string, unknown>;
 }
 
+export interface SurveyAppreciationInfo {
+  sent: boolean;
+  status: "SENT" | "DEV_LOGGED" | "SKIPPED_COOLDOWN" | "FAILED" | "NONE";
+  certificateCode?: string;
+  rewardCode?: string;
+  recipientName?: string;
+  maskedEmail?: string;
+  originLabel?: string | null;
+  stayDurationLabel?: string | null;
+  issuedAt?: string;
+  previewUrl?: string;
+}
+
+export interface SurveyCertificateDetail {
+  certificateCode: string;
+  recipientName: string;
+  maskedEmail: string;
+  originLabel: string | null;
+  stayDurationLabel: string | null;
+  satisfactionScore: number | null;
+  npsScore: number | null;
+  rewardCode: string;
+  deliveryStatus: string;
+  issuedAt: string;
+  emailSubject: string;
+  emailHtml: string;
+}
+
 export function buildSurveyPayload(
   data: FullSurveyFormData,
   itineraryId?: string | number,
@@ -210,20 +238,15 @@ export function buildSurveyPayload(
   const answers: SurveyAnswerPayloadItem[] = [
     { question_code: "TRIP_PURPOSE", option_codes: [data.tripPurpose] },
     { question_code: "STAY_DURATION", option_codes: [data.stayDuration] },
-    { question_code: "TRAVEL_COMPANION", option_codes: [data.travelCompanion] },
     { question_code: "ORIGIN_PROVINCE", option_codes: [data.originProvince] },
-    { question_code: "VISIT_FREQUENCY", option_codes: [data.visitFrequency] },
-    { question_code: "INFO_CHANNELS", option_codes: data.informationChannels },
-    { question_code: "DAILY_BUDGET", answer_number: data.dailyBudget },
-    { question_code: "TOP_EXPENSES", option_codes: data.topExpenses },
     {
       question_code: "OVERALL_SATISFACTION",
       answer_score: data.overallSatisfaction,
     },
     { question_code: "NPS_SCORE", answer_number: data.npsScore ?? undefined },
-    { question_code: "ISSUES_FACED", option_codes: data.issuesFaced },
-    { question_code: "FEEDBACK_TEXT", answer_text: data.feedbackText },
   ];
+  if (data.feedbackText.trim())
+    answers.push({ question_code: "FEEDBACK_TEXT", answer_text: data.feedbackText });
 
   // Thêm các hạng mục trải nghiệm vào danh sách câu trả lời
   Object.entries(data.experienceRatings)
@@ -236,21 +259,8 @@ export function buildSurveyPayload(
       });
     });
 
-  if (data.ageGroup) {
-    answers.push({ question_code: "AGE_GROUP", option_codes: [data.ageGroup] });
-  }
-  if (data.mostUsefulFeature) {
-    answers.push({
-      question_code: "DANANGGO_FEATURE",
-      option_codes: [data.mostUsefulFeature],
-    });
-  }
-  if (data.itineraryAccuracy) {
-    answers.push({
-      question_code: "DANANGGO_ACCURACY",
-      option_codes: [data.itineraryAccuracy],
-    });
-  }
+  const cleanEmail = data.recipientEmail?.trim();
+  const cleanName = data.recipientName?.trim();
 
   return {
     survey_type: "FULL",
@@ -260,6 +270,8 @@ export function buildSurveyPayload(
       client_timestamp: new Date().toISOString(),
       user_agent: typeof navigator !== "undefined" ? navigator.userAgent : "",
       consent_agreed: data.consentAgreed,
+      ...(cleanEmail ? { recipient_email: cleanEmail } : {}),
+      ...(cleanName ? { recipient_name: cleanName } : {}),
     },
   };
 }
@@ -268,11 +280,15 @@ export function buildSurveyPayload(
 export async function submitFullSurvey(
   data: FullSurveyFormData,
   itineraryId?: string | number,
-): Promise<{ success: boolean; message: string }> {
-  const res = await apiPost<{ responseId: number }>(
-    "/api/surveys/submit",
-    buildSurveyPayload(data, itineraryId),
-  );
+): Promise<{
+  success: boolean;
+  message: string;
+  appreciation?: SurveyAppreciationInfo;
+}> {
+  const res = await apiPost<{
+    responseId: number;
+    appreciation?: SurveyAppreciationInfo;
+  }>("/api/surveys/submit", buildSurveyPayload(data, itineraryId));
   if (!res.data?.responseId)
     throw new Error("Máy chủ chưa xác nhận lưu khảo sát. Vui lòng thử lại.");
   recordSurveyCompleted(itineraryId);
@@ -280,7 +296,20 @@ export async function submitFullSurvey(
   return {
     success: true,
     message: res.message || "Đã lưu khảo sát. Cảm ơn bạn!",
+    appreciation: res.data.appreciation,
   };
+}
+
+export async function fetchSurveyCertificate(
+  code: string,
+): Promise<SurveyCertificateDetail> {
+  const res = await apiRequest<SurveyCertificateDetail>(
+    `/api/surveys/certificate/${encodeURIComponent(code)}`,
+  );
+  if (!res.data?.certificateCode) {
+    throw new Error("Không tìm thấy chứng nhận tri ân.");
+  }
+  return res.data;
 }
 
 /**

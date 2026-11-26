@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" fill="none" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <radialGradient id="golden-sun-wash" cx="78%" cy="18%" r="62%">
+      <stop offset="0%" stop-color="#E87B39" stop-opacity="0.22" />
+      <stop offset="38%" stop-color="#C9AB78" stop-opacity="0.18" />
+      <stop offset="72%" stop-color="#F8F3E9" stop-opacity="0.06" />
+      <stop offset="100%" stop-color="#F8F3E9" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="morning-mist-left" cx="18%" cy="42%" r="55%">
+      <stop offset="0%" stop-color="#216B70" stop-opacity="0.09" />
+      <stop offset="55%" stop-color="#C9AB78" stop-opacity="0.07" />
+      <stop offset="100%" stop-color="#F8F3E9" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#golden-sun-wash)" />
+  <rect width="1600" height="900" fill="url(#morning-mist-left)" />
+</svg>

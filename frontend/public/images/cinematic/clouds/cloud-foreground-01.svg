@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 340" fill="none" preserveAspectRatio="none">
+  <defs>
+    <linearGradient id="fgCloudBase" x1="960" y1="30" x2="960" y2="340" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#F8F8F4" stop-opacity="0" />
+      <stop offset="44%" stop-color="#F8F8F4" stop-opacity="0.65" />
+      <stop offset="82%" stop-color="#F8F8F4" stop-opacity="0.96" />
+      <stop offset="100%" stop-color="#F8F8F4" stop-opacity="1" />
+    </linearGradient>
+    <radialGradient id="fgPuffA" cx="35%" cy="66%" r="36%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.94" />
+      <stop offset="60%" stop-color="#F8F8F4" stop-opacity="0.52" />
+      <stop offset="100%" stop-color="#F8F8F4" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="fgPuffB" cx="68%" cy="64%" r="38%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.92" />
+      <stop offset="62%" stop-color="#F8F8F4" stop-opacity="0.48" />
+      <stop offset="100%" stop-color="#F8F8F4" stop-opacity="0" />
+    </radialGradient>
+    <filter id="fgCloudBlur" x="-10%" y="-18%" width="120%" height="136%">
+      <feGaussianBlur stdDeviation="12" />
+    </filter>
+  </defs>
+  <g filter="url(#fgCloudBlur)">
+    <ellipse cx="670" cy="224" rx="580" ry="112" fill="url(#fgPuffA)" />
+    <ellipse cx="1310" cy="218" rx="610" ry="118" fill="url(#fgPuffB)" />
+    <path d="M-80 340 L-80 218 C190 250 410 148 710 198 C1010 248 1270 142 1570 192 C1740 220 1880 176 2000 195 L2000 340 Z" fill="url(#fgCloudBase)" />
+  </g>
+</svg>

@@ -101,11 +101,13 @@ export default function QuickStartList({
   onSelect,
   disabled = false,
   compact = false,
+  maxItems,
 }: {
   prompts: string[];
   onSelect: (text: string) => void;
   disabled?: boolean;
   compact?: boolean;
+  maxItems?: number;
 }) {
   const [activeCategory, setActiveCategory] = useState<string>("all");
 
@@ -113,13 +115,15 @@ export default function QuickStartList({
     (a, b) => Number(b.includes("lịch")) - Number(a.includes("lịch")),
   );
 
-  const filtered =
+  const filteredByCat =
     compact && activeCategory !== "all"
       ? ordered.filter((prompt) => {
           const item = appearances.find((app) => prompt.includes(app.match));
           return item?.category === activeCategory;
         })
       : ordered;
+
+  const filtered = maxItems ? filteredByCat.slice(0, maxItems) : filteredByCat;
 
   return (
     <div className={compact ? styles.compactPromptWrapper : styles.quickGridWrapper}>

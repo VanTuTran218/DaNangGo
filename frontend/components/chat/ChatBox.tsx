@@ -113,6 +113,8 @@ export default function ChatBox({
   );
 }
 
+const MIN_SESSION_LOADING_MS = 400;
+
 function ChatExperience({ variant }: { variant: "widget" | "page" }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -159,6 +161,7 @@ function ChatExperience({ variant }: { variant: "widget" | "page" }) {
     requestRef.current?.abort();
     const controller = new AbortController();
     requestRef.current = controller;
+    const startedAt = performance.now();
     setIsLoading(true);
     setCandidates([]);
     setStatus("Đang mở hội thoại…");
@@ -166,6 +169,11 @@ function ChatExperience({ variant }: { variant: "widget" | "page" }) {
       const rows = await chatRequest<ChatMessage[]>(`/sessions/${id}`, {
         signal: controller.signal,
       });
+      if (controller.signal.aborted) return;
+      const remaining = MIN_SESSION_LOADING_MS - (performance.now() - startedAt);
+      if (remaining > 0) {
+        await new Promise<void>((resolve) => setTimeout(resolve, remaining));
+      }
       if (controller.signal.aborted) return;
       setMessages(rows);
       setSessionId(id);
@@ -498,7 +506,7 @@ function ChatExperience({ variant }: { variant: "widget" | "page" }) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ type: "spring", damping: 20, stiffness: 260 }}
-            className="pointer-events-auto relative w-[300px] rounded-2xl bg-white p-4 shadow-2xl shadow-teal-900/15 ring-1 ring-gray-100"
+            className="pointer-events-auto relative w-[300px] rounded-[6px] bg-white p-4 shadow-[0_24px_60px_rgba(16,40,50,0.18)] border border-[#DEDAD2]"
           >
             <button
               onClick={dismissGreeting}
@@ -510,13 +518,13 @@ function ChatExperience({ variant }: { variant: "widget" | "page" }) {
             <div className="flex gap-3">
               <BotLogo size={44} className="shrink-0" />
               <div className="pr-4">
-                <p className="text-[11px] font-medium text-teal-600">
+                <p className="text-[11px] font-medium text-[#216B70]">
                   {timeGreeting()} ☀️
                 </p>
-                <p className="text-sm font-bold text-gray-900">
+                <p className="text-sm font-bold text-[#102832]">
                   Xin chào{name ? ` ${name}` : " bạn"}! 👋
                 </p>
-                <p className="mt-1 text-xs leading-relaxed text-gray-600">
+                <p className="mt-1 text-xs leading-relaxed text-[#4F5D63]">
                   Mình là <b>{BOT_NAME}</b>, trợ lý AI của DanangGo. Cần tìm
                   quán ngon, chỗ ở hay điểm đi chơi? Hỏi mình nhé!
                 </p>
@@ -524,11 +532,11 @@ function ChatExperience({ variant }: { variant: "widget" | "page" }) {
             </div>
             <button
               onClick={openChat}
-              className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-teal-600 to-teal-500 py-2 text-xs font-semibold text-white transition hover:brightness-110"
+              className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-[4px] bg-[#102832] hover:bg-[#216B70] py-2 text-xs font-semibold text-white transition"
             >
               Trò chuyện với {BOT_NAME} <ArrowRight size={13} />
             </button>
-            <span className="absolute -bottom-1.5 right-7 h-3 w-3 rotate-45 bg-white ring-1 ring-gray-100 [clip-path:polygon(100%_0,100%_100%,0_100%)]" />
+            <span className="absolute -bottom-1.5 right-7 h-3 w-3 rotate-45 bg-white ring-1 ring-[#DEDAD2] [clip-path:polygon(100%_0,100%_100%,0_100%)]" />
           </motion.div>
         )}
       </AnimatePresence>
@@ -551,24 +559,22 @@ function ChatExperience({ variant }: { variant: "widget" | "page" }) {
             }}
             exit={{ opacity: 0, y: 24, scale: 0.96 }}
             transition={{ type: "spring", damping: 26, stiffness: 280 }}
-            className={`pointer-events-auto flex flex-col overflow-hidden rounded-3xl bg-white shadow-2xl shadow-teal-900/20 ring-1 ring-gray-100 ${variant === "page" ? "w-full min-h-[400px]" : "w-[calc(100vw-2.5rem)] max-w-[400px]"}`}
+            className={`pointer-events-auto flex flex-col overflow-hidden rounded-[6px] bg-white shadow-[0_28px_72px_rgba(16,40,50,0.22)] border border-[#DEDAD2] ${variant === "page" ? "w-full min-h-[400px]" : "w-[calc(100vw-2.5rem)] max-w-[400px]"}`}
           >
             {/* Header */}
-            <div className="relative flex shrink-0 items-center gap-3 overflow-hidden bg-gradient-to-br from-teal-600 via-teal-500 to-emerald-500 px-4 py-3.5 text-white">
-              <div className="pointer-events-none absolute -right-6 -top-10 h-28 w-28 rounded-full bg-white/10" />
-              <div className="pointer-events-none absolute -bottom-12 right-16 h-20 w-20 rounded-full bg-orange-300/20" />
-              <div className="relative rounded-2xl bg-white/95 p-1 shadow-md">
+            <div className="relative flex shrink-0 items-center gap-3 overflow-hidden bg-[#102832] border-b border-white/10 px-4 py-3.5 text-white">
+              <div className="relative rounded-[4px] bg-white/95 p-1 shadow-md">
                 <BotLogo size={36} />
-                <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white bg-green-400" />
+                <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white bg-emerald-400" />
               </div>
               <div className="relative min-w-0 flex-1">
                 <p className="flex items-center gap-1.5 text-[15px] font-bold leading-tight">
                   {BOT_NAME}{" "}
-                  <span className="rounded-md bg-white/20 px-1.5 py-px text-[10px] font-semibold">
+                  <span className="rounded-[2px] bg-[#216B70] px-1.5 py-px text-[10px] font-semibold tracking-wider">
                     AI BOT
                   </span>
                 </p>
-                <p className="truncate text-[11px] text-teal-50">
+                <p className="truncate text-[11px] text-[#BCD3D1]">
                   {isLoading ? status : "Trợ lý du lịch Đà Nẵng · Trực tuyến"}
                 </p>
               </div>
@@ -887,14 +893,11 @@ function ChatExperience({ variant }: { variant: "widget" | "page" }) {
       {variant === "widget" && (
         <motion.button
           onClick={() => (isOpen ? setIsOpen(false) : openChat())}
-          whileHover={{ scale: 1.06 }}
-          whileTap={{ scale: 0.94 }}
+          whileHover={{ scale: 1.04 }}
+          whileTap={{ scale: 0.96 }}
           aria-label={isOpen ? "Đóng trợ lý AI" : "Mở trợ lý AI"}
-          className="pointer-events-auto relative flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-xl shadow-teal-900/25 ring-4 ring-teal-500/90"
+          className="pointer-events-auto relative flex h-14 w-14 sm:h-15 sm:w-15 items-center justify-center rounded-full bg-[#FAF9F6] shadow-[0_8px_28px_rgba(16,31,35,0.22)] border border-[#DEDAD2] hover:border-[#0F4C5C] transition-colors"
         >
-          {!isOpen && (
-            <span className="absolute inset-0 animate-ping rounded-full bg-teal-400/30" />
-          )}
           <AnimatePresence mode="wait" initial={false}>
             {isOpen ? (
               <motion.span
@@ -903,7 +906,7 @@ function ChatExperience({ variant }: { variant: "widget" | "page" }) {
                 animate={{ rotate: 0, opacity: 1 }}
                 exit={{ rotate: 90, opacity: 0 }}
               >
-                <X size={26} className="text-teal-600" />
+                <X size={24} className="text-[#0F4C5C]" />
               </motion.span>
             ) : (
               <motion.span
@@ -913,12 +916,12 @@ function ChatExperience({ variant }: { variant: "widget" | "page" }) {
                 exit={{ scale: 0.6, opacity: 0 }}
                 className="flex items-center justify-center"
               >
-                <BotLogo size={50} />
+                <BotLogo size={46} />
               </motion.span>
             )}
           </AnimatePresence>
           {!isOpen && (
-            <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-bold text-white ring-2 ring-white">
+            <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#0F4C5C] px-1 text-[10px] font-semibold tracking-wider text-white ring-2 ring-[#FAF9F6]">
               AI
             </span>
           )}

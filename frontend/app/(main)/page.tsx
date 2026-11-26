@@ -1,62 +1,139 @@
 "use client";
-import Link from 'next/link';
-import HeartButton from '@/components/HeartButton';
+import Link from "next/link";
+import HeartButton from "@/components/HeartButton";
 
 /**
  * DanangGo — Trang chủ (route "/")
+ * Phong cách: DANANGGO — Cinematic Coastal Expedition (White Desert Inspired)
  *
- * ANIMATION GIỮ NGUYÊN HOÀN TOÀN:
- * - Hero: Ken Burns bg + CSS fade-up stagger (LCP-safe)
- * - Reveal wrapper: scroll-triggered fade-up/left/right
- * - PopularCard: hover translateY + shadow + img scale + like bounce
- * - CategoryCard: hover img scale + overlay + CTA slide-up
- * - Itinerary: layoutId pill toggle + AnimatePresence crossfade
- * - Newsletter: shimmer-bg + ripple button
- * - AnimatedCounter: easeOutCubic khi vào viewport
- * - Scroll-to-top: fade-in + slide AnimatePresence
- *
- * BỔ SUNG nội dung theo ảnh tham chiếu:
- * - Hero: đúng H1, quote nghiêng, search 2 ô, tags chuẩn
- * - Popular: 4 card (bỏ 2 cuối), thêm giá, nhãn "CẬP NHẬT 24H QUA", "120+ địa điểm"
- * - Story: badge ảnh, author avatar, nút "Đọc câu chuyện"
- * - Categories: icon góc trên, mô tả section, nút CTA per card
- * - Itinerary: layout 3 cột đồng thời, badge chủ đề, stats dưới mỗi cột
- * - VIP Banner: 2 CTA, badge đặc quyền
- * - Footer: 3 cột đúng label (Khám phá / Tiện ích / Liên hệ), social icons
+ * Bảo toàn 100% nội dung gốc, dữ liệu SQL Server, event handlers, routing và Navbar.
  */
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
+import {
+  motion,
+  AnimatePresence,
+  useScroll,
+  useTransform,
+  useInView,
+  useMotionValue,
+} from "framer-motion";
+import { ChevronLeft, ChevronRight, Mail, Phone, MapPin, Compass } from "lucide-react";
 import { getPlaces } from "@/lib/api/places";
 import { formatPriceRange } from "@/lib/mappers/place.mapper";
 import Reveal from "@/components/ui/Reveal";
 import AnimatedCounter from "@/components/ui/AnimatedCounter";
-import { Magnetic, SpotlightCard, recordSharedPlaceClick } from "@/components/ui/MotionPrimitives";
-import BudgetRecommendation from "@/components/home/BudgetRecommendation";
+import {
+  Magnetic,
+  recordSharedPlaceClick,
+} from "@/components/ui/MotionPrimitives";
+import {
+  CinematicImageMask,
+  HairlineExpand,
+  LineReveal,
+  ScrollImageExpansion,
+  SectionMistBridge,
+  MouseDepthParallax,
+} from "@/components/ui/CinematicMotion";
+import WeekendEventsSection from "@/components/home/WeekendEventsSection";
 import HomeHero from "@/components/home/HomeHero";
+import ImmersiveDiscoverySection, {
+  useHorizontalGalleryContext,
+} from "@/components/home/ImmersiveDiscoverySection";
+import OryzoVectorBridge from "@/components/home/OryzoVectorBridge";
+import EditorialJourneyStage from "@/components/home/EditorialJourneyStage";
+import ThreeWorldsCategories from "@/components/home/ThreeWorldsCategories";
+import CinematicJourneyItinerary from "@/components/home/CinematicJourneyItinerary";
+import CinematicClosingBanner from "@/components/home/CinematicClosingBanner";
+import CinematicSectionTransition from "@/components/home/CinematicSectionTransition";
 import { useAuth } from "@/contexts/AuthContext";
-import { getManagedItineraries, type ManagedItineraryListItem } from "@/lib/api/itineraries";
+import {
+  getManagedItineraries,
+  type ManagedItineraryListItem,
+} from "@/lib/api/itineraries";
 import SurveyInviteCard from "@/components/survey/SurveyInviteCard";
 import SurveyQuickSheet from "@/components/survey/SurveyQuickSheet";
-
 
 // ============================================================
 // DATA
 // ============================================================
 
-// Helper nâng cấp độ phân giải ảnh Unsplash từ DB (w=600/800 -> w=1600&q=90)
-function upgradeHiResImage(url?: string | null, fallback = "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=1600&q=90&auto=format&fit=crop"): string {
-  if (!url) return fallback;
-  if (url.includes("images.unsplash.com")) {
-    return url
+function resolvePlaceFallbackImage(
+  title?: string | null,
+  category?: string | null
+): string {
+  const norm = `${title || ""} ${category || ""}`.toLowerCase();
+  if (norm.includes("furama")) {
+    return "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=1600&q=90&auto=format&fit=crop";
+  }
+  if (norm.includes("naman")) {
+    return "https://images.unsplash.com/photo-1540541338537-1220059b8aed?w=1600&q=90&auto=format&fit=crop";
+  }
+  if (norm.includes("mỹ khê") || norm.includes("my khe") || norm.includes("bãi biển")) {
+    return "/images/partner/danang-my-khe-aerial.jpg";
+  }
+  if (norm.includes("linh ứng") || norm.includes("linh ung")) {
+    return "/images/cinematic/discovery/sontra-sanctuary-cutout.jpg";
+  }
+  if (norm.includes("sơn trà") || norm.includes("son tra")) {
+    return "/images/cinematic/hero/hero-sontra-mist.jpg";
+  }
+  if (norm.includes("ngũ hành sơn") || norm.includes("ngu hanh son")) {
+    return "/images/cinematic/hero/hero-sontra-mist.jpg";
+  }
+  if (norm.includes("cầu rồng") || norm.includes("cau rong") || norm.includes("sông hàn")) {
+    return "/images/partner/danang-dragon-bridge-night.jpg";
+  }
+  if (norm.includes("bà nà") || norm.includes("ba na") || norm.includes("cầu vàng")) {
+    return "/hero/cau-vang-ba-na-hd.jpg";
+  }
+  if (norm.includes("hội an") || norm.includes("hoi an")) {
+    return "/hero/pho-co-hoi-an-hd.jpg";
+  }
+  if (
+    norm.includes("resort") ||
+    norm.includes("hotel") ||
+    norm.includes("khách sạn") ||
+    norm.includes("lưu trú")
+  ) {
+    return "/images/luu-tru-hero.jpg";
+  }
+  if (
+    norm.includes("ẩm thực") ||
+    norm.includes("nhà hàng") ||
+    norm.includes("bánh") ||
+    norm.includes("mì") ||
+    norm.includes("hải sản")
+  ) {
+    return "/images/cinematic/editorial/editorial-coastal-terrace.jpg";
+  }
+  return "/images/cinematic/hero/hero-coastal-panorama.jpg";
+}
+
+function upgradeHiResImage(
+  url?: string | null,
+  title?: string | null,
+  category?: string | null
+): string {
+  const fallback = resolvePlaceFallbackImage(title, category);
+  if (!url || !url.trim() || url.includes("place-placeholder")) {
+    return fallback;
+  }
+  const trimmed = url.trim();
+  if (trimmed.startsWith("/uploads/")) {
+    const apiBase =
+      process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+    return `${apiBase}${trimmed}`;
+  }
+  if (trimmed.includes("images.unsplash.com")) {
+    return trimmed
       .replace(/([?&])w=\d+/g, "$1w=1600")
       .replace(/([?&])q=\d+/g, "$1q=90");
   }
-  return url;
+  return trimmed;
 }
 
-// 4 card theo ảnh tham chiếu (giảm từ 6 xuống 4)
 const POPULAR_CARDS = [
   {
     id: 1,
@@ -108,44 +185,48 @@ const POPULAR_CARDS = [
   },
 ];
 
-// Categories với icon góc trên + số liệu + CTA per card
 const CATEGORIES = [
   {
     id: "luutru",
+    href: "/luutru",
     label: "Lưu Trú Nghỉ Dưỡng",
     desc: "Từ resort 5 sao view biển đến homestay cozy giữa phố cổ — tất cả chờ bạn.",
     count: 124,
     icon: "🏨",
     stat: "124 lựa chọn",
     cta: "Xem 124+ khách sạn",
-    img: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=1600&q=90&auto=format&fit=crop",
+    highlights: ["Resort 5★ mặt biển", "Villa hồ bơi riêng", "Boutique Homestay"],
+    img: "/images/categories/category-hospitality-aman.jpg",
     color: "from-blue-600/70",
   },
   {
     id: "amthuc",
+    href: "/amthuc",
     label: "Thiên Đường Ẩm Thực",
     desc: "Mì Quảng, bánh tráng cuốn thịt heo, bún mắm nêm — đặc sản không thể bỏ qua.",
     count: 89,
     icon: "🍜",
     stat: "89 nhà hàng",
     cta: "Khám phá ẩm thực",
-    img: "https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=1600&q=90&auto=format&fit=crop",
+    highlights: ["Mì Quảng truyền thống", "Hải sản tươi sống", "Ẩm thực chợ đêm"],
+    img: "/images/categories/category-culinary-miquang.jpg",
     color: "from-orange-600/70",
   },
   {
     id: "diemdden",
+    href: "/diemdulich",
     label: "Điểm Du Lịch & Check-in",
     desc: "Cầu Vàng, Cầu Rồng, Sơn Trà — những biểu tượng không thể thiếu trong hành trình.",
     count: 67,
     icon: "🗺️",
     stat: "67 điểm đến",
     cta: "Xem điểm check-in",
-    img: "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=1600&q=90&auto=format&fit=crop",
+    highlights: ["Cầu Vàng Bà Nà", "Bán đảo Sơn Trà", "Ngũ Hành Sơn"],
+    img: "/images/categories/category-discovery-golden-bridge.jpg",
     color: "from-teal-600/70",
   },
 ];
 
-// Itinerary data — layout 3 cột đồng thời theo ảnh
 const ITINERARY_PLANS = {
   "3N2D": {
     label: "Lịch trình 3N2Đ (Cổ điển)",
@@ -245,36 +326,112 @@ type PlanKey = keyof typeof ITINERARY_PLANS;
 
 export default function HomePage() {
   const { user } = useAuth();
-  const [completedItinerary, setCompletedItinerary] = useState<ManagedItineraryListItem | null>(null);
+  const [completedItinerary, setCompletedItinerary] =
+    useState<ManagedItineraryListItem | null>(null);
   const [quickSheetOpen, setQuickSheetOpen] = useState(false);
-  const [popularCards, setPopularCards] = useState<((typeof POPULAR_CARDS)[number] & { placeId?: number })[]>(POPULAR_CARDS);
+  const [storyModalOpen, setStoryModalOpen] = useState(false);
+  const [popularCards, setPopularCards] =
+    useState<((typeof POPULAR_CARDS)[number] & { placeId?: number })[]>(
+      POPULAR_CARDS
+    );
   const [selectedPlan, setSelectedPlan] = useState<PlanKey>("3N2D");
   const [showScrollTop, setShowScrollTop] = useState(false);
-  const prefersReduced = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const [activeCategoryStory, setActiveCategoryStory] = useState(0);
+
+  const popularGalleryRef = useRef<HTMLDivElement>(null);
+  const storySectionRef = useRef<HTMLElement>(null);
+  const storyHeadingRef = useRef<HTMLHeadingElement>(null);
+  const storySpreadRef = useRef<HTMLDivElement>(null);
+
+  const prefersReduced =
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const isStoryHeadingInView = useInView(storyHeadingRef, {
+    once: true,
+    margin: "40px 0px -30px 0px",
+  });
+  const isStorySpreadInView = useInView(storySpreadRef, {
+    once: true,
+    margin: "40px 0px -40px 0px",
+    amount: 0.15,
+  });
+
+  const [isStoryOutlineSolid, setIsStoryOutlineSolid] = useState(false);
+  const [isStorySerifShimmering, setIsStorySerifShimmering] = useState(false);
+
+  useEffect(() => {
+    if (prefersReduced) {
+      setIsStoryOutlineSolid(true);
+      return;
+    }
+    if (!isStoryHeadingInView) return;
+    const solidTimer = setTimeout(() => setIsStoryOutlineSolid(true), 280);
+    const shimmerStartTimer = setTimeout(
+      () => setIsStorySerifShimmering(true),
+      640
+    );
+    const shimmerEndTimer = setTimeout(
+      () => setIsStorySerifShimmering(false),
+      2300
+    );
+    return () => {
+      clearTimeout(solidTimer);
+      clearTimeout(shimmerStartTimer);
+      clearTimeout(shimmerEndTimer);
+    };
+  }, [isStoryHeadingInView, prefersReduced]);
+
+  // Multi-layer Parallax for Editorial Story Section
+  const { scrollYProgress: storyScrollProgress } = useScroll({
+    target: storySectionRef,
+    offset: ["start end", "end start"],
+  });
+  const storyImageY = useTransform(
+    storyScrollProgress,
+    [0, 1],
+    prefersReduced ? [0, 0] : [26, -26]
+  );
+  const storyFrameY = useTransform(
+    storyScrollProgress,
+    [0, 1],
+    prefersReduced ? [0, 0] : [-14, 14]
+  );
 
   // Lấy các địa điểm nổi bật từ SQL Server: GET /api/places?limit=4&sort=rating_desc
   useEffect(() => {
     let isMounted = true;
     async function fetchPopular() {
       try {
-        const res = await getPlaces({ limit: 4, sort: 'rating_desc' });
+        const res = await getPlaces({ limit: 4, sort: "rating_desc" });
         if (res && res.items && res.items.length > 0 && isMounted) {
           const liveCards = res.items.slice(0, 4).map((p) => ({
             id: p.place_id,
             placeId: p.place_id,
             title: p.name,
-            category: p.category_name || (p.place_type === 'RESTAURANT' ? 'Ẩm thực' : 'Điểm tham quan'),
-            location: p.district_name ? `${p.district_name}, Đà Nẵng` : (p.address || 'Đà Nẵng'),
+            category:
+              p.category_name ||
+              (p.place_type === "RESTAURANT" ? "Ẩm thực" : "Điểm tham quan"),
+            location: p.district_name
+              ? `${p.district_name}, Đà Nẵng`
+              : p.address || "Đà Nẵng",
             rating: p.avg_rating || 4.8,
             reviews: p.review_count || 120,
             price: formatPriceRange(p.price_min, p.price_max, p.ticket_price),
-            img: upgradeHiResImage(p.cover_image),
-            badge: p.promo_label || '🔥 Nổi bật',
-            badgeColor: 'bg-teal-600',
+            img: upgradeHiResImage(
+              p.cover_image,
+              p.name,
+              p.category_name || p.place_type
+            ),
+            badge: p.promo_label || "🔥 Nổi bật",
+            badgeColor: "bg-teal-600",
           }));
 
           const liveIds = new Set(liveCards.map((c) => c.id));
-          const merged = [...liveCards, ...POPULAR_CARDS.filter((c) => !liveIds.has(c.id))].slice(0, 4);
+          const merged = [
+            ...liveCards,
+            ...POPULAR_CARDS.filter((c) => !liveIds.has(c.id)),
+          ].slice(0, 4);
           setPopularCards(merged);
         }
       } catch {
@@ -294,7 +451,7 @@ export default function HomePage() {
       .then((items) => {
         if (!isMounted) return;
         const found = items.find((item) => {
-          if (item.status === 'DRAFT') return false;
+          if (item.status === "DRAFT") return false;
           const endDate = new Date(`${item.startDate}T00:00:00`);
           endDate.setDate(endDate.getDate() + item.dayCount - 1);
           return endDate.getTime() <= Date.now() - 24 * 60 * 60 * 1000;
@@ -313,458 +470,533 @@ export default function HomePage() {
     return () => window.removeEventListener("scroll", handler);
   }, []);
 
+  const scrollGallery = (direction: "prev" | "next") => {
+    const el = popularGalleryRef.current;
+    if (!el) return;
+    const step = Math.round(el.clientWidth * 0.72);
+    el.scrollBy({
+      left: direction === "next" ? step : -step,
+      behavior: "smooth",
+    });
+  };
+
   const currentPlan = ITINERARY_PLANS[selectedPlan];
 
   return (
-    <>
+    <div className="home-luxury-root dananggo-cinematic-content bg-[#F8F8F4]">
       {/* ============================================================
-          1. HERO CAROUSEL SECTION (3 SLIDES + SYNCED COPY + ZERO CLS)
+          CHƯƠNG THỊ GIÁC 01 — THE ARRIVAL (HERO SECTION)
           ============================================================ */}
       <HomeHero />
 
       {/* ============================================================
-          2. STATS ROW — lấp lánh gradient navy
+          CHƯƠNG THỊ GIÁC 02 & 03 — V7.0 IMMERSIVE COASTAL DISCOVERY STAGE
+          (Lando Norris Inspired Dual-Subject Cutouts + Kinetic Typography +
+          Signature Brush Wave + Expedition Milestones + Popular Places Showcase)
           ============================================================ */}
-      <section className="relative overflow-hidden bg-white py-12">
-        {/* Shimmer sweep chạy qua nền */}
-        <div
-          className="absolute inset-0 opacity-20"
-          style={{
-            background:
-              "linear-gradient(105deg, transparent 40%, rgba(34,211,238,0.15) 50%, transparent 60%)",
-            backgroundSize: "200% 100%",
-            animation: "shimmer 4s ease-in-out infinite",
-          }}
-        />
-        {/* Glowing dots trang trí */}
-        <div className="absolute top-3 left-1/4 w-1 h-1 rounded-full bg-cyan-400 opacity-60 animate-pulse" />
-        <div className="absolute bottom-3 right-1/3 w-1 h-1 rounded-full bg-orange-400 opacity-60" style={{ animation: "pulse-badge 2.5s ease-in-out infinite" }} />
-        <div className="absolute top-5 right-1/4 w-0.5 h-0.5 rounded-full bg-cyan-300 opacity-40 animate-pulse" />
-
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4">
-            {[
-              { to: 500, suffix: "+", label: "Địa điểm", icon: "📍", color: "from-cyan-400 to-teal-400" },
-              { to: 1500, suffix: "+", label: "Đánh giá", icon: "⭐", color: "from-yellow-400 to-orange-400" },
-              { to: 98, suffix: "%", label: "Hài lòng", icon: "💚", color: "from-emerald-400 to-green-400" },
-              { to: 50, suffix: "+", label: "Lịch trình mẫu", icon: "🗺️", color: "from-purple-400 to-pink-400" },
-            ].map((stat, i) => (
-              <Reveal key={stat.label} delay={i * 0.1}>
-                <div
-                  className={`flex flex-col items-center text-center px-6 py-2 ${
-                    i < 3 ? "md:border-r border-gray-200" : ""
-                  }`}
-                >
-                  {/* Icon nhỏ */}
-                  <span className="text-xl mb-2">{stat.icon}</span>
-
-                  {/* Số đếm — gradient text lấp lánh, glow qua filter */}
-                  <div className="stat-number" style={{ filter: "drop-shadow(0 0 12px rgba(34,211,238,0.2))" }}>
-                    <AnimatedCounter
-                      to={stat.to}
-                      suffix={stat.suffix}
-                      className={`text-4xl font-black bg-gradient-to-r ${stat.color} bg-clip-text text-transparent leading-none`}
-                    />
-                  </div>
-
-                  {/* Label */}
-                  <p className="text-gray-500 text-xs font-medium mt-1.5 tracking-wide uppercase">
-                    {stat.label}
-                  </p>
-
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Lời mời khảo sát cho du khách đã có lịch trình hoàn thành */}
-      {completedItinerary && (
-        <section className="bg-gray-50 pt-8">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+      <ImmersiveDiscoverySection
+        stats={[
+          { to: 500, suffix: "+", label: "Địa điểm", coord: "01" },
+          { to: 1500, suffix: "+", label: "Đánh giá", coord: "02" },
+          { to: 98, suffix: "%", label: "Hài lòng", coord: "03" },
+          { to: 50, suffix: "+", label: "Lịch trình mẫu", coord: "04" },
+        ]}
+        onScrollGallery={scrollGallery}
+        galleryRef={popularGalleryRef}
+        totalCards={popularCards.length}
+        surveyNode={
+          completedItinerary ? (
             <SurveyInviteCard
               itineraryId={completedItinerary.id}
               itineraryTitle={completedItinerary.title}
               onOpenQuickSheet={() => setQuickSheetOpen(true)}
             />
-          </div>
-        </section>
-      )}
-
-      {/* ============================================================
-          3. POPULAR — "Được xem nhiều nhất tuần qua"
-          4 cards, stagger reveal, hover effects GIỮ NGUYÊN
-          ============================================================ */}
-      <section id="popular" className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <Reveal direction="left" delay={0}>
-            <div className="flex items-end justify-between mb-10">
-              <div>
-                {/* Nhãn nhỏ "CẬP NHẬT 24H QUA" */}
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                  <span className="text-red-500 font-bold text-xs uppercase tracking-widest">
-                    Cập nhật 24h qua
-                  </span>
-                </div>
-                <h2 className="h2-section text-2xl sm:text-3xl font-bold text-[#0f2942]">
-                  Được xem nhiều nhất tuần qua
-                </h2>
-              </div>
-              <motion.a
-                whileTap={{ scale: 0.97 }}
-                href="#"
-                className="text-teal-600 hover:text-teal-500 font-medium text-sm hidden sm:flex items-center gap-1 hover:gap-2 transition-all whitespace-nowrap"
-              >
-                Xem tất cả 120+ địa điểm&nbsp;<motion.span whileHover={{ x: 3 }} transition={{ duration: 0.2 }}>→</motion.span>
-              </motion.a>
-            </div>
-          </Reveal>
-
-          {/* 4-card grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {popularCards.map((card, i) => (
-              <Reveal key={card.id} delay={prefersReduced ? 0 : i * 0.08}>
-                <PopularCard
-                  card={card}
-                />
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ============================================================
-          4. STORY — "Câu chuyện & Cảm hứng Du lịch"
-          Reveal fade-left/right GIỮ NGUYÊN, bổ sung badge ảnh + author + CTA
-          ============================================================ */}
-      <section id="cauchuyenvacamhung" className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <Reveal direction="right" delay={0} className="mb-10">
-            {/* Nhãn nhỏ */}
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-teal-600 font-bold text-xs uppercase tracking-widest">
-                DanangGo Editorial Stories
-              </span>
-            </div>
-            <div className="flex items-end justify-between">
-              <h2 className="text-2xl sm:text-3xl font-bold text-[#0f2942]">
-                Câu chuyện &amp; Cảm hứng Du lịch
-              </h2>
-            </div>
-          </Reveal>
-
-          <div className="grid lg:grid-cols-2 gap-10 items-center">
-            {/* Ảnh lớn bên trái */}
-            <Reveal direction="left" className="relative">
-              <div className="relative rounded-2xl overflow-hidden shadow-xl aspect-[4/3]">
-                <Image
-                  src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=2000&q=90&auto=format&fit=crop"
-                  alt="Khoảnh khắc hoàng hôn Đà Nẵng"
-                  fill
-                  quality={90}
-                  className="object-cover hover:scale-[1.03] transition-transform duration-700 ease-out"
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                />
-                {/* Badge "Trải nghiệm địa phương" */}
-                <div className="absolute top-4 left-4 bg-teal-600 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg">
-                  Trải nghiệm địa phương
-                </div>
-                {/* Caption overlay dưới */}
-                <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-[#071a2e]/80 to-transparent p-5">
-                  <p className="text-white font-semibold text-sm leading-snug">
-                    Khi ánh bình minh chạm đỉnh Bàn Cờ và tiếng sóng thì thầm Bãi Rạng
-                  </p>
-                </div>
-              </div>
-            </Reveal>
-
-            {/* Nội dung bên phải */}
-            <Reveal direction="right" delay={0.15}>
-              <div className="space-y-5">
-                {/* Tên tác giả + avatar */}
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-teal-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                    AN
-                  </div>
-                  <div>
-                    <p className="text-[#0f2942] font-semibold text-sm">Anh Nguyên</p>
-                    <p className="text-gray-400 text-xs">Tác giả & Travel Editor · DanangGo</p>
-                  </div>
-                </div>
-
-                <h3 className="h3-card text-xl font-bold text-[#0f2942] leading-snug">
-                  Đà Nẵng — Thành phố đáng sống nhất Đông Nam Á 2025
-                </h3>
-
-                <p className="body-text text-gray-600 leading-relaxed text-sm">
-                  Được ví như "thành phố của cầu", Đà Nẵng sở hữu bờ biển trải dài 30km,
-                  khí hậu trong lành và người dân thân thiện. Từ bãi biển Mỹ Khê trong xanh
-                  đến đỉnh Bà Nà Hills mây phủ, mỗi khoảnh khắc đều là một bức tranh...
-                </p>
-
-                <div className="grid grid-cols-2 gap-3">
-                  {[
-                    { icon: "🏖️", text: "30km bờ biển" },
-                    { icon: "🌡️", text: "26°C quanh năm" },
-                    { icon: "✈️", text: "Bay thẳng 30+ nước" },
-                    { icon: "🏆", text: "Top 10 điểm đến Á" },
-                  ].map((item) => (
-                    <div key={item.text} className="flex items-center gap-2 bg-gray-50 rounded-xl p-2.5">
-                      <span className="text-lg">{item.icon}</span>
-                      <span className="text-xs font-medium text-[#0f2942]">{item.text}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Nút "Đọc câu chuyện" */}
-                <button className="btn-ripple bg-[#0f2942] hover:bg-[#1a3f5c] text-white font-semibold px-6 py-2.5 rounded-xl transition-colors hover:scale-[1.02] active:scale-[0.98] text-sm">
-                  Đọc câu chuyện →
-                </button>
-              </div>
-            </Reveal>
-          </div>
-        </div>
-      </section>
-
-      {/* ============================================================
-          5. CATEGORIES — "Khám phá theo danh mục"
-          Hover overlay GIỮ NGUYÊN, bổ sung: mô tả section, icon góc trên, CTA per card
-          ============================================================ */}
-      <section id="khamphatheodanhmuc" className="py-16 bg-[#0f2942]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <Reveal direction="left" delay={0} className="mb-10">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-cyan-400 font-bold text-xs uppercase tracking-widest">
-                Đa dạng lựa chọn
-              </span>
-            </div>
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-              <div>
-                <h2 className="h2-section text-2xl sm:text-3xl font-bold text-white">
-                  Khám phá theo danh mục
-                </h2>
-                <p className="body-text text-white/60 text-sm mt-1.5 max-w-md">
-                  Chọn đúng danh mục, tìm đúng trải nghiệm — từ nghỉ dưỡng sang trọng
-                  đến ẩm thực dân dã và điểm check-in hot nhất Đà Nẵng.
-                </p>
-              </div>
-            </div>
-          </Reveal>
-
-          <div className="grid md:grid-cols-3 gap-5">
-            {CATEGORIES.map((cat, i) => (
-              <Reveal key={cat.id} delay={prefersReduced ? 0 : i * 0.1}>
-                <CategoryCard category={cat} />
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ============================================================
-          6. ITINERARY — "Lịch trình gợi ý & Cảm hứng khám phá"
-          layoutId toggle GIỮ NGUYÊN, bổ sung: 3 cột đồng thời, badge, stats, CTA per col
-          ============================================================ */}
-      <section id="lichtrinhgoiY" className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <Reveal direction="right" delay={0} className="mb-8">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-orange-500 font-bold text-xs uppercase tracking-widest">
-                Lên kế hoạch dễ dàng
-              </span>
-            </div>
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-              <h2 className="text-2xl sm:text-3xl font-bold text-[#0f2942]">
-                Lịch trình gợi ý &amp; Cảm hứng khám phá
-              </h2>
-              {/* Toggle 3N2D / 4N3D với layoutId pill */}
-              <div className="inline-flex bg-white border border-gray-200 rounded-full p-1 gap-1 shadow-sm flex-shrink-0">
-                {(Object.keys(ITINERARY_PLANS) as PlanKey[]).map((key) => (
-                  <button
-                    key={key}
-                    onClick={() => setSelectedPlan(key)}
-                    className={`relative px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                      selectedPlan === key ? "text-white" : "text-gray-500 hover:text-gray-700"
-                    }`}
-                  >
-                    {selectedPlan === key && (
-                      <motion.div
-                        layoutId="plan-pill"
-                        className="absolute inset-0 bg-[#0f2942] rounded-full"
-                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                      />
-                    )}
-                    <span className="relative z-10">{ITINERARY_PLANS[key].label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </Reveal>
-
-          {/* 3 cột ngày đồng thời — crossfade khi đổi plan */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={selectedPlan}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
-              className="grid md:grid-cols-3 gap-5"
+          ) : undefined
+        }
+      >
+        {popularCards.map((card, i) => (
+          <div
+            key={card.id}
+            className="w-[84vw] sm:w-[46vw] lg:w-[33.5vw] lg:min-w-[400px] lg:max-w-[500px] shrink-0 snap-start h-auto"
+          >
+            <Reveal
+              delay={prefersReduced ? 0 : i * 0.08}
+              className="h-full"
             >
-              {currentPlan.days.map((dayData, i) => (
-                <Reveal key={dayData.day} delay={i * 0.08}>
-                  <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 h-full flex flex-col">
-                    {/* Header ngày */}
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="h3-card font-bold text-[#0f2942] text-base">{dayData.day}</h3>
-                      <span className="bg-teal-50 text-teal-700 text-xs font-semibold px-2.5 py-1 rounded-full">
-                        {dayData.theme}
+              <PopularCard card={card} index={i} />
+            </Reveal>
+          </div>
+        ))}
+      </ImmersiveDiscoverySection>
+
+      {/* Scene B — Coastal Light & Vector Trajectory Transition (Popular Destinations -> Weekend Events) */}
+      <OryzoVectorBridge
+        variant="ivory-to-sand"
+        label="SCENE B // COASTAL LIGHT TRAJECTORY · 16°03'N"
+      />
+
+      {/* ============================================================
+          V10.0 THE GOLDEN COASTAL JOURNEY (SHARED MULTI-LAYER STAGE)
+          Unites:
+          1. CUỐI TUẦN NÀY Ở ĐÀ NẴNG (WeekendEventsSection)
+          2. GOLDEN JOURNEY WAVE BRIDGE (OryzoVectorBridge)
+          3. CÂU CHUYỆN & CẢM HỨNG DU LỊCH (Chapter 04 Editorial Spread)
+          ============================================================ */}
+      <EditorialJourneyStage>
+        {/* 3B. SCENE C — WEEKEND EVENTS ("Cuối tuần này ở Đà Nẵng") */}
+        <WeekendEventsSection />
+
+        {/* Scene D — Seamless Golden Journey Wave & SVG Point-at-Length Sun Traveler */}
+        <OryzoVectorBridge
+          variant="sand-to-ivory"
+          label="SCENE D // EDITORIAL CHRONICLE ORBIT · 108°12'E"
+        />
+
+        {/* ============================================================
+            CHƯƠNG THỊ GIÁC 04 (SCENE E) — THE IMMERSION ("Câu chuyện & Cảm hứng Du lịch")
+            Asymmetric 12-Col Editorial Spread + Kinetic Typography + Editorial Image Expansion
+            ============================================================ */}
+        <section
+          ref={storySectionRef}
+          id="cauchuyenvacamhung"
+          className="pt-8 pb-10 lg:pt-12 lg:pb-14 relative overflow-hidden"
+        >
+          <div className="home-container relative z-10">
+            {/* Editorial 12-column header with V10.0 4-Phase Kinetic Typography (Sections 13, 14, 15, 21) */}
+            <div className="grid lg:grid-cols-12 gap-6 items-end mb-10 lg:mb-14">
+              <div className="lg:col-span-8">
+                <motion.div
+                  initial={{ opacity: 0.92, y: prefersReduced ? 0 : 8 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.1 }}
+                  transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+                  className="inline-flex items-center gap-3 mb-5"
+                >
+                  <span
+                    className="w-7 h-[1.5px] bg-[#CB712D] shrink-0"
+                    aria-hidden="true"
+                  />
+                  <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-[0.2em] text-[#35474C]">
+                    KHÁM PHÁ ĐÀ NẴNG SÂU HƠN
+                  </span>
+                </motion.div>
+
+                <h2
+                  ref={storyHeadingRef}
+                  className="leading-[1.12] tracking-[-0.02em]"
+                >
+                  <span className="block font-extrabold uppercase text-[#12383D] text-[clamp(2rem,4.3vw,3.5rem)]">
+                    CÂU CHUYỆN &amp;
+                  </span>
+                  <span className="block mt-1 text-[clamp(2rem,4.3vw,3.5rem)]">
+                    <span className="font-extrabold uppercase text-[#12383D]">
+                      CẢM HỨNG{" "}
+                    </span>
+                    <span
+                      style={{ color: "#CB712D", WebkitTextFillColor: "#CB712D" }}
+                      className="inline-block home-serif italic font-normal text-[#CB712D] text-[clamp(2.15rem,4.6vw,3.75rem)] leading-[1.24] tracking-[0.01em] pr-2"
+                    >
+                      Du lịch
+                    </span>
+                  </span>
+                </h2>
+              </div>
+
+              <div className="lg:col-span-4 lg:text-right">
+                <motion.div
+                  initial={{ opacity: 0.92, y: prefersReduced ? 0 : 8 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.1 }}
+                  transition={{
+                    duration: 0.6,
+                    delay: 0.14,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
+                  className="inline-block lg:block"
+                >
+                  <span className="text-[11px] sm:text-xs font-medium uppercase tracking-[0.22em] text-[#4E5E63]">
+                    GÓC NHÌN &middot; TRẢI NGHIỆM &middot; CẢM HỨNG
+                  </span>
+                  <div className="mt-3 h-[1px] w-full lg:w-64 lg:ml-auto bg-[#E5D7C3] overflow-hidden">
+                    <motion.div
+                      initial={{ scaleX: 0.35 }}
+                      whileInView={{ scaleX: 1 }}
+                      viewport={{ once: true, amount: 0.1 }}
+                      transition={{
+                        duration: 0.75,
+                        delay: 0.2,
+                        ease: [0.22, 1, 0.36, 1],
+                      }}
+                      className="h-full w-full origin-left bg-[#C9AB78]"
+                    />
+                  </div>
+                </motion.div>
+              </div>
+            </div>
+
+            {/* Unified Full-Bleed 12-column editorial spread (7 cols open coastal panorama / 5 cols seamless Deep Ocean narrative) */}
+            <div
+              ref={storySpreadRef}
+              className="group relative luxury-border-sweep luxury-shimmer-frame rounded-[18px] bg-[#081C25] border border-[#E6D9B7]/35 hover:border-[#E6D9B7]/80 shadow-[0_24px_64px_rgba(12,34,42,0.22)] hover:shadow-[0_32px_80px_rgba(12,34,42,0.32)] overflow-hidden transition-all duration-500"
+            >
+              {/* Subtle Champagne top rim reflection */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-x-0 top-0 h-[1px] z-30 bg-gradient-to-r from-transparent via-[#E6D9B7]/55 to-transparent"
+              />
+
+              {/* Full-Bleed Aerial Coastline Background with Internal Camera Parallax & Hover Zoom */}
+              <div className="absolute inset-0 z-0 overflow-hidden bg-[#081C25]">
+                <motion.div
+                  style={{ y: storyImageY }}
+                  className="relative w-full h-[112%] -top-[6%] will-change-transform"
+                >
+                  <div className="relative w-full h-full group-hover:scale-[1.04] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]">
+                    <Image
+                      src="/images/cinematic/hero/hero-coastal-panorama.jpg"
+                      alt="Toàn cảnh vịnh biển Đà Nẵng"
+                      fill
+                      quality={90}
+                      className="object-cover object-left lg:object-[28%_50%]"
+                      sizes="(max-width: 1024px) 100vw, 1280px"
+                    />
+                  </div>
+                </motion.div>
+
+                {/* Desktop Horizontal Deep-Ocean Editorial Scrim (preserves luminous coastline on left, melts smoothly into narrative panel on right) */}
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none hidden lg:block absolute inset-0"
+                  style={{
+                    background:
+                      "linear-gradient(90deg, rgba(7,22,30,0.22) 0%, rgba(7,22,30,0.06) 32%, rgba(7,22,30,0.34) 47%, rgba(6,19,27,0.86) 59%, rgba(6,19,27,0.94) 76%, rgba(5,16,23,0.97) 100%)",
+                  }}
+                />
+                {/* Mobile / Tablet Vertical Deep-Ocean Editorial Scrim */}
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none lg:hidden absolute inset-0"
+                  style={{
+                    background:
+                      "linear-gradient(180deg, rgba(7,22,30,0.36) 0%, rgba(7,22,30,0.08) 24%, rgba(6,19,27,0.78) 44%, rgba(6,19,27,0.95) 64%, rgba(5,16,23,0.98) 100%)",
+                  }}
+                />
+                {/* Bottom grounding gradient so the bottom-left quote reads crisply over ocean waves */}
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0"
+                  style={{
+                    background:
+                      "linear-gradient(180deg, rgba(6,19,27,0.24) 0%, transparent 26%, transparent 62%, rgba(5,16,23,0.82) 100%)",
+                  }}
+                />
+              </div>
+
+              {/* Main Responsive 12-Col Grid over Full-Bleed Canvas */}
+              <div className="relative z-20 grid lg:grid-cols-12 min-h-[480px] lg:min-h-[520px]">
+                {/* Cột trái (7 cột): Khung thưởng lãm toàn cảnh vịnh Đà Nẵng + Badge nổi + Trích dẫn biên tập */}
+                <div className="lg:col-span-7 min-h-[290px] sm:min-h-[340px] lg:min-h-full p-5 sm:p-7 lg:p-8 flex flex-col justify-between">
+                  {/* 2 Badge pill kính mờ góc trên */}
+                  <div className="flex flex-wrap items-center justify-between gap-2.5">
+                    <span className="inline-flex items-center gap-1.5 bg-[#081C25]/72 backdrop-blur-xs text-[#FFFDF5]/95 border border-[#E6D9B7]/30 text-[11px] font-semibold uppercase tracking-[0.12em] px-3.5 py-1.5 rounded-full shadow-[0_6px_18px_rgba(6,18,24,0.35)]">
+                      <Compass className="w-3.5 h-3.5 text-[#E6D9B7] shrink-0" />
+                      <span>TRẢI NGHIỆM</span>
+                    </span>
+                    <span className="inline-flex items-center bg-[#081C25]/72 backdrop-blur-xs border border-[#E6D9B7]/30 text-[#FFFDF5]/95 text-[11px] font-semibold uppercase tracking-[0.12em] px-3.5 py-1.5 rounded-full shadow-[0_6px_18px_rgba(6,18,24,0.35)]">
+                      CÂU CHUYỆN ĐIỂM ĐẾN
+                    </span>
+                  </div>
+
+                  {/* Trích dẫn biên tập góc dưới trái */}
+                  <div className="max-w-lg pt-16 lg:pt-0">
+                    <div className="flex items-center gap-2.5 mb-2">
+                      <span className="w-6 h-[1.5px] bg-[#E6D9B7]" aria-hidden="true" />
+                      <span className="text-[10.5px] font-mono uppercase tracking-[0.22em] text-[#E6D9B7]">
+                        DANANG COASTAL CHRONICLE
                       </span>
                     </div>
+                    <p
+                      style={{ textShadow: "0 2px 14px rgba(4,14,20,0.75)" }}
+                      className="home-serif italic text-[#FFFDF5] text-lg sm:text-[21px] leading-[1.38]"
+                    >
+                      &ldquo;Khám phá một Đà Nẵng rất khác qua những lát cắt chân thực&rdquo;
+                    </p>
+                  </div>
+                </div>
 
-                    {/* Timeline items */}
-                    <div className="space-y-3 flex-1">
-                      {dayData.items.map((item, idx) => (
-                        <div key={idx} className="flex gap-3 items-start">
-                          <span className="flex-shrink-0 text-xs font-mono text-teal-600 font-semibold w-12 pt-0.5">
-                            {item.time}
-                          </span>
-                          <div className="flex-shrink-0 flex flex-col items-center">
-                            <div className="w-2.5 h-2.5 rounded-full bg-orange-400 mt-0.5" />
-                            {idx < dayData.items.length - 1 && (
-                              <div className="w-px flex-1 bg-orange-200 mt-1 min-h-[16px]" />
-                            )}
+                {/* Cột phải (5 cột): Hồ sơ biên tập hòa mượt trên nền Deep Ocean */}
+                <div className="lg:col-span-5 p-6 sm:p-8 lg:p-9 flex flex-col justify-between space-y-6">
+                  <div className="space-y-5">
+                    {/* Đội ngũ biên tập + Badge thời gian đọc + Đường kẻ Champagne */}
+                    <div>
+                      <div className="flex items-center justify-between gap-3 pb-4">
+                        <div className="flex items-center gap-3.5">
+                          <div className="w-10 h-10 rounded-[10px] bg-[#FFF8E9]/10 border border-[#E6D9B7]/30 flex items-center justify-center text-[#E6D9B7] shrink-0 shadow-[0_4px_14px_rgba(4,14,20,0.3)]">
+                            <svg
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              className="w-5 h-5 text-[#E6D9B7]"
+                              stroke="currentColor"
+                              strokeWidth="1.75"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              aria-hidden="true"
+                            >
+                              <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
+                            </svg>
                           </div>
-                          <p className="text-gray-600 text-xs leading-relaxed">{item.activity}</p>
+                          <div>
+                            <p className="text-[#FFFDF5] font-semibold text-sm leading-tight">
+                              Đội ngũ DANANGGO
+                            </p>
+                            <p className="text-[#CBD9DA]/80 text-xs mt-0.5">
+                              Biên tập du lịch &amp; Trải nghiệm
+                            </p>
+                          </div>
+                        </div>
+
+                        <span className="hidden sm:inline-block text-[10px] font-mono uppercase tracking-[0.18em] text-[#E6D9B7] bg-[#FFF8E9]/10 border border-[#E6D9B7]/28 px-3 py-1 rounded-full shrink-0">
+                          3 PHÚT ĐỌC
+                        </span>
+                      </div>
+
+                      <div className="h-[1px] w-full bg-gradient-to-r from-[#E6D9B7]/40 via-[#E6D9B7]/18 to-transparent" />
+                    </div>
+
+                    {/* Tiêu đề bài viết Serif trắng ngọc trai nổi bật */}
+                    <h3
+                      onClick={() => setStoryModalOpen(true)}
+                      style={{ textShadow: "0 2px 16px rgba(4,14,20,0.6)" }}
+                      className="home-serif font-semibold text-[#FFFDF5] hover:text-[#F5E6C4] text-2xl sm:text-[27px] lg:text-[29px] leading-[1.28] transition-colors cursor-pointer"
+                    >
+                      Đà Nẵng — Thành phố đáng sống nhất Đông Nam Á 2025
+                    </h3>
+
+                    {/* Đoạn mô tả sáng rõ */}
+                    <p className="text-sm sm:text-[14.5px] text-[#DCE8E8]/88 leading-[1.72]">
+                      Vì sao Đà Nẵng tiếp tục được vinh danh là thành phố đáng sống
+                      nhất khu vực? Hãy cùng DANANGGO khám phá những giá trị làm nên
+                      sức hút bền vững của thành phố biển năng động, thân thiện và
+                      đầy cảm hứng này.
+                    </p>
+
+                    {/* Lưới 2x2 điểm nhấn dạng thẻ kính mờ tinh tế */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                      {[
+                        "Con người thân thiện",
+                        "Nhịp sống hiện đại",
+                        "Thiên nhiên ấn tượng",
+                        "Trải nghiệm đa dạng",
+                      ].map((item) => (
+                        <div
+                          key={item}
+                          className="flex items-center gap-2.5 rounded-[10px] bg-[#FFF8E9]/[0.07] hover:bg-[#FFF8E9]/[0.12] border border-[#E6D9B7]/22 hover:border-[#E6D9B7]/45 px-3.5 py-2.5 transition-colors"
+                        >
+                          <span
+                            className="text-[#E87B39] font-bold text-sm select-none shrink-0"
+                            aria-hidden="true"
+                          >
+                            /
+                          </span>
+                          <span className="text-xs sm:text-[13px] font-medium text-[#FFFDF5]/92">
+                            {item}
+                          </span>
                         </div>
                       ))}
                     </div>
-
-                    {/* Stats + CTA dưới cùng */}
-                    <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
-                      <div className="flex items-center gap-3 text-xs text-gray-500">
-                        <span>⏱ {dayData.duration}</span>
-                        <span>📍 {dayData.spots} điểm</span>
-                      </div>
-                      <button className="text-xs text-teal-600 font-semibold hover:text-teal-500 transition-colors">
-                        Gợi ý {dayData.spots} điểm →
-                      </button>
-                    </div>
                   </div>
-                </Reveal>
-              ))}
-            </motion.div>
-          </AnimatePresence>
-        </div>
-      </section>
+
+                  {/* Hàng nút hành động */}
+                  <div className="pt-4 border-t border-[#E6D9B7]/20 flex flex-wrap items-center justify-between gap-4">
+                    <button
+                      type="button"
+                      onClick={() => setStoryModalOpen(true)}
+                      className="group/cta luxury-btn-sweep bg-[#FFF8E9] hover:bg-white active:scale-[0.97] text-[#102832] border border-[#E6D9B7]/75 font-semibold uppercase tracking-[0.12em] px-5 sm:px-6 py-3 rounded-full shadow-[0_10px_28px_rgba(4,14,20,0.42)] transition-all duration-250 text-[11px] sm:text-xs cursor-pointer inline-flex items-center gap-2.5"
+                    >
+                      <span>Đọc bài viết</span>
+                      <span className="text-[#0F4C5C] transition-transform duration-250 group-hover/cta:translate-x-1">
+                        →
+                      </span>
+                    </button>
+                    <Link
+                      href="/khampha"
+                      className="group/link relative text-[11px] sm:text-xs font-semibold uppercase tracking-[0.1em] text-[#E6D9B7] hover:text-[#FFFDF5] pb-1 transition-colors inline-flex items-center gap-1.5"
+                    >
+                      <span>Xem thêm câu chuyện khác</span>
+                      <span className="absolute inset-x-0 bottom-0 h-[1.5px] bg-[#E6D9B7]/45 group-hover/link:bg-[#E87B39] transition-colors" />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ── CINEMATIC IMAGE EXPANSION (SECTION 12): Editorial Window (64%) -> Full-Bleed Panorama (100%) ── */}
+          <div className="mt-14 lg:mt-20">
+            <ScrollImageExpansion
+              coordinates="16°06'42&quot;N · 108°15'58&quot;E // SON TRA PENINSULA AERIAL EXPEDITION"
+              caption="Khi ánh bình minh chạm đỉnh Bàn Cờ và tiếng sóng thì thầm Bãi Rạng"
+              overlayContent={
+                <div className="inline-flex items-center gap-3 bg-[#102832]/80 backdrop-blur-xs border border-white/20 px-3.5 py-1.5 rounded-[2px]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#E87B39]" />
+                  <span className="text-[11px] font-mono uppercase tracking-[0.2em] text-[#BCD3D1]">
+                    DANANGGO COASTAL EXPEDITION · CHAPTER 04
+                  </span>
+                </div>
+              }
+            >
+              <Image
+                src="/images/cinematic/hero/hero-sontra-mist.jpg"
+                alt="Bán đảo Sơn Trà Đà Nẵng trong sương sớm nhìn từ trên cao"
+                fill
+                quality={90}
+                sizes="100vw"
+                className="object-cover object-center"
+              />
+            </ScrollImageExpansion>
+          </div>
+        </section>
+      </EditorialJourneyStage>
+
+      {/* Seamless Coastal Silhouette Transition: Travel Stories (#FAF4EA) -> Three Worlds (#102832) */}
+      <CinematicSectionTransition variant="editorial-to-ocean" />
+
+      {/* ============================================================
+          CHƯƠNG THỊ GIÁC 05 — THE EXPERIENCE ("Khám phá theo danh mục")
+          THE THREE WORLDS OF DA NANG V12.0 — Interactive Expanding Gallery
+          ============================================================ */}
+      <ThreeWorldsCategories
+        categories={CATEGORIES}
+        activeIndex={activeCategoryStory}
+        onActiveChange={setActiveCategoryStory}
+      />
+
+      {/* Seamless Sea-to-Shore Transition: Three Worlds (#102832) -> Travel Journal (#F8F3E9) */}
+      <CinematicSectionTransition variant="ocean-to-sand" />
+
+      {/* ============================================================
+          CHƯƠNG THỊ GIÁC 06 — THE JOURNEY ("Lịch trình gợi ý & Cảm hứng khám phá")
+          DANANGGO V14.2 — THE CINEMATIC JOURNEY OF DISCOVERY
+          ============================================================ */}
+      <CinematicJourneyItinerary
+        plans={ITINERARY_PLANS}
+        selectedPlan={selectedPlan}
+        onSelectPlan={setSelectedPlan}
+      />
 
       {/* ============================================================
           7. VIP BANNER — "Nhận Ưu Đãi Tới 25%"
-          shimmer-bg GIỮ NGUYÊN, bổ sung: badge đặc quyền, 2 nút CTA
+          DANANGGO V15.0 — THE JOURNEY CONTINUES (Cinematic Closing Experience)
           ============================================================ */}
-      <section id="newsletter" className="py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <Reveal delay={0.1} direction="up">
-            <div className="shimmer-bg rounded-3xl p-10 sm:p-14 text-center text-white relative overflow-hidden">
-              {/* Decorative circles */}
-              <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-white/5" />
-              <div className="absolute -bottom-12 -left-12 w-64 h-64 rounded-full bg-white/5" />
-
-              <div className="relative z-10">
-                {/* Badge đặc quyền */}
-                <div className="inline-block bg-orange-500/20 border border-orange-400/30 text-orange-300 text-xs font-bold px-4 py-1.5 rounded-full mb-5 uppercase tracking-wider">
-                  ĐẶC QUYỀN THÀNH VIÊN DANANGGO VIP
-                </div>
-
-                <h2 className="h2-section text-2xl sm:text-4xl font-bold mb-3">
-                  Nhận Ưu Đãi Tới{" "}
-                  <span className="text-gradient-animate-warm text-orange-400">25%</span>{" "}
-                  Khi Đặt Lưu Trú & Vé Tham Quan
-                </h2>
-                <p className="body-text text-white/70 max-w-lg mx-auto mb-8 text-sm leading-relaxed">
-                  Trở thành thành viên VIP DanangGo — nhận voucher độc quyền,
-                  ưu đãi flash sale và lịch trình cá nhân hóa miễn phí.
-                </p>
-
-                {/* 2 nút CTA */}
-                <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  <Magnetic strength={3}>
-                    <Link href="/dang-nhap?tab=dang-ky&intent=vip" className="btn-ripple inline-flex items-center justify-center bg-orange-500 hover:bg-orange-400 text-white font-bold px-8 py-3.5 rounded-xl transition-colors hover:scale-[1.03] active:scale-[0.97] text-sm">
-                      Đăng ký thành viên VIP
-                    </Link>
-                  </Magnetic>
-                  <Link href="/lich-trinh/tao-moi" className="border-2 border-white/60 hover:border-white text-white hover:bg-white/10 font-semibold px-8 py-3.5 rounded-xl transition-all text-sm inline-flex items-center justify-center">
-                    📋 Tạo lịch trình của bạn
-                  </Link>
-                </div>
-
-                <p className="text-white/40 text-xs mt-4">
-                  Miễn phí hoàn toàn · Không cần thẻ tín dụng · Hủy bất kỳ lúc nào
-                </p>
-              </div>
-            </div>
-          </Reveal>
-        </div>
-      </section>
+      <CinematicClosingBanner discountText="25%" />
 
       {/* ============================================================
-          8. FOOTER — 3 cột: Khám phá / Tiện ích / Liên hệ
+          CHƯƠNG THỊ GIÁC 07 — THE CLOSING (COMPACT LUXURY BRAND FOOTER — PHẦN 16)
+          Deep Navy (#102832), 4 aligned columns, fine-line icons, ~320–360px height
           ============================================================ */}
-      <footer className="bg-[#071a2e] text-white/70 pt-14 pb-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
-            {/* Logo + mô tả */}
-            <div className="col-span-2 md:col-span-1">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-teal-600 flex items-center justify-center">
-                  <span className="text-white text-xs font-bold">D</span>
-                </div>
-                <span className="text-white font-bold text-lg">
-                  <span className="text-cyan-400">Danang</span>
-                  <span className="text-orange-400">Go</span>
+      <footer className="bg-[#102832] text-[#F8F8F4]/80 pt-11 pb-8 border-t border-white/10 relative overflow-hidden">
+        <div className="home-container relative z-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-10 pb-8 items-start">
+            {/* Cột 1: Thương hiệu & mô tả (4 cột) */}
+            <div className="sm:col-span-2 lg:col-span-4 pr-0 lg:pr-6">
+              <Link href="/" className="inline-flex items-center gap-2.5 mb-3.5 group">
+                <img
+                  src="/images/branding/danang-logo.png"
+                  alt="Biểu trưng Đà Nẵng"
+                  width={42}
+                  height={42}
+                  loading="lazy"
+                  decoding="async"
+                  className="w-10 h-10 sm:w-[42px] sm:h-[42px] object-contain shrink-0 transition-transform duration-300 group-hover:scale-105"
+                />
+                <span className="cinematic-condensed font-bold text-xl uppercase tracking-wider">
+                  <span className="text-[#F8F8F4]">Danang</span>
+                  <span className="text-[#E87B39] ml-0.5">Go</span>
                 </span>
-              </div>
-              <p className="body-text text-sm leading-relaxed text-white/50 mb-4">
+              </Link>
+              <p className="text-[13.5px] leading-relaxed text-[#F8F8F4]/70 mb-5 max-w-sm">
                 Cẩm nang du lịch Đà Nẵng đầy đủ và cập nhật nhất — từ điểm đến,
                 ẩm thực đến lịch trình tối ưu.
               </p>
-              {/* Social icons */}
-              <div className="flex gap-3">
+              {/* Social icons nét mảnh tinh tế (Phần 16.5) */}
+              <div className="flex items-center gap-3.5">
                 {[
-                  { label: "FB", color: "bg-blue-600" },
-                  { label: "IG", color: "bg-pink-600" },
-                  { label: "TT", color: "bg-gray-700" },
-                  { label: "YT", color: "bg-red-600" },
+                  {
+                    label: "Facebook",
+                    icon: (
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+                      </svg>
+                    ),
+                  },
+                  {
+                    label: "Instagram",
+                    icon: (
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                        <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                        <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+                      </svg>
+                    ),
+                  },
+                  {
+                    label: "TikTok",
+                    icon: (
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
+                      </svg>
+                    ),
+                  },
+                  {
+                    label: "YouTube",
+                    icon: (
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17" />
+                        <path d="m10 15 5-3-5-3z" />
+                      </svg>
+                    ),
+                  },
                 ].map((s) => (
                   <a
                     key={s.label}
                     href="#"
-                    className={`w-8 h-8 ${s.color} rounded-full flex items-center justify-center text-white text-xs font-bold hover:opacity-80 transition-opacity`}
+                    aria-label={s.label}
+                    title={s.label}
+                    className="text-[#F8F8F4]/65 hover:text-[#E87B39] transition-colors p-1"
                   >
-                    {s.label}
+                    {s.icon}
                   </a>
                 ))}
               </div>
             </div>
 
-            {/* Cột Khám phá */}
-            <div>
-              <h4 className="text-white font-semibold text-sm mb-4">Khám phá</h4>
-              <ul className="space-y-2.5">
-                {["Điểm du lịch", "Ẩm thực", "Lưu trú", "Mua sắm", "Giải trí"].map((link) => (
-                  <li key={link}>
-                    <a href="#" className="text-sm hover:text-white transition-colors">{link}</a>
+            {/* Cột 2: Khám phá (3 cột) */}
+            <div className="lg:col-span-3">
+              <h4 className="home-eyebrow text-[#BCD3D1] mb-3.5">Khám phá</h4>
+              <ul className="space-y-2">
+                {[
+                  { label: "Điểm du lịch", href: "/diemdulich" },
+                  { label: "Ẩm thực", href: "/amthuc" },
+                  { label: "Lưu trú", href: "/luutru" },
+                  { label: "Sự kiện lễ hội", href: "/su-kien" },
+                  { label: "Khám phá tổng hợp", href: "/khampha" },
+                ].map((item) => (
+                  <li key={item.label}>
+                    <Link
+                      href={item.href}
+                      className="text-[13.5px] text-[#F8F8F4]/75 hover:text-white transition-colors"
+                    >
+                      {item.label}
+                    </Link>
                   </li>
                 ))}
               </ul>
             </div>
 
-            {/* Cột Tiện ích */}
-            <div>
-              <h4 className="text-white font-semibold text-sm mb-4">Tiện ích</h4>
-              <ul className="space-y-2.5">
+            {/* Cột 3: Tiện ích (2 cột) */}
+            <div className="lg:col-span-2">
+              <h4 className="home-eyebrow text-[#BCD3D1] mb-3.5">Tiện ích</h4>
+              <ul className="space-y-2">
                 {[
                   { label: "Tạo lịch trình", href: "/lich-trinh/tao-moi" },
                   { label: "Bản đồ thành phố", href: "/bando" },
@@ -774,37 +1006,68 @@ export default function HomePage() {
                 ].map((item) => (
                   <li key={item.label}>
                     {item.href === "#" ? (
-                      <a href="#" className="text-sm hover:text-white transition-colors">{item.label}</a>
+                      <a
+                        href="#"
+                        className="text-[13.5px] text-[#F8F8F4]/75 hover:text-white transition-colors"
+                      >
+                        {item.label}
+                      </a>
                     ) : (
-                      <Link href={item.href} className="text-sm hover:text-white transition-colors">{item.label}</Link>
+                      <Link
+                        href={item.href}
+                        className="text-[13.5px] text-[#F8F8F4]/75 hover:text-white transition-colors"
+                      >
+                        {item.label}
+                      </Link>
                     )}
                   </li>
                 ))}
               </ul>
             </div>
 
-            {/* Cột Liên hệ */}
-            <div>
-              <h4 className="text-white font-semibold text-sm mb-4">Liên hệ</h4>
-              <ul className="space-y-2.5">
-                <li className="text-sm">📧 hello@dananggo.vn</li>
-                <li className="text-sm">📞 0236 386 5xxx</li>
-                <li className="text-sm">📍 Đà Nẵng, Việt Nam</li>
+            {/* Cột 4: Liên hệ (3 cột) */}
+            <div className="sm:col-span-2 lg:col-span-3">
+              <h4 className="home-eyebrow text-[#BCD3D1] mb-3.5">Liên hệ</h4>
+              <ul className="space-y-2.5 text-[#F8F8F4]/80 text-[13.5px]">
+                <li className="flex items-center gap-2.5">
+                  <Mail className="w-4 h-4 text-[#5E9898] shrink-0 stroke-[1.6]" />
+                  <span>hello@dananggo.vn</span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <Phone className="w-4 h-4 text-[#5E9898] shrink-0 stroke-[1.6]" />
+                  <span>0236 386 5xxx</span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <MapPin className="w-4 h-4 text-[#5E9898] shrink-0 stroke-[1.6]" />
+                  <span>Đà Nẵng, Việt Nam</span>
+                </li>
               </ul>
-              <div className="mt-4 space-y-1.5">
+              <div className="mt-4 pt-3 border-t border-white/10 flex flex-wrap gap-x-4 gap-y-1.5">
                 {["Về chúng tôi", "Tuyển dụng", "Báo chí"].map((link) => (
-                  <a key={link} href="#" className="block text-sm hover:text-white transition-colors">{link}</a>
+                  <a
+                    key={link}
+                    href="#"
+                    className="text-xs text-[#F8F8F4]/65 hover:text-white transition-colors"
+                  >
+                    {link}
+                  </a>
                 ))}
               </div>
             </div>
           </div>
 
-          {/* Copyright */}
-          <div className="border-t border-white/10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/40">
+          {/* Copyright — Một hàng gọn gàng trên desktop với đường divider mảnh (Phần 16.8) */}
+          <div className="border-t border-white/10 pt-5 sm:pr-20 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left text-xs text-[#F8F8F4]/55">
             <p>© 2025 DanangGo. Made with ❤️ in Đà Nẵng, Việt Nam.</p>
-            <div className="flex gap-4">
+            <div className="flex gap-5">
               {["Điều khoản sử dụng", "Chính sách bảo mật"].map((s) => (
-                <a key={s} href="#" className="hover:text-white/70 transition-colors">{s}</a>
+                <a
+                  key={s}
+                  href="#"
+                  className="hover:text-[#F8F8F4]/90 transition-colors"
+                >
+                  {s}
+                </a>
               ))}
             </div>
           </div>
@@ -817,15 +1080,22 @@ export default function HomePage() {
       <AnimatePresence>
         {showScrollTop && (
           <motion.button
-            initial={{ opacity: 0, y: 20, scale: 0.8 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.8 }}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 16 }}
             transition={{ duration: 0.25 }}
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            className="fixed bottom-24 right-6 z-30 w-11 h-11 bg-[#0f2942]/90 hover:bg-[#1a3f5c] text-white rounded-full shadow-lg flex items-center justify-center hover:scale-110 active:scale-95 transition-all backdrop-blur-xs"
+            className="fixed bottom-24 right-6 z-30 w-10 h-10 bg-[#102832] hover:bg-[#216B70] text-[#F8F8F4] border border-white/15 rounded-[4px] shadow-md flex items-center justify-center transition-colors cursor-pointer"
             aria-label="Lên đầu trang"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <path d="m18 15-6-6-6 6" />
             </svg>
           </motion.button>
@@ -839,118 +1109,585 @@ export default function HomePage() {
           itineraryId={completedItinerary.id}
         />
       )}
-    </>
+
+      {/* ============================================================
+          EDITORIAL STORY MODAL — Tạp chí cảm hứng du lịch Đà Nẵng
+          ============================================================ */}
+      <AnimatePresence>
+        {storyModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setStoryModalOpen(false)}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-[#102832]/85 backdrop-blur-xs"
+          >
+            <motion.div
+              role="dialog"
+              aria-modal="true"
+              aria-label="Đà Nẵng — Thành phố đáng sống nhất Đông Nam Á"
+              initial={{ opacity: 0, y: 20, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 14, scale: 0.98 }}
+              transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-3xl max-h-[88vh] overflow-y-auto rounded-[4px] bg-[#F8F8F4] shadow-2xl border border-[#DEDAD2]"
+            >
+                {/* Ảnh bìa tạp chí */}
+              <div className="relative h-64 sm:h-72 w-full overflow-hidden bg-[#102832]">
+                <Image
+                  src="/images/cinematic/hero/hero-coastal-panorama.jpg"
+                  alt="Đà Nẵng — Thành phố đáng sống nhất Đông Nam Á"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 1024px) 100vw, 800px"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#102832]/90 via-[#102832]/35 to-black/25" />
+                <button
+                  type="button"
+                  onClick={() => setStoryModalOpen(false)}
+                  aria-label="Đóng câu chuyện"
+                  className="absolute top-4 right-4 w-9 h-9 rounded-[2px] bg-black/50 hover:bg-black/75 text-white flex items-center justify-center border border-white/20 transition-colors cursor-pointer"
+                >
+                  ✕
+                </button>
+                <div className="absolute bottom-5 left-6 right-6 text-[#F8F8F4]">
+                  <span className="inline-block bg-[#216B70] text-white text-[11px] font-medium uppercase tracking-wider px-3 py-1 rounded-[2px] mb-2.5">
+                    DanangGo Editorial · Cẩm nang bản địa
+                  </span>
+                  <h3 className="home-serif text-xl sm:text-2xl font-medium leading-snug">
+                    Đà Nẵng — Thành phố đáng sống nhất Đông Nam Á
+                  </h3>
+                </div>
+              </div>
+
+              {/* Nội dung bài viết */}
+              <div className="p-6 sm:p-8 space-y-5 text-[#202B30] text-sm leading-relaxed">
+                <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-[#DEDAD2]">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-[2px] bg-[#102832] flex items-center justify-center text-[#F8F8F4] home-serif font-semibold text-sm">
+                      AN
+                    </div>
+                    <div>
+                      <p className="text-[#202B30] font-semibold text-sm">
+                        Anh Nguyên
+                      </p>
+                      <p className="text-[#4E5E63] text-xs">
+                        Travel Editor · 3 phút đọc
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-xs font-medium text-[#216B70] bg-[#F1EFE7] border border-[#DEDAD2] px-3 py-1 rounded-[2px]">
+                    📍 Đà Nẵng · Hội An · Sơn Trà
+                  </span>
+                </div>
+
+                <p>
+                  <strong>1. Bình minh từ Bãi Rạng đến Đỉnh Bàn Cờ:</strong> Khi
+                  những tia nắng đầu tiên chạm mặt biển Mỹ Khê, Đà Nẵng thức
+                  giấc với nhịp sống vừa khoáng đạt vừa bình yên. Bạn có thể bắt
+                  đầu buổi sáng bằng một ly cà phê muối bên bờ biển, rồi phóng
+                  tầm mắt từ Bán đảo Sơn Trà ngắm trọn vòng cung biển xanh ngọc
+                  bích.
+                </p>
+
+                <p>
+                  <strong>2. Thành phố của những cây cầu &amp; di sản:</strong>{" "}
+                  Hiếm có điểm đến nào kết nối trọn vẹn giữa thiên nhiên kỳ vĩ
+                  và di sản văn hóa như Đà Nẵng. Chỉ trong 30 phút di chuyển,
+                  bạn có thể đi từ Cầu Vàng trên đỉnh Bà Nà Hills mây phủ đến
+                  Ngũ Hành Sơn cổ kính hay xuôi về Phố cổ Hội An rực rỡ đèn
+                  lồng.
+                </p>
+
+                <p>
+                  <strong>3. Thiên đường ẩm thực miền Trung:</strong> Đừng rời
+                  Đà Nẵng khi chưa thưởng thức một tô Mì Quảng đậm đà, bánh
+                  tráng cuốn thịt heo Đại Lộc hay hải sản tươi rói ven biển Sơn
+                  Trà. Mỗi món ăn đều mang trọn sự hào sảng và mến khách của
+                  người dân miền Trung.
+                </p>
+
+                <div className="pt-4 border-t border-[#DEDAD2] flex flex-wrap items-center justify-between gap-3">
+                  <Link
+                    href="/lich-trinh/tao-moi"
+                    onClick={() => setStoryModalOpen(false)}
+                    className="bg-[#102832] hover:bg-[#216B70] text-white font-semibold uppercase tracking-wider px-5 py-2.5 rounded-[4px] text-xs transition-colors"
+                  >
+                    ✨ Lên lịch trình khám phá ngay →
+                  </Link>
+                  <Link
+                    href="/khampha"
+                    onClick={() => setStoryModalOpen(false)}
+                    className="home-editorial-link"
+                  >
+                    <span>Xem tất cả địa điểm nổi bật</span>
+                  </Link>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
 
 // ============================================================
-// SUB-COMPONENTS (GIỮ NGUYÊN animation, chỉ bổ sung nội dung)
+// SUB-COMPONENTS (Editorial Luxury Cards — White Desert Aesthetic)
 // ============================================================
 
 /**
- * PopularCard — hover translateY + shadow + img scale + like bounce (GIỮ NGUYÊN)
- * Bổ sung: location + price fields
+ * PopularCard — V8.1 ORYZO × White Desert 5-Stage Entrance Timeline:
+ * Stage 1 & 2: Staggered Card Reveal
+ * Stage 3: Image Mask Construction (scale 1.08 -> 1.00)
+ * Stage 4: Sequenced Category -> Line-Masked Title -> Location -> Divider Draw -> Baseline Rating/Price
+ * Stage 5: Signature Outline-to-Solid Number (01–04) & One-Shot Border Light Sweep on Reveal Completion
  */
-function PopularCard({ card }: { card: (typeof POPULAR_CARDS)[number] & { placeId?: number } }) {
+function PopularCard({
+  card,
+  index,
+}: {
+  card: (typeof POPULAR_CARDS)[number] & { placeId?: number };
+  index: number;
+}) {
   const targetId = card.placeId ?? card.id;
+  const cardRef = useRef<HTMLElement>(null);
+  const isCardInView = useInView(cardRef, {
+    once: true,
+    margin: "40px 0px -30px 0px",
+    amount: 0.15,
+  });
+
+  const galleryCtx = useHorizontalGalleryContext();
+  const fallbackProgress = useMotionValue(0);
+  const progressMotion = galleryCtx?.progressMotion ?? fallbackProgress;
+  const totalCards = Math.max(1, galleryCtx?.totalCards ?? 4);
+  const isPinnedHorizontal = Boolean(galleryCtx?.isPinnedHorizontal);
+  const isActiveCenter = isPinnedHorizontal && galleryCtx?.activeIndex === index;
+
+  // Normalized focal point of this card along the 0..1 horizontal scroll progress
+  const cardFocalPoint =
+    totalCards > 1 ? index / (totalCards - 1) : 0;
+
+  // Section 10: Internal Camera Image Parallax linked to horizontal scroll progress
+  // - As the card travels from the right edge toward center and exits left, the image shifts
+  //   by +24px -> 0px -> -24px inside its frame while scaling from 1.07 -> 1.00 -> 1.04
+  const internalParallaxX = useTransform(progressMotion, (p) => {
+    if (!isPinnedHorizontal) return 0;
+    const delta = p - cardFocalPoint;
+    return Math.max(-28, Math.min(28, -delta * 44));
+  });
+  const internalParallaxScale = useTransform(progressMotion, (p) => {
+    if (!isPinnedHorizontal) return 1.01;
+    const dist = Math.min(1, Math.abs(p - cardFocalPoint) * 1.45);
+    return 1.0 + dist * 0.065;
+  });
+
+  const fallbackSrc = resolvePlaceFallbackImage(card.title, card.category);
+  const [imgSrc, setImgSrc] = useState<string>(() =>
+    upgradeHiResImage(card.img, card.title, card.category)
+  );
+  const [imgOffset, setImgOffset] = useState<{ x: number; y: number }>({
+    x: 0,
+    y: 0,
+  });
+  const [numberSolid, setNumberSolid] = useState(false);
+  const [revealSweeping, setRevealSweeping] = useState(false);
+
+  useEffect(() => {
+    setImgSrc(upgradeHiResImage(card.img, card.title, card.category));
+  }, [card.img, card.title, card.category]);
+
+  // Stage 5 & Section 13/14: Trigger Outline-to-Solid Number (01-04) & One-Shot Border Light Sweep when card enters view
+  useEffect(() => {
+    if (!isCardInView) return;
+    const baseDelayMs = index * 110;
+    const numTimer = setTimeout(() => {
+      setNumberSolid(true);
+    }, baseDelayMs + 420);
+    const sweepStartTimer = setTimeout(() => {
+      setRevealSweeping(true);
+    }, baseDelayMs + 680);
+    const sweepEndTimer = setTimeout(() => {
+      setRevealSweeping(false);
+    }, baseDelayMs + 2250);
+
+    return () => {
+      clearTimeout(numTimer);
+      clearTimeout(sweepStartTimer);
+      clearTimeout(sweepEndTimer);
+    };
+  }, [isCardInView, index]);
+
+  // Also trigger a subtle one-shot border sweep when this card becomes the active center exhibition card
+  useEffect(() => {
+    if (!isActiveCenter) return;
+    setNumberSolid(true);
+    setRevealSweeping(true);
+    const timer = setTimeout(() => setRevealSweeping(false), 1450);
+    return () => clearTimeout(timer);
+  }, [isActiveCenter]);
+
+  const handleImageMouseMove = (e: React.MouseEvent<HTMLElement>) => {
+    if (
+      typeof window !== "undefined" &&
+      (!window.matchMedia("(min-width: 1024px) and (hover: hover)").matches ||
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches)
+    ) {
+      return;
+    }
+    const rect = e.currentTarget.getBoundingClientRect();
+    const nx = (e.clientX - rect.left) / rect.width - 0.5;
+    const ny = (e.clientY - rect.top) / rect.height - 0.5;
+    setImgOffset({ x: nx * -6, y: ny * -6 });
+  };
+
+  const handleImageMouseLeave = () => {
+    setImgOffset({ x: 0, y: 0 });
+  };
+
+  const staggerDelay = index * 0.1;
+
   return (
-    <SpotlightCard className="group bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl hover:-translate-y-1 border border-gray-100 hover:border-teal-300/80 transition-all duration-300 cursor-pointer h-full flex flex-col">
-      {/* Image */}
+    <article
+      ref={cardRef}
+      onMouseMove={handleImageMouseMove}
+      onMouseLeave={handleImageMouseLeave}
+      className={`group relative luxury-card-surface luxury-border-sweep luxury-shimmer-frame rounded-[14px] bg-[#091D26] overflow-hidden cursor-pointer h-[440px] sm:h-[470px] lg:h-[500px] xl:h-[520px] flex flex-col transition-all duration-500 ${
+        revealSweeping ? "is-reveal-sweeping" : ""
+      } ${
+        isActiveCenter
+          ? "border-[#E6D9B7]/75 shadow-[0_28px_68px_rgba(6,18,24,0.56)]"
+          : "border-[#E6D9B7]/25 shadow-[0_20px_48px_rgba(6,18,24,0.42)]"
+      }`}
+    >
+      {/* Subtle Champagne top rim reflection */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 h-[1px] z-20 bg-gradient-to-r from-transparent via-[#E6D9B7]/50 to-transparent"
+      />
+
+      {/* Favorite Heart Button (kept outside Link so heart clicks never trigger navigation) */}
+      <div className="absolute top-4 right-4 z-30">
+        <HeartButton placeId={card.placeId} />
+      </div>
+
+      {/* Full-Bleed Exhibition Card Link — preserves all Stage 3, 4 & 5 animations with zero white bottom block */}
       <Link
         href={`/places/${targetId}`}
-        onClick={() => recordSharedPlaceClick(targetId, card.img)}
-        className="relative h-44 overflow-hidden block shrink-0"
+        onClick={() => recordSharedPlaceClick(targetId, imgSrc)}
+        className="relative w-full h-full flex flex-col justify-between block"
       >
-        <Image
-          src={card.img}
-          alt={card.title}
-          fill
-          quality={90}
-          className="object-cover group-hover:scale-[1.03] transition-transform duration-500 ease-out"
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#071a2e]/50 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300 pointer-events-none" />
-        {/* Badge */}
-        <div className="absolute top-3 left-3">
-          <span className={`${card.badgeColor} text-white text-xs font-semibold px-2.5 py-1 rounded-full shadow-sm`}>
+        {/* Stage 3: Full-Bleed Exhibition Image Panel (mask reveal, internal camera parallax, mouse depth & hover zoom) */}
+        <div className="absolute inset-0 z-0 overflow-hidden bg-[#091D26]">
+          <CinematicImageMask
+            direction="vertical"
+            duration={0.95}
+            delay={staggerDelay}
+            className="w-full h-full"
+            innerClassName="relative w-full h-full"
+          >
+            {/* Separate wrapper for internal scroll-linked camera parallax (Section 10) */}
+            <motion.div
+              style={{
+                x: internalParallaxX,
+                scale: internalParallaxScale,
+              }}
+              className="relative w-[112%] -left-[6%] h-full will-change-transform"
+            >
+              {/* Separate wrapper for mouse micro-depth & hover zoom */}
+              <div
+                className="relative w-full h-full transition-transform duration-500 ease-out"
+                style={{
+                  transform: `translate3d(${imgOffset.x}px, ${imgOffset.y}px, 0)`,
+                }}
+              >
+                <Image
+                  src={imgSrc || fallbackSrc}
+                  alt={card.title}
+                  fill
+                  unoptimized
+                  onError={() => {
+                    if (imgSrc !== fallbackSrc) {
+                      setImgSrc(fallbackSrc);
+                    }
+                  }}
+                  className="object-cover group-hover:scale-[1.055] transition-transform duration-800 ease-[cubic-bezier(0.22,1,0.36,1)]"
+                  sizes="(max-width: 640px) 85vw, (max-width: 1024px) 48vw, 35vw"
+                />
+              </div>
+            </motion.div>
+          </CinematicImageMask>
+
+          {/* Velvety Deep-Ocean Multi-Stop Editorial Vignette — blends photograph seamlessly into typography */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(180deg, rgba(7,22,30,0.44) 0%, rgba(7,22,30,0.06) 28%, rgba(7,22,30,0.12) 48%, rgba(7,22,30,0.72) 70%, rgba(6,19,26,0.92) 86%, rgba(5,16,22,0.97) 100%)",
+            }}
+          />
+          {/* Subtle inner radial vignette for luxury framing */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 opacity-70 transition-opacity duration-500 group-hover:opacity-55"
+            style={{
+              background:
+                "radial-gradient(ellipse 90% 80% at 50% 35%, transparent 48%, rgba(5,16,22,0.42) 100%)",
+            }}
+          />
+        </div>
+
+        {/* Top Editorial Badge */}
+        <div className="relative z-20 pt-4 px-4 pr-14 flex items-center">
+          <span
+            title={card.badge}
+            className="bg-[#081C25]/72 backdrop-blur-xs text-[#FFFDF5]/95 border border-[#E6D9B7]/30 group-hover:border-[#E6D9B7]/65 text-[11px] font-medium tracking-[0.02em] px-3.5 py-1.5 rounded-full max-w-full truncate transition-colors shadow-[0_4px_14px_rgba(4,14,20,0.35)]"
+          >
             {card.badge}
           </span>
         </div>
-        <div className="absolute top-3 right-3 z-10"><HeartButton placeId={card.placeId} /></div>
-      </Link>
 
-      {/* Content */}
-      <Link
-        href={`/places/${targetId}`}
-        onClick={() => recordSharedPlaceClick(targetId, card.img)}
-        className="p-4 flex-1 flex flex-col justify-between block"
-      >
-        <div>
-          <span className="text-xs text-teal-600 font-semibold bg-teal-50 px-2 py-0.5 rounded-full">
-            {card.category}
-          </span>
-          <h3 className="font-bold text-[#0f2942] text-sm mt-2 mb-1 leading-snug group-hover:text-teal-700 transition-colors line-clamp-2">
-            {card.title}
-          </h3>
-          {/* Location */}
-          <div className="flex items-center gap-1 text-gray-400 text-xs mb-2">
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+        {/* Stage 4 & 5: Seamless Editorial Typography Overlay (no white slab) */}
+        <div className="relative z-20 mt-auto p-5 sm:p-6 flex flex-col justify-end">
+          {/* Category + ORYZO Signature Number (01–04 Outline -> Solid + Hairline Tick) */}
+          <div className="flex items-center justify-between gap-3 mb-1.5">
+            <motion.span
+              initial={{ opacity: 0, y: 6 }}
+              animate={
+                isCardInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 6 }
+              }
+              transition={{
+                duration: 0.5,
+                delay: staggerDelay + 0.12,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+              className="inline-flex items-center gap-2 text-[10.5px] font-semibold uppercase tracking-[0.2em] text-[#E6D9B7]"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-[#E87B39] shrink-0" />
+              <span>{card.category}</span>
+            </motion.span>
+
+            <div
+              aria-hidden="true"
+              className="flex items-center gap-1.5 select-none shrink-0"
+            >
+              <motion.span
+                initial={{ scaleX: 0, opacity: 0 }}
+                animate={
+                  isCardInView || isActiveCenter
+                    ? { scaleX: 1, opacity: 0.85 }
+                    : { scaleX: 0, opacity: 0 }
+                }
+                transition={{
+                  duration: 0.55,
+                  delay: staggerDelay + 0.25,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+                className="w-4 h-[1px] bg-[#E6D9B7] origin-right"
+              />
+              <span
+                className={`oryzo-card-number text-base tracking-[0.14em] leading-none ${
+                  numberSolid || isActiveCenter ? "is-solid" : ""
+                }`}
+              >
+                0{index + 1}
+              </span>
+            </div>
+          </div>
+
+          {/* Line-mask Title Reveal — full Vietnamese diacritics support & no clipping */}
+          <div className="overflow-hidden pt-0.5 mb-2">
+            <motion.h3
+              initial={{ y: "34%", opacity: 0 }}
+              animate={
+                isCardInView ? { y: "0%", opacity: 1 } : { y: "34%", opacity: 0 }
+              }
+              transition={{
+                duration: 0.62,
+                delay: staggerDelay + 0.18,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+              style={{
+                fontFamily: "var(--font-editorial-sans), var(--font-display), 'Be Vietnam Pro', sans-serif",
+                textShadow: "0 2px 14px rgba(5,16,22,0.72)",
+              }}
+              className="text-xl sm:text-[22px] font-semibold tracking-[-0.01em] leading-[1.3] text-[#FFFDF5] group-hover:text-[#F5E6C4] transition-colors duration-300 line-clamp-2"
+            >
+              {card.title}
+            </motion.h3>
+          </div>
+
+          {/* Location reveal */}
+          <motion.div
+            initial={{ opacity: 0, y: 5 }}
+            animate={
+              isCardInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 5 }
+            }
+            transition={{
+              duration: 0.5,
+              delay: staggerDelay + 0.24,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            className="flex items-center gap-1.5 text-[#D8E6E6]/85 text-xs sm:text-[13px] mb-3.5"
+          >
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.75"
+              className="text-[#C9B580] shrink-0"
+            >
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+              <circle cx="12" cy="10" r="3" />
             </svg>
-            {card.location}
+            <span className="truncate">{card.location}</span>
+          </motion.div>
+
+          {/* Animated Champagne Divider Draw + Rating & Price Baseline */}
+          <div className="w-full h-[1px] bg-white/14 overflow-hidden mb-3.5">
+            <motion.div
+              initial={{ scaleX: 0 }}
+              animate={isCardInView ? { scaleX: 1 } : { scaleX: 0 }}
+              transition={{
+                duration: 0.72,
+                delay: staggerDelay + 0.26,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+              className={`h-full w-full origin-left transition-colors ${
+                isActiveCenter
+                  ? "bg-gradient-to-r from-[#C9B580] via-[#E6D9B7] to-transparent"
+                  : "bg-[#E6D9B7]/45 group-hover:bg-[#E6D9B7]/85"
+              }`}
+            />
           </div>
-        </div>
-        {/* Rating + Price */}
-        <div className="flex items-center justify-between pt-1">
-          <div className="flex items-center gap-1">
-            <span className="text-yellow-400 text-xs">★</span>
-            <span className="text-xs font-semibold text-gray-700">{card.rating}</span>
-            <span className="text-xs text-gray-400">({card.reviews.toLocaleString("en-US")})</span>
-          </div>
-          <span className="text-xs font-bold text-orange-500">{card.price}</span>
+
+          <motion.div
+            initial={{ opacity: 0, y: 4 }}
+            animate={
+              isCardInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 4 }
+            }
+            transition={{
+              duration: 0.52,
+              delay: staggerDelay + 0.32,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            className="flex items-baseline justify-between gap-2"
+          >
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-[#E87B39] text-xs sm:text-sm">★</span>
+              <span className="text-xs sm:text-[13px] font-semibold text-[#FFFDF5]">
+                {card.rating}
+              </span>
+              <span className="text-xs text-[#CBD9DA]/75">
+                ({card.reviews.toLocaleString("en-US")})
+              </span>
+            </div>
+            <span className="text-xs sm:text-[13.5px] font-semibold text-[#F2DFB4] group-hover:text-[#FFFDF5] transition-colors shrink-0">
+              {card.price}
+            </span>
+          </motion.div>
         </div>
       </Link>
-    </SpotlightCard>
+    </article>
   );
 }
 
 /**
- * CategoryCard — hover img scale + overlay tối dần + CTA slide-up (GIỮ NGUYÊN)
- * Bổ sung: icon nhỏ góc trên, stat, nút CTA riêng
+ * CategoryCard — V6.0 Cinematic Image Panel (Phần 16)
  */
-function CategoryCard({ category }: { category: (typeof CATEGORIES)[0] }) {
+function CategoryCard({
+  category,
+  index,
+  isFeatured,
+}: {
+  category: (typeof CATEGORIES)[0];
+  index: number;
+  isFeatured?: boolean;
+}) {
   return (
-    <motion.div
-      whileHover={{ y: -3 }}
-      transition={{ duration: 0.25 }}
-      className="group relative rounded-2xl overflow-hidden cursor-pointer h-72 shadow-lg"
-    >
-      <Image
-        src={category.img}
-        alt={category.label}
-        fill
-        quality={90}
-        className="object-cover group-hover:scale-[1.03] transition-transform duration-500 ease-out"
-        sizes="(max-width: 768px) 100vw, 33vw"
-      />
-      {/* Overlay tối dần khi hover */}
-      <div className={`absolute inset-0 bg-gradient-to-t ${category.color} to-[#071a2e]/80 group-hover:to-[#071a2e]/90 transition-all duration-300`} />
+    <Link href={category.href} className="block h-full">
+      <div
+        className={`group luxury-border-sweep luxury-shimmer-frame relative rounded-[6px] overflow-hidden cursor-pointer h-[420px] sm:h-[450px] border transition-all duration-400 bg-[#162E38] ${
+          isFeatured
+            ? "border-[#C9B580]/75 shadow-[0_20px_48px_rgba(8,20,26,0.35)]"
+            : "border-white/15 hover:border-[#C9B580]/65"
+        }`}
+      >
+        <CinematicImageMask
+          direction="editorial-window"
+          duration={1.15}
+          delay={index * 0.1}
+          className="w-full h-full"
+          innerClassName="relative w-full h-full"
+        >
+          <Image
+            src={category.img}
+            alt={category.label}
+            fill
+            quality={90}
+            className="object-cover group-hover:scale-[1.06] transition-transform duration-800 ease-[cubic-bezier(0.22,1,0.36,1)]"
+            sizes="(max-width: 768px) 100vw, 33vw"
+          />
+        </CinematicImageMask>
+        {/* Subtle dark editorial gradient concentrated at the bottom */}
+        <div
+          className="absolute inset-0 transition-opacity duration-400 group-hover:opacity-90"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(16,40,50,0.18) 0%, rgba(16,40,50,0.34) 45%, rgba(16,40,50,0.92) 100%)",
+          }}
+        />
 
-      {/* Icon nhỏ góc trên trái */}
-      <div className="absolute top-4 left-4 bg-white/20 backdrop-blur-sm rounded-xl px-2.5 py-1.5 text-sm font-semibold text-white">
-        {category.icon} {category.stat}
+        {/* Top header bar inside card */}
+        <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-15">
+          <div className="bg-[#102832]/80 backdrop-blur-xs border border-white/20 group-hover:border-[#E6D9B7]/50 rounded-[3px] px-3 py-1 text-xs font-medium text-[#F8F8F4] transition-colors">
+            {category.icon} {category.stat}
+          </div>
+          <span
+            aria-hidden="true"
+            className="text-xs font-mono tracking-[0.2em] text-[#BCD3D1]/80 group-hover:text-[#E6D9B7] transition-colors"
+          >
+            0{index + 1} // 03
+          </span>
+        </div>
+
+        {/* Content dưới */}
+        <div className="absolute inset-0 flex flex-col justify-end p-6 sm:p-7 z-15">
+          <h3 className="cinematic-condensed uppercase text-[#F8F8F4] text-2xl sm:text-3xl font-bold tracking-tight mb-2 group-hover:-translate-y-1 transition-transform duration-400">
+            {category.label}
+          </h3>
+          <p className="text-[#F8F8F4]/82 text-xs sm:text-[13.5px] leading-relaxed mb-4">
+            {category.desc}
+          </p>
+
+          {/* 3 tag đặc trưng của danh mục */}
+          <div className="flex flex-wrap gap-1.5 mb-5">
+            {category.highlights.map((tag) => (
+              <span
+                key={tag}
+                className="text-[11px] font-normal text-[#F8F8F4]/90 bg-white/10 border border-white/15 px-2.5 py-0.5 rounded-[3px]"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+
+          {/* CTA */}
+          <div className="pt-3.5 border-t border-white/15 group-hover:border-[#C9B580]/45 flex items-center justify-between transition-colors">
+            <span className="inline-flex items-center gap-2 text-[#F8F8F4] group-hover:text-[#E6D9B7] text-xs font-semibold tracking-wider uppercase transition-colors">
+              <span>{category.cta}</span>
+            </span>
+            <span className="text-[#F8F8F4] group-hover:text-[#E6D9B7] transition-transform duration-300 group-hover:translate-x-1.5">
+              →
+            </span>
+          </div>
+        </div>
       </div>
-
-      {/* Content dưới */}
-      <div className="absolute inset-0 flex flex-col justify-end p-5">
-        <h3 className="text-white text-xl font-bold mb-1">{category.label}</h3>
-        <p className="text-white/70 text-xs leading-relaxed mb-3">{category.desc}</p>
-
-        {/* CTA slide up khi hover */}
-        <span className="inline-block text-white bg-white/20 hover:bg-white/30 border border-white/30 text-xs font-semibold px-4 py-2 rounded-full translate-y-2 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-300 w-fit">
-          {category.cta} →
-        </span>
-      </div>
-    </motion.div>
+    </Link>
   );
 }

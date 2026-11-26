@@ -6,7 +6,7 @@ import { isRestart } from "./chat.knowledge";
 import { requestedNeeds, conversationalText } from "./chat.language";
 
 export const isTripRequest = (text: string) =>
-  /\b(lich trinh|ke hoach|\d+\s*n\s*\d+\s*d|\d+\s*ngay|tour)\b/.test(
+  /\b(lich trinh|ke hoach|thoi gian nghi (?:o|tai) khach san|nghi (?:o|tai) khach san|\d+\s*n\s*\d+\s*d|\d+\s*ngay|tour)\b/.test(
     normalize(text),
   );
 export const isFreeRequest = (text: string) =>
@@ -97,19 +97,27 @@ export function ruleIntent(message: string): Intent {
     "HAIAN",
     "Sala",
   ].filter((k) => n.includes(normalize(k)));
+  const searchKeywords = category === "sight" && !/\b(?:banh|mi|bun|com|lau|hai san|che|kem|oc|cafe)\b/.test(n)
+    ? keywords.filter((keyword) => /^(?:Cầu Rồng|Bà Nà|Mỹ Khê|Furama|Hilton|Hyatt|HAIAN|Sala)$/i.test(keyword))
+    : keywords;
+  // “Check-in” describes the desired experience, not a literal place name.
+  // Keep only catalog names/food terms as SQL filters; common activity words
+  // can otherwise accidentally match unrelated catalog text after normalization.
   // Sơn Trà / Ngũ Hành Sơn alone may mean a district, not the name of an attraction.
   const district = DISTRICTS.find((d) => n.includes(normalize(d))) ?? null;
   const guests = n.match(/(\d+)\s*(nguoi|khach)/);
+  // “Bánh bèo” is a dish name, not a request for rich/fatty-tasting food.
+  const tasteText = n.replace(/\bbanh beo\b/g, " ");
   return {
     ...DEFAULT_INTENT,
     category,
     categories: requestedNeeds(message),
     budget,
     district,
-    keywords,
+    keywords: searchKeywords,
     tastes: TASTES.filter(
       (t) =>
-        new RegExp(`\\b${normalize(t)}\\b`).test(n) &&
+        new RegExp(`\\b${normalize(t)}\\b`).test(tasteText) &&
         !new RegExp(`(?:khong|it|tranh)\\s+(?:an\\s+)?${normalize(t)}\\b`).test(
           n,
         ),

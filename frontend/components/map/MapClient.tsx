@@ -17,6 +17,7 @@ export interface MapClientProps {
   route?: DrivingRoute | null;
   routeOrigin?: Coordinates;
   routeDestination?: MapPlace | null;
+  resetViewSignal?: number;
 }
 
 function MapResizeHandler() {
@@ -35,7 +36,7 @@ function MapResizeHandler() {
   return null;
 }
 
-function MapCamera({ selectedId, locations, userPosition, zoomLevel, onZoomChange, route }: MapClientProps) {
+function MapCamera({ selectedId, locations, userPosition, zoomLevel, onZoomChange, route, resetViewSignal }: MapClientProps) {
   const map = useMapEvents({ zoomend: () => onZoomChange?.(map.getZoom()) });
   const selected = locations.find(location => location.id === selectedId);
   const lat = selected?.lat;
@@ -52,6 +53,11 @@ function MapCamera({ selectedId, locations, userPosition, zoomLevel, onZoomChang
   useEffect(() => {
     if (userPosition) map.flyTo(userPosition, 15, { duration: 1 });
   }, [map, userPosition]);
+
+  useEffect(() => {
+    if (!resetViewSignal) return;
+    map.flyTo(userPosition ?? DANANG_CENTER, 13, { duration: 0.9 });
+  }, [map, resetViewSignal, userPosition]);
 
   useEffect(() => {
     if (!route) return;
@@ -91,9 +97,9 @@ function BaseLayer({ layer }: { layer: MapLayer }) {
         eventHandlers={{ tileerror: () => { if (useCarto) setUseFallback(true); else setFailed(true); } }}
       />
       {failed && (
-        <div role="status" className="absolute bottom-12 left-3 right-16 z-[1000] rounded-xl bg-white/95 p-2 text-xs text-amber-800 shadow-md sm:right-auto sm:max-w-72">
+        <div role="status" className="absolute bottom-12 left-3 right-16 z-[1000] rounded-xl border border-[#E87B39]/40 bg-[#06151C]/92 backdrop-blur-xl px-3.5 py-2.5 text-xs text-[#FFFDF5] shadow-xl sm:right-auto sm:max-w-72">
           Một số ô bản đồ chưa tải được. Kiểm tra kết nối hoặc đổi lớp bản đồ.
-          <button type="button" className="ml-2 font-bold underline" onClick={() => { setFailed(false); setAttempt(value => value + 1); }}>Tải lại</button>
+          <button type="button" className="ml-2 font-bold text-[#E6D9B7] underline hover:text-[#FFFDF5]" onClick={() => { setFailed(false); setAttempt(value => value + 1); }}>Tải lại</button>
         </div>
       )}
     </>
@@ -101,17 +107,22 @@ function BaseLayer({ layer }: { layer: MapLayer }) {
 }
 
 function createPlaceIcon(place: MapPlace, selected: boolean) {
-  const colors = { luutru: 'bg-blue-500', amthuc: 'bg-orange-500', diemdulich: 'bg-green-500', cafe: 'bg-pink-500' };
+  const colors = {
+    luutru: 'bg-sky-500',
+    amthuc: 'bg-orange-500',
+    diemdulich: 'bg-emerald-500',
+    cafe: 'bg-pink-500',
+  };
   const emoji = { luutru: '🏨', amthuc: '🍜', diemdulich: '🗺️', cafe: '☕' };
   const element = document.createElement('div');
-  element.className = `relative flex flex-col items-center transition-transform ${selected ? 'scale-125' : 'hover:scale-110'}`;
+  element.className = `relative flex flex-col items-center transition-transform duration-200 ${selected ? 'scale-125' : 'hover:scale-110'}`;
   const pin = document.createElement('div');
-  pin.className = `w-8 h-8 rounded-full ${colors[place.category]} border-2 border-white shadow-lg flex items-center justify-center text-xs`;
+  pin.className = `w-8 h-8 rounded-full ${colors[place.category]} border-2 ${selected ? 'border-[#E6D9B7] ring-4 ring-[#E87B39]/35' : 'border-[#FFFDF5]/95'} shadow-[0_6px_18px_rgba(2,10,15,0.55)] flex items-center justify-center text-xs`;
   pin.textContent = emoji[place.category];
   element.append(pin);
   if (selected) {
     const label = document.createElement('div');
-    label.className = 'absolute top-9 left-1/2 -translate-x-1/2 bg-white text-[#0f2942] text-[10px] font-bold px-2 py-0.5 rounded shadow-md whitespace-nowrap';
+    label.className = 'absolute top-9 left-1/2 -translate-x-1/2 bg-[#06151C]/95 text-[#FFFDF5] border border-[#E6D9B7]/45 text-[10px] font-semibold px-2.5 py-0.5 rounded-full shadow-[0_10px_24px_rgba(2,10,15,0.55)] whitespace-nowrap';
     label.textContent = place.name;
     element.append(label);
   }
@@ -129,12 +140,42 @@ export default function MapClient(props: MapClientProps) {
       <BaseLayer key={mapLayer} layer={mapLayer} />
       <MapResizeHandler />
       <MapCamera {...props} />
-      {radius && <Circle center={center} radius={radius * 1000} pathOptions={{ color: '#0d9488', weight: 1.5, fillOpacity: 0.06, dashArray: '6 6', interactive: false }} />}
-      {!userPosition && radius && <CircleMarker center={DANANG_CENTER} radius={5} pathOptions={{ color: 'white', fillColor: '#0f2942', fillOpacity: 1, weight: 2 }}><Tooltip>Trung tâm Đà Nẵng</Tooltip></CircleMarker>}
+      {radius && (
+        <Circle
+          center={center}
+          radius={radius * 1000}
+          pathOptions={{
+            color: '#2DD4BF',
+            fillColor: '#0D9488',
+            weight: 1.5,
+            fillOpacity: 0.08,
+            dashArray: '6 6',
+            interactive: false,
+          }}
+        />
+      )}
+      {!userPosition && radius && (
+        <CircleMarker
+          center={DANANG_CENTER}
+          radius={5.5}
+          pathOptions={{ color: '#FFFDF5', fillColor: '#E87B39', fillOpacity: 1, weight: 2 }}
+        >
+          <Tooltip>Trung tâm Đà Nẵng</Tooltip>
+        </CircleMarker>
+      )}
       {route && (
         <>
-          <Polyline positions={route.coordinates} color="#0d9488" weight={5} opacity={0.9} />
-          {routeOrigin && <CircleMarker center={routeOrigin} radius={6} pathOptions={{ color: 'white', fillColor: '#0d9488', fillOpacity: 1, weight: 2 }}><Tooltip>Điểm xuất phát</Tooltip></CircleMarker>}
+          <Polyline positions={route.coordinates} color="#2DD4BF" weight={9} opacity={0.3} />
+          <Polyline positions={route.coordinates} color="#E87B39" weight={4.5} opacity={0.95} />
+          {routeOrigin && (
+            <CircleMarker
+              center={routeOrigin}
+              radius={6}
+              pathOptions={{ color: '#FFFDF5', fillColor: '#2DD4BF', fillOpacity: 1, weight: 2 }}
+            >
+              <Tooltip>Điểm xuất phát</Tooltip>
+            </CircleMarker>
+          )}
         </>
       )}
       {userPosition && <Marker position={userPosition} icon={userIcon} title="Vị trí của bạn" zIndexOffset={1000}><Tooltip>Vị trí của bạn</Tooltip></Marker>}

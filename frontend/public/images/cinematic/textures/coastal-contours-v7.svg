@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" fill="none" preserveAspectRatio="xMidYMid slice">
+  <g stroke="#216B70" stroke-width="0.85" stroke-linecap="round">
+    <!-- Topographic contour rings inspired by Son Tra & My Khe coastline -->
+    <path d="M-120 180 C180 95 420 265 760 175 C1100 85 1320 245 1720 140" stroke-opacity="0.16" />
+    <path d="M-120 245 C210 155 460 330 800 235 C1140 140 1360 305 1720 205" stroke-opacity="0.13" />
+    <path d="M-120 315 C240 225 510 395 845 300 C1180 205 1400 365 1720 275" stroke-opacity="0.10" />
+    <path d="M-80 540 C260 440 580 620 920 510 C1260 400 1440 560 1700 475" stroke-opacity="0.14" />
+    <path d="M-80 610 C295 510 620 685 955 578 C1290 470 1475 625 1700 545" stroke-opacity="0.11" />
+    <path d="M-80 680 C330 580 660 750 990 645 C1320 540 1510 690 1700 615" stroke-opacity="0.08" />
+  </g>
+  <g stroke="#C9B580" stroke-width="0.75" stroke-dasharray="4 8" stroke-linecap="round">
+    <path d="M-60 410 C340 310 690 490 1050 380 C1340 290 1520 410 1680 355" stroke-opacity="0.22" />
+    <path d="M120 -40 C240 260 160 560 340 940" stroke-opacity="0.15" />
+    <path d="M1460 -40 C1320 280 1410 580 1240 940" stroke-opacity="0.15" />
+  </g>
+</svg>

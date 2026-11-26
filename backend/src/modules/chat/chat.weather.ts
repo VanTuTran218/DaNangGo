@@ -95,7 +95,7 @@ function extractPeriod(normalizedText: string): DayPeriod | undefined {
 
 export function isWeatherQuestion(rawMsg: string): boolean {
   const n = normalize(rawMsg);
-  return /\b(thoi tiet|du bao|nhiet do|co mua|mua khong|troi mua|mua lon|mua rao|gio manh|canh bao.*(?:thoi tiet|bao|lu|nguy hiem)|di bien.*(?:khong|duoc khong|phu hop)|phu hop.*di bien|thang nao.*(?:da nang|du lich|dep|di)|di da nang.*thang nao|mua mua|mua nang|troi.*nong|qua nong|mang theo.*gi|mac gi|chuan bi gi|doi lich.*thoi tiet|thay doi lich.*thoi tiet|sua lich.*thoi tiet)\b/.test(
+  return /\b(thoi tiet|du bao|nhiet do|co mua|mua khong|troi mua|mua lon|mua rao|khi troi mua|mai che.*mua|mua.*mai che|gio manh|canh bao.*(?:thoi tiet|bao|lu|nguy hiem)|di bien.*(?:khong|duoc khong|phu hop)|phu hop.*di bien|thang nao.*(?:da nang|du lich|dep|di)|mua nao.*(?:da nang|du lich|dep|di)|di da nang.*thang nao|(?:ngay mai|hom nay|cuoi tuan).*nang|co nang|troi nang|mua mua|mua nang|troi.*nong|qua nong|mang theo.*gi|mac gi|chuan bi gi|doi lich.*thoi tiet|thay doi lich.*thoi tiet|sua lich.*thoi tiet)\b/.test(
     n
   );
 }
@@ -171,13 +171,14 @@ function toChatCard(row: PlaceSearchRow): ChatPlaceCard {
 async function fetchIndoorSuggestions(limit = 4): Promise<PlaceSearchRow[]> {
   try {
     const rows = await searchPlacesForChat({ limit: 120 });
+    // Weather fallback suggestions are attractions only. A restaurant or hotel
+    // may be indoors, but it does not answer “where should I visit?”
     const indoor = rows.filter((r) => {
+      if (r.placeType !== 'ATTRACTION') return false;
       const hay = normalize(`${r.name} ${r.description ?? ''}`);
       return INDOOR_KEYWORDS.some((kw) => hay.includes(kw)) && !OUTDOOR_KEYWORDS.some((kw) => hay.includes(kw));
     });
-    if (indoor.length >= limit) return indoor.slice(0, limit);
-    const restaurants = rows.filter((r) => r.placeType === 'RESTAURANT' && !indoor.some((i) => i.placeId === r.placeId));
-    return [...indoor, ...restaurants].slice(0, limit);
+    return indoor.slice(0, limit);
   } catch {
     return [];
   }

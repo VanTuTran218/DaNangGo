@@ -7,9 +7,15 @@ interface AiTypewriterTextProps {
   text: string;
   className?: string;
   highlightStats?: boolean;
+  highlightClassName?: string;
 }
 
-export default function AiTypewriterText({ text, className = "", highlightStats = true }: AiTypewriterTextProps) {
+export default function AiTypewriterText({
+  text,
+  className = "",
+  highlightStats = true,
+  highlightClassName = "text-orange-500 font-bold",
+}: AiTypewriterTextProps) {
   const [displayedText, setDisplayedText] = useState("");
   const shouldReduceMotion = useReducedMotion();
   
@@ -26,22 +32,21 @@ export default function AiTypewriterText({ text, className = "", highlightStats 
       if (i > text.length) {
         clearInterval(interval);
       }
-    }, 20);
+    }, 18);
 
     return () => clearInterval(interval);
   }, [text, shouldReduceMotion]);
 
-  // Function to wrap numbers in orange span
+  // Function to wrap numbers in accent span
   const renderText = (content: string) => {
     if (!highlightStats) return content;
     
-    // Split by digits (including potential decimals/commas if needed, simple approach: just digits)
-    const parts = content.split(/(\d+(?:[.,]\d+)?\w*)/g);
+    const parts = content.split(/(\d+(?:[.,]\d+)*(?:đ|%)?)/g);
     
     return parts.map((part, idx) => {
       if (/\d/.test(part)) {
         return (
-          <span key={idx} className="text-orange-500 font-bold">
+          <span key={idx} className={highlightClassName}>
             {part}
           </span>
         );

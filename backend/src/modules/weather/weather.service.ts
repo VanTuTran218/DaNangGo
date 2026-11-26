@@ -220,6 +220,7 @@ interface OpenMeteoPayload {
     apparent_temperature?: number | null;
     relative_humidity_2m?: number | null;
     precipitation?: number | null;
+    is_day?: 0 | 1 | null;
     weather_code?: number | null;
     wind_speed_10m?: number | null;
     wind_gusts_10m?: number | null;
@@ -229,6 +230,7 @@ interface OpenMeteoPayload {
     temperature_2m?: Array<number | null>;
     precipitation_probability?: Array<number | null>;
     precipitation?: Array<number | null>;
+    is_day?: Array<0 | 1 | null>;
     weather_code?: Array<number | null>;
     wind_speed_10m?: Array<number | null>;
   };
@@ -253,11 +255,11 @@ function buildOpenMeteoUrl(lat: number, lon: number, days: number): string {
   url.searchParams.set('forecast_days', String(days));
   url.searchParams.set(
     'current',
-    'temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,weather_code,wind_speed_10m,wind_gusts_10m'
+    'temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,is_day,weather_code,wind_speed_10m,wind_gusts_10m'
   );
   url.searchParams.set(
     'hourly',
-    'temperature_2m,precipitation_probability,precipitation,weather_code,wind_speed_10m'
+    'temperature_2m,precipitation_probability,precipitation,is_day,weather_code,wind_speed_10m'
   );
   url.searchParams.set(
     'daily',
@@ -267,6 +269,12 @@ function buildOpenMeteoUrl(lat: number, lon: number, days: number): string {
     url.searchParams.set('apikey', process.env.WEATHER_API_KEY);
   }
   return url.toString();
+}
+
+function normalizeIsDay(value: 0 | 1 | null | undefined): boolean | null {
+  if (value === 0) return false;
+  if (value === 1) return true;
+  return null;
 }
 
 function normalizeOpenMeteoPayload(
@@ -292,6 +300,7 @@ function normalizeOpenMeteoPayload(
       hour,
       hourLabel: `${String(hour).padStart(2, '0')}:00`,
       period: hourToPeriod(hour),
+      isDay: normalizeIsDay(raw.hourly?.is_day?.[idx]),
       temperature: toNullableNumber(raw.hourly?.temperature_2m?.[idx]),
       weatherCode,
       description: describeWmoCode(weatherCode),
@@ -323,6 +332,7 @@ function normalizeOpenMeteoPayload(
     const matchingHourly = hourly.find((h) => h.time === raw.current?.time) ?? null;
     current = {
       time: raw.current.time,
+      isDay: normalizeIsDay(raw.current.is_day),
       temperature: toNullableNumber(raw.current.temperature_2m),
       apparentTemperature: toNullableNumber(raw.current.apparent_temperature),
       weatherCode: code,

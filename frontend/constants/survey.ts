@@ -217,66 +217,43 @@ export const QUICK_SURVEY_IMPROVEMENTS: ChoiceOption[] = [
   { id: 'signage', label: 'Thêm biển chỉ dẫn đa ngôn ngữ' },
 ];
 
-// Cấu trúc Form dữ liệu đầy đủ
+// Cấu trúc form khảo sát (bản rút gọn: chỉ giữ các câu hỏi chính)
 export interface FullSurveyFormData {
-  // Bước 1: Chuyến đi
   tripPurpose: string;
   stayDuration: string;
-  travelCompanion: string;
   originProvince: string;
-  visitFrequency: string;
-  informationChannels: string[];
 
-  // Bước 2: Chi tiêu
-  dailyBudget: number; // VNĐ mỗi ngày mỗi người (500k -> 10tr)
-  topExpenses: string[];
-
-  // Bước 3: Ma trận đánh giá trải nghiệm (1-5 sao, 0 là Chưa sử dụng)
+  // Đánh giá nhanh các dịch vụ chính (1-5 sao, -1 là Chưa sử dụng, 0 là chưa chọn)
   experienceRatings: Record<string, number>;
 
-  // Bước 4: Tổng thể & Góp ý
   overallSatisfaction: number; // 1 - 5
   npsScore: number | null; // 0 - 10
-  issuesFaced: string[];
   feedbackText: string;
 
-  // Tùy chọn DaNangGo
-  ageGroup?: string;
-  mostUsefulFeature?: string;
-  itineraryAccuracy?: string;
+  // Tùy chọn nhận thư tri ân & chứng nhận điện tử qua email
+  recipientName?: string;
+  recipientEmail?: string;
+
   consentAgreed: boolean; // Bắt buộc
 }
 
 export const INITIAL_FULL_SURVEY_DATA: FullSurveyFormData = {
   tripPurpose: '',
   stayDuration: '',
-  travelCompanion: '',
   originProvince: '',
-  visitFrequency: '',
-  informationChannels: [],
-
-  dailyBudget: 1500000, // Mặc định 1.5 triệu/ngày
-  topExpenses: [],
 
   experienceRatings: {
     accommodation: 0,
     food: 0,
     attractions: 0,
-    transportation: 0,
-    safety: 0,
-    cleanliness: 0,
     pricing: 0,
-    hospitality: 0,
   },
 
   overallSatisfaction: 0,
   npsScore: null,
-  issuesFaced: [],
   feedbackText: '',
-
-  ageGroup: '',
-  mostUsefulFeature: '',
-  itineraryAccuracy: '',
+  recipientName: '',
+  recipientEmail: '',
   consentAgreed: false,
 };
 

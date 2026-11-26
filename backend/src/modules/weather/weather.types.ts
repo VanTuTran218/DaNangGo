@@ -27,6 +27,7 @@ export interface WeatherCurrent {
   time: string;
   temperature: number | null;
   apparentTemperature: number | null;
+  isDay?: boolean | null;
   weatherCode: number | null;
   description: string;
   precipitationProbability: number | null;
@@ -43,6 +44,7 @@ export interface WeatherHourlyItem {
   hourLabel: string;
   period: DayPeriod;
   temperature: number | null;
+  isDay?: boolean | null;
   weatherCode: number | null;
   description: string;
   precipitationProbability: number | null;

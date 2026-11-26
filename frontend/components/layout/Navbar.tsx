@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { TIER_CONFIG } from "@/lib/constants/tiers";
 import { Magnetic } from "@/components/ui/MotionPrimitives";
 import { SPRING } from "@/lib/motion-tokens";
+import EventNotificationBell from "@/components/events/EventNotificationBell";
 
 // Ngưỡng cuộn trang (px) để chuyển từ trong suốt sang nền trắng
 const SCROLL_THRESHOLD = 24;
@@ -16,6 +17,7 @@ const SCROLL_THRESHOLD = 24;
 const NAV_LINKS = [
   { href: "/", label: "Trang chủ" },
   { href: "/khampha", label: "Khám phá" },
+  { href: "/su-kien", label: "Sự kiện" },
   { href: "/luutru", label: "Lưu trú" },
   { href: "/amthuc", label: "Ẩm thực" },
   { href: "/diemdulich", label: "Điểm du lịch" },
@@ -64,13 +66,15 @@ export default function Navbar() {
     };
 
     handleScroll();
+    const rafId = window.requestAnimationFrame(handleScroll);
     window.addEventListener("scroll", handleScroll, { passive: true });
     window.addEventListener("resize", handleScroll, { passive: true });
     return () => {
+      window.cancelAnimationFrame(rafId);
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", handleScroll);
     };
-  }, [initialized]);
+  }, [initialized, pathname]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -114,6 +118,8 @@ export default function Navbar() {
       className={`fixed top-0 left-0 right-0 z-50 h-16 flex items-center transition-colors duration-250 ease-out select-none ${
         isTransparent
           ? "bg-transparent border-b border-transparent shadow-none"
+          : isHomePage
+          ? "bg-[#FAF9F6]/95 backdrop-blur-md border-b border-[#DEDAD2] shadow-xs"
           : "bg-white/95 backdrop-blur-md border-b border-gray-200/80 shadow-sm"
       }`}
       style={{
@@ -126,19 +132,13 @@ export default function Navbar() {
         {/* ══ 1. LOGO DANANGGO ══ */}
         <div className="flex shrink-0 items-center min-w-[140px] lg:min-w-[200px]">
           <Link href="/" className="group flex items-center gap-2.5 flex-shrink-0">
-            <div className={`w-9 h-9 sm:w-[38px] sm:h-[38px] rounded-full bg-gradient-to-br from-cyan-400 to-teal-600 flex items-center justify-center shadow-md transition-transform duration-200 group-hover:scale-105 shrink-0 ${isTransparent ? "shadow-black/25" : "shadow-teal-500/25"}`}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M3 10c1.5-2.5 3-2.5 4.5 0S11 12.5 12.5 10 16 7.5 17.5 10s3 2.5 4.5 0"
-                  stroke="white" strokeWidth="2" strokeLinecap="round" fill="none"
-                />
-                <path
-                  d="M3 15c1.5-2 3-2 4.5 0S11 17 12.5 15s3.5-2 5 0 3 2 4.5 0"
-                  stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" strokeLinecap="round" fill="none"
-                />
-                <circle cx="18" cy="5.5" r="2" fill="#FF7300" />
-              </svg>
-            </div>
+            <img
+              src="/images/branding/danang-logo.png"
+              alt="Biểu trưng Đà Nẵng"
+              width={42}
+              height={42}
+              className="w-10 h-10 sm:w-[42px] sm:h-[42px] object-contain shrink-0 transition-transform duration-200 group-hover:scale-105 drop-shadow-xs"
+            />
             <span className="font-bold text-[20px] sm:text-[21px] tracking-tight leading-none flex items-center select-none" style={textShadowStyle}>
               <span className={`transition-colors duration-200 ${isTransparent ? "text-white" : "text-[#0f2942]"}`}>Danang</span>
               <span className="text-[#FF7300] font-extrabold ml-0.5">Go</span>
@@ -193,6 +193,9 @@ export default function Navbar() {
 
           {/* Desktop CTA */}
           <div className="hidden items-center gap-2.5 sm:gap-3 lg:flex">
+            {/* Chuông thông báo Sự kiện sắp diễn ra tại Đà Nẵng */}
+            <EventNotificationBell isTransparent={isTransparent} />
+
             {/* Nút "Thêm lịch trình": Giữ màu xanh ngọc thương hiệu hiện tại + Magnetic nhẹ */}
             <Magnetic strength={2.5}>
               <Link

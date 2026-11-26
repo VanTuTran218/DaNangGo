@@ -42,7 +42,7 @@ async function main() {
     for (const group of allNeeds.message.recommendationGroups ?? []) for (const place of group.places) assert.equal(place.placeType, ({food: "RESTAURANT", sight: "ATTRACTION", stay: "ACCOMMODATION"})[group.category]);
     results.push({ question: "Gợi ý quán ăn, điểm tham quan và khách sạn ở Hải Châu", groups: allNeeds.message.recommendationGroups?.map(group => ({category:group.category, places:group.places.map(place=>({name:place.name,menuItems:place.menuItems}))})) });
     const liveAndFood = await processUserMessage({ guestId: randomUUID(), message: "Mai thời tiết thế nào và gợi ý quán ăn ở Hải Châu" });
-    assert.match(liveAndFood.message.content, /chưa tích hợp dữ liệu thời tiết/);
+    assert.match(liveAndFood.message.content, /open-meteo|chưa lấy được dữ liệu thời tiết trực tiếp/i);
     assert.ok(liveAndFood.message.places?.some(place => place.placeType === "RESTAURANT"));
     assert.ok(liveAndFood.message.secondaryIntents?.includes("WEATHER"));
     results.push({ question: "Mai thời tiết thế nào và gợi ý quán ăn ở Hải Châu", content:liveAndFood.message.content, secondaryIntents:liveAndFood.message.secondaryIntents, foodCards:liveAndFood.message.places?.length });

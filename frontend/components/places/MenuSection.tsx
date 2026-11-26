@@ -66,19 +66,19 @@ export default function MenuSection({
   }, [uniqueMenuItems, searchQuery, activeTaste]);
 
   return (
-    <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-100 mb-8 space-y-6">
+    <div className="bg-[#FFFDF9] rounded-[16px] p-6 sm:p-8 border border-[#E5DAC8] shadow-[0_14px_38px_rgba(16,40,50,0.05)] mb-8 space-y-6">
       {/* HEADER SECTION: TIÊU ĐỀ & THANH TÌM KIẾM */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E8DDCF] pb-5">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="p-1.5 bg-orange-100 text-orange-600 rounded-xl shadow-sm">
-              <Utensils size={18} />
+          <div className="flex items-center gap-3 mb-1">
+            <span className="w-9 h-9 rounded-full bg-[#091E27] text-[#E6D9B7] flex items-center justify-center shrink-0">
+              <Utensils size={16} />
             </span>
-            <h2 className="text-xl sm:text-2xl font-extrabold text-[#0f2942]">
-              Thực đơn & Khẩu vị đặc trưng
+            <h2 className="home-serif text-xl sm:text-2xl font-semibold text-[#102832]">
+              Thực đơn &amp; Khẩu vị đặc trưng
             </h2>
           </div>
-          <p className="text-xs sm:text-sm text-gray-500">
+          <p className="text-xs sm:text-sm text-[#4F5D63] pl-12">
             {uniqueMenuItems.length > 0
               ? `Khám phá ${uniqueMenuItems.length} món ngon đang mở bán tại ${restaurantName}`
               : 'Các món ngon đang được nhà hàng cập nhật'}
@@ -88,20 +88,20 @@ export default function MenuSection({
         {/* Thanh tìm kiếm món ăn nhanh */}
         <div className="relative w-full sm:w-72">
           <Search
-            size={16}
-            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
+            size={15}
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#216B70]"
           />
           <input
             type="text"
             placeholder="Tìm theo tên món, nguyên liệu..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-9 py-2.5 text-xs sm:text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 focus:bg-white focus:border-orange-400 transition-all shadow-inner"
+            className="w-full pl-10 pr-9 py-2.5 text-xs sm:text-sm bg-[#F7F2E8] border border-[#E5DAC8] rounded-full text-[#102832] placeholder-[#6E7D82] focus:outline-none focus:bg-white focus:border-[#C9B580] transition-all"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-0.5"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#738086] hover:text-[#102832] p-0.5 cursor-pointer"
             >
               <X size={14} />
             </button>
@@ -112,21 +112,21 @@ export default function MenuSection({
       {/* PILLS BỘ LỌC KHẨU VỊ (CÓ HIỆU ỨNG TRƯỢT layoutId) */}
       {availableTastes.length > 0 && (
         <div className="relative flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none pt-1">
-          <span className="text-xs font-bold text-gray-400 uppercase tracking-wider shrink-0 mr-1">
+          <span className="text-[11px] font-semibold text-[#6E7D82] uppercase tracking-[0.16em] shrink-0 mr-1">
             Khẩu vị:
           </span>
 
           {/* Nút "Tất cả" */}
           <button
             onClick={() => setActiveTaste('Tất cả')}
-            className={`relative px-4 py-2 rounded-full text-xs font-bold transition-colors whitespace-nowrap ${
-              activeTaste === 'Tất cả' ? 'text-white' : 'text-gray-600 hover:text-gray-900 bg-gray-100 hover:bg-gray-200'
+            className={`relative px-4 py-2 rounded-full text-xs font-semibold transition-colors whitespace-nowrap cursor-pointer ${
+              activeTaste === 'Tất cả' ? 'text-[#FFFDF5]' : 'text-[#4F5D63] hover:text-[#102832] bg-[#F7F2E8] border border-[#E5DAC8] hover:border-[#C9B580]'
             }`}
           >
             {activeTaste === 'Tất cả' && (
               <motion.div
                 layoutId="activeTastePill"
-                className="absolute inset-0 bg-[#0f2942] rounded-full shadow-sm"
+                className="absolute inset-0 bg-[#091E27] rounded-full"
                 transition={{ type: 'spring', stiffness: 400, damping: 30 }}
               />
             )}
@@ -142,7 +142,7 @@ export default function MenuSection({
               <button
                 key={taste}
                 onClick={() => setActiveTaste(taste)}
-                className={`relative px-3.5 py-2 rounded-full text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
+                className={`relative px-3.5 py-2 rounded-full text-xs font-semibold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
                   isSelected
                     ? 'text-white'
                     : `${style.bg} ${style.text} border ${style.border} hover:opacity-90`
@@ -151,7 +151,7 @@ export default function MenuSection({
                 {isSelected && (
                   <motion.div
                     layoutId="activeTastePill"
-                    className="absolute inset-0 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full shadow-md shadow-orange-500/20"
+                    className="absolute inset-0 bg-[#CB712D] rounded-full"
                     transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                   />
                 )}
@@ -168,14 +168,14 @@ export default function MenuSection({
       {/* LƯỚI THỰC ĐƠN CÂN XỨNG (ITEMS-STRETCH) */}
       {filteredItems.length === 0 ? (
         // Empty state khi không tìm thấy món phù hợp
-        <div className="py-16 text-center bg-gray-50/80 rounded-2xl border border-dashed border-gray-200 p-8">
-          <div className="w-16 h-16 rounded-2xl bg-orange-50 text-orange-400 flex items-center justify-center mx-auto mb-3">
+        <div className="py-16 text-center bg-[#F8F8F4] rounded-[4px] border border-dashed border-[#DEDAD2] p-8">
+          <div className="w-16 h-16 rounded-[4px] bg-[#E87B39]/12 text-[#E87B39] flex items-center justify-center mx-auto mb-3">
             <Salad size={32} />
           </div>
-          <h3 className="text-base font-bold text-[#0f2942] mb-1">
+          <h3 className="text-base font-bold text-[#102832] mb-1">
             Không tìm thấy món ăn phù hợp
           </h3>
-          <p className="text-xs text-gray-500 max-w-sm mx-auto mb-4">
+          <p className="text-xs text-[#4F5D63] max-w-sm mx-auto mb-4">
             Không có món ăn nào khớp với từ khóa &ldquo;{searchQuery}&rdquo; hoặc khẩu vị đang chọn.
           </p>
           <button
@@ -183,7 +183,7 @@ export default function MenuSection({
               setSearchQuery('');
               setActiveTaste('Tất cả');
             }}
-            className="px-4 py-2 bg-white border border-gray-200 text-xs font-semibold text-orange-600 rounded-xl hover:bg-orange-50 transition-all shadow-sm"
+            className="px-4 py-2 bg-white border border-[#DEDAD2] text-xs font-semibold text-[#E87B39] rounded-[2px] hover:bg-[#F1EFE7] transition-all"
           >
             Xóa bộ lọc tìm kiếm
           </button>

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" fill="none" preserveAspectRatio="xMidYMid slice">
+  <g stroke="#C9AB78" stroke-width="0.9" opacity="0.35">
+    <!-- Topographic Elevation Lines (Son Tra -> Ba Na -> Hoi An) -->
+    <path d="M-80 210 C260 150, 540 290, 880 220 C1220 150, 1540 260, 2000 180" stroke-dasharray="6 8" />
+    <path d="M-80 295 C290 225, 590 365, 930 285 C1270 205, 1580 325, 2000 245" />
+    <path d="M-80 390 C310 320, 650 450, 990 365 C1330 280, 1620 405, 2000 330" />
+    <path d="M-80 510 C340 435, 700 565, 1050 475 C1390 385, 1660 505, 2000 435" stroke-dasharray="3 6" />
+    <path d="M-80 650 C380 580, 760 700, 1110 610 C1450 520, 1710 640, 2000 570" />
+    <path d="M-80 800 C420 730, 820 840, 1180 755 C1510 670, 1760 770, 2000 710" />
+  </g>
+
+  <!-- Subtle Cartographic Coordinate Rings & Compass Ticks -->
+  <g stroke="#216B70" stroke-width="0.75" opacity="0.18">
+    <circle cx="280" cy="260" r="110" stroke-dasharray="4 6" />
+    <circle cx="280" cy="260" r="165" />
+    <circle cx="1640" cy="780" r="140" stroke-dasharray="3 7" />
+    <circle cx="1640" cy="780" r="210" />
+    <line x1="280" y1="70" x2="280" y2="450" stroke-dasharray="2 8" />
+    <line x1="90" y1="260" x2="470" y2="260" stroke-dasharray="2 8" />
+  </g>
+
+  <!-- Cartographic Latitude / Longitude Reference Marks (Decorative aria-hidden) -->
+  <g fill="#8A7D6B" opacity="0.32" font-family="monospace" font-size="10" letter-spacing="3">
+    <text x="115" y="135">16°03'16"N · 108°14'50"E · MY KHE</text>
+    <text x="860" y="120">15°59'42"N · 107°59'48"E · BA NA PEAK</text>
+    <text x="1505" y="965">15°52'48"N · 108°19'40"E · HOI AN PORT</text>
+  </g>
+</svg>

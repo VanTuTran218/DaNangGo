@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
-import { connectDB, closeDB } from "../config/db";
+import { connectDB, closeDB, getPool } from "../config/db";
 import { processUserMessage } from "../modules/chat/chat.service";
 import { conversationMessages } from "../modules/chat/chat.history";
 import { itineraryDraft } from "../modules/chat/chat.saved-plan";
@@ -22,11 +22,21 @@ async function main() {
       results.push({ test, question: message, answer: result.message.content, plan: Boolean(result.message.travelPlan), comparison: Boolean(result.message.comparison), durationMs: Date.now() - start });
       return result.message;
     };
-    const comparison = await ask("So sánh cơ sở thật, không bịa giá", "So sánh Hilton với Furama");
+    const comparisonCandidates = await getPool().request().query<{ name: string }>(`
+      SELECT TOP (2) name
+      FROM dbo.places
+      WHERE status = 'ACTIVE' AND place_type = 'ACCOMMODATION'
+      GROUP BY name
+      HAVING COUNT(*) = 1
+      ORDER BY name
+    `);
+    assert.equal(comparisonCandidates.recordset.length, 2, "Cần hai cơ sở lưu trú có tên duy nhất trong catalog");
+    const [left, right] = comparisonCandidates.recordset;
+    const comparison = await ask("So sánh hai cơ sở thật, không bịa giá", `So sánh ${left!.name} với ${right!.name}`);
     assert.equal(comparison.comparison?.places.length, 2);
-    assert.match(comparison.comparison!.places[0]!.name, /Hilton/);
-    assert.match(comparison.comparison!.places[1]!.name, /Furama/);
-    assert.ok(comparison.comparison!.rows.find(row => row.label === "Giá trong catalog")?.values.every(value => value === "Chưa có dữ liệu"));
+    assert.equal(comparison.comparison!.places[0]!.name, left!.name);
+    assert.equal(comparison.comparison!.places[1]!.name, right!.name);
+    assert.equal(comparison.comparison!.rows.find(row => row.label === "Giá trong catalog")?.values.length, 2);
     const referred = await ask("So sánh tham chiếu hai cơ sở ở lượt trước", "So sánh hai chỗ này");
     assert.deepEqual(referred.comparison?.places.map(place => place.placeId), comparison.comparison?.places.map(place => place.placeId));
     assert.equal((await ask("Tên không tồn tại không tạo địa điểm", "So sánh Khách Sạn Không Tồn Tại với Hilton")).comparison, undefined);

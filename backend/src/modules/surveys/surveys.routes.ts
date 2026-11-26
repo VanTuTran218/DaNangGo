@@ -1,14 +1,23 @@
 import { Router, type RequestHandler } from "express";
 import rateLimit from "express-rate-limit";
 import { z } from "zod";
-import { requireAuth, requireRole } from "../../middleware/auth.middleware";
+import {
+  optionalAuth,
+  requireAuth,
+  requireRole,
+} from "../../middleware/auth.middleware";
 import * as repo from "./surveys.repository";
+import * as mailer from "./surveys.mailer";
 import {
   submissionSchema,
   adminSurveySchema,
   SurveyError,
 } from "./surveys.validation";
 const idSchema = z.coerce.number().int().positive().max(2147483647);
+const certCodeSchema = z
+  .string()
+  .trim()
+  .regex(/^DNG-\d{4}-\d{4,8}-[A-F0-9]{4}$/i);
 const wrap =
   (work: RequestHandler): RequestHandler =>
   async (req, res, next) => {
@@ -57,18 +66,39 @@ for (const [route, type] of [
         message: "Bạn gửi khảo sát quá nhanh. Vui lòng thử lại sau.",
       },
     }),
+    optionalAuth("USER"),
     wrap(async (req, res) => {
       const input = submissionSchema.parse(req.body);
       if (input.survey_type !== type)
         throw new SurveyError(400, "Sai loại khảo sát.");
       const data = await repo.submitSurvey(input);
+      const appreciation = await mailer.issueAndSendSurveyAppreciation(
+        data.responseId,
+        input,
+        res.locals.authUserId,
+      );
       res.json({
         success: true,
-        message: "Đã lưu khảo sát. Cảm ơn bạn đã chia sẻ!",
-        data,
+        message: appreciation.sent
+          ? `Đã lưu khảo sát và gửi thư tri ân đến ${appreciation.maskedEmail}!`
+          : "Đã lưu khảo sát. Cảm ơn bạn đã chia sẻ!",
+        data: {
+          ...data,
+          appreciation,
+        },
       });
     }),
   );
+surveysRouter.get(
+  "/certificate/:code",
+  wrap(async (req, res) => {
+    const code = certCodeSchema.parse(req.params.code);
+    const cert = await mailer.getCertificateByCode(code);
+    if (!cert)
+      throw new SurveyError(404, "Không tìm thấy chứng nhận tri ân tương ứng.");
+    res.json({ success: true, data: cert });
+  }),
+);
 surveysRouter.get(
   "/",
   wrap(async (_req, res) => {
@@ -90,6 +120,26 @@ adminSurveysRouter.use((_req, res, next) => {
   res.set("Cache-Control", "no-store");
   next();
 });
+adminSurveysRouter.get(
+  "/automation-stats",
+  wrap(async (_req, res) => {
+    res.json({ success: true, data: await mailer.getSurveyAutomationStats() });
+  }),
+);
+adminSurveysRouter.post(
+  "/dispatch-trip-invites",
+  wrap(async (_req, res) => {
+    const report = await mailer.dispatchCompletedTripSurveyInvites();
+    res.json({
+      success: true,
+      message:
+        report.eligibleNewTrips > 0
+          ? `Đã tự động gửi ${report.sentCount + report.devLoggedCount} lời mời khảo sát cho các chuyến đi vừa kết thúc.`
+          : "Tất cả lịch trình đã kết thúc đều đã được gửi lời mời khảo sát.",
+      data: report,
+    });
+  }),
+);
 adminSurveysRouter.get(
   "/",
   wrap(async (_req, res) => {

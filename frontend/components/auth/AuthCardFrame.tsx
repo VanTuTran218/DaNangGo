@@ -1,70 +1,80 @@
 'use client';
 
 /**
- * AuthCardFrame
- * ─────────────
- * Khung giao diện cao cấp cho trang /dang-nhap (Đăng nhập & Đăng ký).
- * - Nền chuyển sắc nhẹ nhàng: Pearl White (#FAFCFD), Sky Tint, Soft Cream
- * - 3 Ambient Glow Shapes (radial gradient) chuyển động rất chậm với biên độ nhỏ
- * - Khung Card: bo góc 28px, viền gradient siêu mỏng ngọc lam & cam, đổ bóng nhiều tầng
- * - Animation xuất hiện: fade-in từ 0 lên 1, scale từ 0.98 lên 1, translateY từ 15px về 0
+ * AuthCardFrame — Nocturnal Club Sanctuary Frame (/dang-nhap, /quen-mat-khau)
+ * ───────────────────────────────────────────────────────────────────────────
+ * Deep Ocean Cosmos (#041017 -> #071A24) with fine starlight coordinate grid,
+ * drifting atmospheric Teal/Champagne/Sunset nebula orbs, and frosted obsidian
+ * glass architectural card container.
  */
 
 import { type ReactNode } from 'react';
+import { useReducedMotion } from 'framer-motion';
 
 interface AuthCardFrameProps {
   children: ReactNode;
+  footer?: ReactNode;
+  maxWidthClass?: string;
 }
 
-export default function AuthCardFrame({ children }: AuthCardFrameProps) {
+export default function AuthCardFrame({
+  children,
+  footer,
+  maxWidthClass = 'max-w-[1140px]',
+}: AuthCardFrameProps) {
+  const reducedMotion = Boolean(useReducedMotion());
+
   return (
-    /* ── Nền trang auth ── */
-    <main className="auth-bg min-h-[100dvh] w-full flex items-center justify-center relative overflow-x-hidden py-6 sm:py-10 px-3 sm:px-6">
-
-      {/* ── Ambient Glow 1: Turquoise — Top-Left ── */}
+    <main className="dananggo-cinematic-content min-h-[100dvh] w-full flex flex-col items-center justify-center relative overflow-x-clip py-6 sm:py-9 px-3 sm:px-6 bg-[#041017] text-[#FFFDF5]">
+      {/* Celestial Deep Ocean Cosmos Backdrop */}
       <div
-        className="auth-blob-1 absolute -top-24 -left-24 w-[420px] sm:w-[540px] h-[420px] sm:h-[540px] rounded-full pointer-events-none"
-        style={{
-          background: 'radial-gradient(circle, rgba(17,197,198,0.14) 0%, rgba(8,126,156,0.06) 50%, transparent 70%)',
-          filter: 'blur(50px)',
-        }}
         aria-hidden="true"
-      />
+        className={`pointer-events-none fixed inset-0 z-0 overflow-hidden select-none ${
+          reducedMotion ? 'explore-ambient-paused' : ''
+        }`}
+      >
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              'radial-gradient(ellipse 88% 58% at 50% 0%, #0E2B38 0%, #061822 48%, #040F16 100%)',
+          }}
+        />
+        <div
+          className="absolute inset-0 opacity-[0.14]"
+          style={{
+            backgroundImage: 'radial-gradient(rgba(230,217,183,0.42) 1px, transparent 1px)',
+            backgroundSize: '48px 48px',
+          }}
+        />
+        <div
+          className="explore-orb-a absolute -top-28 left-[10%] w-[520px] h-[520px] rounded-full"
+          style={{
+            background:
+              'radial-gradient(circle, rgba(45,212,191,0.18) 0%, rgba(33,107,112,0.08) 48%, transparent 72%)',
+          }}
+        />
+        <div
+          className="explore-orb-b absolute bottom-[-14%] right-[6%] w-[560px] h-[560px] rounded-full"
+          style={{
+            background:
+              'radial-gradient(circle, rgba(232,123,57,0.14) 0%, rgba(230,217,183,0.08) 46%, transparent 72%)',
+          }}
+        />
+      </div>
 
-      {/* ── Ambient Glow 2: Sunset Orange — Bottom-Right ── */}
-      <div
-        className="auth-blob-2 absolute -bottom-28 -right-28 w-[400px] sm:w-[500px] h-[400px] sm:h-[500px] rounded-full pointer-events-none"
-        style={{
-          background: 'radial-gradient(circle, rgba(255,106,0,0.11) 0%, rgba(251,146,60,0.04) 50%, transparent 70%)',
-          filter: 'blur(55px)',
-        }}
-        aria-hidden="true"
-      />
-
-      {/* ── Ambient Glow 3: Ocean Blue — Center-Mid ── */}
-      <div
-        className="auth-blob-3 absolute top-1/3 left-1/2 -translate-x-1/2 w-72 sm:w-96 h-72 sm:h-96 rounded-full pointer-events-none"
-        style={{
-          background: 'radial-gradient(circle, rgba(39,229,221,0.08) 0%, transparent 65%)',
-          filter: 'blur(45px)',
-        }}
-        aria-hidden="true"
-      />
-
-      {/* ── Card Wrapper: Animation xuất hiện, viền gradient siêu mỏng, hiệu ứng nổi tự nhiên ── */}
-      <div className="auth-card-animate relative z-10 w-full max-w-[1180px] my-auto">
-
-        {/* Viền gradient xanh ngọc & cam cực mỏng */}
-        <div className="auth-card-border" aria-hidden="true" />
-
-        {/* Khung Card chính */}
-        <div className="auth-card-frame">
-          {/* Shine overlay lướt nhẹ */}
-          <div className="auth-card-shine" aria-hidden="true" />
-
-          {/* Nội dung bên trong (AuthCard) */}
+      {/* Frosted Obsidian Architectural Sanctuary Card */}
+      <div className={`auth-card-animate relative z-10 w-full ${maxWidthClass} my-auto`}>
+        <div className="relative rounded-[26px] border border-[#E6D9B7]/26 bg-[#071821]/88 backdrop-blur-2xl shadow-[0_38px_96px_rgba(2,10,15,0.78),inset_0_1px_0_rgba(255,253,245,0.12)] overflow-hidden">
+          {/* Subtle Leica Viewfinder Corner Hairlines */}
+          <span aria-hidden="true" className="pointer-events-none absolute top-3 left-3 w-3.5 h-3.5 border-t border-l border-[#E6D9B7]/40 rounded-tl-sm z-30" />
+          <span aria-hidden="true" className="pointer-events-none absolute top-3 right-3 w-3.5 h-3.5 border-t border-r border-[#E6D9B7]/40 rounded-tr-sm z-30" />
+          <span aria-hidden="true" className="pointer-events-none absolute bottom-3 left-3 w-3.5 h-3.5 border-b border-l border-[#E6D9B7]/40 rounded-bl-sm z-30" />
+          <span aria-hidden="true" className="pointer-events-none absolute bottom-3 right-3 w-3.5 h-3.5 border-b border-r border-[#E6D9B7]/40 rounded-br-sm z-30" />
           {children}
         </div>
+
+        {footer && <div className="mt-4 text-center">{footer}</div>}
       </div>
     </main>
   );

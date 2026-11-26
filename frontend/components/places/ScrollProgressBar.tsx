@@ -1,22 +1,25 @@
 'use client';
 
-import { motion, useScroll, useSpring } from 'framer-motion';
+import { motion, useScroll, useSpring, useReducedMotion } from 'framer-motion';
 
 /**
- * Thanh tiến độ cuộn mỏng ở đỉnh trang web
- * Tự động tính toán theo tỷ lệ cuộn của cửa sổ trình duyệt
+ * Thanh tiến độ cuộn mỏng ở đỉnh trang Chi tiết — đồng bộ Champagne Gold & Sunset Coral
  */
 export default function ScrollProgressBar() {
+  const reducedMotion = useReducedMotion();
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, {
-    stiffness: 100,
+    stiffness: 110,
     damping: 30,
     restDelta: 0.001,
   });
 
+  if (reducedMotion) return null;
+
   return (
     <motion.div
-      className="fixed top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-teal-400 via-cyan-500 to-orange-500 z-50 origin-left pointer-events-none"
+      aria-hidden="true"
+      className="fixed top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-[#216B70] via-[#C9B580] to-[#E87B39] z-[60] origin-left pointer-events-none"
       style={{ scaleX }}
     />
   );

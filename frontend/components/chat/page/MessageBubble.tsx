@@ -148,7 +148,7 @@ function RecommendationCard({
       {place.reason && (
         <p className={styles.recommendationReason}>{place.reason}</p>
       )}
-      <MenuItems place={place} />
+      <MenuItems place={place} theme="dark" />
       <StayFacts place={place} />
       <div className={styles.recommendationFooter}>
         <HeartButton placeId={place.placeId} placeName={place.name} showLabel />
@@ -226,7 +226,7 @@ export default function MessageBubble({
             onSelectDay={onSelectDay}
           />
         )}
-        {message.comparison && <ComparisonTable comparison={message.comparison} />}
+        {message.comparison && <ComparisonTable comparison={message.comparison} theme="dark" />}
         {message.travelPlan &&
           sessionId &&
           !message.id.startsWith("legacy_") && (
@@ -249,7 +249,7 @@ export default function MessageBubble({
             ))}
           </div>
         )}
-        {!isUser && <ResponseDetails message={message} />}
+        {!isUser && <ResponseDetails message={message} theme="dark" />}
         {message.actionLink && !(message.travelPlan && sessionId) && (
           <Link href={message.actionLink.url} className={styles.messageAction}>
             {message.actionLink.text}

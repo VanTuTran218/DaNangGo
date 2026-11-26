@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 360" fill="none" preserveAspectRatio="none">
+  <defs>
+    <linearGradient id="sonTraHorizonGrad" x1="960" y1="0" x2="960" y2="360" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#162E38" stop-opacity="0.32" />
+      <stop offset="55%" stop-color="#102832" stop-opacity="0.62" />
+      <stop offset="100%" stop-color="#102832" stop-opacity="0.92" />
+    </linearGradient>
+    <linearGradient id="coastalRidgeMist" x1="960" y1="60" x2="960" y2="320" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#BCD3D1" stop-opacity="0.18" />
+      <stop offset="100%" stop-color="#102832" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+  <!-- Distant Son Tra & Hai Van ridge silhouette -->
+  <path d="M-60 360 L-60 228 C95 198 220 142 390 158 C560 174 690 232 885 214 C1080 196 1235 118 1445 134 C1655 150 1790 202 1980 186 L1980 360 Z" fill="url(#sonTraHorizonGrad)" />
+  <path d="M-60 245 C140 212 310 165 495 182 C680 199 860 238 1090 212 C1320 186 1510 138 1720 156 C1835 166 1915 188 1980 184 L1980 320 L-60 320 Z" fill="url(#coastalRidgeMist)" />
+</svg>

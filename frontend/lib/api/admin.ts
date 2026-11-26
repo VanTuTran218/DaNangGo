@@ -512,3 +512,60 @@ export async function deleteAdminSurvey(
   );
   return { success: true, message: result.message ?? "Đã lưu trữ khảo sát." };
 }
+
+export interface SurveyAutomationStats {
+  appreciationTotal: number;
+  tripInvitesTotal: number;
+  recentAppreciations: Array<{
+    certificateCode: string;
+    recipientName: string;
+    maskedEmail: string;
+    originLabel: string | null;
+    rewardCode: string;
+    deliveryStatus: string;
+    createdAt: string;
+  }>;
+  recentTripInvites: Array<{
+    itineraryId: number;
+    itineraryTitle: string;
+    maskedEmail: string;
+    tripEndDate: string;
+    deliveryStatus: string;
+    sentAt: string;
+  }>;
+}
+
+export async function getAdminSurveyAutomationStats(): Promise<SurveyAutomationStats> {
+  const response = await apiRequest<SurveyAutomationStats>(
+    "/api/admin/surveys/automation-stats",
+  );
+  return (
+    response.data ?? {
+      appreciationTotal: 0,
+      tripInvitesTotal: 0,
+      recentAppreciations: [],
+      recentTripInvites: [],
+    }
+  );
+}
+
+export async function dispatchAdminTripSurveyInvites(): Promise<{
+  message: string;
+  eligibleNewTrips: number;
+  sentCount: number;
+  devLoggedCount: number;
+}> {
+  const response = await apiPost<{
+    eligibleNewTrips: number;
+    sentCount: number;
+    devLoggedCount: number;
+  }>("/api/admin/surveys/dispatch-trip-invites", {});
+  return {
+    message:
+      response.message ??
+      "Đã quét và gửi lời mời khảo sát cho các chuyến đi hoàn tất.",
+    eligibleNewTrips: response.data?.eligibleNewTrips ?? 0,
+    sentCount: response.data?.sentCount ?? 0,
+    devLoggedCount: response.data?.devLoggedCount ?? 0,
+  };
+}

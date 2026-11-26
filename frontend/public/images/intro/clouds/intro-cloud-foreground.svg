@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" fill="none" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <radialGradient id="introFgLeft" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.90" />
+      <stop offset="40%" stop-color="#FFF8E9" stop-opacity="0.62" />
+      <stop offset="72%" stop-color="#E5D5BA" stop-opacity="0.20" />
+      <stop offset="100%" stop-color="#FFF8E9" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="introFgRight" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.90" />
+      <stop offset="40%" stop-color="#FFF8E9" stop-opacity="0.62" />
+      <stop offset="72%" stop-color="#E5D5BA" stop-opacity="0.20" />
+      <stop offset="100%" stop-color="#FFF8E9" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="introFgBottom" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFF8E9" stop-opacity="0.78" />
+      <stop offset="52%" stop-color="#FFF8E9" stop-opacity="0.28" />
+      <stop offset="78%" stop-color="#FFF8E9" stop-opacity="0.08" />
+      <stop offset="100%" stop-color="#FFF8E9" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <g>
+    <ellipse cx="290" cy="560" rx="750" ry="410" fill="url(#introFgLeft)" />
+    <ellipse cx="1630" cy="560" rx="750" ry="410" fill="url(#introFgRight)" />
+    <ellipse cx="960" cy="920" rx="990" ry="285" fill="url(#introFgBottom)" />
+  </g>
+</svg>

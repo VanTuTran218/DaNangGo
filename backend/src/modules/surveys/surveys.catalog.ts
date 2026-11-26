@@ -73,7 +73,7 @@ export const SURVEY_CATALOG: Record<"FULL" | "QUICK", SurveyDefinition[]> = {
       code: "TRAVEL_COMPANION",
       content: "Người đồng hành",
       kind: "CHOICE",
-      required: true,
+      required: false,
       maxChoices: 1,
       options: [
         {
@@ -363,7 +363,7 @@ export const SURVEY_CATALOG: Record<"FULL" | "QUICK", SurveyDefinition[]> = {
       code: "VISIT_FREQUENCY",
       content: "Số lần đến Đà Nẵng",
       kind: "CHOICE",
-      required: true,
+      required: false,
       maxChoices: 1,
       options: [
         {
@@ -421,7 +421,7 @@ export const SURVEY_CATALOG: Record<"FULL" | "QUICK", SurveyDefinition[]> = {
       code: "TOP_EXPENSES",
       content: "Các khoản chi tiêu lớn nhất",
       kind: "CHOICE",
-      required: true,
+      required: false,
       maxChoices: 3,
       options: [
         {
@@ -578,7 +578,7 @@ export const SURVEY_CATALOG: Record<"FULL" | "QUICK", SurveyDefinition[]> = {
       code: "DAILY_BUDGET",
       content: "Ngân sách mỗi người mỗi ngày (VND)",
       kind: "NUMBER",
-      required: true,
+      required: false,
       maxChoices: 1,
       minimum: 500000,
       maximum: 10000000,

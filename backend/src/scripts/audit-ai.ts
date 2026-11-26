@@ -244,8 +244,8 @@ async function main() {
       async () => {
         const r = await chat("Thời tiết Đà Nẵng hôm nay thế nào?");
         expect(
-          r.message.content.includes("chưa tích hợp dữ liệu thời tiết"),
-          "Không giải thích thiếu dữ liệu thời tiết",
+          /open-meteo|chưa lấy được dữ liệu thời tiết trực tiếp/i.test(r.message.content),
+          "Không nêu nguồn dự báo hoặc thông báo khi nguồn thời tiết không khả dụng",
         );
         return compact(r.message);
       },

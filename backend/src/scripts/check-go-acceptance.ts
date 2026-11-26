@@ -25,12 +25,17 @@ async function main() {
     const catalog = await getPool().request().query<{place_id:number;name:string;place_type:string;status:string;description:string|null}>("SELECT place_id,name,place_type,status,description FROM dbo.places");
     const menus = await getPool().request().query<{menu_item_id:number;place_id:number;name:string;price:number;is_available:boolean}>("SELECT menu_item_id,place_id,name,price,is_available FROM dbo.menu_items");
     const known = new Map(catalog.recordset.map(p => [p.place_id,p]));
+    const uniqueStays = await getPool().request().query<{name:string}>(`WITH stays AS (SELECT p.name,CASE WHEN EXISTS (SELECT 1 FROM dbo.room_types rt WHERE rt.place_id=p.place_id AND rt.status='ACTIVE') THEN 1 ELSE 0 END AS has_active_room FROM dbo.places p WHERE p.status='ACTIVE' AND p.place_type='ACCOMMODATION'),unique_stays AS (SELECT name,MAX(has_active_room) AS has_active_room FROM stays GROUP BY name HAVING COUNT(*)=1) SELECT TOP (2) name FROM unique_stays ORDER BY has_active_room DESC,name`);
+    const comparisonSetup = uniqueStays.recordset.length === 2
+      ? `So sánh ${uniqueStays.recordset[0]!.name} với ${uniqueStays.recordset[1]!.name}`
+      : null;
     for (const c of selected) {
       const guestId = randomUUID(); let before: ChatMessageDto | undefined; const start = Date.now();
       let message: ChatMessageDto | undefined; let status = "PASS"; const findings: string[] = [];
       try {
         let sessionId: number | undefined;
-        if (c.setup) { const r = await processUserMessage({guestId,message:c.setup}); sessionId=r.sessionId; before=r.message; }
+        const effectiveSetup = c.setup === "So sánh Hilton với Furama" && comparisonSetup ? comparisonSetup : c.setup;
+        if (effectiveSetup) { const r = await processUserMessage({guestId,message:effectiveSetup}); sessionId=r.sessionId; before=r.message; }
         const r = await processUserMessage({guestId,sessionId,message:c.input}); message = r.message;
         const content = normalize(message.content), cards = allCards(message);
         assert.ok(message.content.trim(), "Phản hồi rỗng");
@@ -65,7 +70,7 @@ async function main() {
           const routed = (message.secondaryIntents ?? []).includes(({food:'FOOD',stay:'STAY',sight:'SIGHT'} as Record<string,string>)[c.kind]!);
           if(!cards.length && !routed && /ban muon tim quan an, cho o hay diem tham quan|ban muon tim quan an, cho o hay/.test(content)) findings.push("Chưa nhận ra nhu cầu rõ ràng, trả lời chào chung.");
         }
-        if(c.kind==='live' && !/chua|can.*xac nhan|khong.*xac nhan/.test(content)) findings.push("Chưa nêu giới hạn nguồn trực tiếp.");
+        if(c.kind==='live' && !/chua|can.*xac nhan|khong.*xac nhan|open-meteo|lay luc|nguon/.test(content)) findings.push("Chưa nêu giới hạn nguồn trực tiếp hoặc nguồn/thời điểm lấy dự báo.");
         if(c.kind==='comparison' && !message.comparison && !/hai|so sanh|tieu chi|co so|chua|nao/.test(content)) findings.push("Chưa xử lý yêu cầu so sánh.");
         if(c.kind==='comparison' && before?.comparison && /^(?:Nơi nào|Tôi ưu tiên)/i.test(c.input)) {
           if(!message.comparison) findings.push("Mất bảng và cặp địa điểm của lượt so sánh trước.");
@@ -74,12 +79,13 @@ async function main() {
         if(c.kind==='planning' && !message.travelPlan && message.intent!=='ITINERARY' && !/lich|may ngay|may nguoi|ngan sach|gio|tre|phuong tien/.test(content)) findings.push("Không có lịch hoặc câu hỏi làm rõ lập lịch.");
         if(c.kind==='profile' && /da luu|da ghi nho.*lan sau/.test(content)) findings.push("Khách được báo đã lưu lâu dài.");
         if(c.kind==='map' && !/ban do|gps|vi tri|diem xuat phat|diem den|di bo|di chuyen|khoang cach|toa do|khu vuc|quan|xac nhan/.test(content)) findings.push("Chưa xử lý yêu cầu bản đồ/đi lại.");
+        if(c.id==='G12-015' && !cards.length && !/chua tim duoc diem .*quanh (?:moc )?my khe/.test(content)) findings.push("Chưa tìm quanh mốc Mỹ Khê hoặc báo rõ catalog không có kết quả.");
         if(c.kind==='trust' && !/danh gia|nguon|xac minh|xac nhan|thong tin|du lieu|phan hoi|bao loi|dia diem nao/.test(content)) findings.push("Chưa xử lý nguồn/đánh giá/báo sai.");
         if(c.kind==='edit' && before?.travelPlan && message.travelPlan && /giu nguyen ngay mot, chi sua ngay hai/i.test(c.input)) assert.deepEqual(message.travelPlan.days[0],before.travelPlan.days[0],"Sửa nhầm ngày 1 yêu cầu giữ nguyên");
         if(findings.length) status='GAP';
         else if (/chua.*(?:du lieu|xac minh|tich hop|co nguon|tim thay)|chua xac nhan/.test(content)) status='DATA_LIMIT';
       } catch(error) { status='FAIL'; findings.push(error instanceof Error?error.message:String(error)); }
-      const entry={...c,status,findings,elapsedMs:Date.now()-start,actual:message}; results.push(entry);
+      const entry={...c,setup:c.setup === "So sánh Hilton với Furama" && comparisonSetup ? comparisonSetup : c.setup,status,findings,elapsedMs:Date.now()-start,actual:message}; results.push(entry);
       console.log(`${c.id} ${status} ${c.input}${findings.length?` → ${findings.join('; ')}`:''}`);
     }
     const counts = results.reduce((a,r)=>{a[r.status]=(a[r.status]??0)+1;return a;},{} as Record<string,number>);

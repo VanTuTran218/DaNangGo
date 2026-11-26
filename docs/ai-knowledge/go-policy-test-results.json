@@ -35,7 +35,7 @@
       ],
       "groups": [],
       "plan": false,
-      "elapsedMs": 29
+      "elapsedMs": 20
     },
     {
       "question": "2 người, tổng cả nhóm, 1 ngày, không qua đêm, ngày mai",
@@ -54,7 +54,7 @@
         "hasLodging": null,
         "dayUse": null,
         "budgetScope": "total",
-        "startDate": "2026-11-06",
+        "startDate": "2026-11-26",
         "district": null,
         "transport": null,
         "arrivalTime": null,
@@ -69,7 +69,7 @@
         "Bạn di chuyển bằng ô tô, xe máy, taxi, xe buýt hay đi bộ?"
       ],
       "plan": true,
-      "elapsedMs": 91
+      "elapsedMs": 87
     },
     {
       "question": "Đi taxi, giữ 500k dự phòng",
@@ -88,7 +88,7 @@
         "hasLodging": null,
         "dayUse": null,
         "budgetScope": "total",
-        "startDate": "2026-11-06",
+        "startDate": "2026-11-26",
         "district": null,
         "transport": "taxi",
         "arrivalTime": null,
@@ -104,7 +104,7 @@
         "Bạn rời Đà Nẵng lúc mấy giờ ngày cuối?"
       ],
       "plan": true,
-      "elapsedMs": 10
+      "elapsedMs": 11
     },
     {
       "question": "Hãy lưu tôi thích biển",
@@ -122,7 +122,7 @@
         "hasLodging": null,
         "dayUse": null,
         "budgetScope": "total",
-        "startDate": "2026-11-06",
+        "startDate": "2026-11-26",
         "district": null,
         "transport": "taxi",
         "arrivalTime": null,
@@ -136,7 +136,7 @@
       },
       "questions": [],
       "plan": false,
-      "elapsedMs": 6
+      "elapsedMs": 10
     },
     {
       "question": "Gợi ý quán ăn, điểm tham quan và khách sạn ở Hải Châu",
@@ -200,6 +200,9 @@
           "category": "stay",
           "places": [
             {
+              "name": "Banana Flower Homestay"
+            },
+            {
               "name": "Hilton Da Nang"
             }
           ]
@@ -208,7 +211,7 @@
     },
     {
       "question": "Mai thời tiết thế nào và gợi ý quán ăn ở Hải Châu",
-      "content": "Gô chưa tích hợp dữ liệu thời tiết trực tiếp nên chưa thể xác nhận dự báo cho ngày bạn hỏi. Bạn nên kiểm tra dự báo địa phương trước khi đi; Gô có thể tư vấn phương án dự phòng nếu mưa, nhưng chưa xác nhận thời tiết thực tế.\n\nGô chọn 3 quán ăn để bạn dễ so sánh ở Hải Châu.\n\nBạn xem giá món ở từng quán trước; tổng hóa đơn còn tùy số món và số người. Nếu có món kiêng hoặc dị ứng, bạn nên trao đổi trực tiếp với quán.\n\nBạn đi mấy người và muốn dành khoảng bao nhiêu cho một bữa?",
+      "content": "Ngày mai (26/11): Mưa rào rất to, nhiệt độ 23°C–25°C, xác suất mưa tối đa 100% (tổng lượng mưa ~70.6 mm), gió tối đa 24 km/h.\n\nChi tiết theo khung giờ (26/11/2026):\n• 00:00 (đêm): Mưa rào rất to, 23°C, mưa 100%, gió 20 km/h\n• 03:00 (đêm): Mưa rào nhẹ, 23°C, mưa 100%, gió 24 km/h\n• 06:00 (buổi sáng): Mưa rào vừa, 23°C, mưa 99%, gió 19 km/h\n• 09:00 (buổi sáng): Mưa phùn vừa, 25°C, mưa 90%, gió 20 km/h\n\n📍 Khu vực: Đà Nẵng — Cấp thành phố | Nguồn: Weather data by Open-Meteo.com (CC BY 4.0) (lấy lúc 20:45:56 25/11/2026).\n\nGô chọn 3 quán ăn để bạn dễ so sánh ở Hải Châu.\n\nBạn xem giá món ở từng quán trước; tổng hóa đơn còn tùy số món và số người. Nếu có món kiêng hoặc dị ứng, bạn nên trao đổi trực tiếp với quán.\n\nBạn đi mấy người và muốn dành khoảng bao nhiêu cho một bữa?",
       "secondaryIntents": [
         "FOOD",
         "WEATHER"

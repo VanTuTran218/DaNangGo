@@ -1,34 +1,75 @@
 import type { PlaceSearchItem, PlaceDetail } from '../api/places';
 
 /**
+ * Chuyển đổi an toàn giá trị số (tránh undefined/NaN bị in thành "NaN₫")
+ */
+function toFinitePrice(value: number | string | null | undefined): number | null {
+  if (value === null || value === undefined || value === '') return null;
+  const parsed = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+/**
  * Định dạng số tiền sang định dạng tiền tệ Việt Nam (VNĐ)
  */
 export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('vi-VN').format(amount) + '₫';
+  const safe = toFinitePrice(amount);
+  if (safe === null) return 'Đang cập nhật';
+  return new Intl.NumberFormat('vi-VN').format(safe) + '₫';
 }
 
 /**
  * Định dạng khoảng giá hiển thị cho thẻ địa điểm
  */
 export function formatPriceRange(
-  price_min: number | null,
-  price_max: number | null,
+  price_min: number | null | undefined,
+  price_max: number | null | undefined,
   ticket_price?: number | null
 ): string {
-  if (ticket_price !== undefined && ticket_price !== null) {
-    if (ticket_price === 0) return 'Miễn phí';
-    return formatCurrency(ticket_price);
+  const ticket = toFinitePrice(ticket_price);
+  if (ticket !== null) {
+    if (ticket === 0) return 'Miễn phí';
+    return formatCurrency(ticket);
   }
 
-  if (price_min !== null && price_max !== null) {
-    if (price_min === price_max) return formatCurrency(price_min);
-    return `${formatCurrency(price_min)} – ${formatCurrency(price_max)}`;
+  const min = toFinitePrice(price_min);
+  const max = toFinitePrice(price_max);
+
+  if (min !== null && max !== null) {
+    if (min === max) return formatCurrency(min);
+    return `${formatCurrency(min)} – ${formatCurrency(max)}`;
   }
 
-  if (price_min !== null) return `Từ ${formatCurrency(price_min)}`;
-  if (price_max !== null) return `Đến ${formatCurrency(price_max)}`;
+  if (min !== null) return `Từ ${formatCurrency(min)}`;
+  if (max !== null) return `Đến ${formatCurrency(max)}`;
 
   return 'Đang cập nhật';
+}
+
+/**
+ * Chuẩn hóa địa chỉ hiển thị, tránh lặp tên quận hoặc "Đà Nẵng" khi địa chỉ gốc đã có sẵn
+ */
+export function formatPlaceAddress(
+  address?: string | null,
+  districtName?: string | null
+): string {
+  const parts: string[] = [];
+  const rawAddr = address?.trim() || '';
+  const rawDistrict = districtName?.trim() || '';
+
+  if (rawAddr) parts.push(rawAddr);
+
+  const addrNorm = rawAddr.toLocaleLowerCase('vi');
+  const hasCity = addrNorm.includes('đà nẵng') || addrNorm.includes('da nang');
+
+  if (rawDistrict && !hasCity && !addrNorm.includes(rawDistrict.toLocaleLowerCase('vi'))) {
+    parts.push(rawDistrict);
+  }
+  if (!hasCity) {
+    parts.push('Đà Nẵng');
+  }
+
+  return parts.join(', ');
 }
 
 export interface PlaceCardViewModel {

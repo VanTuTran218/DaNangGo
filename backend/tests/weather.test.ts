@@ -15,6 +15,14 @@ import {
 import { processUserMessage } from '../src/modules/chat/chat.service';
 import { normalize } from '../src/modules/ai/ai.rules';
 
+test('weather intent nhận câu hỏi trú mưa và tìm mái che', async () => {
+  const { isWeatherQuestion } = await import('../src/modules/chat/chat.weather');
+  assert.equal(isWeatherQuestion('Trời mưa ở Đà Nẵng thì đi đâu?'), true);
+  assert.equal(isWeatherQuestion('Tìm nơi có mái che khi trời mưa.'), true);
+  assert.equal(isWeatherQuestion('Ngày mai có nắng không?'), true);
+  assert.equal(isWeatherQuestion('Mùa nào đi Đà Nẵng đẹp nhất?'), true);
+});
+
 function buildOpenMeteoPayload(baseDate: string, opts?: {
   nullCurrentTemp?: boolean;
   rainy?: boolean;
@@ -106,17 +114,29 @@ test('timezone helper handles Vietnam midnight boundary (UTC+7)', () => {
 
 test('weather service normalizes fields, preserves null, and distinguishes UNAVAILABLE alerts', async () => {
   clearWeatherCache();
-  const now = new Date('2026-11-13T03:00:00.000Z');
+  const now = new Date('2026-11-13T11:17:00.000Z');
   const today = getVietnamToday(now);
 
-  const fetcher = makeMockFetcher(() => ({
-    body: buildOpenMeteoPayload(today, { nullCurrentTemp: true }),
-  }));
+  const fetcher = makeMockFetcher((url) => {
+    const params = new URL(url).searchParams;
+    assert.ok(params.get('current')?.split(',').includes('is_day'));
+    assert.ok(params.get('hourly')?.split(',').includes('is_day'));
+    const payload = buildOpenMeteoPayload(today, { nullCurrentTemp: true });
+    return {
+      body: {
+        ...payload,
+        current: { ...payload.current, time: `${today}T18:15`, weather_code: 0, is_day: 0 },
+        hourly: { ...payload.hourly, is_day: [0, 1, null] },
+      },
+    };
+  });
 
   const data = await getWeatherForecast({ days: 5 }, { now, fetcher });
   assert.equal(data.timezone, 'Asia/Ho_Chi_Minh');
   assert.equal(data.location.scope, 'CITY');
   assert.equal(data.current?.temperature, null);
+  assert.equal(data.current?.isDay, false);
+  assert.deepEqual(data.hourly.slice(0, 4).map((hour) => hour.isDay), [false, true, null, null]);
   assert.equal(data.stale, false);
   assert.ok(data.daily.length >= 5);
   assert.equal(data.alerts.state, 'UNAVAILABLE');

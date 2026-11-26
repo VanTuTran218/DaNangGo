@@ -74,7 +74,7 @@ export default function SurveyHero() {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="text-sm sm:text-base md:text-lg text-white/90 max-w-2xl mx-auto font-medium leading-relaxed mb-8"
         >
-          Chỉ mất khoảng 3 phút. Ý kiến của bạn giúp du lịch Đà Nẵng ngày càng tốt hơn và xây dựng một thành phố đáng sống, đáng đến.
+          Chỉ 7 câu hỏi, mất khoảng 1–2 phút. Ý kiến của bạn giúp du lịch Đà Nẵng ngày càng tốt hơn và xây dựng một thành phố đáng sống, đáng đến.
         </motion.p>
 
         {/* Ba huy hiệu nhỏ */}
@@ -91,7 +91,7 @@ export default function SurveyHero() {
 
           <div className="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 shadow-xs hover:bg-white/15 transition-colors">
             <Clock className="w-4 h-4 text-cyan-200" />
-            <span>Mất khoảng 3 phút</span>
+            <span>Mất khoảng 1–2 phút</span>
           </div>
 
           <div className="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 shadow-xs hover:bg-white/15 transition-colors">

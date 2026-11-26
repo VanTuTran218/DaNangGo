@@ -1,0 +1,2450 @@
+{
+  "executedAt": "2026-11-25T14:42:45.022Z",
+  "mode": "provider disabled, real SQL read-only, guest sessions",
+  "counts": {
+    "DATA_LIMIT": 5,
+    "PASS": 15
+  },
+  "total": 20,
+  "results": [
+    {
+      "id": "G08-001",
+      "group": 8,
+      "groupTitle": "So sánh địa điểm",
+      "sourceLine": 221,
+      "input": "So sánh Bà Nà Hills và Sơn Trà.",
+      "kind": "comparison",
+      "setup": "So sánh Banana Flower Homestay với Dolphin Hotel and Apartment",
+      "expected": "Bảng so sánh đúng hai nơi có trong DB hoặc hỏi đối tượng/tiêu chí còn thiếu; không tự xếp hạng.",
+      "status": "DATA_LIMIT",
+      "findings": [],
+      "elapsedMs": 95,
+      "actual": {
+        "id": "ai_71105a40-109f-4762-a0f6-073131e57e5c",
+        "sender": "AI",
+        "content": "Gô chưa xác định duy nhất cả hai địa điểm trong dữ liệu công khai. Bạn nêu tên đầy đủ/chi nhánh; Gô chưa dựng bảng để tránh so nhầm cơ sở.",
+        "intent": "SEARCH",
+        "secondaryIntents": [
+          "SIGHT"
+        ],
+        "needsClarification": false,
+        "questions": [],
+        "confirmedContext": {
+          "days": null,
+          "nights": null,
+          "guests": null,
+          "budget": null,
+          "reserve": null,
+          "hasLodging": null,
+          "dayUse": null,
+          "budgetScope": null,
+          "startDate": null,
+          "district": "Sơn Trà",
+          "transport": null,
+          "arrivalTime": null,
+          "departureTime": null,
+          "dietaryRestrictions": [],
+          "preferences": [],
+          "excludedPlaces": []
+        },
+        "profileSuggestions": [],
+        "sources": [],
+        "warnings": [],
+        "quickReplies": [],
+        "actionLink": {
+          "text": "Xem tất cả điểm du lịch",
+          "url": "/diemdulich"
+        },
+        "createdAt": "2026-11-25T14:42:44.844Z"
+      }
+    },
+    {
+      "id": "G08-002",
+      "group": 8,
+      "groupTitle": "So sánh địa điểm",
+      "sourceLine": 222,
+      "input": "So sánh Mỹ Khê và Non Nước.",
+      "kind": "comparison",
+      "setup": "So sánh Banana Flower Homestay với Dolphin Hotel and Apartment",
+      "expected": "Bảng so sánh đúng hai nơi có trong DB hoặc hỏi đối tượng/tiêu chí còn thiếu; không tự xếp hạng.",
+      "status": "DATA_LIMIT",
+      "findings": [],
+      "elapsedMs": 14,
+      "actual": {
+        "id": "ai_fa209b56-a434-4f4d-af41-0d835f8c30fb",
+        "sender": "AI",
+        "content": "Gô chưa xác định duy nhất cả hai địa điểm trong dữ liệu công khai. Bạn nêu tên đầy đủ/chi nhánh; Gô chưa dựng bảng để tránh so nhầm cơ sở.",
+        "intent": "SEARCH",
+        "secondaryIntents": [
+          "STAY"
+        ],
+        "needsClarification": false,
+        "questions": [],
+        "confirmedContext": {
+          "days": null,
+          "nights": null,
+          "guests": null,
+          "budget": null,
+          "reserve": null,
+          "hasLodging": null,
+          "dayUse": null,
+          "budgetScope": null,
+          "startDate": null,
+          "district": null,
+          "transport": null,
+          "arrivalTime": null,
+          "departureTime": null,
+          "dietaryRestrictions": [],
+          "preferences": [],
+          "excludedPlaces": []
+        },
+        "profileSuggestions": [],
+        "sources": [],
+        "warnings": [],
+        "quickReplies": [],
+        "actionLink": {
+          "text": "Lập lịch trình thông minh",
+          "url": "/lich-trinh/tao-moi"
+        },
+        "createdAt": "2026-11-25T14:42:44.859Z"
+      }
+    },
+    {
+      "id": "G08-003",
+      "group": 8,
+      "groupTitle": "So sánh địa điểm",
+      "sourceLine": 223,
+      "input": "So sánh hai khách sạn này.",
+      "kind": "comparison",
+      "setup": "So sánh Banana Flower Homestay với Dolphin Hotel and Apartment",
+      "expected": "Bảng so sánh đúng hai nơi có trong DB hoặc hỏi đối tượng/tiêu chí còn thiếu; không tự xếp hạng.",
+      "status": "PASS",
+      "findings": [],
+      "elapsedMs": 10,
+      "actual": {
+        "id": "ai_d44a5dfd-5f1a-4b29-9409-42680810e747",
+        "sender": "AI",
+        "content": "Gô so sánh Banana Flower Homestay và Dolphin Hotel and Apartment từ dữ liệu DaNangGo. Ô còn thiếu vẫn được để trống. Bạn ưu tiên giá, khu vực hay thời lượng để Gô giúp cân nhắc?",
+        "intent": "COMPARE",
+        "secondaryIntents": [
+          "STAY"
+        ],
+        "needsClarification": true,
+        "questions": [
+          "Bạn ưu tiên giá, khu vực hay thời lượng để Gô giúp cân nhắc?"
+        ],
+        "confirmedContext": {
+          "days": null,
+          "nights": null,
+          "guests": 2,
+          "budget": null,
+          "reserve": null,
+          "hasLodging": null,
+          "dayUse": null,
+          "budgetScope": null,
+          "startDate": null,
+          "district": null,
+          "transport": null,
+          "arrivalTime": null,
+          "departureTime": null,
+          "dietaryRestrictions": [],
+          "preferences": [],
+          "excludedPlaces": []
+        },
+        "profileSuggestions": [],
+        "sources": [],
+        "warnings": [],
+        "comparison": {
+          "places": [
+            {
+              "placeId": 384,
+              "name": "Banana Flower Homestay",
+              "placeType": "ACCOMMODATION",
+              "address": "85 Nguyễn Du, Thạch Thang, Hải Châu, Đà Nẵng",
+              "districtName": "Hải Châu",
+              "rating": 4.5,
+              "reviewCount": 4,
+              "imageUrl": "/places/real-stays/banana-flower-homestay.jpg",
+              "priceText": "Từ 400.000đ/đêm",
+              "detailUrl": "/places/384"
+            },
+            {
+              "placeId": 386,
+              "name": "Dolphin Hotel and Apartment",
+              "placeType": "ACCOMMODATION",
+              "address": "09 Tân Thuận, Mân Thái, Sơn Trà, Đà Nẵng",
+              "districtName": "Thanh Khê",
+              "rating": 4.3,
+              "reviewCount": 6,
+              "imageUrl": "/places/real-stays/dolphin-hotel-apartment.jpg",
+              "priceText": "Từ 700.000đ/đêm",
+              "detailUrl": "/places/386"
+            }
+          ],
+          "rows": [
+            {
+              "label": "Loại",
+              "values": [
+                "Lưu trú",
+                "Lưu trú"
+              ]
+            },
+            {
+              "label": "Khu vực",
+              "values": [
+                "Hải Châu",
+                "Thanh Khê"
+              ]
+            },
+            {
+              "label": "Địa chỉ",
+              "values": [
+                "85 Nguyễn Du, Thạch Thang, Hải Châu, Đà Nẵng",
+                "09 Tân Thuận, Mân Thái, Sơn Trà, Đà Nẵng"
+              ]
+            },
+            {
+              "label": "Giá trong catalog",
+              "values": [
+                "Từ 400.000đ/đêm",
+                "Từ 700.000đ/đêm"
+              ]
+            },
+            {
+              "label": "Đánh giá trong hệ thống",
+              "values": [
+                "4.5/5 · 4 đánh giá",
+                "4.3/5 · 6 đánh giá"
+              ]
+            },
+            {
+              "label": "Thời lượng tham quan dự kiến",
+              "values": [
+                "Chưa có dữ liệu / không áp dụng",
+                "Chưa có dữ liệu / không áp dụng"
+              ]
+            },
+            {
+              "label": "Giờ nhận/trả phòng có nguồn",
+              "values": [
+                "Chưa có dữ liệu / không áp dụng",
+                "Chưa có dữ liệu / không áp dụng"
+              ]
+            }
+          ],
+          "notices": [
+            "Chỉ so các thông tin có trong dữ liệu DaNangGo. Giá món, vé và giá một phòng/đêm có đơn vị khác nhau; không so trực tiếp thành giá cả chuyến.",
+            "Giá/giờ niêm yết không xác nhận tồn phòng, vé hoặc trạng thái mở cửa hiện tại. Đánh giá ít mẫu chưa đủ để kết luận nơi nào tốt hơn."
+          ]
+        },
+        "quickReplies": [],
+        "actionLink": {
+          "text": "Khám phá chỗ ở Đà Nẵng",
+          "url": "/luutru"
+        },
+        "createdAt": "2026-11-25T14:42:44.869Z"
+      }
+    },
+    {
+      "id": "G08-004",
+      "group": 8,
+      "groupTitle": "So sánh địa điểm",
+      "sourceLine": 224,
+      "input": "So sánh hai quán hải sản.",
+      "kind": "comparison",
+      "setup": "So sánh Banana Flower Homestay với Dolphin Hotel and Apartment",
+      "expected": "Bảng so sánh đúng hai nơi có trong DB hoặc hỏi đối tượng/tiêu chí còn thiếu; không tự xếp hạng.",
+      "status": "PASS",
+      "findings": [],
+      "elapsedMs": 9,
+      "actual": {
+        "id": "ai_b803a1a4-1faf-43a3-b5e4-72b73555a2f6",
+        "sender": "AI",
+        "content": "Gô so sánh Banana Flower Homestay và Dolphin Hotel and Apartment từ dữ liệu DaNangGo. Ô còn thiếu vẫn được để trống. Bạn ưu tiên giá, khu vực hay thời lượng để Gô giúp cân nhắc?",
+        "intent": "COMPARE",
+        "secondaryIntents": [
+          "FOOD"
+        ],
+        "needsClarification": true,
+        "questions": [
+          "Bạn ưu tiên giá, khu vực hay thời lượng để Gô giúp cân nhắc?"
+        ],
+        "confirmedContext": {
+          "days": null,
+          "nights": null,
+          "guests": null,
+          "budget": null,
+          "reserve": null,
+          "hasLodging": null,
+          "dayUse": null,
+          "budgetScope": null,
+          "startDate": null,
+          "district": null,
+          "transport": null,
+          "arrivalTime": null,
+          "departureTime": null,
+          "dietaryRestrictions": [],
+          "preferences": [],
+          "excludedPlaces": []
+        },
+        "profileSuggestions": [],
+        "sources": [],
+        "warnings": [],
+        "comparison": {
+          "places": [
+            {
+              "placeId": 384,
+              "name": "Banana Flower Homestay",
+              "placeType": "ACCOMMODATION",
+              "address": "85 Nguyễn Du, Thạch Thang, Hải Châu, Đà Nẵng",
+              "districtName": "Hải Châu",
+              "rating": 4.5,
+              "reviewCount": 4,
+              "imageUrl": "/places/real-stays/banana-flower-homestay.jpg",
+              "priceText": "Từ 400.000đ/đêm",
+              "detailUrl": "/places/384"
+            },
+            {
+              "placeId": 386,
+              "name": "Dolphin Hotel and Apartment",
+              "placeType": "ACCOMMODATION",
+              "address": "09 Tân Thuận, Mân Thái, Sơn Trà, Đà Nẵng",
+              "districtName": "Thanh Khê",
+              "rating": 4.3,
+              "reviewCount": 6,
+              "imageUrl": "/places/real-stays/dolphin-hotel-apartment.jpg",
+              "priceText": "Từ 700.000đ/đêm",
+              "detailUrl": "/places/386"
+            }
+          ],
+          "rows": [
+            {
+              "label": "Loại",
+              "values": [
+                "Lưu trú",
+                "Lưu trú"
+              ]
+            },
+            {
+              "label": "Khu vực",
+              "values": [
+                "Hải Châu",
+                "Thanh Khê"
+              ]
+            },
+            {
+              "label": "Địa chỉ",
+              "values": [
+                "85 Nguyễn Du, Thạch Thang, Hải Châu, Đà Nẵng",
+                "09 Tân Thuận, Mân Thái, Sơn Trà, Đà Nẵng"
+              ]
+            },
+            {
+              "label": "Giá trong catalog",
+              "values": [
+                "Từ 400.000đ/đêm",
+                "Từ 700.000đ/đêm"
+              ]
+            },
+            {
+              "label": "Đánh giá trong hệ thống",
+              "values": [
+                "4.5/5 · 4 đánh giá",
+                "4.3/5 · 6 đánh giá"
+              ]
+            },
+            {
+              "label": "Thời lượng tham quan dự kiến",
+              "values": [
+                "Chưa có dữ liệu / không áp dụng",
+                "Chưa có dữ liệu / không áp dụng"
+              ]
+            },
+            {
+              "label": "Giờ nhận/trả phòng có nguồn",
+              "values": [
+                "Chưa có dữ liệu / không áp dụng",
+                "Chưa có dữ liệu / không áp dụng"
+              ]
+            }
+          ],
+          "notices": [
+            "Chỉ so các thông tin có trong dữ liệu DaNangGo. Giá món, vé và giá một phòng/đêm có đơn vị khác nhau; không so trực tiếp thành giá cả chuyến.",
+            "Giá/giờ niêm yết không xác nhận tồn phòng, vé hoặc trạng thái mở cửa hiện tại. Đánh giá ít mẫu chưa đủ để kết luận nơi nào tốt hơn."
+          ]
+        },
+        "quickReplies": [],
+        "actionLink": {
+          "text": "Khám phá ẩm thực Đà Nẵng",
+          "url": "/amthuc"
+        },
+        "createdAt": "2026-11-25T14:42:44.878Z"
+      }
+    },
+    {
+      "id": "G08-005",
+      "group": 8,
+      "groupTitle": "So sánh địa điểm",
+      "sourceLine": 225,
+      "input": "So sánh hai quán mì Quảng.",
+      "kind": "comparison",
+      "setup": "So sánh Banana Flower Homestay với Dolphin Hotel and Apartment",
+      "expected": "Bảng so sánh đúng hai nơi có trong DB hoặc hỏi đối tượng/tiêu chí còn thiếu; không tự xếp hạng.",
+      "status": "PASS",
+      "findings": [],
+      "elapsedMs": 11,
+      "actual": {
+        "id": "ai_12795105-4e7c-493b-bbb6-e0ff539b8f3f",
+        "sender": "AI",
+        "content": "Gô so sánh Banana Flower Homestay và Dolphin Hotel and Apartment từ dữ liệu DaNangGo. Ô còn thiếu vẫn được để trống. Bạn ưu tiên giá, khu vực hay thời lượng để Gô giúp cân nhắc?",
+        "intent": "COMPARE",
+        "secondaryIntents": [
+          "FOOD"
+        ],
+        "needsClarification": true,
+        "questions": [
+          "Bạn ưu tiên giá, khu vực hay thời lượng để Gô giúp cân nhắc?"
+        ],
+        "confirmedContext": {
+          "days": null,
+          "nights": null,
+          "guests": null,
+          "budget": null,
+          "reserve": null,
+          "hasLodging": null,
+          "dayUse": null,
+          "budgetScope": null,
+          "startDate": null,
+          "district": null,
+          "transport": null,
+          "arrivalTime": null,
+          "departureTime": null,
+          "dietaryRestrictions": [],
+          "preferences": [],
+          "excludedPlaces": []
+        },
+        "profileSuggestions": [],
+        "sources": [],
+        "warnings": [],
+        "comparison": {
+          "places": [
+            {
+              "placeId": 384,
+              "name": "Banana Flower Homestay",
+              "placeType": "ACCOMMODATION",
+              "address": "85 Nguyễn Du, Thạch Thang, Hải Châu, Đà Nẵng",
+              "districtName": "Hải Châu",
+              "rating": 4.5,
+              "reviewCount": 4,
+              "imageUrl": "/places/real-stays/banana-flower-homestay.jpg",
+              "priceText": "Từ 400.000đ/đêm",
+              "detailUrl": "/places/384"
+            },
+            {
+              "placeId": 386,
+              "name": "Dolphin Hotel and Apartment",
+              "placeType": "ACCOMMODATION",
+              "address": "09 Tân Thuận, Mân Thái, Sơn Trà, Đà Nẵng",
+              "districtName": "Thanh Khê",
+              "rating": 4.3,
+              "reviewCount": 6,
+              "imageUrl": "/places/real-stays/dolphin-hotel-apartment.jpg",
+              "priceText": "Từ 700.000đ/đêm",
+              "detailUrl": "/places/386"
+            }
+          ],
+          "rows": [
+            {
+              "label": "Loại",
+              "values": [
+                "Lưu trú",
+                "Lưu trú"
+              ]
+            },
+            {
+              "label": "Khu vực",
+              "values": [
+                "Hải Châu",
+                "Thanh Khê"
+              ]
+            },
+            {
+              "label": "Địa chỉ",
+              "values": [
+                "85 Nguyễn Du, Thạch Thang, Hải Châu, Đà Nẵng",
+                "09 Tân Thuận, Mân Thái, Sơn Trà, Đà Nẵng"
+              ]
+            },
+            {
+              "label": "Giá trong catalog",
+              "values": [
+                "Từ 400.000đ/đêm",
+                "Từ 700.000đ/đêm"
+              ]
+            },
+            {
+              "label": "Đánh giá trong hệ thống",
+              "values": [
+                "4.5/5 · 4 đánh giá",
+                "4.3/5 · 6 đánh giá"
+              ]
+            },
+            {
+              "label": "Thời lượng tham quan dự kiến",
+              "values": [
+                "Chưa có dữ liệu / không áp dụng",
+                "Chưa có dữ liệu / không áp dụng"
+              ]
+            },
+            {
+              "label": "Giờ nhận/trả phòng có nguồn",
+              "values": [
+                "Chưa có dữ liệu / không áp dụng",
+                "Chưa có dữ liệu / không áp dụng"
+              ]
+            }
+          ],
+          "notices": [
+            "Chỉ so các thông tin có trong dữ liệu DaNangGo. Giá món, vé và giá một phòng/đêm có đơn vị khác nhau; không so trực tiếp thành giá cả chuyến.",
+            "Giá/giờ niêm yết không xác nhận tồn phòng, vé hoặc trạng thái mở cửa hiện tại. Đánh giá ít mẫu chưa đủ để kết luận nơi nào tốt hơn."
+          ]
+        },
+        "quickReplies": [],
+        "actionLink": {
+          "text": "Khám phá ẩm thực Đà Nẵng",
+          "url": "/amthuc"
+        },
+        "createdAt": "2026-11-25T14:42:44.889Z"
+      }
+    },
+    {
+      "id": "G08-006",
+      "group": 8,
+      "groupTitle": "So sánh địa điểm",
+      "sourceLine": 226,
+      "input": "Nơi nào rẻ hơn?",
+      "kind": "comparison",
+      "setup": "So sánh Banana Flower Homestay với Dolphin Hotel and Apartment",
+      "expected": "Bảng so sánh đúng hai nơi có trong DB hoặc hỏi đối tượng/tiêu chí còn thiếu; không tự xếp hạng.",
+      "status": "DATA_LIMIT",
+      "findings": [],
+      "elapsedMs": 13,
+      "actual": {
+        "id": "ai_1ccb42e9-f5fb-4754-aa0b-9079bf674725",
+        "sender": "AI",
+        "content": "Gô so sánh Banana Flower Homestay và Dolphin Hotel and Apartment từ dữ liệu DaNangGo. Ô còn thiếu vẫn được để trống. Theo mức giá từ đang hiển thị, Banana Flower Homestay có giá thấp hơn (Từ 400.000đ/đêm so với Từ 700.000đ/đêm). Đây là giá phòng từ catalog; loại phòng, sức chứa, ngày ở và phụ phí có thể khác nhau. Gô chưa xác nhận giá theo ngày.",
+        "intent": "COMPARE",
+        "secondaryIntents": [
+          "STAY"
+        ],
+        "needsClarification": false,
+        "questions": [],
+        "confirmedContext": {
+          "days": null,
+          "nights": null,
+          "guests": null,
+          "budget": null,
+          "reserve": null,
+          "hasLodging": null,
+          "dayUse": null,
+          "budgetScope": null,
+          "startDate": null,
+          "district": null,
+          "transport": null,
+          "arrivalTime": null,
+          "departureTime": null,
+          "dietaryRestrictions": [],
+          "preferences": [],
+          "excludedPlaces": []
+        },
+        "profileSuggestions": [],
+        "sources": [],
+        "warnings": [],
+        "comparison": {
+          "places": [
+            {
+              "placeId": 384,
+              "name": "Banana Flower Homestay",
+              "placeType": "ACCOMMODATION",
+              "address": "85 Nguyễn Du, Thạch Thang, Hải Châu, Đà Nẵng",
+              "districtName": "Hải Châu",
+              "rating": 4.5,
+              "reviewCount": 4,
+              "imageUrl": "/places/real-stays/banana-flower-homestay.jpg",
+              "priceText": "Từ 400.000đ/đêm",
+              "detailUrl": "/places/384"
+            },
+            {
+              "placeId": 386,
+              "name": "Dolphin Hotel and Apartment",
+              "placeType": "ACCOMMODATION",
+              "address": "09 Tân Thuận, Mân Thái, Sơn Trà, Đà Nẵng",
+              "districtName": "Thanh Khê",
+              "rating": 4.3,
+              "reviewCount": 6,
+              "imageUrl": "/places/real-stays/dolphin-hotel-apartment.jpg",
+              "priceText": "Từ 700.000đ/đêm",
+              "detailUrl": "/places/386"
+            }
+          ],
+          "rows": [
+            {
+              "label": "Loại",
+              "values": [
+                "Lưu trú",
+                "Lưu trú"
+              ]
+            },
+            {
+              "label": "Khu vực",
+              "values": [
+                "Hải Châu",
+                "Thanh Khê"
+              ]
+            },
+            {
+              "label": "Địa chỉ",
+              "values": [
+                "85 Nguyễn Du, Thạch Thang, Hải Châu, Đà Nẵng",
+                "09 Tân Thuận, Mân Thái, Sơn Trà, Đà Nẵng"
+              ]
+            },
+            {
+              "label": "Giá trong catalog",
+              "values": [
+                "Từ 400.000đ/đêm",
+                "Từ 700.000đ/đêm"
+              ]
+            },
+            {
+              "label": "Đánh giá trong hệ thống",
+              "values": [
+                "4.5/5 · 4 đánh giá",
+                "4.3/5 · 6 đánh giá"
+              ]
+            },
+            {
+              "label": "Thời lượng tham quan dự kiến",
+              "values": [
+                "Chưa có dữ liệu / không áp dụng",
+                "Chưa có dữ liệu / không áp dụng"
+              ]
+            },
+            {
+              "label": "Giờ nhận/trả phòng có nguồn",
+              "values": [
+                "Chưa có dữ liệu / không áp dụng",
+                "Chưa có dữ liệu / không áp dụng"
+              ]
+            }
+          ],
+          "notices": [
+            "Chỉ so các thông tin có trong dữ liệu DaNangGo. Giá món, vé và giá một phòng/đêm có đơn vị khác nhau; không so trực tiếp thành giá cả chuyến.",
+            "Giá/giờ niêm yết không xác nhận tồn phòng, vé hoặc trạng thái mở cửa hiện tại. Đánh giá ít mẫu chưa đủ để kết luận nơi nào tốt hơn."
+          ]
+        },
+        "quickReplies": [],
+        "actionLink": {
+          "text": "Khám phá chỗ ở Đà Nẵng",
+          "url": "/luutru"
+        },
+        "createdAt": "2026-11-25T14:42:44.902Z"
+      }
+    },
+    {
+      "id": "G08-007",
+      "group": 8,
+      "groupTitle": "So sánh địa điểm",
+      "sourceLine": 227,
+      "input": "Nơi nào gần biển hơn?",
+      "kind": "comparison",
+      "setup": "So sánh Banana Flower Homestay với Dolphin Hotel and Apartment",
+      "expected": "Bảng so sánh đúng hai nơi có trong DB hoặc hỏi đối tượng/tiêu chí còn thiếu; không tự xếp hạng.",
+      "status": "PASS",
+      "findings": [],
+      "elapsedMs": 10,
+      "actual": {
+        "id": "ai_45d569ce-407d-4181-a7d3-e6dbd0a86aa1",
+        "sender": "AI",
+        "content": "Gô so sánh Banana Flower Homestay và Dolphin Hotel and Apartment từ dữ liệu DaNangGo. Ô còn thiếu vẫn được để trống. Gô giữ đúng hai nơi bạn đang cân nhắc. Tiêu chí vừa hỏi chưa có đủ số liệu tương ứng để xếp hạng; Gô chưa chọn nơi tốt hơn.",
+        "intent": "COMPARE",
+        "secondaryIntents": [
+          "STAY"
+        ],
+        "needsClarification": false,
+        "questions": [],
+        "confirmedContext": {
+          "days": null,
+          "nights": null,
+          "guests": null,
+          "budget": null,
+          "reserve": null,
+          "hasLodging": null,
+          "dayUse": null,
+          "budgetScope": null,
+          "startDate": null,
+          "district": null,
+          "transport": null,
+          "arrivalTime": null,
+          "departureTime": null,
+          "dietaryRestrictions": [],
+          "preferences": [],
+          "excludedPlaces": []
+        },
+        "profileSuggestions": [],
+        "sources": [],
+        "warnings": [],
+        "comparison": {
+          "places": [
+            {
+              "placeId": 384,
+              "name": "Banana Flower Homestay",
+              "placeType": "ACCOMMODATION",
+              "address": "85 Nguyễn Du, Thạch Thang, Hải Châu, Đà Nẵng",
+              "districtName": "Hải Châu",
+              "rating": 4.5,
+              "reviewCount": 4,
+              "imageUrl": "/places/real-stays/banana-flower-homestay.jpg",
+              "priceText": "Từ 400.000đ/đêm",
+              "detailUrl": "/places/384"
+            },
+            {
+              "placeId": 386,
+              "name": "Dolphin Hotel and Apartment",
+              "placeType": "ACCOMMODATION",
+              "address": "09 Tân Thuận, Mân Thái, Sơn Trà, Đà Nẵng",
+              "districtName": "Thanh Khê",
+              "rating": 4.3,
+              "reviewCount": 6,
+              "imageUrl": "/places/real-stays/dolphin-hotel-apartment.jpg",
+              "priceText": "Từ 700.000đ/đêm",
+              "detailUrl": "/places/386"
+            }
+          ],
+          "rows": [
+            {
+              "label": "Loại",
+              "values": [
+                "Lưu trú",
+                "Lưu trú"
+              ]
+            },
+            {
+              "label": "Khu vực",
+              "values": [
+                "Hải Châu",
+                "Thanh Khê"
+              ]
+            },
+            {
+              "label": "Địa chỉ",
+              "values": [
+                "85 Nguyễn Du, Thạch Thang, Hải Châu, Đà Nẵng",
+                "09 Tân Thuận, Mân Thái, Sơn Trà, Đà Nẵng"
+              ]
+            },
+            {
+              "label": "Giá trong catalog",
+              "values": [
+                "Từ 400.000đ/đêm",
+                "Từ 700.000đ/đêm"
+              ]
+            },
+            {
+              "label": "Đánh giá trong hệ thống",
+              "values": [
+                "4.5/5 · 4 đánh giá",
+                "4.3/5 · 6 đánh giá"
+              ]
+            },
+            {
+              "label": "Thời lượng tham quan dự kiến",
+              "values": [
+                "Chưa có dữ liệu / không áp dụng",
+                "Chưa có dữ liệu / không áp dụng"
+              ]
+            },
+            {
+              "label": "Giờ nhận/trả phòng có nguồn",
+              "values": [
+                "Chưa có dữ liệu / không áp dụng",
+                "Chưa có dữ liệu / không áp dụng"
+              ]
+            }
+          ],
+          "notices": [
+            "Chỉ so các thông tin có trong dữ liệu DaNangGo. Giá món, vé và giá một phòng/đêm có đơn vị khác nhau; không so trực tiếp thành giá cả chuyến.",
+            "Giá/giờ niêm yết không xác nhận tồn phòng, vé hoặc trạng thái mở cửa hiện tại. Đánh giá ít mẫu chưa đủ để kết luận nơi nào tốt hơn."
+          ]
+        },
+        "quickReplies": [],
+        "actionLink": {
+          "text": "Khám phá chỗ ở Đà Nẵng",
+          "url": "/luutru"
+        },
+        "createdAt": "2026-11-25T14:42:44.912Z"
+      }
+    },
+    {
+      "id": "G08-008",
+      "group": 8,
+      "groupTitle": "So sánh địa điểm",
+      "sourceLine": 228,
+      "input": "Nơi nào phù hợp trẻ em hơn?",
+      "kind": "comparison",
+      "setup": "So sánh Banana Flower Homestay với Dolphin Hotel and Apartment",
+      "expected": "Bảng so sánh đúng hai nơi có trong DB hoặc hỏi đối tượng/tiêu chí còn thiếu; không tự xếp hạng.",
+      "status": "PASS",
+      "findings": [],
+      "elapsedMs": 9,
+      "actual": {
+        "id": "ai_3b6fdf4f-7858-43fe-8983-4ef11e9f36bf",
+        "sender": "AI",
+        "content": "Gô so sánh Banana Flower Homestay và Dolphin Hotel and Apartment từ dữ liệu DaNangGo. Ô còn thiếu vẫn được để trống. Gô giữ đúng hai nơi bạn đang cân nhắc. Tiêu chí vừa hỏi chưa có đủ số liệu tương ứng để xếp hạng; Gô chưa chọn nơi tốt hơn.",
+        "intent": "COMPARE",
+        "secondaryIntents": [
+          "STAY"
+        ],
+        "needsClarification": false,
+        "questions": [],
+        "confirmedContext": {
+          "days": null,
+          "nights": null,
+          "guests": null,
+          "budget": null,
+          "reserve": null,
+          "hasLodging": null,
+          "dayUse": null,
+          "budgetScope": null,
+          "startDate": null,
+          "district": null,
+          "transport": null,
+          "arrivalTime": null,
+          "departureTime": null,
+          "dietaryRestrictions": [],
+          "preferences": [],
+          "excludedPlaces": []
+        },
+        "profileSuggestions": [],
+        "sources": [],
+        "warnings": [],
+        "comparison": {
+          "places": [
+            {
+              "placeId": 384,
+              "name": "Banana Flower Homestay",
+              "placeType": "ACCOMMODATION",
+              "address": "85 Nguyễn Du, Thạch Thang, Hải Châu, Đà Nẵng",
+              "districtName": "Hải Châu",
+              "rating": 4.5,
+              "reviewCount": 4,
+              "imageUrl": "/places/real-stays/banana-flower-homestay.jpg",
+              "priceText": "Từ 400.000đ/đêm",
+              "detailUrl": "/places/384"
+            },
+            {
+              "placeId": 386,
+              "name": "Dolphin Hotel and Apartment",
+              "placeType": "ACCOMMODATION",
+              "address": "09 Tân Thuận, Mân Thái, Sơn Trà, Đà Nẵng",
+              "districtName": "Thanh Khê",
+              "rating": 4.3,
+              "reviewCount": 6,
+              "imageUrl": "/places/real-stays/dolphin-hotel-apartment.jpg",
+              "priceText": "Từ 700.000đ/đêm",
+              "detailUrl": "/places/386"
+            }
+          ],
+          "rows": [
+            {
+              "label": "Loại",
+              "values": [
+                "Lưu trú",
+                "Lưu trú"
+              ]
+            },
+            {
+              "label": "Khu vực",
+              "values": [
+                "Hải Châu",
+                "Thanh Khê"
+              ]
+            },
+            {
+              "label": "Địa chỉ",
+              "values": [
+                "85 Nguyễn Du, Thạch Thang, Hải Châu, Đà Nẵng",
+                "09 Tân Thuận, Mân Thái, Sơn Trà, Đà Nẵng"
+              ]
+            },
+            {
+              "label": "Giá trong catalog",
+              "values": [
+                "Từ 400.000đ/đêm",
+                "Từ 700.000đ/đêm"
+              ]
+            },
+            {
+              "label": "Đánh giá trong hệ thống",
+              "values": [
+                "4.5/5 · 4 đánh giá",
+                "4.3/5 · 6 đánh giá"
+              ]
+            },
+            {
+              "label": "Thời lượng tham quan dự kiến",
+              "values": [
+                "Chưa có dữ liệu / không áp dụng",
+                "Chưa có dữ liệu / không áp dụng"
+              ]
+            },
+            {
+              "label": "Giờ nhận/trả phòng có nguồn",
+              "values": [
+                "Chưa có dữ liệu / không áp dụng",
+                "Chưa có dữ liệu / không áp dụng"
+              ]
+            }
+          ],
+          "notices": [
+            "Chỉ so các thông tin có trong dữ liệu DaNangGo. Giá món, vé và giá một phòng/đêm có đơn vị khác nhau; không so trực tiếp thành giá cả chuyến.",
+            "Giá/giờ niêm yết không xác nhận tồn phòng, vé hoặc trạng thái mở cửa hiện tại. Đánh giá ít mẫu chưa đủ để kết luận nơi nào tốt hơn."
+          ]
+        },
+        "quickReplies": [],
+        "actionLink": {
+          "text": "Khám phá chỗ ở Đà Nẵng",
+          "url": "/luutru"
+        },
+        "createdAt": "2026-11-25T14:42:44.921Z"
+      }
+    },
+    {
+      "id": "G08-009",
+      "group": 8,
+      "groupTitle": "So sánh địa điểm",
+      "sourceLine": 229,
+      "input": "Nơi nào ít phải đi bộ hơn?",
+      "kind": "comparison",
+      "setup": "So sánh Banana Flower Homestay với Dolphin Hotel and Apartment",
+      "expected": "Bảng so sánh đúng hai nơi có trong DB hoặc hỏi đối tượng/tiêu chí còn thiếu; không tự xếp hạng.",
+      "status": "PASS",
+      "findings": [],
+      "elapsedMs": 11,
+      "actual": {
+        "id": "ai_ea467467-7ce9-41c5-a66c-608330a8e15a",
+        "sender": "AI",
+        "content": "Gô so sánh Banana Flower Homestay và Dolphin Hotel and Apartment từ dữ liệu DaNangGo. Ô còn thiếu vẫn được để trống. Gô giữ đúng hai nơi bạn đang cân nhắc. Tiêu chí vừa hỏi chưa có đủ số liệu tương ứng để xếp hạng; Gô chưa chọn nơi tốt hơn.",
+        "intent": "COMPARE",
+        "secondaryIntents": [
+          "STAY"
+        ],
+        "needsClarification": false,
+        "questions": [],
+        "confirmedContext": {
+          "days": null,
+          "nights": null,
+          "guests": null,
+          "budget": null,
+          "reserve": null,
+          "hasLodging": null,
+          "dayUse": null,
+          "budgetScope": null,
+          "startDate": null,
+          "district": null,
+          "transport": "walk",
+          "arrivalTime": null,
+          "departureTime": null,
+          "dietaryRestrictions": [],
+          "preferences": [],
+          "excludedPlaces": []
+        },
+        "profileSuggestions": [],
+        "sources": [],
+        "warnings": [],
+        "comparison": {
+          "places": [
+            {
+              "placeId": 384,
+              "name": "Banana Flower Homestay",
+              "placeType": "ACCOMMODATION",
+              "address": "85 Nguyễn Du, Thạch Thang, Hải Châu, Đà Nẵng",
+              "districtName": "Hải Châu",
+              "rating": 4.5,
+              "reviewCount": 4,
+              "imageUrl": "/places/real-stays/banana-flower-homestay.jpg",
+              "priceText": "Từ 400.000đ/đêm",
+              "detailUrl": "/places/384"
+            },
+            {
+              "placeId": 386,
+              "name": "Dolphin Hotel and Apartment",
+              "placeType": "ACCOMMODATION",
+              "address": "09 Tân Thuận, Mân Thái, Sơn Trà, Đà Nẵng",
+              "districtName": "Thanh Khê",
+              "rating": 4.3,
+              "reviewCount": 6,
+              "imageUrl": "/places/real-stays/dolphin-hotel-apartment.jpg",
+              "priceText": "Từ 700.000đ/đêm",
+              "detailUrl": "/places/386"
+            }
+          ],
+          "rows": [
+            {
+              "label": "Loại",
+              "values": [
+                "Lưu trú",
+                "Lưu trú"
+              ]
+            },
+            {
+              "label": "Khu vực",
+              "values": [
+                "Hải Châu",
+                "Thanh Khê"
+              ]
+            },
+            {
+              "label": "Địa chỉ",
+              "values": [
+                "85 Nguyễn Du, Thạch Thang, Hải Châu, Đà Nẵng",
+                "09 Tân Thuận, Mân Thái, Sơn Trà, Đà Nẵng"
+              ]
+            },
+            {
+              "label": "Giá trong catalog",
+              "values": [
+                "Từ 400.000đ/đêm",
+                "Từ 700.000đ/đêm"
+              ]
+            },
+            {
+              "label": "Đánh giá trong hệ thống",
+              "values": [
+                "4.5/5 · 4 đánh giá",
+                "4.3/5 · 6 đánh giá"
+              ]
+            },
+            {
+              "label": "Thời lượng tham quan dự kiến",
+              "values": [
+                "Chưa có dữ liệu / không áp dụng",
+                "Chưa có dữ liệu / không áp dụng"
+              ]
+            },
+            {
+              "label": "Giờ nhận/trả phòng có nguồn",
+              "values": [
+                "Chưa có dữ liệu / không áp dụng",
+                "Chưa có dữ liệu / không áp dụng"
+              ]
+            }
+          ],
+          "notices": [
+            "Chỉ so các thông tin có trong dữ liệu DaNangGo. Giá món, vé và giá một phòng/đêm có đơn vị khác nhau; không so trực tiếp thành giá cả chuyến.",
+            "Giá/giờ niêm yết không xác nhận tồn phòng, vé hoặc trạng thái mở cửa hiện tại. Đánh giá ít mẫu chưa đủ để kết luận nơi nào tốt hơn."
+          ]
+        },
+        "quickReplies": [],
+        "actionLink": {
+          "text": "Khám phá chỗ ở Đà Nẵng",
+          "url": "/luutru"
+        },
+        "createdAt": "2026-11-25T14:42:44.932Z"
+      }
+    },
+    {
+      "id": "G08-010",
+      "group": 8,
+      "groupTitle": "So sánh địa điểm",
+      "sourceLine": 230,
+      "input": "Nơi nào phù hợp người lớn tuổi hơn?",
+      "kind": "comparison",
+      "setup": "So sánh Banana Flower Homestay với Dolphin Hotel and Apartment",
+      "expected": "Bảng so sánh đúng hai nơi có trong DB hoặc hỏi đối tượng/tiêu chí còn thiếu; không tự xếp hạng.",
+      "status": "PASS",
+      "findings": [],
+      "elapsedMs": 8,
+      "actual": {
+        "id": "ai_8ffd2c67-552c-4e6e-b1e2-4b0eff7301a2",
+        "sender": "AI",
+        "content": "Gô so sánh Banana Flower Homestay và Dolphin Hotel and Apartment từ dữ liệu DaNangGo. Ô còn thiếu vẫn được để trống. Gô giữ đúng hai nơi bạn đang cân nhắc. Tiêu chí vừa hỏi chưa có đủ số liệu tương ứng để xếp hạng; Gô chưa chọn nơi tốt hơn.",
+        "intent": "COMPARE",
+        "secondaryIntents": [
+          "STAY"
+        ],
+        "needsClarification": false,
+        "questions": [],
+        "confirmedContext": {
+          "days": null,
+          "nights": null,
+          "guests": null,
+          "budget": null,
+          "reserve": null,
+          "hasLodging": null,
+          "dayUse": null,
+          "budgetScope": null,
+          "startDate": null,
+          "district": null,
+          "transport": null,
+          "arrivalTime": null,
+          "departureTime": null,
+          "dietaryRestrictions": [],
+          "preferences": [],
+          "excludedPlaces": []
+        },
+        "profileSuggestions": [],
+        "sources": [],
+        "warnings": [],
+        "comparison": {
+          "places": [
+            {
+              "placeId": 384,
+              "name": "Banana Flower Homestay",
+              "placeType": "ACCOMMODATION",
+              "address": "85 Nguyễn Du, Thạch Thang, Hải Châu, Đà Nẵng",
+              "districtName": "Hải Châu",
+              "rating": 4.5,
+              "reviewCount": 4,
+              "imageUrl": "/places/real-stays/banana-flower-homestay.jpg",
+              "priceText": "Từ 400.000đ/đêm",
+              "detailUrl": "/places/384"
+            },
+            {
+              "placeId": 386,
+              "name": "Dolphin Hotel and Apartment",
+              "placeType": "ACCOMMODATION",
+              "address": "09 Tân Thuận, Mân Thái, Sơn Trà, Đà Nẵng",
+              "districtName": "Thanh Khê",
+              "rating": 4.3,
+              "reviewCount": 6,
+              "imageUrl": "/places/real-stays/dolphin-hotel-apartment.jpg",
+              "priceText": "Từ 700.000đ/đêm",
+              "detailUrl": "/places/386"
+            }
+          ],
+          "rows": [
+            {
+              "label": "Loại",
+              "values": [
+                "Lưu trú",
+                "Lưu trú"
+              ]
+            },
+            {
+              "label": "Khu vực",
+              "values": [
+                "Hải Châu",
+                "Thanh Khê"
+              ]
+            },
+            {
+              "label": "Địa chỉ",
+              "values": [
+                "85 Nguyễn Du, Thạch Thang, Hải Châu, Đà Nẵng",
+                "09 Tân Thuận, Mân Thái, Sơn Trà, Đà Nẵng"
+              ]
+            },
+            {
+              "label": "Giá trong catalog",
+              "values": [
+                "Từ 400.000đ/đêm",
+                "Từ 700.000đ/đêm"
+              ]
+            },
+            {
+              "label": "Đánh giá trong hệ thống",
+              "values": [
+                "4.5/5 · 4 đánh giá",
+                "4.3/5 · 6 đánh giá"
+              ]
+            },
+            {
+              "label": "Thời lượng tham quan dự kiến",
+              "values": [
+                "Chưa có dữ liệu / không áp dụng",
+                "Chưa có dữ liệu / không áp dụng"
+              ]
+            },
+            {
+              "label": "Giờ nhận/trả phòng có nguồn",
+              "values": [
+                "Chưa có dữ liệu / không áp dụng",
+                "Chưa có dữ liệu / không áp dụng"
+              ]
+            }
+          ],
+          "notices": [
+            "Chỉ so các thông tin có trong dữ liệu DaNangGo. Giá món, vé và giá một phòng/đêm có đơn vị khác nhau; không so trực tiếp thành giá cả chuyến.",
+            "Giá/giờ niêm yết không xác nhận tồn phòng, vé hoặc trạng thái mở cửa hiện tại. Đánh giá ít mẫu chưa đủ để kết luận nơi nào tốt hơn."
+          ]
+        },
+        "quickReplies": [],
+        "actionLink": {
+          "text": "Khám phá chỗ ở Đà Nẵng",
+          "url": "/luutru"
+        },
+        "createdAt": "2026-11-25T14:42:44.940Z"
+      }
+    },
+    {
+      "id": "G08-011",
+      "group": 8,
+      "groupTitle": "So sánh địa điểm",
+      "sourceLine": 231,
+      "input": "Nơi nào có nhiều đánh giá hơn?",
+      "kind": "comparison",
+      "setup": "So sánh Banana Flower Homestay với Dolphin Hotel and Apartment",
+      "expected": "Bảng so sánh đúng hai nơi có trong DB hoặc hỏi đối tượng/tiêu chí còn thiếu; không tự xếp hạng.",
+      "status": "PASS",
+      "findings": [],
+      "elapsedMs": 9,
+      "actual": {
+        "id": "ai_c536aeed-ad65-44c7-8a50-850507214e60",
+        "sender": "AI",
+        "content": "Gô so sánh Banana Flower Homestay và Dolphin Hotel and Apartment từ dữ liệu DaNangGo. Ô còn thiếu vẫn được để trống. DaNangGo đang ghi nhận 6 đánh giá cho Dolphin Hotel and Apartment và 4 cho Banana Flower Homestay. Số lượng nhiều hơn không tự khẳng định chất lượng tốt hơn.",
+        "intent": "COMPARE",
+        "secondaryIntents": [
+          "STAY"
+        ],
+        "needsClarification": false,
+        "questions": [],
+        "confirmedContext": {
+          "days": null,
+          "nights": null,
+          "guests": null,
+          "budget": null,
+          "reserve": null,
+          "hasLodging": null,
+          "dayUse": null,
+          "budgetScope": null,
+          "startDate": null,
+          "district": null,
+          "transport": null,
+          "arrivalTime": null,
+          "departureTime": null,
+          "dietaryRestrictions": [],
+          "preferences": [],
+          "excludedPlaces": []
+        },
+        "profileSuggestions": [],
+        "sources": [],
+        "warnings": [],
+        "comparison": {
+          "places": [
+            {
+              "placeId": 384,
+              "name": "Banana Flower Homestay",
+              "placeType": "ACCOMMODATION",
+              "address": "85 Nguyễn Du, Thạch Thang, Hải Châu, Đà Nẵng",
+              "districtName": "Hải Châu",
+              "rating": 4.5,
+              "reviewCount": 4,
+              "imageUrl": "/places/real-stays/banana-flower-homestay.jpg",
+              "priceText": "Từ 400.000đ/đêm",
+              "detailUrl": "/places/384"
+            },
+            {
+              "placeId": 386,
+              "name": "Dolphin Hotel and Apartment",
+              "placeType": "ACCOMMODATION",
+              "address": "09 Tân Thuận, Mân Thái, Sơn Trà, Đà Nẵng",
+              "districtName": "Thanh Khê",
+              "rating": 4.3,
+              "reviewCount": 6,
+              "imageUrl": "/places/real-stays/dolphin-hotel-apartment.jpg",
+              "priceText": "Từ 700.000đ/đêm",
+              "detailUrl": "/places/386"
+            }
+          ],
+          "rows": [
+            {
+              "label": "Loại",
+              "values": [
+                "Lưu trú",
+                "Lưu trú"
+              ]
+            },
+            {
+              "label": "Khu vực",
+              "values": [
+                "Hải Châu",
+                "Thanh Khê"
+              ]
+            },
+            {
+              "label": "Địa chỉ",
+              "values": [
+                "85 Nguyễn Du, Thạch Thang, Hải Châu, Đà Nẵng",
+                "09 Tân Thuận, Mân Thái, Sơn Trà, Đà Nẵng"
+              ]
+            },
+            {
+              "label": "Giá trong catalog",
+              "values": [
+                "Từ 400.000đ/đêm",
+                "Từ 700.000đ/đêm"
+              ]
+            },
+            {
+              "label": "Đánh giá trong hệ thống",
+              "values": [
+                "4.5/5 · 4 đánh giá",
+                "4.3/5 · 6 đánh giá"
+              ]
+            },
+            {
+              "label": "Thời lượng tham quan dự kiến",
+              "values": [
+                "Chưa có dữ liệu / không áp dụng",
+                "Chưa có dữ liệu / không áp dụng"
+              ]
+            },
+            {
+              "label": "Giờ nhận/trả phòng có nguồn",
+              "values": [
+                "Chưa có dữ liệu / không áp dụng",
+                "Chưa có dữ liệu / không áp dụng"
+              ]
+            }
+          ],
+          "notices": [
+            "Chỉ so các thông tin có trong dữ liệu DaNangGo. Giá món, vé và giá một phòng/đêm có đơn vị khác nhau; không so trực tiếp thành giá cả chuyến.",
+            "Giá/giờ niêm yết không xác nhận tồn phòng, vé hoặc trạng thái mở cửa hiện tại. Đánh giá ít mẫu chưa đủ để kết luận nơi nào tốt hơn."
+          ]
+        },
+        "quickReplies": [],
+        "actionLink": {
+          "text": "Khám phá chỗ ở Đà Nẵng",
+          "url": "/luutru"
+        },
+        "createdAt": "2026-11-25T14:42:44.949Z"
+      }
+    },
+    {
+      "id": "G08-012",
+      "group": 8,
+      "groupTitle": "So sánh địa điểm",
+      "sourceLine": 232,
+      "input": "Nơi nào có giá phòng tốt hơn?",
+      "kind": "comparison",
+      "setup": "So sánh Banana Flower Homestay với Dolphin Hotel and Apartment",
+      "expected": "Bảng so sánh đúng hai nơi có trong DB hoặc hỏi đối tượng/tiêu chí còn thiếu; không tự xếp hạng.",
+      "status": "DATA_LIMIT",
+      "findings": [],
+      "elapsedMs": 8,
+      "actual": {
+        "id": "ai_01cf7972-420e-475f-b9b5-3570e372d82e",
+        "sender": "AI",
+        "content": "Gô so sánh Banana Flower Homestay và Dolphin Hotel and Apartment từ dữ liệu DaNangGo. Ô còn thiếu vẫn được để trống. Theo mức giá từ đang hiển thị, Banana Flower Homestay có giá thấp hơn (Từ 400.000đ/đêm so với Từ 700.000đ/đêm). Đây là giá phòng từ catalog; loại phòng, sức chứa, ngày ở và phụ phí có thể khác nhau. Gô chưa xác nhận giá theo ngày.",
+        "intent": "COMPARE",
+        "secondaryIntents": [
+          "STAY"
+        ],
+        "needsClarification": false,
+        "questions": [],
+        "confirmedContext": {
+          "days": null,
+          "nights": null,
+          "guests": null,
+          "budget": null,
+          "reserve": null,
+          "hasLodging": null,
+          "dayUse": null,
+          "budgetScope": null,
+          "startDate": null,
+          "district": null,
+          "transport": null,
+          "arrivalTime": null,
+          "departureTime": null,
+          "dietaryRestrictions": [],
+          "preferences": [],
+          "excludedPlaces": []
+        },
+        "profileSuggestions": [],
+        "sources": [],
+        "warnings": [],
+        "comparison": {
+          "places": [
+            {
+              "placeId": 384,
+              "name": "Banana Flower Homestay",
+              "placeType": "ACCOMMODATION",
+              "address": "85 Nguyễn Du, Thạch Thang, Hải Châu, Đà Nẵng",
+              "districtName": "Hải Châu",
+              "rating": 4.5,
+              "reviewCount": 4,
+              "imageUrl": "/places/real-stays/banana-flower-homestay.jpg",
+              "priceText": "Từ 400.000đ/đêm",
+              "detailUrl": "/places/384"
+            },
+            {
+              "placeId": 386,
+              "name": "Dolphin Hotel and Apartment",
+              "placeType": "ACCOMMODATION",
+              "address": "09 Tân Thuận, Mân Thái, Sơn Trà, Đà Nẵng",
+              "districtName": "Thanh Khê",
+              "rating": 4.3,
+              "reviewCount": 6,
+              "imageUrl": "/places/real-stays/dolphin-hotel-apartment.jpg",
+              "priceText": "Từ 700.000đ/đêm",
+              "detailUrl": "/places/386"
+            }
+          ],
+          "rows": [
+            {
+              "label": "Loại",
+              "values": [
+                "Lưu trú",
+                "Lưu trú"
+              ]
+            },
+            {
+              "label": "Khu vực",
+              "values": [
+                "Hải Châu",
+                "Thanh Khê"
+              ]
+            },
+            {
+              "label": "Địa chỉ",
+              "values": [
+                "85 Nguyễn Du, Thạch Thang, Hải Châu, Đà Nẵng",
+                "09 Tân Thuận, Mân Thái, Sơn Trà, Đà Nẵng"
+              ]
+            },
+            {
+              "label": "Giá trong catalog",
+              "values": [
+                "Từ 400.000đ/đêm",
+                "Từ 700.000đ/đêm"
+              ]
+            },
+            {
+              "label": "Đánh giá trong hệ thống",
+              "values": [
+                "4.5/5 · 4 đánh giá",
+                "4.3/5 · 6 đánh giá"
+              ]
+            },
+            {
+              "label": "Thời lượng tham quan dự kiến",
+              "values": [
+                "Chưa có dữ liệu / không áp dụng",
+                "Chưa có dữ liệu / không áp dụng"
+              ]
+            },
+            {
+              "label": "Giờ nhận/trả phòng có nguồn",
+              "values": [
+                "Chưa có dữ liệu / không áp dụng",
+                "Chưa có dữ liệu / không áp dụng"
+              ]
+            }
+          ],
+          "notices": [
+            "Chỉ so các thông tin có trong dữ liệu DaNangGo. Giá món, vé và giá một phòng/đêm có đơn vị khác nhau; không so trực tiếp thành giá cả chuyến.",
+            "Giá/giờ niêm yết không xác nhận tồn phòng, vé hoặc trạng thái mở cửa hiện tại. Đánh giá ít mẫu chưa đủ để kết luận nơi nào tốt hơn."
+          ]
+        },
+        "quickReplies": [],
+        "actionLink": {
+          "text": "Khám phá chỗ ở Đà Nẵng",
+          "url": "/luutru"
+        },
+        "createdAt": "2026-11-25T14:42:44.957Z"
+      }
+    },
+    {
+      "id": "G08-013",
+      "group": 8,
+      "groupTitle": "So sánh địa điểm",
+      "sourceLine": 233,
+      "input": "Nơi nào có view đẹp hơn?",
+      "kind": "comparison",
+      "setup": "So sánh Banana Flower Homestay với Dolphin Hotel and Apartment",
+      "expected": "Bảng so sánh đúng hai nơi có trong DB hoặc hỏi đối tượng/tiêu chí còn thiếu; không tự xếp hạng.",
+      "status": "PASS",
+      "findings": [],
+      "elapsedMs": 9,
+      "actual": {
+        "id": "ai_0bc06166-b14f-4b9f-b13d-a8e2356bf47f",
+        "sender": "AI",
+        "content": "Gô so sánh Banana Flower Homestay và Dolphin Hotel and Apartment từ dữ liệu DaNangGo. Ô còn thiếu vẫn được để trống. Gô giữ đúng hai nơi bạn đang cân nhắc. Tiêu chí vừa hỏi chưa có đủ số liệu tương ứng để xếp hạng; Gô chưa chọn nơi tốt hơn.",
+        "intent": "COMPARE",
+        "secondaryIntents": [
+          "STAY"
+        ],
+        "needsClarification": false,
+        "questions": [],
+        "confirmedContext": {
+          "days": null,
+          "nights": null,
+          "guests": null,
+          "budget": null,
+          "reserve": null,
+          "hasLodging": null,
+          "dayUse": null,
+          "budgetScope": null,
+          "startDate": null,
+          "district": null,
+          "transport": null,
+          "arrivalTime": null,
+          "departureTime": null,
+          "dietaryRestrictions": [],
+          "preferences": [],
+          "excludedPlaces": []
+        },
+        "profileSuggestions": [],
+        "sources": [],
+        "warnings": [],
+        "comparison": {
+          "places": [
+            {
+              "placeId": 384,
+              "name": "Banana Flower Homestay",
+              "placeType": "ACCOMMODATION",
+              "address": "85 Nguyễn Du, Thạch Thang, Hải Châu, Đà Nẵng",
+              "districtName": "Hải Châu",
+              "rating": 4.5,
+              "reviewCount": 4,
+              "imageUrl": "/places/real-stays/banana-flower-homestay.jpg",
+              "priceText": "Từ 400.000đ/đêm",
+              "detailUrl": "/places/384"
+            },
+            {
+              "placeId": 386,
+              "name": "Dolphin Hotel and Apartment",
+              "placeType": "ACCOMMODATION",
+              "address": "09 Tân Thuận, Mân Thái, Sơn Trà, Đà Nẵng",
+              "districtName": "Thanh Khê",
+              "rating": 4.3,
+              "reviewCount": 6,
+              "imageUrl": "/places/real-stays/dolphin-hotel-apartment.jpg",
+              "priceText": "Từ 700.000đ/đêm",
+              "detailUrl": "/places/386"
+            }
+          ],
+          "rows": [
+            {
+              "label": "Loại",
+              "values": [
+                "Lưu trú",
+                "Lưu trú"
+              ]
+            },
+            {
+              "label": "Khu vực",
+              "values": [
+                "Hải Châu",
+                "Thanh Khê"
+              ]
+            },
+            {
+              "label": "Địa chỉ",
+              "values": [
+                "85 Nguyễn Du, Thạch Thang, Hải Châu, Đà Nẵng",
+                "09 Tân Thuận, Mân Thái, Sơn Trà, Đà Nẵng"
+              ]
+            },
+            {
+              "label": "Giá trong catalog",
+              "values": [
+                "Từ 400.000đ/đêm",
+                "Từ 700.000đ/đêm"
+              ]
+            },
+            {
+              "label": "Đánh giá trong hệ thống",
+              "values": [
+                "4.5/5 · 4 đánh giá",
+                "4.3/5 · 6 đánh giá"
+              ]
+            },
+            {
+              "label": "Thời lượng tham quan dự kiến",
+              "values": [
+                "Chưa có dữ liệu / không áp dụng",
+                "Chưa có dữ liệu / không áp dụng"
+              ]
+            },
+            {
+              "label": "Giờ nhận/trả phòng có nguồn",
+              "values": [
+                "Chưa có dữ liệu / không áp dụng",
+                "Chưa có dữ liệu / không áp dụng"
+              ]
+            }
+          ],
+          "notices": [
+            "Chỉ so các thông tin có trong dữ liệu DaNangGo. Giá món, vé và giá một phòng/đêm có đơn vị khác nhau; không so trực tiếp thành giá cả chuyến.",
+            "Giá/giờ niêm yết không xác nhận tồn phòng, vé hoặc trạng thái mở cửa hiện tại. Đánh giá ít mẫu chưa đủ để kết luận nơi nào tốt hơn."
+          ]
+        },
+        "quickReplies": [],
+        "actionLink": {
+          "text": "Khám phá chỗ ở Đà Nẵng",
+          "url": "/luutru"
+        },
+        "createdAt": "2026-11-25T14:42:44.966Z"
+      }
+    },
+    {
+      "id": "G08-014",
+      "group": 8,
+      "groupTitle": "So sánh địa điểm",
+      "sourceLine": 234,
+      "input": "Nơi nào yên tĩnh hơn?",
+      "kind": "comparison",
+      "setup": "So sánh Banana Flower Homestay với Dolphin Hotel and Apartment",
+      "expected": "Bảng so sánh đúng hai nơi có trong DB hoặc hỏi đối tượng/tiêu chí còn thiếu; không tự xếp hạng.",
+      "status": "PASS",
+      "findings": [],
+      "elapsedMs": 8,
+      "actual": {
+        "id": "ai_64e0da7b-6fd8-4541-9b37-c66e2f27fa3c",
+        "sender": "AI",
+        "content": "Gô so sánh Banana Flower Homestay và Dolphin Hotel and Apartment từ dữ liệu DaNangGo. Ô còn thiếu vẫn được để trống. Gô giữ đúng hai nơi bạn đang cân nhắc. Tiêu chí vừa hỏi chưa có đủ số liệu tương ứng để xếp hạng; Gô chưa chọn nơi tốt hơn.",
+        "intent": "COMPARE",
+        "secondaryIntents": [
+          "STAY"
+        ],
+        "needsClarification": false,
+        "questions": [],
+        "confirmedContext": {
+          "days": null,
+          "nights": null,
+          "guests": null,
+          "budget": null,
+          "reserve": null,
+          "hasLodging": null,
+          "dayUse": null,
+          "budgetScope": null,
+          "startDate": null,
+          "district": null,
+          "transport": null,
+          "arrivalTime": null,
+          "departureTime": null,
+          "dietaryRestrictions": [],
+          "preferences": [],
+          "excludedPlaces": []
+        },
+        "profileSuggestions": [],
+        "sources": [],
+        "warnings": [],
+        "comparison": {
+          "places": [
+            {
+              "placeId": 384,
+              "name": "Banana Flower Homestay",
+              "placeType": "ACCOMMODATION",
+              "address": "85 Nguyễn Du, Thạch Thang, Hải Châu, Đà Nẵng",
+              "districtName": "Hải Châu",
+              "rating": 4.5,
+              "reviewCount": 4,
+              "imageUrl": "/places/real-stays/banana-flower-homestay.jpg",
+              "priceText": "Từ 400.000đ/đêm",
+              "detailUrl": "/places/384"
+            },
+            {
+              "placeId": 386,
+              "name": "Dolphin Hotel and Apartment",
+              "placeType": "ACCOMMODATION",
+              "address": "09 Tân Thuận, Mân Thái, Sơn Trà, Đà Nẵng",
+              "districtName": "Thanh Khê",
+              "rating": 4.3,
+              "reviewCount": 6,
+              "imageUrl": "/places/real-stays/dolphin-hotel-apartment.jpg",
+              "priceText": "Từ 700.000đ/đêm",
+              "detailUrl": "/places/386"
+            }
+          ],
+          "rows": [
+            {
+              "label": "Loại",
+              "values": [
+                "Lưu trú",
+                "Lưu trú"
+              ]
+            },
+            {
+              "label": "Khu vực",
+              "values": [
+                "Hải Châu",
+                "Thanh Khê"
+              ]
+            },
+            {
+              "label": "Địa chỉ",
+              "values": [
+                "85 Nguyễn Du, Thạch Thang, Hải Châu, Đà Nẵng",
+                "09 Tân Thuận, Mân Thái, Sơn Trà, Đà Nẵng"
+              ]
+            },
+            {
+              "label": "Giá trong catalog",
+              "values": [
+                "Từ 400.000đ/đêm",
+                "Từ 700.000đ/đêm"
+              ]
+            },
+            {
+              "label": "Đánh giá trong hệ thống",
+              "values": [
+                "4.5/5 · 4 đánh giá",
+                "4.3/5 · 6 đánh giá"
+              ]
+            },
+            {
+              "label": "Thời lượng tham quan dự kiến",
+              "values": [
+                "Chưa có dữ liệu / không áp dụng",
+                "Chưa có dữ liệu / không áp dụng"
+              ]
+            },
+            {
+              "label": "Giờ nhận/trả phòng có nguồn",
+              "values": [
+                "Chưa có dữ liệu / không áp dụng",
+                "Chưa có dữ liệu / không áp dụng"
+              ]
+            }
+          ],
+          "notices": [
+            "Chỉ so các thông tin có trong dữ liệu DaNangGo. Giá món, vé và giá một phòng/đêm có đơn vị khác nhau; không so trực tiếp thành giá cả chuyến.",
+            "Giá/giờ niêm yết không xác nhận tồn phòng, vé hoặc trạng thái mở cửa hiện tại. Đánh giá ít mẫu chưa đủ để kết luận nơi nào tốt hơn."
+          ]
+        },
+        "quickReplies": [],
+        "actionLink": {
+          "text": "Khám phá chỗ ở Đà Nẵng",
+          "url": "/luutru"
+        },
+        "createdAt": "2026-11-25T14:42:44.974Z"
+      }
+    },
+    {
+      "id": "G08-015",
+      "group": 8,
+      "groupTitle": "So sánh địa điểm",
+      "sourceLine": 235,
+      "input": "Nơi nào gần trung tâm hơn?",
+      "kind": "comparison",
+      "setup": "So sánh Banana Flower Homestay với Dolphin Hotel and Apartment",
+      "expected": "Bảng so sánh đúng hai nơi có trong DB hoặc hỏi đối tượng/tiêu chí còn thiếu; không tự xếp hạng.",
+      "status": "PASS",
+      "findings": [],
+      "elapsedMs": 9,
+      "actual": {
+        "id": "ai_62ec975c-cc19-4583-833c-50c26a6c0e54",
+        "sender": "AI",
+        "content": "Gô so sánh Banana Flower Homestay và Dolphin Hotel and Apartment từ dữ liệu DaNangGo. Ô còn thiếu vẫn được để trống. Gô giữ đúng hai nơi bạn đang cân nhắc. Tiêu chí vừa hỏi chưa có đủ số liệu tương ứng để xếp hạng; Gô chưa chọn nơi tốt hơn.",
+        "intent": "COMPARE",
+        "secondaryIntents": [
+          "STAY"
+        ],
+        "needsClarification": false,
+        "questions": [],
+        "confirmedContext": {
+          "days": null,
+          "nights": null,
+          "guests": null,
+          "budget": null,
+          "reserve": null,
+          "hasLodging": null,
+          "dayUse": null,
+          "budgetScope": null,
+          "startDate": null,
+          "district": null,
+          "transport": null,
+          "arrivalTime": null,
+          "departureTime": null,
+          "dietaryRestrictions": [],
+          "preferences": [],
+          "excludedPlaces": []
+        },
+        "profileSuggestions": [],
+        "sources": [],
+        "warnings": [],
+        "comparison": {
+          "places": [
+            {
+              "placeId": 384,
+              "name": "Banana Flower Homestay",
+              "placeType": "ACCOMMODATION",
+              "address": "85 Nguyễn Du, Thạch Thang, Hải Châu, Đà Nẵng",
+              "districtName": "Hải Châu",
+              "rating": 4.5,
+              "reviewCount": 4,
+              "imageUrl": "/places/real-stays/banana-flower-homestay.jpg",
+              "priceText": "Từ 400.000đ/đêm",
+              "detailUrl": "/places/384"
+            },
+            {
+              "placeId": 386,
+              "name": "Dolphin Hotel and Apartment",
+              "placeType": "ACCOMMODATION",
+              "address": "09 Tân Thuận, Mân Thái, Sơn Trà, Đà Nẵng",
+              "districtName": "Thanh Khê",
+              "rating": 4.3,
+              "reviewCount": 6,
+              "imageUrl": "/places/real-stays/dolphin-hotel-apartment.jpg",
+              "priceText": "Từ 700.000đ/đêm",
+              "detailUrl": "/places/386"
+            }
+          ],
+          "rows": [
+            {
+              "label": "Loại",
+              "values": [
+                "Lưu trú",
+                "Lưu trú"
+              ]
+            },
+            {
+              "label": "Khu vực",
+              "values": [
+                "Hải Châu",
+                "Thanh Khê"
+              ]
+            },
+            {
+              "label": "Địa chỉ",
+              "values": [
+                "85 Nguyễn Du, Thạch Thang, Hải Châu, Đà Nẵng",
+                "09 Tân Thuận, Mân Thái, Sơn Trà, Đà Nẵng"
+              ]
+            },
+            {
+              "label": "Giá trong catalog",
+              "values": [
+                "Từ 400.000đ/đêm",
+                "Từ 700.000đ/đêm"
+              ]
+            },
+            {
+              "label": "Đánh giá trong hệ thống",
+              "values": [
+                "4.5/5 · 4 đánh giá",
+                "4.3/5 · 6 đánh giá"
+              ]
+            },
+            {
+              "label": "Thời lượng tham quan dự kiến",
+              "values": [
+                "Chưa có dữ liệu / không áp dụng",
+                "Chưa có dữ liệu / không áp dụng"
+              ]
+            },
+            {
+              "label": "Giờ nhận/trả phòng có nguồn",
+              "values": [
+                "Chưa có dữ liệu / không áp dụng",
+                "Chưa có dữ liệu / không áp dụng"
+              ]
+            }
+          ],
+          "notices": [
+            "Chỉ so các thông tin có trong dữ liệu DaNangGo. Giá món, vé và giá một phòng/đêm có đơn vị khác nhau; không so trực tiếp thành giá cả chuyến.",
+            "Giá/giờ niêm yết không xác nhận tồn phòng, vé hoặc trạng thái mở cửa hiện tại. Đánh giá ít mẫu chưa đủ để kết luận nơi nào tốt hơn."
+          ]
+        },
+        "quickReplies": [],
+        "actionLink": {
+          "text": "Khám phá chỗ ở Đà Nẵng",
+          "url": "/luutru"
+        },
+        "createdAt": "2026-11-25T14:42:44.983Z"
+      }
+    },
+    {
+      "id": "G08-016",
+      "group": 8,
+      "groupTitle": "So sánh địa điểm",
+      "sourceLine": 236,
+      "input": "Nơi nào phù hợp đi buổi tối hơn?",
+      "kind": "comparison",
+      "setup": "So sánh Banana Flower Homestay với Dolphin Hotel and Apartment",
+      "expected": "Bảng so sánh đúng hai nơi có trong DB hoặc hỏi đối tượng/tiêu chí còn thiếu; không tự xếp hạng.",
+      "status": "PASS",
+      "findings": [],
+      "elapsedMs": 9,
+      "actual": {
+        "id": "ai_2bf9d768-aafc-4225-8995-a82840cebca1",
+        "sender": "AI",
+        "content": "Gô so sánh Banana Flower Homestay và Dolphin Hotel and Apartment từ dữ liệu DaNangGo. Ô còn thiếu vẫn được để trống. Gô giữ đúng hai nơi bạn đang cân nhắc. Tiêu chí vừa hỏi chưa có đủ số liệu tương ứng để xếp hạng; Gô chưa chọn nơi tốt hơn.",
+        "intent": "COMPARE",
+        "secondaryIntents": [
+          "STAY"
+        ],
+        "needsClarification": false,
+        "questions": [],
+        "confirmedContext": {
+          "days": null,
+          "nights": null,
+          "guests": null,
+          "budget": null,
+          "reserve": null,
+          "hasLodging": null,
+          "dayUse": null,
+          "budgetScope": null,
+          "startDate": null,
+          "district": null,
+          "transport": null,
+          "arrivalTime": null,
+          "departureTime": null,
+          "dietaryRestrictions": [],
+          "preferences": [],
+          "excludedPlaces": []
+        },
+        "profileSuggestions": [],
+        "sources": [],
+        "warnings": [],
+        "comparison": {
+          "places": [
+            {
+              "placeId": 384,
+              "name": "Banana Flower Homestay",
+              "placeType": "ACCOMMODATION",
+              "address": "85 Nguyễn Du, Thạch Thang, Hải Châu, Đà Nẵng",
+              "districtName": "Hải Châu",
+              "rating": 4.5,
+              "reviewCount": 4,
+              "imageUrl": "/places/real-stays/banana-flower-homestay.jpg",
+              "priceText": "Từ 400.000đ/đêm",
+              "detailUrl": "/places/384"
+            },
+            {
+              "placeId": 386,
+              "name": "Dolphin Hotel and Apartment",
+              "placeType": "ACCOMMODATION",
+              "address": "09 Tân Thuận, Mân Thái, Sơn Trà, Đà Nẵng",
+              "districtName": "Thanh Khê",
+              "rating": 4.3,
+              "reviewCount": 6,
+              "imageUrl": "/places/real-stays/dolphin-hotel-apartment.jpg",
+              "priceText": "Từ 700.000đ/đêm",
+              "detailUrl": "/places/386"
+            }
+          ],
+          "rows": [
+            {
+              "label": "Loại",
+              "values": [
+                "Lưu trú",
+                "Lưu trú"
+              ]
+            },
+            {
+              "label": "Khu vực",
+              "values": [
+                "Hải Châu",
+                "Thanh Khê"
+              ]
+            },
+            {
+              "label": "Địa chỉ",
+              "values": [
+                "85 Nguyễn Du, Thạch Thang, Hải Châu, Đà Nẵng",
+                "09 Tân Thuận, Mân Thái, Sơn Trà, Đà Nẵng"
+              ]
+            },
+            {
+              "label": "Giá trong catalog",
+              "values": [
+                "Từ 400.000đ/đêm",
+                "Từ 700.000đ/đêm"
+              ]
+            },
+            {
+              "label": "Đánh giá trong hệ thống",
+              "values": [
+                "4.5/5 · 4 đánh giá",
+                "4.3/5 · 6 đánh giá"
+              ]
+            },
+            {
+              "label": "Thời lượng tham quan dự kiến",
+              "values": [
+                "Chưa có dữ liệu / không áp dụng",
+                "Chưa có dữ liệu / không áp dụng"
+              ]
+            },
+            {
+              "label": "Giờ nhận/trả phòng có nguồn",
+              "values": [
+                "Chưa có dữ liệu / không áp dụng",
+                "Chưa có dữ liệu / không áp dụng"
+              ]
+            }
+          ],
+          "notices": [
+            "Chỉ so các thông tin có trong dữ liệu DaNangGo. Giá món, vé và giá một phòng/đêm có đơn vị khác nhau; không so trực tiếp thành giá cả chuyến.",
+            "Giá/giờ niêm yết không xác nhận tồn phòng, vé hoặc trạng thái mở cửa hiện tại. Đánh giá ít mẫu chưa đủ để kết luận nơi nào tốt hơn."
+          ]
+        },
+        "quickReplies": [],
+        "actionLink": {
+          "text": "Khám phá chỗ ở Đà Nẵng",
+          "url": "/luutru"
+        },
+        "createdAt": "2026-11-25T14:42:44.992Z"
+      }
+    },
+    {
+      "id": "G08-017",
+      "group": 8,
+      "groupTitle": "So sánh địa điểm",
+      "sourceLine": 237,
+      "input": "Tôi ưu tiên giá, hãy giúp tôi chọn.",
+      "kind": "comparison",
+      "setup": "So sánh Banana Flower Homestay với Dolphin Hotel and Apartment",
+      "expected": "Bảng so sánh đúng hai nơi có trong DB hoặc hỏi đối tượng/tiêu chí còn thiếu; không tự xếp hạng.",
+      "status": "DATA_LIMIT",
+      "findings": [],
+      "elapsedMs": 8,
+      "actual": {
+        "id": "ai_224f0b71-c77e-4900-9a54-e83d548bb055",
+        "sender": "AI",
+        "content": "Gô so sánh Banana Flower Homestay và Dolphin Hotel and Apartment từ dữ liệu DaNangGo. Ô còn thiếu vẫn được để trống. Theo mức giá từ đang hiển thị, Banana Flower Homestay có giá thấp hơn (Từ 400.000đ/đêm so với Từ 700.000đ/đêm). Đây là giá phòng từ catalog; loại phòng, sức chứa, ngày ở và phụ phí có thể khác nhau. Gô chưa xác nhận giá theo ngày.",
+        "intent": "COMPARE",
+        "secondaryIntents": [
+          "STAY"
+        ],
+        "needsClarification": false,
+        "questions": [],
+        "confirmedContext": {
+          "days": null,
+          "nights": null,
+          "guests": null,
+          "budget": null,
+          "reserve": null,
+          "hasLodging": null,
+          "dayUse": null,
+          "budgetScope": null,
+          "startDate": null,
+          "district": null,
+          "transport": null,
+          "arrivalTime": null,
+          "departureTime": null,
+          "dietaryRestrictions": [],
+          "preferences": [],
+          "excludedPlaces": []
+        },
+        "profileSuggestions": [],
+        "sources": [],
+        "warnings": [],
+        "comparison": {
+          "places": [
+            {
+              "placeId": 384,
+              "name": "Banana Flower Homestay",
+              "placeType": "ACCOMMODATION",
+              "address": "85 Nguyễn Du, Thạch Thang, Hải Châu, Đà Nẵng",
+              "districtName": "Hải Châu",
+              "rating": 4.5,
+              "reviewCount": 4,
+              "imageUrl": "/places/real-stays/banana-flower-homestay.jpg",
+              "priceText": "Từ 400.000đ/đêm",
+              "detailUrl": "/places/384"
+            },
+            {
+              "placeId": 386,
+              "name": "Dolphin Hotel and Apartment",
+              "placeType": "ACCOMMODATION",
+              "address": "09 Tân Thuận, Mân Thái, Sơn Trà, Đà Nẵng",
+              "districtName": "Thanh Khê",
+              "rating": 4.3,
+              "reviewCount": 6,
+              "imageUrl": "/places/real-stays/dolphin-hotel-apartment.jpg",
+              "priceText": "Từ 700.000đ/đêm",
+              "detailUrl": "/places/386"
+            }
+          ],
+          "rows": [
+            {
+              "label": "Loại",
+              "values": [
+                "Lưu trú",
+                "Lưu trú"
+              ]
+            },
+            {
+              "label": "Khu vực",
+              "values": [
+                "Hải Châu",
+                "Thanh Khê"
+              ]
+            },
+            {
+              "label": "Địa chỉ",
+              "values": [
+                "85 Nguyễn Du, Thạch Thang, Hải Châu, Đà Nẵng",
+                "09 Tân Thuận, Mân Thái, Sơn Trà, Đà Nẵng"
+              ]
+            },
+            {
+              "label": "Giá trong catalog",
+              "values": [
+                "Từ 400.000đ/đêm",
+                "Từ 700.000đ/đêm"
+              ]
+            },
+            {
+              "label": "Đánh giá trong hệ thống",
+              "values": [
+                "4.5/5 · 4 đánh giá",
+                "4.3/5 · 6 đánh giá"
+              ]
+            },
+            {
+              "label": "Thời lượng tham quan dự kiến",
+              "values": [
+                "Chưa có dữ liệu / không áp dụng",
+                "Chưa có dữ liệu / không áp dụng"
+              ]
+            },
+            {
+              "label": "Giờ nhận/trả phòng có nguồn",
+              "values": [
+                "Chưa có dữ liệu / không áp dụng",
+                "Chưa có dữ liệu / không áp dụng"
+              ]
+            }
+          ],
+          "notices": [
+            "Chỉ so các thông tin có trong dữ liệu DaNangGo. Giá món, vé và giá một phòng/đêm có đơn vị khác nhau; không so trực tiếp thành giá cả chuyến.",
+            "Giá/giờ niêm yết không xác nhận tồn phòng, vé hoặc trạng thái mở cửa hiện tại. Đánh giá ít mẫu chưa đủ để kết luận nơi nào tốt hơn."
+          ]
+        },
+        "quickReplies": [],
+        "actionLink": {
+          "text": "Khám phá chỗ ở Đà Nẵng",
+          "url": "/luutru"
+        },
+        "createdAt": "2026-11-25T14:42:45.000Z"
+      }
+    },
+    {
+      "id": "G08-018",
+      "group": 8,
+      "groupTitle": "So sánh địa điểm",
+      "sourceLine": 238,
+      "input": "Tôi ưu tiên vị trí, hãy giúp tôi chọn.",
+      "kind": "comparison",
+      "setup": "So sánh Banana Flower Homestay với Dolphin Hotel and Apartment",
+      "expected": "Bảng so sánh đúng hai nơi có trong DB hoặc hỏi đối tượng/tiêu chí còn thiếu; không tự xếp hạng.",
+      "status": "PASS",
+      "findings": [],
+      "elapsedMs": 9,
+      "actual": {
+        "id": "ai_3ae89e5e-2cbb-479e-8b19-5c03edf97716",
+        "sender": "AI",
+        "content": "Gô so sánh Banana Flower Homestay và Dolphin Hotel and Apartment từ dữ liệu DaNangGo. Ô còn thiếu vẫn được để trống. Gô giữ đúng hai nơi bạn đang cân nhắc. Tiêu chí vừa hỏi chưa có đủ số liệu tương ứng để xếp hạng; Gô chưa chọn nơi tốt hơn.",
+        "intent": "COMPARE",
+        "secondaryIntents": [
+          "STAY"
+        ],
+        "needsClarification": false,
+        "questions": [],
+        "confirmedContext": {
+          "days": null,
+          "nights": null,
+          "guests": null,
+          "budget": null,
+          "reserve": null,
+          "hasLodging": null,
+          "dayUse": null,
+          "budgetScope": null,
+          "startDate": null,
+          "district": null,
+          "transport": null,
+          "arrivalTime": null,
+          "departureTime": null,
+          "dietaryRestrictions": [],
+          "preferences": [],
+          "excludedPlaces": []
+        },
+        "profileSuggestions": [],
+        "sources": [],
+        "warnings": [],
+        "comparison": {
+          "places": [
+            {
+              "placeId": 384,
+              "name": "Banana Flower Homestay",
+              "placeType": "ACCOMMODATION",
+              "address": "85 Nguyễn Du, Thạch Thang, Hải Châu, Đà Nẵng",
+              "districtName": "Hải Châu",
+              "rating": 4.5,
+              "reviewCount": 4,
+              "imageUrl": "/places/real-stays/banana-flower-homestay.jpg",
+              "priceText": "Từ 400.000đ/đêm",
+              "detailUrl": "/places/384"
+            },
+            {
+              "placeId": 386,
+              "name": "Dolphin Hotel and Apartment",
+              "placeType": "ACCOMMODATION",
+              "address": "09 Tân Thuận, Mân Thái, Sơn Trà, Đà Nẵng",
+              "districtName": "Thanh Khê",
+              "rating": 4.3,
+              "reviewCount": 6,
+              "imageUrl": "/places/real-stays/dolphin-hotel-apartment.jpg",
+              "priceText": "Từ 700.000đ/đêm",
+              "detailUrl": "/places/386"
+            }
+          ],
+          "rows": [
+            {
+              "label": "Loại",
+              "values": [
+                "Lưu trú",
+                "Lưu trú"
+              ]
+            },
+            {
+              "label": "Khu vực",
+              "values": [
+                "Hải Châu",
+                "Thanh Khê"
+              ]
+            },
+            {
+              "label": "Địa chỉ",
+              "values": [
+                "85 Nguyễn Du, Thạch Thang, Hải Châu, Đà Nẵng",
+                "09 Tân Thuận, Mân Thái, Sơn Trà, Đà Nẵng"
+              ]
+            },
+            {
+              "label": "Giá trong catalog",
+              "values": [
+                "Từ 400.000đ/đêm",
+                "Từ 700.000đ/đêm"
+              ]
+            },
+            {
+              "label": "Đánh giá trong hệ thống",
+              "values": [
+                "4.5/5 · 4 đánh giá",
+                "4.3/5 · 6 đánh giá"
+              ]
+            },
+            {
+              "label": "Thời lượng tham quan dự kiến",
+              "values": [
+                "Chưa có dữ liệu / không áp dụng",
+                "Chưa có dữ liệu / không áp dụng"
+              ]
+            },
+            {
+              "label": "Giờ nhận/trả phòng có nguồn",
+              "values": [
+                "Chưa có dữ liệu / không áp dụng",
+                "Chưa có dữ liệu / không áp dụng"
+              ]
+            }
+          ],
+          "notices": [
+            "Chỉ so các thông tin có trong dữ liệu DaNangGo. Giá món, vé và giá một phòng/đêm có đơn vị khác nhau; không so trực tiếp thành giá cả chuyến.",
+            "Giá/giờ niêm yết không xác nhận tồn phòng, vé hoặc trạng thái mở cửa hiện tại. Đánh giá ít mẫu chưa đủ để kết luận nơi nào tốt hơn."
+          ]
+        },
+        "quickReplies": [],
+        "actionLink": {
+          "text": "Khám phá chỗ ở Đà Nẵng",
+          "url": "/luutru"
+        },
+        "createdAt": "2026-11-25T14:42:45.009Z"
+      }
+    },
+    {
+      "id": "G08-019",
+      "group": 8,
+      "groupTitle": "So sánh địa điểm",
+      "sourceLine": 239,
+      "input": "Tôi ưu tiên trải nghiệm, hãy giúp tôi chọn.",
+      "kind": "comparison",
+      "setup": "So sánh Banana Flower Homestay với Dolphin Hotel and Apartment",
+      "expected": "Bảng so sánh đúng hai nơi có trong DB hoặc hỏi đối tượng/tiêu chí còn thiếu; không tự xếp hạng.",
+      "status": "PASS",
+      "findings": [],
+      "elapsedMs": 8,
+      "actual": {
+        "id": "ai_9f5551e5-1273-4354-a619-23c5104d8bb2",
+        "sender": "AI",
+        "content": "Gô so sánh Banana Flower Homestay và Dolphin Hotel and Apartment từ dữ liệu DaNangGo. Ô còn thiếu vẫn được để trống. Gô giữ đúng hai nơi bạn đang cân nhắc. Tiêu chí vừa hỏi chưa có đủ số liệu tương ứng để xếp hạng; Gô chưa chọn nơi tốt hơn.",
+        "intent": "COMPARE",
+        "secondaryIntents": [
+          "STAY"
+        ],
+        "needsClarification": false,
+        "questions": [],
+        "confirmedContext": {
+          "days": null,
+          "nights": null,
+          "guests": null,
+          "budget": null,
+          "reserve": null,
+          "hasLodging": null,
+          "dayUse": null,
+          "budgetScope": null,
+          "startDate": null,
+          "district": null,
+          "transport": null,
+          "arrivalTime": null,
+          "departureTime": null,
+          "dietaryRestrictions": [],
+          "preferences": [],
+          "excludedPlaces": []
+        },
+        "profileSuggestions": [],
+        "sources": [],
+        "warnings": [],
+        "comparison": {
+          "places": [
+            {
+              "placeId": 384,
+              "name": "Banana Flower Homestay",
+              "placeType": "ACCOMMODATION",
+              "address": "85 Nguyễn Du, Thạch Thang, Hải Châu, Đà Nẵng",
+              "districtName": "Hải Châu",
+              "rating": 4.5,
+              "reviewCount": 4,
+              "imageUrl": "/places/real-stays/banana-flower-homestay.jpg",
+              "priceText": "Từ 400.000đ/đêm",
+              "detailUrl": "/places/384"
+            },
+            {
+              "placeId": 386,
+              "name": "Dolphin Hotel and Apartment",
+              "placeType": "ACCOMMODATION",
+              "address": "09 Tân Thuận, Mân Thái, Sơn Trà, Đà Nẵng",
+              "districtName": "Thanh Khê",
+              "rating": 4.3,
+              "reviewCount": 6,
+              "imageUrl": "/places/real-stays/dolphin-hotel-apartment.jpg",
+              "priceText": "Từ 700.000đ/đêm",
+              "detailUrl": "/places/386"
+            }
+          ],
+          "rows": [
+            {
+              "label": "Loại",
+              "values": [
+                "Lưu trú",
+                "Lưu trú"
+              ]
+            },
+            {
+              "label": "Khu vực",
+              "values": [
+                "Hải Châu",
+                "Thanh Khê"
+              ]
+            },
+            {
+              "label": "Địa chỉ",
+              "values": [
+                "85 Nguyễn Du, Thạch Thang, Hải Châu, Đà Nẵng",
+                "09 Tân Thuận, Mân Thái, Sơn Trà, Đà Nẵng"
+              ]
+            },
+            {
+              "label": "Giá trong catalog",
+              "values": [
+                "Từ 400.000đ/đêm",
+                "Từ 700.000đ/đêm"
+              ]
+            },
+            {
+              "label": "Đánh giá trong hệ thống",
+              "values": [
+                "4.5/5 · 4 đánh giá",
+                "4.3/5 · 6 đánh giá"
+              ]
+            },
+            {
+              "label": "Thời lượng tham quan dự kiến",
+              "values": [
+                "Chưa có dữ liệu / không áp dụng",
+                "Chưa có dữ liệu / không áp dụng"
+              ]
+            },
+            {
+              "label": "Giờ nhận/trả phòng có nguồn",
+              "values": [
+                "Chưa có dữ liệu / không áp dụng",
+                "Chưa có dữ liệu / không áp dụng"
+              ]
+            }
+          ],
+          "notices": [
+            "Chỉ so các thông tin có trong dữ liệu DaNangGo. Giá món, vé và giá một phòng/đêm có đơn vị khác nhau; không so trực tiếp thành giá cả chuyến.",
+            "Giá/giờ niêm yết không xác nhận tồn phòng, vé hoặc trạng thái mở cửa hiện tại. Đánh giá ít mẫu chưa đủ để kết luận nơi nào tốt hơn."
+          ]
+        },
+        "quickReplies": [],
+        "actionLink": {
+          "text": "Khám phá chỗ ở Đà Nẵng",
+          "url": "/luutru"
+        },
+        "createdAt": "2026-11-25T14:42:45.017Z"
+      }
+    },
+    {
+      "id": "G08-020",
+      "group": 8,
+      "groupTitle": "So sánh địa điểm",
+      "sourceLine": 240,
+      "input": "Hãy cho tôi bảng so sánh, không cần tự quyết định.",
+      "kind": "comparison",
+      "setup": "So sánh Banana Flower Homestay với Dolphin Hotel and Apartment",
+      "expected": "Bảng so sánh đúng hai nơi có trong DB hoặc hỏi đối tượng/tiêu chí còn thiếu; không tự xếp hạng.",
+      "status": "PASS",
+      "findings": [],
+      "elapsedMs": 5,
+      "actual": {
+        "id": "ai_48feb840-a1a8-4297-a1a2-258af0981254",
+        "sender": "AI",
+        "content": "Bạn muốn so sánh chính xác hai địa điểm nào? Ví dụ: So sánh Hilton với Furama. Gô sẽ dùng dữ liệu và nguồn hiện có, không tự điền ô còn thiếu.",
+        "intent": "SEARCH",
+        "secondaryIntents": [
+          "STAY"
+        ],
+        "needsClarification": true,
+        "questions": [
+          "Bạn muốn so sánh chính xác hai địa điểm nào?"
+        ],
+        "confirmedContext": {
+          "days": null,
+          "nights": null,
+          "guests": null,
+          "budget": null,
+          "reserve": null,
+          "hasLodging": null,
+          "dayUse": null,
+          "budgetScope": null,
+          "startDate": null,
+          "district": null,
+          "transport": null,
+          "arrivalTime": null,
+          "departureTime": null,
+          "dietaryRestrictions": [],
+          "preferences": [],
+          "excludedPlaces": []
+        },
+        "profileSuggestions": [],
+        "sources": [],
+        "warnings": [],
+        "quickReplies": [],
+        "actionLink": {
+          "text": "Khám phá chỗ ở Đà Nẵng",
+          "url": "/luutru"
+        },
+        "createdAt": "2026-11-25T14:42:45.022Z"
+      }
+    }
+  ]
+}

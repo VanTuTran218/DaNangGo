@@ -13,13 +13,21 @@ import {
   publicSurvey,
   adminList,
 } from "../modules/surveys/surveys.repository";
+import {
+  issueAndSendSurveyAppreciation,
+  getCertificateByCode,
+  dispatchCompletedTripSurveyInvites,
+  getSurveyAutomationStats,
+} from "../modules/surveys/surveys.mailer";
 import { surveyReport } from "../modules/ai/ai.service";
-const ids = [randomUUID(), randomUUID(), randomUUID()];
+const ids = [randomUUID(), randomUUID(), randomUUID(), randomUUID()];
 let customId: number | undefined;
+let tempItineraryId: number | undefined;
 async function main() {
   await connectDB();
   const key = process.env.GEMINI_API_KEY;
   delete process.env.GEMINI_API_KEY;
+  process.env.SURVEY_MAIL_DRY_RUN = "1";
   try {
     const pool = getPool();
     const full = submissionSchema.parse({
@@ -169,6 +177,89 @@ async function main() {
     const baseReport = await surveyReport(first.surveyId);
     assert.ok(baseReport.choiceStats.some((c) => c.option.includes("lưu trú")));
     console.log("Đạt: AI đọc thống kê lựa chọn và điểm từ dữ liệu đã gửi.");
+
+    // Kiểm tra Luồng A: Form rút gọn 7 câu + phát hành Chứng nhận điện tử & Thư tri ân tự động + chống trùng 30 ngày
+    const testEmail = `temp-survey-${randomUUID()}@example.com`;
+    const shortFull = submissionSchema.parse({
+      survey_type: "FULL",
+      answers: [
+        { question_code: "TRIP_PURPOSE", option_codes: ["leisure"] },
+        { question_code: "STAY_DURATION", option_codes: ["3-4"] },
+        { question_code: "ORIGIN_PROVINCE", option_codes: ["HA_NOI"] },
+        { question_code: "OVERALL_SATISFACTION", answer_score: 5 },
+        { question_code: "NPS_SCORE", answer_number: 10 },
+        { question_code: "EXP_FOOD", answer_score: 5 },
+      ],
+      metadata: {
+        request_id: ids[3],
+        consent_agreed: true,
+        recipient_email: testEmail,
+        recipient_name: "Du Khách Kiểm Thử",
+      },
+    });
+    const shortSaved = await submitSurvey(shortFull);
+    const app1 = await issueAndSendSurveyAppreciation(
+      shortSaved.responseId,
+      shortFull,
+    );
+    assert.equal(app1.sent, true);
+    assert.ok(app1.certificateCode?.startsWith("DNG-"));
+    assert.ok(app1.rewardCode?.startsWith("TRIAN-DNG-"));
+    assert.equal(app1.originLabel, "Hà Nội");
+    // Retry cùng responseId trả về đúng chứng nhận cũ (idempotent)
+    const appRetry = await issueAndSendSurveyAppreciation(
+      shortSaved.responseId,
+      shortFull,
+    );
+    assert.equal(appRetry.certificateCode, app1.certificateCode);
+    // Tra cứu chứng nhận qua API helper
+    const certLookup = await getCertificateByCode(app1.certificateCode!);
+    assert.equal(certLookup?.recipientName, "Du Khách Kiểm Thử");
+    assert.equal(certLookup?.rewardCode, app1.rewardCode);
+    // Cùng email gửi ở response khác trong vòng 30 ngày -> bị chặn SKIPPED_COOLDOWN
+    const appCooldown = await issueAndSendSurveyAppreciation(
+      first.responseId,
+      shortFull,
+    );
+    assert.equal(appCooldown.status, "SKIPPED_COOLDOWN");
+    assert.equal(appCooldown.sent, false);
+    console.log(
+      "Đạt: Luồng A tự động cấp Chứng nhận Đại sứ Du lịch + Mã quà tri ân, tra cứu được mã, và chặn gửi trùng email trong 30 ngày.",
+    );
+
+    // Kiểm tra Luồng B: Tự động phát hiện lịch trình đã kết thúc và gửi lời mời khảo sát đúng 1 lần
+    const itinInsert = await pool
+      .request()
+      .input("userId", sql.Int, adminId)
+      .query<{ id: number }>(`
+        INSERT INTO planner.itineraries
+          (user_id, title, status, generation_input_json, notices_json, recommendations_json,
+           algorithm_version, generated_at, start_date, day_count, guest_count, needs_json)
+        OUTPUT INSERTED.id
+        VALUES
+          (@userId, N'Lịch trình kiểm thử tự động mời khảo sát', N'SAVED', N'{}', N'[]', N'[]',
+           N'test-v1', SYSUTCDATETIME(), DATEADD(DAY, -5, CAST(SYSUTCDATETIME() AS DATE)), 2, 2, N'[]')
+      `);
+    tempItineraryId = Number(itinInsert.recordset[0]!.id);
+    const dispatch1 = await dispatchCompletedTripSurveyInvites(50);
+    assert.ok(
+      dispatch1.invitations.some(
+        (inv) => inv.itineraryId === tempItineraryId,
+      ),
+    );
+    // Quét lần 2 không gửi trùng cho lịch trình đó nữa
+    const dispatch2 = await dispatchCompletedTripSurveyInvites(50);
+    assert.ok(
+      !dispatch2.invitations.some(
+        (inv) => inv.itineraryId === tempItineraryId,
+      ),
+    );
+    const autoStats = await getSurveyAutomationStats();
+    assert.ok(autoStats.appreciationTotal >= 1);
+    assert.ok(autoStats.tripInvitesTotal >= 1);
+    console.log(
+      "Đạt: Luồng B tự động gửi lời mời khảo sát sau khi kết thúc lịch trình Đà Nẵng và không gửi trùng.",
+    );
   } finally {
     const pool = getPool(),
       tx = new sql.Transaction(pool);
@@ -179,8 +270,14 @@ async function main() {
         request.input(`key${i}`, sql.UniqueIdentifier, id),
       );
       await request.query(
-        `DELETE ao FROM dbo.survey_answer_options ao JOIN dbo.survey_answers a ON a.answer_id=ao.answer_id JOIN dbo.survey_responses r ON r.response_id=a.response_id WHERE r.request_id IN(@key0,@key1,@key2);DELETE a FROM dbo.survey_answers a JOIN dbo.survey_responses r ON r.response_id=a.response_id WHERE r.request_id IN(@key0,@key1,@key2);DELETE FROM dbo.survey_responses WHERE request_id IN(@key0,@key1,@key2);`,
+        `DELETE d FROM dbo.survey_appreciation_deliveries d JOIN dbo.survey_responses r ON r.response_id=d.response_id WHERE r.request_id IN(@key0,@key1,@key2,@key3);DELETE ao FROM dbo.survey_answer_options ao JOIN dbo.survey_answers a ON a.answer_id=ao.answer_id JOIN dbo.survey_responses r ON r.response_id=a.response_id WHERE r.request_id IN(@key0,@key1,@key2,@key3);DELETE a FROM dbo.survey_answers a JOIN dbo.survey_responses r ON r.response_id=a.response_id WHERE r.request_id IN(@key0,@key1,@key2,@key3);DELETE FROM dbo.survey_responses WHERE request_id IN(@key0,@key1,@key2,@key3);`,
       );
+      if (tempItineraryId)
+        await new sql.Request(tx)
+          .input("itinId", sql.BigInt, tempItineraryId)
+          .query(
+            "DELETE FROM dbo.survey_trip_invitations WHERE itinerary_id=@itinId; DELETE FROM planner.itineraries WHERE id=@itinId;",
+          );
       if (customId)
         await new sql.Request(tx)
           .input("id", sql.Int, customId)

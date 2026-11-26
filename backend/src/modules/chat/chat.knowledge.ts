@@ -40,7 +40,8 @@ export function knowledgeReply(message: string, hasLocation = false): KnowledgeR
     return reply("STAY_DAYUSE", "Dữ liệu hiện chưa xác minh cơ sở nhận khách nghỉ ban ngày hoặc giá phòng theo giờ. Mình không dùng giá qua đêm thay cho nhu cầu này. Bạn cần liên hệ cơ sở để xác nhận thời gian nhận/trả, giá và phụ thu.");
   if (/\b(chi duong|duong di|khong ra duong|khong tim (?:duoc )?tuyen|khong (?:muon )?cap gps)\b/.test(n))
     return reply("MOVE_DIRECTIONS_IN_SITE", "Bạn mở Bản đồ trong DaNangGo, chọn địa điểm rồi bấm Chỉ đường để xem tuyến ngay trong web. Nếu không cấp GPS, bạn cho Gô biết điểm xuất phát để làm rõ yêu cầu. Bản đồ có thể dùng tâm thành phố làm điểm dự phòng; đó không phải vị trí thật của bạn. Tuyến và thời gian là ước tính, chưa xác nhận giá cước hoặc tình trạng giao thông.", { text: "Mở bản đồ trong DaNangGo", url: "/bando" });
-  if (!hasLocation && /\b(gan toi|gan day|quanh day|quanh vi tri|gan khach san (?:cua )?(?:toi|minh)|quanh khach san)\b/.test(n))
+  const hasNamedAnchor = /\b(?:gan|dang o (?:gan )?)(?:my khe|cau rong)\b/.test(n);
+  if (!hasLocation && !hasNamedAnchor && /\b(gan toi|gan day|quanh day|quanh vi tri|gan khach san (?:cua )?(?:toi|minh)|quanh khach san)\b/.test(n))
     return reply("MOVE_NO_GPS", "Mình chưa biết điểm xuất phát của bạn. Bạn có thể dùng Quanh vị trí tôi và cấp quyền vị trí, hoặc cho biết tên khách sạn/địa điểm hay khu vực. Mình không tự coi tâm Đà Nẵng là vị trí của bạn.");
   if (/\b(gop y|lam khao sat|phan hoi trai nghiem)\b/.test(n))
     return reply("TRUST_FEEDBACK", "Bạn có thể làm khảo sát để góp ý chuyến đi tổng thể. Nếu muốn đánh giá một cơ sở, hãy mở đúng trang địa điểm và viết đánh giá tại đó; hai loại phản hồi được lưu riêng.", { text: "Góp ý qua khảo sát", url: "/khao-sat?mode=quick" });

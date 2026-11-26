@@ -1,45 +1,36 @@
 'use client';
 
-/**
- * Trang Quên Mật Khẩu — 3 bước OTP (tái dùng VerifyEmailStep):
- *  Bước 1: Nhập email → gọi forgotPassword API
- *  Bước 2: Nhập mã OTP (VerifyEmailStep với onVerify/onResend override)
- *  Bước 3: Nhập mật khẩu mới + xác nhận → gọi resetPasswordOtp
- */
-
 import { FormEvent, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowLeft, Mail, ShieldCheck, Check, AlertCircle, KeyRound } from 'lucide-react';
+import AuthCardFrame from '@/components/auth/AuthCardFrame';
 import VerifyEmailStep from '@/components/auth/VerifyEmailStep';
+import PasswordField from '@/components/auth/PasswordField';
 import PasswordStrength from '@/components/auth/PasswordStrength';
 import { forgotPassword, verifyResetOtp, resetPasswordOtp } from '@/lib/api/auth';
 import { maskEmail } from '@/lib/utils/maskEmail';
 
 type Step = 'email' | 'otp' | 'new-password';
 
-
 export default function ForgotPasswordPage() {
   const router = useRouter();
   const [step, setStep] = useState<Step>('email');
 
-  // Bước 1
   const [email, setEmail] = useState('');
   const [maskedEmail, setMaskedEmail] = useState('');
   const [emailLoading, setEmailLoading] = useState(false);
   const [emailError, setEmailError] = useState('');
 
-  // Bước 2 — verified code được giữ lại để truyền lên API bước 3
   const [verifiedCode, setVerifiedCode] = useState('');
 
-  // Bước 3
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [pwLoading, setPwLoading] = useState(false);
   const [pwError, setPwError] = useState('');
   const [pwSuccess, setPwSuccess] = useState(false);
 
-  /* ── Bước 1: gửi OTP ─────────────────────────────────────── */
   async function handleEmailSubmit(e: FormEvent) {
     e.preventDefault();
     const trimmed = email.trim();
@@ -49,35 +40,25 @@ export default function ForgotPasswordPage() {
     }
     setEmailError('');
     setEmailLoading(true);
-    await forgotPassword(trimmed); // luôn OK dù email tồn tại hay không
+    await forgotPassword(trimmed);
     setMaskedEmail(maskEmail(trimmed));
     setEmailLoading(false);
     setStep('otp');
   }
 
-  /* ── Bước 2: tái dùng VerifyEmailStep với override ──────── */
-  function handleOtpSuccess(_email: string, code: string) {
-    setVerifiedCode(code);
-    setStep('new-password');
-  }
-
-  /* Override verifyEmail → verifyResetOtp */
   async function handleVerify(em: string, code: string) {
     const res = await verifyResetOtp(em, code);
     if (res.success) {
-      // Giữ code lại trước khi VerifyEmailStep gọi onSuccess
       setVerifiedCode(code);
     }
     return res;
   }
 
-  /* Override resendCode → forgotPassword (gửi lại OTP reset) */
   async function handleResendReset(em: string) {
     await forgotPassword(em);
     return { success: true };
   }
 
-  /* ── Bước 3: đặt mật khẩu mới ───────────────────────────── */
   async function handleNewPassword(e: FormEvent) {
     e.preventDefault();
     if (newPassword.length < 8 || !/(?=.*[A-Za-z])(?=.*\d)/.test(newPassword)) {
@@ -101,66 +82,87 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center py-8 px-4 bg-gradient-to-br from-slate-50 via-white to-cyan-50/30">
-      <section className="w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-gray-100 p-8 lg:p-12">
-
-        <Link href="/dang-nhap" className="text-sm text-teal-600 hover:text-teal-700 font-medium inline-flex items-center gap-1">
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
+    <AuthCardFrame maxWidthClass="max-w-[500px]">
+      <section className="p-7 sm:p-10">
+        <Link
+          href="/dang-nhap"
+          className="inline-flex items-center gap-1.5 rounded-full border border-[#E6D9B7]/24 bg-[#0A202B]/85 px-3.5 py-1.5 text-xs font-semibold text-[#E6D9B7] hover:border-[#E6D9B7]/60 hover:text-[#FFFDF5] transition-colors"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
           Quay lại đăng nhập
         </Link>
 
         <AnimatePresence mode="wait">
-
-          {/* ── BƯỚC 1: NHẬP EMAIL ── */}
           {step === 'email' && (
             <motion.div
               key="step-email"
-              initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.25 }}
-              className="mt-8"
+              initial={{ opacity: 0, x: 16 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -16 }}
+              transition={{ duration: 0.24 }}
+              className="mt-7"
             >
-              <h1 className="text-2xl font-bold text-gray-900">Quên mật khẩu?</h1>
-              <p className="text-sm text-gray-600 mt-2 mb-6">
-                Nhập email đã đăng ký. Chúng tôi sẽ gửi mã xác nhận để đặt lại mật khẩu.
+              <div className="w-12 h-12 rounded-2xl bg-[#0A2532] border border-[#E6D9B7]/28 flex items-center justify-center text-[#E6D9B7] mb-4">
+                <KeyRound className="w-6 h-6" />
+              </div>
+              <h1 className="cinematic-condensed uppercase text-2xl sm:text-3xl font-bold text-[#FFFDF5]">
+                Quên <span className="home-serif italic font-normal normal-case text-[#E6D9B7]">mật khẩu?</span>
+              </h1>
+              <p className="text-xs sm:text-sm text-[#94B0B3] mt-2 mb-6 leading-relaxed">
+                Nhập email đã đăng ký tài khoản DanangGo. Chúng tôi sẽ gửi mã OTP 6 số để khôi phục mật khẩu cho bạn.
               </p>
-              <form onSubmit={handleEmailSubmit} className="flex flex-col gap-5">
+              <form onSubmit={handleEmailSubmit} className="flex flex-col gap-4">
                 <div className="flex flex-col gap-1.5">
-                  <label htmlFor="fp-email" className="text-sm font-medium text-gray-700">
-                    Email <span className="text-red-500">*</span>
+                  <label htmlFor="fp-email" className="text-xs font-semibold uppercase tracking-[0.12em] text-[#E6D9B7]/90">
+                    Email <span className="text-[#E87B39]">*</span>
                   </label>
-                  <input
-                    id="fp-email"
-                    type="email"
-                    autoComplete="email"
-                    required
-                    value={email}
-                    onChange={(e) => { setEmail(e.target.value); setEmailError(''); }}
-                    className={`block w-full px-4 py-2.5 bg-white border rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-shadow duration-200 ${emailError ? 'border-red-400' : 'border-gray-300'}`}
-                    placeholder="you@example.com"
-                  />
-                  {emailError && <p className="text-sm text-red-600">{emailError}</p>}
+                  <div className="relative flex items-center group">
+                    <Mail className="w-4 h-4 absolute left-3.5 text-[#94B0B3] group-focus-within:text-[#E6D9B7] transition-colors pointer-events-none" />
+                    <input
+                      id="fp-email"
+                      type="email"
+                      autoComplete="email"
+                      required
+                      value={email}
+                      onChange={(e) => { setEmail(e.target.value); setEmailError(''); }}
+                      className={`auth-dark-input block w-full pl-10 pr-4 h-[48px] bg-[#0A202B]/90 border rounded-xl text-[#FFFDF5] placeholder:text-[#94B0B3]/55 focus:outline-none text-sm transition-all ${
+                        emailError ? 'border-rose-400/75' : 'border-[#E6D9B7]/22 focus:border-[#E6D9B7]/75'
+                      }`}
+                      placeholder="you@example.com"
+                    />
+                  </div>
+                  {emailError && (
+                    <p className="text-xs text-rose-300 flex items-center gap-1.5 font-medium">
+                      <AlertCircle className="w-3.5 h-3.5 text-rose-400" />
+                      {emailError}
+                    </p>
+                  )}
                 </div>
                 <button
                   disabled={emailLoading}
-                  className="w-full py-3 px-4 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl transition-colors duration-200 shadow-lg shadow-orange-500/30 disabled:opacity-70 flex items-center justify-center gap-2"
+                  className="w-full h-[50px] px-4 rounded-xl bg-gradient-to-r from-[#E87B39] via-[#DC6C2B] to-[#CC5E20] border border-[#FFFDF5]/20 text-[#FFFDF5] text-xs sm:text-sm font-bold uppercase tracking-[0.14em] shadow-[0_14px_30px_rgba(232,123,57,0.38)] hover:brightness-108 active:scale-[0.985] transition-all disabled:opacity-65 flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  {emailLoading
-                    ? <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Đang gửi…</>
-                    : 'GỬI MÃ XÁC NHẬN'}
+                  {emailLoading ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Đang gửi…
+                    </>
+                  ) : (
+                    'Gửi mã xác nhận'
+                  )}
                 </button>
               </form>
             </motion.div>
           )}
 
-          {/* ── BƯỚC 2: NHẬP OTP (tái dùng VerifyEmailStep) ── */}
           {step === 'otp' && (
             <motion.div
               key="step-otp"
-              initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.25 }}
-              className="mt-8"
+              initial={{ opacity: 0, x: 16 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -16 }}
+              transition={{ duration: 0.24 }}
+              className="mt-6"
             >
               <VerifyEmailStep
                 email={email.trim()}
@@ -174,109 +176,101 @@ export default function ForgotPasswordPage() {
             </motion.div>
           )}
 
-          {/* ── BƯỚC 3: ĐẶT MẬT KHẨU MỚI ── */}
           {step === 'new-password' && (
             <motion.div
               key="step-new-password"
-              initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.25 }}
-              className="mt-8"
+              initial={{ opacity: 0, x: 16 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -16 }}
+              transition={{ duration: 0.24 }}
+              className="mt-6"
             >
               <div className="text-center mb-6">
-                <div className="w-16 h-16 rounded-full bg-teal-50 flex items-center justify-center mx-auto mb-3">
-                  <svg className="w-8 h-8 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
+                <div className="w-14 h-14 rounded-2xl bg-[#0A2532] border border-[#2DD4BF]/32 flex items-center justify-center mx-auto mb-3 text-[#2DD4BF]">
+                  <ShieldCheck className="w-7 h-7" />
                 </div>
-                <h2 className="text-xl font-bold text-gray-900">Đặt mật khẩu mới</h2>
-                <p className="text-sm text-gray-500 mt-1">Mã đã được xác thực. Nhập mật khẩu mới cho tài khoản.</p>
+                <h2 className="cinematic-condensed uppercase text-2xl font-bold text-[#FFFDF5]">
+                  Đặt mật khẩu <span className="home-serif italic font-normal normal-case text-[#E6D9B7]">mới</span>
+                </h2>
+                <p className="text-xs sm:text-sm text-[#94B0B3] mt-1">
+                  Mã đã được xác thực. Nhập mật khẩu mới cho tài khoản của bạn.
+                </p>
               </div>
 
               {pwSuccess ? (
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
-                  className="flex items-center gap-3 px-4 py-4 bg-teal-50 border border-teal-300 rounded-xl"
+                  initial={{ opacity: 0, scale: 0.96 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="flex items-center gap-3 px-4 py-4 bg-[#0A2C2E]/90 border border-[#2DD4BF]/45 rounded-xl"
                 >
-                  <svg className="w-6 h-6 text-teal-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <p className="text-sm font-semibold text-teal-700">Đặt lại mật khẩu thành công! Đang chuyển về trang đăng nhập…</p>
+                  <Check className="w-5 h-5 text-[#2DD4BF] shrink-0" strokeWidth={3} />
+                  <p className="text-sm font-semibold text-[#A7F3D0]">
+                    Đặt lại mật khẩu thành công! Đang chuyển về trang đăng nhập…
+                  </p>
                 </motion.div>
               ) : (
-                <form onSubmit={handleNewPassword} className="flex flex-col gap-5">
-                  <div className="flex flex-col gap-1.5">
-                    <label htmlFor="new-password" className="text-sm font-medium text-gray-700">
-                      Mật khẩu mới <span className="text-red-500">*</span>
-                    </label>
-                    <input
+                <form onSubmit={handleNewPassword} className="flex flex-col gap-4">
+                  <div>
+                    <PasswordField
                       id="new-password"
-                      type="password"
+                      name="newPassword"
+                      label="Mật khẩu mới"
                       autoComplete="new-password"
-                      required
                       value={newPassword}
                       onChange={(e) => { setNewPassword(e.target.value); setPwError(''); }}
-                      className="block w-full px-4 py-2.5 bg-white border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-shadow duration-200"
                       placeholder="Tối thiểu 8 ký tự, gồm chữ và số"
+                      required
                     />
-                    {newPassword && <PasswordStrength password={newPassword} />}
+                    <PasswordStrength password={newPassword} />
                   </div>
 
-                  <div className="flex flex-col gap-1.5">
-                    <label htmlFor="confirm-password" className="text-sm font-medium text-gray-700">
-                      Xác nhận mật khẩu <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      id="confirm-password"
-                      type="password"
-                      autoComplete="new-password"
-                      required
-                      value={confirmPassword}
-                      onChange={(e) => { setConfirmPassword(e.target.value); setPwError(''); }}
-                      className="block w-full px-4 py-2.5 bg-white border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-shadow duration-200"
-                      placeholder="Nhập lại mật khẩu mới"
-                    />
-                    {confirmPassword && newPassword !== confirmPassword && (
-                      <p className="text-sm text-red-500">Mật khẩu không khớp.</p>
-                    )}
-                  </div>
+                  <PasswordField
+                    id="confirm-password"
+                    name="confirmPassword"
+                    label="Xác nhận mật khẩu"
+                    autoComplete="new-password"
+                    value={confirmPassword}
+                    onChange={(e) => { setConfirmPassword(e.target.value); setPwError(''); }}
+                    placeholder="Nhập lại mật khẩu mới"
+                    error={confirmPassword && newPassword !== confirmPassword ? 'Mật khẩu không khớp.' : undefined}
+                    required
+                  />
 
                   {pwError && (
-                    <div className="flex items-start gap-2 px-4 py-3 bg-red-50 border border-red-200 rounded-xl">
-                      <svg className="w-4 h-4 text-red-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                      </svg>
-                      <p className="text-sm text-red-600">{pwError}</p>
+                    <div className="flex items-start gap-2 px-3.5 py-3 bg-[#311417]/90 border border-rose-400/40 rounded-xl text-xs sm:text-sm text-rose-200">
+                      <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                      <p>{pwError}</p>
                     </div>
                   )}
 
                   <button
                     disabled={pwLoading}
-                    className="w-full py-3 px-4 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl transition-colors duration-200 shadow-lg shadow-orange-500/30 disabled:opacity-70 flex items-center justify-center gap-2"
+                    className="w-full h-[50px] px-4 rounded-xl bg-gradient-to-r from-[#E87B39] via-[#DC6C2B] to-[#CC5E20] border border-[#FFFDF5]/20 text-[#FFFDF5] text-xs sm:text-sm font-bold uppercase tracking-[0.14em] shadow-[0_14px_30px_rgba(232,123,57,0.38)] hover:brightness-108 active:scale-[0.985] transition-all disabled:opacity-65 flex items-center justify-center gap-2 cursor-pointer"
                   >
-                    {pwLoading
-                      ? <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Đang xử lý…</>
-                      : 'ĐẶT LẠI MẬT KHẨU'}
+                    {pwLoading ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        Đang xử lý…
+                      </>
+                    ) : (
+                      'Đặt lại mật khẩu'
+                    )}
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setStep('otp')}
-                    className="flex items-center justify-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                    className="flex items-center justify-center gap-1.5 text-xs sm:text-sm text-[#94B0B3] hover:text-[#FFFDF5] transition-colors cursor-pointer"
                   >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
+                    <ArrowLeft className="w-4 h-4" />
                     Quay lại nhập mã
                   </button>
                 </form>
               )}
             </motion.div>
           )}
-
         </AnimatePresence>
       </section>
-    </div>
+    </AuthCardFrame>
   );
 }

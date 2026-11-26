@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" fill="none" preserveAspectRatio="none">
+  <defs>
+    <radialGradient id="goldenSunriseTopRight" cx="78%" cy="18%" r="46%">
+      <stop offset="0%" stop-color="#EAB47D" stop-opacity="0.34" />
+      <stop offset="45%" stop-color="#C9AB78" stop-opacity="0.15" />
+      <stop offset="100%" stop-color="#F8F2E8" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="goldenBridgeCenter" cx="46%" cy="52%" r="42%">
+      <stop offset="0%" stop-color="#EAB47D" stop-opacity="0.28" />
+      <stop offset="50%" stop-color="#CB712D" stop-opacity="0.09" />
+      <stop offset="100%" stop-color="#F8F2E8" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="goldenStoryBottomLeft" cx="24%" cy="84%" r="44%">
+      <stop offset="0%" stop-color="#C9AB78" stop-opacity="0.22" />
+      <stop offset="55%" stop-color="#E8D9C6" stop-opacity="0.12" />
+      <stop offset="100%" stop-color="#FFF9EF" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#goldenSunriseTopRight)" />
+  <rect width="1600" height="900" fill="url(#goldenBridgeCenter)" />
+  <rect width="1600" height="900" fill="url(#goldenStoryBottomLeft)" />
+</svg>

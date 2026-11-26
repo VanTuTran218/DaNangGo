@@ -36,7 +36,8 @@ const ICON_MAP: Record<string, React.ElementType> = {
 export default function RatingMatrix({ values, onChange }: RatingMatrixProps) {
   return (
     <div className="space-y-3">
-      {EXPERIENCE_CATEGORIES.map((cat: ExperienceCategory) => {
+      {/* Chỉ hiển thị các hạng mục có trong `values` (form rút gọn) */}
+      {EXPERIENCE_CATEGORIES.filter((cat) => cat.id in values).map((cat: ExperienceCategory) => {
         const IconComponent = ICON_MAP[cat.iconName] || HelpCircle;
         const currentScore = values[cat.id] ?? 0;
         const isNotUsed = currentScore === -1;

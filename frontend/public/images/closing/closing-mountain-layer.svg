@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 720" fill="none" preserveAspectRatio="xMidYMax slice">
+  <defs>
+    <linearGradient id="closing-ridge-far" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0A2029" stop-opacity="0.48" />
+      <stop offset="55%" stop-color="#216B70" stop-opacity="0.30" />
+      <stop offset="100%" stop-color="#102832" stop-opacity="0.58" />
+    </linearGradient>
+    <linearGradient id="closing-ridge-near" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#102832" stop-opacity="0.35" />
+      <stop offset="65%" stop-color="#0A2029" stop-opacity="0.72" />
+      <stop offset="100%" stop-color="#102832" stop-opacity="0.98" />
+    </linearGradient>
+  </defs>
+  <!-- Distant Son Tra & Coastal Mountain Ridge -->
+  <path
+    d="M-60 440 C160 355, 360 285, 590 330 C820 375, 1020 265, 1260 300 C1490 335, 1710 245, 1980 315 L1980 720 L-60 720 Z"
+    fill="url(#closing-ridge-far)"
+  />
+  <!-- Foreground Deep Ocean Ridge Blending into Footer (#102832) -->
+  <path
+    d="M-40 530 C240 465, 510 515, 790 475 C1070 435, 1340 520, 1620 465 C1770 435, 1870 460, 1980 480 L1980 720 L-40 720 Z"
+    fill="url(#closing-ridge-near)"
+  />
+  <!-- Subtle Golden Horizon Rim Highlight -->
+  <path
+    d="M-60 440 C160 355, 360 285, 590 330 C820 375, 1020 265, 1260 300 C1490 335, 1710 245, 1980 315"
+    stroke="#C9AB78"
+    stroke-opacity="0.28"
+    stroke-width="1.2"
+    fill="none"
+  />
+</svg>

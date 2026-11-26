@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode, type RefObject } from "react";
+import { useEffect, useState, type ReactNode, type RefObject } from "react";
 import { MotionConfig, motion, useReducedMotion } from "framer-motion";
 import type {
   ChatMessage,
@@ -49,9 +49,10 @@ interface ChatPageViewProps {
 
 /** Presentation adapter. Conversation state and all requests stay in ChatExperience. */
 export default function ChatPageView(props: ChatPageViewProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(false),
-    [summaryOpen, setSummaryOpen] = useState(false),
-    [panelVisible, setPanelVisible] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [summaryOpen, setSummaryOpen] = useState(false);
+  // Keep right blueprint collapsed by default so chat breathes cleanly; auto-opens when a real travel plan is generated
+  const [panelVisible, setPanelVisible] = useState(false);
   const [daySelections, setDaySelections] = useState<Record<string, number>>(
     {},
   );
@@ -64,18 +65,43 @@ export default function ChatPageView(props: ChatPageViewProps) {
   const welcome = props.messages.find((message) =>
     message.id.startsWith("welcome"),
   );
+
+  // Auto-open the Executive Trip Panel when Gô builds an itinerary
+  useEffect(() => {
+    if (latestPlanMessage?.travelPlan) {
+      setPanelVisible(true);
+    }
+  }, [latestPlanMessage?.id, latestPlanMessage?.travelPlan]);
+
   const selectPrompt = (text: string) => {
     props.onInputChange(text);
     setSidebarOpen(false);
     setSummaryOpen(false);
     requestAnimationFrame(() => props.inputRef.current?.focus());
   };
+
   const reset = () => {
     props.onReset();
     setDaySelections({});
     setSidebarOpen(false);
     setSummaryOpen(false);
+    setPanelVisible(false);
+    requestAnimationFrame(() => props.inputRef.current?.focus());
   };
+
+  // Wire Cmd/Ctrl + K global shortcut to start a fresh conversation
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        if (!props.isLoading) reset();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.isLoading]);
+
   const selectDay = (id: string, day: number) =>
     setDaySelections((previous) => ({ ...previous, [id]: day }));
   const jumpDay = (day: number) => {
@@ -129,10 +155,12 @@ export default function ChatPageView(props: ChatPageViewProps) {
         sidebar={sidebar}
         summary={summary}
         panelVisible={panelVisible}
+        loading={props.isLoading}
       >
         <ChatHeader
           loading={props.isLoading}
           status={props.status}
+          hasPlan={Boolean(latestPlanMessage?.travelPlan)}
           onReset={reset}
           onOpenSidebar={() => setSidebarOpen(true)}
           onOpenSummary={() => setSummaryOpen(true)}
@@ -196,43 +224,7 @@ export default function ChatPageView(props: ChatPageViewProps) {
           )}
           {!(empty && !props.isLoading) && <div ref={props.messagesEndRef} />}
         </div>
-        <div className={styles.locationTools}>
-          <button
-            type="button"
-            className={styles.locationButton}
-            disabled={props.locating || props.isLoading}
-            onClick={props.onLocate}
-          >
-            <span className={styles.radarIcon}>⌖</span>
-            <span>{props.locating ? "Đang định vị GPS…" : "Tìm quanh vị trí tôi"}</span>
-          </button>
-          {props.location && (
-            <>
-              <label className={styles.locationRadiusLabel}>
-                Bán kính{" "}
-                <select
-                  aria-label="Bán kính tìm quanh đây"
-                  value={props.location.radiusKm}
-                  onChange={(e) =>
-                    props.onRadius(Number(e.target.value) as 2 | 5 | 10)
-                  }
-                >
-                  {[2, 5, 10].map((n) => (
-                    <option key={n} value={n}>
-                      {n} km
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <button type="button" className={styles.locationClearBtn} onClick={props.onClearLocation}>
-                Tắt vị trí
-              </button>
-            </>
-          )}
-          {props.locationStatus && (
-            <small className={styles.locationStatusBadge} role="status">{props.locationStatus}</small>
-          )}
-        </div>
+
         <ChatComposer
           value={props.input}
           onChange={props.onInputChange}
@@ -240,6 +232,13 @@ export default function ChatPageView(props: ChatPageViewProps) {
           loading={props.isLoading}
           inputRef={props.inputRef}
           suggestions={last?.sender === "AI" ? (last.quickReplies ?? []) : []}
+          showSuggestions={!empty}
+          location={props.location}
+          locationStatus={props.locationStatus}
+          locating={props.locating}
+          onLocate={props.onLocate}
+          onRadius={props.onRadius}
+          onClearLocation={props.onClearLocation}
         />
       </ChatShell>
       <ChatDrawer

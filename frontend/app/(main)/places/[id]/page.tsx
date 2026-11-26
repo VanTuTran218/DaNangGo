@@ -111,32 +111,32 @@ export default function PlaceDetailPage() {
   };
 
   // ─────────────────────────────────────────────────────────────────────────
-  // GIAO DIỆN SKELETON KHI ĐANG TẢI (LOADING SHIMMER)
+  // GIAO DIỆN SKELETON KHI ĐANG TẢI (DỊU MẮT, KHÔNG CHỚP TRẮNG)
   // ─────────────────────────────────────────────────────────────────────────
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-50 pt-24 pb-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          {/* Breadcrumb Skeleton */}
-          <div className="h-4 w-48 bg-gray-200 rounded-lg animate-pulse mb-6" />
-
-          {/* Hero Bento Skeleton */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 mb-8">
-            <div className="lg:col-span-8 h-[360px] sm:h-[460px] bg-gray-200 rounded-3xl animate-pulse" />
-            <div className="lg:col-span-4 grid grid-cols-2 lg:grid-cols-1 gap-3">
-              <div className="h-44 sm:h-52 lg:h-[220px] bg-gray-200 rounded-2xl animate-pulse" />
-              <div className="h-44 sm:h-52 lg:h-[220px] bg-gray-200 rounded-2xl animate-pulse" />
+      <div className="min-h-screen bg-[#F6F2EA] pb-20">
+        <div className="bg-[#081C25] pt-24 pb-10">
+          <div className="home-container">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-2.5 p-2.5 rounded-[18px] border border-[#E6D9B7]/16 bg-[#0A2029]">
+              <div className="lg:col-span-8 h-[390px] sm:h-[470px] bg-[#102B36] rounded-[12px]" />
+              <div className="lg:col-span-4 grid grid-cols-2 lg:grid-cols-1 gap-2.5">
+                <div className="h-44 sm:h-52 lg:h-[228px] bg-[#102B36] rounded-[12px]" />
+                <div className="h-44 sm:h-52 lg:h-[228px] bg-[#102B36] rounded-[12px]" />
+              </div>
             </div>
           </div>
+        </div>
 
-          {/* Layout 12 cột Skeleton */}
+        <div className="home-container pt-6">
+          <div className="h-4 w-56 bg-[#E5DAC8]/75 rounded-full mb-6" />
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             <div className="lg:col-span-8 space-y-6">
-              <div className="h-28 bg-gray-200 rounded-3xl animate-pulse" />
-              <div className="h-64 bg-gray-200 rounded-3xl animate-pulse" />
-              <div className="h-96 bg-gray-200 rounded-3xl animate-pulse" />
+              <div className="h-28 bg-[#0B222C] rounded-[16px]" />
+              <div className="h-64 bg-[#F2ECE0] border border-[#E5DAC8] rounded-[16px]" />
+              <div className="h-80 bg-[#F2ECE0] border border-[#E5DAC8] rounded-[16px]" />
             </div>
-            <div className="lg:col-span-4 h-96 bg-gray-200 rounded-3xl animate-pulse" />
+            <div className="lg:col-span-4 h-96 bg-[#0B222C] rounded-[18px]" />
           </div>
         </div>
       </div>
@@ -148,29 +148,29 @@ export default function PlaceDetailPage() {
   // ─────────────────────────────────────────────────────────────────────────
   if (error || !place) {
     return (
-      <div className="min-h-screen bg-slate-50 pt-32 pb-20 flex items-center justify-center">
-        <div className="max-w-md w-full mx-auto px-6 text-center">
-          <div className="w-20 h-20 mx-auto mb-6 rounded-3xl bg-rose-50 text-rose-500 flex items-center justify-center shadow-inner">
-            <AlertCircle size={40} />
+      <div className="min-h-screen bg-[#F6F2EA] pt-32 pb-20 flex items-center justify-center">
+        <div className="max-w-md w-full mx-auto px-6 text-center rounded-[18px] bg-[#FFFDF9] border border-[#E5DAC8] p-8 shadow-[0_18px_48px_rgba(16,40,50,0.08)]">
+          <div className="w-16 h-16 mx-auto mb-5 rounded-full bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center">
+            <AlertCircle size={32} />
           </div>
-          <h2 className="text-2xl font-extrabold text-[#0f2942] mb-3">
+          <h2 className="home-serif text-2xl font-semibold text-[#102832] mb-2.5">
             Địa điểm không khả dụng
           </h2>
-          <p className="text-sm text-gray-500 mb-8 leading-relaxed">
+          <p className="text-sm text-[#4E5E63] mb-7 leading-relaxed">
             {error || 'Địa điểm bạn đang tìm kiếm không tồn tại, đã bị ẩn hoặc đang chờ kiểm duyệt.'}
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button
               onClick={() => router.back()}
-              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl border border-gray-200 text-gray-700 font-bold hover:bg-gray-100 transition-all text-sm"
+              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full border border-[#E5DAC8] text-[#102832] font-semibold hover:border-[#C9B580] hover:bg-[#F7F2E8] transition-all text-xs uppercase tracking-[0.1em] cursor-pointer"
             >
-              <ArrowLeft size={16} /> Quay lại trang trước
+              <ArrowLeft size={15} /> Quay lại trang trước
             </button>
             <Link
-              href="/amthuc"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-extrabold transition-all text-sm shadow-md shadow-orange-500/20"
+              href="/khampha"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-[#102832] hover:bg-[#216B70] text-[#FFFDF5] font-semibold transition-all text-xs uppercase tracking-[0.1em]"
             >
-              Khám phá Ẩm thực
+              Khám phá Đà Nẵng
             </Link>
           </div>
         </div>
@@ -193,8 +193,39 @@ export default function PlaceDetailPage() {
       ? 'Lưu trú'
       : 'Ẩm thực';
 
+  // Tính khoảng giá dự phòng từ danh sách phòng / thực đơn nếu backend không trả price_min/price_max
+  const rawRooms: any[] = (place as any).room_types || (place as any).rooms || [];
+  const derivedRoomPrices = rawRooms
+    .map((r) => Number(r?.price_per_night))
+    .filter((n) => Number.isFinite(n) && n > 0);
+  const derivedMenuPrices = (place.menu_items || [])
+    .map((m) => Number(m?.price))
+    .filter((n) => Number.isFinite(n) && n > 0);
+  const fallbackPrices =
+    place.place_type === 'ACCOMMODATION' ? derivedRoomPrices : derivedMenuPrices;
+
+  const effectivePriceMin =
+    typeof place.price_min === 'number' && Number.isFinite(place.price_min)
+      ? place.price_min
+      : fallbackPrices.length > 0
+        ? Math.min(...fallbackPrices)
+        : null;
+  const effectivePriceMax =
+    typeof place.price_max === 'number' && Number.isFinite(place.price_max)
+      ? place.price_max
+      : fallbackPrices.length > 0
+        ? Math.max(...fallbackPrices)
+        : null;
+
   return (
-    <div className="min-h-screen bg-slate-50 text-gray-800 selection:bg-orange-500 selection:text-white">
+    <div
+      className="min-h-screen dananggo-cinematic-content text-[#202B30] selection:bg-[#E87B39] selection:text-white"
+      style={{
+        backgroundColor: '#F6F2EA',
+        backgroundImage:
+          'radial-gradient(ellipse 68% 36% at 90% 24%, rgba(230,217,183,0.26) 0%, transparent 66%), radial-gradient(ellipse 58% 34% at 8% 64%, rgba(201,181,128,0.14) 0%, transparent 68%)',
+      }}
+    >
       {/* 1. THANH TIẾN ĐỘ CUỘN MỎNG Ở ĐỈNH TRANG */}
       <ScrollProgressBar />
 
@@ -207,24 +238,28 @@ export default function PlaceDetailPage() {
       />
 
       {/* 3. BREADCRUMB LIÊN KẾT */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-        <nav className="flex items-center gap-2 text-xs sm:text-sm text-gray-500">
-          <Link href="/" className="hover:text-cyan-600 transition-colors">
+      <div className="home-container pt-1 pb-5">
+        <nav className="inline-flex items-center gap-2 text-xs sm:text-[13px] text-[#4E5E63] px-3.5 py-1.5 rounded-full bg-[#FFFDF9]/80 border border-[#E5DAC8]">
+          <Link href="/" className="hover:text-[#216B70] transition-colors">
             Trang chủ
           </Link>
-          <ChevronRight size={14} className="text-gray-400" />
-          <Link href={parentUrl} className="hover:text-cyan-600 transition-colors font-medium">
+          <ChevronRight size={13} className="text-[#C9B580]" />
+          <Link href="/khampha" className="hover:text-[#216B70] transition-colors">
+            Khám phá
+          </Link>
+          <ChevronRight size={13} className="text-[#C9B580]" />
+          <Link href={parentUrl} className="hover:text-[#216B70] transition-colors font-medium">
             {parentLabel}
           </Link>
-          <ChevronRight size={14} className="text-gray-400" />
-          <span className="font-bold text-[#0f2942] truncate max-w-[200px] sm:max-w-xs">
+          <ChevronRight size={13} className="text-[#C9B580]" />
+          <span className="font-semibold text-[#102832] truncate max-w-[180px] sm:max-w-xs">
             {place.name}
           </span>
         </nav>
       </div>
 
       {/* 4. LAYOUT 12 CỘT CÂN XỨNG: NỘI DUNG CHÍNH (8 CỘT) + SIDEBAR STICKY (4 CỘT) */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 pb-16">
+      <main className="home-container pb-16">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* ═══ CỘT TRÁI: NỘI DUNG CHÍNH (8 CỘT) ═══ */}
           <div className="lg:col-span-8 w-full">
@@ -233,9 +268,10 @@ export default function PlaceDetailPage() {
               avgRating={place.avg_rating}
               reviewCount={place.review_count}
               viewCount={place.view_count}
-              priceMin={place.price_min}
-              priceMax={place.price_max}
+              priceMin={effectivePriceMin}
+              priceMax={effectivePriceMax}
               ticketPrice={place.ticket_price}
+              placeType={place.place_type}
             />
 
             {/* 4.2. Khối 2 ô cân đối: Địa chỉ & Giờ mở cửa hôm nay + Giới thiệu */}
@@ -251,41 +287,41 @@ export default function PlaceDetailPage() {
 
             {/* 4.4. THÔNG TIN DU LỊCH (ĐIỂM THAM QUAN - ATTRACTION) */}
             {place.place_type === 'ATTRACTION' && (
-              <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-100 mb-8 space-y-6">
-                <div className="flex items-center gap-2">
-                  <span className="p-1.5 bg-blue-100 text-blue-600 rounded-xl shadow-sm">
-                    <Ticket size={18} />
+              <div className="bg-[#FFFDF9] rounded-[16px] p-6 sm:p-8 border border-[#E5DAC8] shadow-[0_14px_38px_rgba(16,40,50,0.05)] mb-8 space-y-6">
+                <div className="flex items-center gap-3 pb-4 border-b border-[#E8DDCF]">
+                  <span className="w-9 h-9 rounded-full bg-[#091E27] text-[#E6D9B7] flex items-center justify-center shrink-0">
+                    <Ticket size={16} />
                   </span>
-                  <h3 className="text-xl font-extrabold text-[#0f2942]">
-                    Thông tin tham quan & Vé vào cổng
+                  <h3 className="home-serif text-xl sm:text-2xl font-semibold text-[#102832] tracking-[-0.01em]">
+                    Thông tin tham quan &amp; Vé vào cổng
                   </h3>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="p-5 rounded-2xl bg-blue-50/60 border border-blue-100">
-                    <p className="text-xs text-blue-600 font-bold uppercase tracking-wider mb-1">
+                  <div className="p-5 rounded-[12px] bg-[#F7F2E8] border border-[#E5DAC8]">
+                    <p className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-[#216B70] mb-1.5">
                       Giá vé tham quan
                     </p>
-                    <p className="text-2xl font-black text-[#0f2942]">
+                    <p className="home-serif text-2xl font-semibold text-[#102832]">
                       {place.ticket_price !== null && place.ticket_price !== undefined
                         ? place.ticket_price === 0
                           ? 'Miễn phí vé vào cửa'
                           : formatCurrency(place.ticket_price)
                         : 'Đang cập nhật'}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-[#4E5E63] mt-1.5">
                       Áp dụng cho khách tham quan trong ngày
                     </p>
                   </div>
 
-                  <div className="p-5 rounded-2xl bg-teal-50/60 border border-teal-100">
-                    <p className="text-xs text-teal-600 font-bold uppercase tracking-wider mb-1">
+                  <div className="p-5 rounded-[12px] bg-[#F7F2E8] border border-[#E5DAC8]">
+                    <p className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-[#216B70] mb-1.5">
                       Thời lượng tham quan ước tính
                     </p>
-                    <p className="text-2xl font-black text-[#0f2942]">
+                    <p className="home-serif text-2xl font-semibold text-[#102832]">
                       {formatDuration(place.visit_duration_minutes)}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-[#4E5E63] mt-1.5">
                       Thời gian lý tưởng để trải nghiệm trọn vẹn
                     </p>
                   </div>
@@ -295,26 +331,30 @@ export default function PlaceDetailPage() {
 
             {/* 4.5. THÔNG TIN LƯU TRÚ (KHÁCH SẠN - ACCOMMODATION) */}
             {place.place_type === 'ACCOMMODATION' && (
-              <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-100 mb-8 space-y-6">
-                <div className="flex items-center gap-2">
-                  <span className="p-1.5 bg-teal-100 text-teal-600 rounded-xl shadow-sm">
-                    <Hotel size={18} />
+              <div className="bg-[#FFFDF9] rounded-[16px] p-6 sm:p-8 border border-[#E5DAC8] shadow-[0_14px_38px_rgba(16,40,50,0.05)] mb-8 space-y-6">
+                <div className="flex items-center gap-3 pb-4 border-b border-[#E8DDCF]">
+                  <span className="w-9 h-9 rounded-full bg-[#091E27] text-[#E6D9B7] flex items-center justify-center shrink-0">
+                    <Hotel size={16} />
                   </span>
-                  <h3 className="text-xl font-extrabold text-[#0f2942]">
-                    Tiện ích & Danh sách phòng nghỉ
+                  <h3 className="home-serif text-xl sm:text-2xl font-semibold text-[#102832] tracking-[-0.01em]">
+                    Tiện ích &amp; Danh sách phòng nghỉ
                   </h3>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 p-4 rounded-2xl bg-slate-50 text-sm">
+                <div className="grid grid-cols-2 gap-4 p-4 sm:p-5 rounded-[12px] bg-[#F7F2E8] border border-[#E5DAC8] text-sm">
                   <div>
-                    <span className="text-xs text-gray-500 block">Giờ nhận phòng:</span>
-                    <span className="font-bold text-gray-800">
+                    <span className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-[#216B70] block mb-1">
+                      Giờ nhận phòng
+                    </span>
+                    <span className="home-serif text-xl font-semibold text-[#102832]">
                       {place.check_in_time || '14:00'}
                     </span>
                   </div>
-                  <div>
-                    <span className="text-xs text-gray-500 block">Giờ trả phòng:</span>
-                    <span className="font-bold text-gray-800">
+                  <div className="border-l border-[#E5DAC8] pl-4">
+                    <span className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-[#216B70] block mb-1">
+                      Giờ trả phòng
+                    </span>
+                    <span className="home-serif text-xl font-semibold text-[#102832]">
                       {place.check_out_time || '12:00'}
                     </span>
                   </div>
@@ -322,75 +362,86 @@ export default function PlaceDetailPage() {
 
                 {place.amenities && place.amenities.length > 0 && (
                   <div>
-                    <h4 className="font-bold text-sm text-[#0f2942] mb-3">Tiện nghi nổi bật</h4>
+                    <h4 className="text-xs font-semibold uppercase tracking-[0.16em] text-[#216B70] mb-3">
+                      Tiện nghi nổi bật
+                    </h4>
                     <div className="flex flex-wrap gap-2">
                       {place.amenities.map((a) => (
                         <span
                           key={a.amenity_id}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-100 text-gray-700 text-xs font-semibold"
+                          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#F7F2E8] border border-[#E5DAC8] text-[#102832] text-xs font-medium"
                         >
-                          <CheckCircle2 size={13} className="text-teal-600" />
+                          <CheckCircle2 size={13} className="text-[#216B70]" />
                           {a.name}
                         </span>
                       ))}
                     </div>
                   </div>
                 )}
+
                 {/* Danh sách loại phòng nghỉ */}
-                {((place as any).room_types || (place as any).rooms) && ((place as any).room_types || (place as any).rooms).length > 0 && (
-                  <div>
-                    <h4 className="font-bold text-sm text-[#0f2942] mb-3 flex items-center gap-2">
-                      <Bed size={16} className="text-teal-600" />
-                      Các loại phòng & Bảng giá
-                    </h4>
-                    <div className="space-y-3">
-                      {((place as any).room_types || (place as any).rooms).map((room: any) => (
-                        <div
-                          key={room.room_type_id}
-                          className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl border border-gray-100 bg-slate-50/60 hover:border-teal-200 hover:bg-teal-50/30 transition-all"
-                        >
-                          <div className="flex-1">
-                            <p className="font-bold text-sm text-[#0f2942]">{room.name}</p>
-                            <div className="flex items-center gap-3 text-xs text-gray-500 mt-1">
-                              <span className="flex items-center gap-1">
-                                <Users size={11} className="text-gray-400" />
-                                Tối đa: {room.capacity} khách
-                              </span>
-                              <span>•</span>
-                              <span>Số phòng: {room.room_count ?? 1}</span>
-                              {room.status && room.status !== 'AVAILABLE' && (
-                                <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-semibold">
-                                  {room.status === 'MAINTENANCE' ? 'Đang bảo trì' : room.status}
+                {((place as any).room_types || (place as any).rooms) &&
+                  ((place as any).room_types || (place as any).rooms).length > 0 && (
+                    <div>
+                      <h4 className="text-xs font-semibold uppercase tracking-[0.16em] text-[#216B70] mb-3.5 flex items-center gap-2">
+                        <Bed size={15} className="text-[#CB712D]" />
+                        <span>Các loại phòng &amp; Bảng giá</span>
+                      </h4>
+                      <div className="space-y-3">
+                        {((place as any).room_types || (place as any).rooms).map((room: any) => (
+                          <div
+                            key={room.room_type_id}
+                            className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 sm:p-5 rounded-[12px] border border-[#E5DAC8] bg-[#F7F2E8]/80 hover:bg-[#F7F2E8] hover:border-[#C9B580] transition-all duration-250"
+                          >
+                            <div className="flex-1">
+                              <p className="home-serif font-semibold text-base sm:text-lg text-[#102832]">
+                                {room.name}
+                              </p>
+                              <div className="flex flex-wrap items-center gap-2.5 text-xs text-[#4E5E63] mt-1.5">
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/80 border border-[#E5DAC8]">
+                                  <Users size={11} className="text-[#216B70]" />
+                                  Tối đa: {room.capacity} khách
                                 </span>
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/80 border border-[#E5DAC8]">
+                                  Số phòng: {room.room_count ?? 1}
+                                </span>
+                                {room.status &&
+                                  room.status !== 'AVAILABLE' &&
+                                  room.status !== 'ACTIVE' && (
+                                    <span className="px-2.5 py-0.5 rounded-full bg-amber-100 border border-amber-200 text-amber-800 text-[10px] font-semibold">
+                                      {room.status === 'MAINTENANCE' ? 'Đang bảo trì' : room.status}
+                                    </span>
+                                  )}
+                              </div>
+                            </div>
+                            <div className="sm:text-right shrink-0">
+                              {room.original_price && room.original_price > room.price_per_night && (
+                                <p className="text-xs text-[#6E7D82] line-through">
+                                  {room.original_price.toLocaleString('vi-VN')}đ/đêm
+                                </p>
                               )}
+                              <p className="home-serif text-xl font-semibold text-[#102832]">
+                                {((room.price_per_night ?? 0) as number).toLocaleString('vi-VN')}đ
+                                <span className="font-sans text-xs font-medium text-[#4E5E63] ml-0.5">
+                                  /đêm
+                                </span>
+                              </p>
                             </div>
                           </div>
-                          <div className="text-right">
-                            {room.original_price && room.original_price > room.price_per_night && (
-                              <p className="text-xs text-gray-400 line-through">
-                                {room.original_price.toLocaleString('vi-VN')}đ/đêm
-                              </p>
-                            )}
-                            <p className="text-base font-extrabold text-teal-700">
-                              {((room.price_per_night ?? 0) as number).toLocaleString('vi-VN')}đ
-                              <span className="text-xs font-normal text-gray-500">/đêm</span>
-                            </p>
-                          </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
               </div>
             )}
 
             {/* 4.6. Lịch mở cửa chi tiết trong tuần */}
-            <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-100 mb-8 space-y-4">
-              <div className="flex items-center gap-2">
-                <span className="p-1.5 bg-orange-100 text-orange-600 rounded-xl shadow-sm">
-                  <Calendar size={18} />
+            <div className="bg-[#FFFDF9] rounded-[16px] p-6 sm:p-8 border border-[#E5DAC8] shadow-[0_14px_38px_rgba(16,40,50,0.05)] mb-8 space-y-5">
+              <div className="flex items-center gap-3 pb-4 border-b border-[#E8DDCF]">
+                <span className="w-9 h-9 rounded-full bg-[#091E27] text-[#E87B39] flex items-center justify-center shrink-0">
+                  <Calendar size={16} />
                 </span>
-                <h3 className="text-lg sm:text-xl font-extrabold text-[#0f2942]">
+                <h3 className="home-serif text-xl sm:text-2xl font-semibold text-[#102832] tracking-[-0.01em]">
                   Lịch mở cửa trong tuần
                 </h3>
               </div>
@@ -405,21 +456,21 @@ export default function PlaceDetailPage() {
                     return (
                       <div
                         key={h.opening_id}
-                        className={`flex items-center justify-between px-4 py-3 rounded-2xl transition-all ${
+                        className={`flex items-center justify-between px-4 py-3 rounded-[10px] transition-all ${
                           isToday
-                            ? 'bg-orange-50 border-2 border-orange-300 font-extrabold text-orange-800 shadow-sm'
-                            : 'bg-gray-50 text-gray-600 border border-gray-100'
+                            ? 'bg-[#FFF3E3] border border-[#E87B39]/60 font-semibold text-[#102832]'
+                            : 'bg-[#F7F2E8]/75 text-[#4E5E63] border border-[#E5DAC8]'
                         }`}
                       >
                         <span className="flex items-center gap-2">
                           <span>{getDayOfWeekName(h.day_of_week)}</span>
                           {isToday && (
-                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-orange-500 text-white font-bold">
+                            <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-[#CB712D] text-white font-semibold uppercase tracking-wider">
                               Hôm nay
                             </span>
                           )}
                         </span>
-                        <span>
+                        <span className="font-medium text-[#102832]">
                           {h.open_time} – {h.close_time}
                         </span>
                       </div>
@@ -427,7 +478,7 @@ export default function PlaceDetailPage() {
                   })}
                 </div>
               ) : (
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-[#4E5E63]">
                   Địa điểm mở cửa đón khách hàng ngày theo khung giờ tiêu chuẩn (08:00 – 22:00).
                 </p>
               )}
@@ -447,7 +498,7 @@ export default function PlaceDetailPage() {
           </div>
 
           {/* ═══ CỘT PHẢI: STICKY SIDEBAR LIÊN HỆ & ĐẶT CHỖ (4 CỘT) ═══ */}
-          <div className="lg:col-span-4 w-full">
+          <div className="lg:col-span-4 w-full lg:sticky lg:top-[124px]">
             <BookingSidebar place={place} onOpenMap={handleOpenDirections} />
           </div>
         </div>

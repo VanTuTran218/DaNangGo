@@ -33,6 +33,8 @@ export const submissionSchema = z
         consent_agreed: z.literal(true),
         client_timestamp: z.string().max(50).optional(),
         user_agent: z.string().max(1000).optional(),
+        recipient_email: z.string().trim().email().max(160).optional(),
+        recipient_name: z.string().trim().min(1).max(120).optional(),
       })
       .strict(),
   })

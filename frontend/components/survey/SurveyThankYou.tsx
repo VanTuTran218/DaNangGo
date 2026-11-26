@@ -9,9 +9,19 @@ import {
   Share2,
   Copy,
   Sparkles,
+  Award,
+  Gift,
+  MailCheck,
+  Eye,
+  ExternalLink,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import type { FullSurveyFormData } from "@/constants/survey";
+import {
+  fetchSurveyCertificate,
+  type SurveyAppreciationInfo,
+} from "@/lib/api/surveys";
 import {
   OVERALL_SATISFACTION_OPTIONS,
   VIETNAM_PROVINCES,
@@ -19,6 +29,7 @@ import {
 
 interface SurveyThankYouProps {
   formData?: FullSurveyFormData;
+  appreciation?: SurveyAppreciationInfo;
 }
 
 // Màu thương hiệu DaNangGo cho các hạt confetti Framer Motion
@@ -31,15 +42,34 @@ const CONFETTI_COLORS = [
   "#10b981", // emerald-500
 ];
 
-export default function SurveyThankYou({ formData }: SurveyThankYouProps) {
+export default function SurveyThankYou({
+  formData,
+  appreciation,
+}: SurveyThankYouProps) {
   const [copied, setCopied] = useState(false);
+  const [copiedReward, setCopiedReward] = useState(false);
+  const [emailModalHtml, setEmailModalHtml] = useState<string | null>(null);
+  const [loadingEmailPreview, setLoadingEmailPreview] = useState(false);
   const prefersReduced = useReducedMotion();
+
+  const handleOpenEmailPreview = async () => {
+    if (!appreciation?.certificateCode) return;
+    setLoadingEmailPreview(true);
+    try {
+      const cert = await fetchSurveyCertificate(appreciation.certificateCode);
+      setEmailModalHtml(cert.emailHtml);
+    } catch {
+      // ignore
+    } finally {
+      setLoadingEmailPreview(false);
+    }
+  };
 
   // Đếm số hạng mục đã đánh giá
   const ratedCount = formData
     ? Object.values(formData.experienceRatings).filter((score) => score > 0)
         .length
-    : 8;
+    : 4;
 
   const satisfactionOption = OVERALL_SATISFACTION_OPTIONS.find(
     (opt) => opt.score === formData?.overallSatisfaction,
@@ -181,6 +211,140 @@ export default function SurveyThankYou({ formData }: SurveyThankYouProps) {
           </li>
         </ul>
       </motion.div>
+
+      {/* Thẻ Chứng nhận Đại sứ Du lịch Đà Nẵng & Mã quà tri ân (nếu người dùng nhận thư tri ân) */}
+      {appreciation?.certificateCode && (
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="mt-5 rounded-3xl border-2 border-teal-500/80 bg-gradient-to-br from-amber-50/70 via-teal-50/70 to-cyan-50/70 p-5 sm:p-6 text-left shadow-md space-y-4"
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <div className="w-10 h-10 rounded-2xl bg-teal-600 text-white flex items-center justify-center shrink-0">
+                <Award className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-[11px] font-extrabold uppercase tracking-wider text-teal-700">
+                  Chứng nhận điện tử
+                </p>
+                <h3 className="text-base sm:text-lg font-extrabold text-slate-900">
+                  Đại Sứ Du Lịch Văn Minh Đà Nẵng
+                </h3>
+              </div>
+            </div>
+            <span className="px-2.5 py-1 rounded-lg bg-white border border-teal-200 font-mono text-xs font-extrabold text-teal-900">
+              {appreciation.certificateCode}
+            </span>
+          </div>
+
+          <div className="text-xs sm:text-sm text-slate-700 space-y-1">
+            <p>
+              Trao tặng du khách:{" "}
+              <strong className="text-teal-800">
+                {appreciation.recipientName || "Bạn du khách Đà Nẵng"}
+              </strong>
+            </p>
+            {appreciation.maskedEmail && (
+              <p
+                className={`flex items-center gap-1.5 text-xs font-semibold ${
+                  appreciation.sent ? "text-emerald-700" : "text-amber-700"
+                }`}
+              >
+                <MailCheck className="w-4 h-4 shrink-0" />
+                {appreciation.sent
+                  ? `Thư tri ân và chứng nhận đã được gửi tự động tới ${appreciation.maskedEmail}`
+                  : appreciation.status === "SKIPPED_COOLDOWN"
+                    ? `Chứng nhận đã cấp trên web (email ${appreciation.maskedEmail} đã nhận 1 thư tri ân trong 30 ngày qua)`
+                    : `Đã cấp chứng nhận trực tiếp trên web cho ${appreciation.maskedEmail} (máy chủ Gmail SMTP hiện đang chạm giới hạn gửi trong ngày của Google)`}
+              </p>
+            )}
+          </div>
+
+          {appreciation.rewardCode && (
+            <div className="rounded-2xl bg-white/90 border border-orange-200 p-3.5 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <Gift className="w-5 h-5 text-orange-500 shrink-0" />
+                <div>
+                  <p className="text-[11px] font-bold text-orange-800 uppercase">
+                    Mã quà tri ân chuyến tiếp theo
+                  </p>
+                  <p className="font-mono text-sm font-black text-orange-600">
+                    {appreciation.rewardCode}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={async () => {
+                  if (typeof navigator !== "undefined" && navigator.clipboard) {
+                    await navigator.clipboard.writeText(
+                      appreciation.rewardCode!,
+                    );
+                    setCopiedReward(true);
+                    setTimeout(() => setCopiedReward(false), 2000);
+                  }
+                }}
+                className="px-3 py-1.5 rounded-xl bg-orange-100 hover:bg-orange-200 text-orange-800 font-bold text-xs cursor-pointer"
+              >
+                {copiedReward ? "Đã chép mã!" : "Sao chép mã"}
+              </button>
+            </div>
+          )}
+
+          {/* Nút Xem bản gốc Thư Tri Ân Email ngay trên trình duyệt hoặc qua hộp thư Ethereal */}
+          <div className="pt-1 flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              disabled={loadingEmailPreview}
+              onClick={handleOpenEmailPreview}
+              className="px-3.5 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+            >
+              <Eye className="w-3.5 h-3.5" />
+              {loadingEmailPreview
+                ? "Đang tải thư..."
+                : "Xem toàn bộ Thư Tri Ân Email"}
+            </button>
+            {appreciation.previewUrl && (
+              <a
+                href={appreciation.previewUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="px-3.5 py-2 rounded-xl bg-white border border-teal-300 text-teal-800 hover:bg-teal-50 font-bold text-xs flex items-center gap-1.5"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                Mở trong hộp thư Webmail thử nghiệm
+              </a>
+            )}
+          </div>
+        </motion.div>
+      )}
+
+      {/* Modal xem trước toàn bộ nội dung HTML của Thư Tri Ân đã gửi */}
+      {emailModalHtml && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6">
+          <div className="bg-white rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl border border-slate-200 flex flex-col max-h-[90vh]">
+            <div className="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+              <span className="text-xs sm:text-sm font-bold text-slate-800">
+                Nội dung Thư Tri Ân & Chứng Nhận Du Khách Đà Nẵng
+              </span>
+              <button
+                type="button"
+                onClick={() => setEmailModalHtml(null)}
+                className="p-1.5 rounded-full text-slate-500 hover:bg-slate-200 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <iframe
+              title="Thư Tri Ân Du Khách Đà Nẵng"
+              srcDoc={emailModalHtml}
+              className="w-full h-[72vh] border-0 bg-white"
+            />
+          </div>
+        </div>
+      )}
 
       {/* Các nút hành động chính */}
       <motion.div

@@ -28,6 +28,13 @@ import recommendationsRouter from './modules/recommendations/recommendations.rou
 import weatherRouter from './modules/weather/weather.routes';
 import chatRouter from './modules/chat/chat.routes';
 import { surveysRouter,adminSurveysRouter } from './modules/surveys/surveys.routes';
+import { dispatchCompletedTripSurveyInvites } from './modules/surveys/surveys.mailer';
+import {
+  publicEventsRouter,
+  adminEventsRouter,
+  adminEventSubmissionsRouter,
+} from './modules/events/events.routes';
+import { ensureEventsSchemaAndSeed } from './modules/events/events.repository';
 import { aiRouter } from './modules/ai/ai.routes';
 import { csrfProtection } from './middleware/csrf.middleware';
 import { errorHandler } from './middleware/error-handler';
@@ -78,6 +85,9 @@ app.use('/api/chat', chatRouter);
 app.use('/api/ai', aiRouter);
 app.use('/api/surveys', surveysRouter);
 app.use('/api/admin/surveys', adminSurveysRouter);
+app.use('/api/events', publicEventsRouter);
+app.use('/api/admin/events', adminEventsRouter);
+app.use('/api/admin/event-submissions', adminEventSubmissionsRouter);
 app.use('/api/recommendations', recommendationsRouter);
 app.use('/api/weather', weatherRouter);
 app.use('/api/places', placesRouter);
@@ -110,11 +120,25 @@ async function startServer() {
   try {
     // Kết nối database trước khi lắng nghe request
     await connectDB();
+    await ensureEventsSchemaAndSeed().catch((err) => {
+      console.warn('[Events] Khởi tạo schema sự kiện cảnh báo:', (err as Error)?.message);
+    });
 
     const server = app.listen(PORT, () => {
       console.log(`🚀 Server đang chạy tại http://localhost:${PORT}`);
       console.log(`📡 Health check: http://localhost:${PORT}/api/health`);
     });
+
+    // Luồng B: Định kỳ tự động quét các lịch trình đã kết thúc tại Đà Nẵng để gửi email mời khảo sát
+    const tripInviteTimer = setInterval(() => {
+      dispatchCompletedTripSurveyInvites(10).catch((err) => {
+        console.warn('[TripSurveyInvite] Bỏ qua lượt quét định kỳ:', (err as Error)?.message);
+      });
+    }, 30 * 60 * 1000);
+    tripInviteTimer.unref();
+    setTimeout(() => {
+      dispatchCompletedTripSurveyInvites(10).catch(() => {});
+    }, 15_000).unref();
 
     // Graceful shutdown - đóng DB khi tắt server
     process.on('SIGTERM', async () => {

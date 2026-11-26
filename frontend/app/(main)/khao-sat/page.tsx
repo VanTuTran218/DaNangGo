@@ -1,21 +1,20 @@
 "use client";
 
-import { useState, useEffect, useTransition } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect } from "react";
 import {
   ArrowRight,
-  ArrowLeft,
   Send,
   Loader2,
   ShieldCheck,
-  Award,
   Users,
   Compass,
-  RotateCcw,
   Sparkles,
   Info,
+  Mail,
+  Award,
 } from "lucide-react";
 import Link from "next/link";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Components chung của website
 import SiteFooter from "@/components/places/SiteFooter";
@@ -27,12 +26,8 @@ import ToastNotification, {
 // Sub-components khảo sát
 import SurveyHero from "@/components/survey/SurveyHero";
 import SurveyQuickSheet from "@/components/survey/SurveyQuickSheet";
-import SurveyStepper from "@/components/survey/SurveyStepper";
-import SurveyStepCard from "@/components/survey/SurveyStepCard";
 import QuestionCard from "@/components/survey/QuestionCard";
 import ChoiceCards from "@/components/survey/ChoiceCards";
-import ChipSelect from "@/components/survey/ChipSelect";
-import BudgetSlider from "@/components/survey/BudgetSlider";
 import ProvinceSelect from "@/components/survey/ProvinceSelect";
 import RatingMatrix from "@/components/survey/RatingMatrix";
 import NpsScale from "@/components/survey/NpsScale";
@@ -44,15 +39,7 @@ import SurveyThankYou from "@/components/survey/SurveyThankYou";
 import {
   TRIP_PURPOSE_OPTIONS,
   DURATION_OPTIONS,
-  TRAVEL_COMPANION_OPTIONS,
-  VISIT_FREQUENCY_OPTIONS,
-  INFORMATION_CHANNELS,
-  EXPENSE_CATEGORIES,
   OVERALL_SATISFACTION_OPTIONS,
-  ISSUE_CHIPS,
-  AGE_GROUP_OPTIONS,
-  DANANGGO_FEATURE_OPTIONS,
-  DANANGGO_ACCURACY_OPTIONS,
   INITIAL_FULL_SURVEY_DATA,
   type FullSurveyFormData,
 } from "@/constants/survey";
@@ -64,6 +51,7 @@ import {
   clearSurveyDraft,
   submitFullSurvey,
   getSurveyInviteMeta,
+  type SurveyAppreciationInfo,
 } from "@/lib/api/surveys";
 import SurveyCustomForm, {
   SurveyPublicList,
@@ -71,20 +59,21 @@ import SurveyCustomForm, {
 import { ApiError } from "@/lib/api/client";
 
 export default function SurveyPage() {
+  const { user } = useAuth();
   const [customSurveyId, setCustomSurveyId] = useState<number | null>(null);
   const [quickOpen, setQuickOpen] = useState(false);
-  const [currentStep, setCurrentStep] = useState(1);
-  const [direction, setDirection] = useState<"next" | "prev">("next");
   const [formData, setFormData] = useState<FullSurveyFormData>(
     INITIAL_FULL_SURVEY_DATA,
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [appreciationResult, setAppreciationResult] = useState<
+    SurveyAppreciationInfo | undefined
+  >(undefined);
   const [hasDraftNotice, setHasDraftNotice] = useState(false);
   const [toast, setToast] = useState<ToastItem | null>(null);
   const [alreadyCompletedForTrip, setAlreadyCompletedForTrip] = useState(false);
-  const [, startTransition] = useTransition();
 
   // Đọc tham số URL (nếu có gắn với lịch trình cụ thể)
   const [itineraryId, setItineraryId] = useState<string | null>(null);
@@ -117,6 +106,17 @@ export default function SurveyPage() {
     }
   }, []);
 
+  // Tự động điền sẵn email và tên của tài khoản đang đăng nhập để nhận thư tri ân
+  useEffect(() => {
+    if (user?.email) {
+      setFormData((prev) => ({
+        ...prev,
+        recipientEmail: prev.recipientEmail || user.email,
+        recipientName: prev.recipientName || user.name || "",
+      }));
+    }
+  }, [user]);
+
   // Tự động lưu bản nháp vào sessionStorage khi form thay đổi
   useEffect(() => {
     if (!isCompleted && formData.tripPurpose) {
@@ -140,102 +140,50 @@ export default function SurveyPage() {
     }
   };
 
-  // Xác thực từng bước
-  const validateStep = (step: number): boolean => {
+  // Xác thực toàn bộ form (bản rút gọn, 1 trang)
+  const validateForm = (): Record<string, string> => {
     const newErrors: Record<string, string> = {};
-
-    if (step === 1) {
-      if (!formData.tripPurpose)
-        newErrors.tripPurpose = "Vui lòng chọn mục đích chính của chuyến đi";
-      if (!formData.stayDuration)
-        newErrors.stayDuration = "Vui lòng chọn số ngày lưu trú";
-      if (!formData.travelCompanion)
-        newErrors.travelCompanion = "Vui lòng chọn người đồng hành cùng bạn";
-      if (!formData.originProvince)
-        newErrors.originProvince =
-          "Vui lòng chọn tỉnh/thành hoặc quốc gia bạn đến từ";
-      if (!formData.visitFrequency)
-        newErrors.visitFrequency = "Vui lòng chọn tần suất đến Đà Nẵng";
-    }
-
-    if (step === 2) {
-      if (formData.topExpenses.length === 0) {
-        newErrors.topExpenses =
-          "Vui lòng chọn ít nhất 1 khoản chi tiêu lớn nhất";
-      }
-    }
-
-    if (step === 3) {
-      // Kiểm tra ma trận: ít nhất 3 hạng mục đã được chấm sao hoặc đánh dấu chưa dùng
-      const unrated = Object.entries(formData.experienceRatings).filter(
-        ([, score]) => score === 0,
-      );
-      if (unrated.length === 8) {
-        newErrors.experienceRatings =
-          'Vui lòng đánh giá các hạng mục bạn đã trải nghiệm hoặc bấm "Chưa sử dụng"';
-      }
-    }
-
-    if (step === 4) {
-      if (formData.overallSatisfaction === 0) {
-        newErrors.overallSatisfaction =
-          "Vui lòng chọn mức độ hài lòng tổng thể";
-      }
-      if (formData.npsScore === null) {
-        newErrors.npsScore =
-          "Vui lòng chấm điểm mức độ sẵn sàng giới thiệu (0–10)";
-      }
-      if (!formData.consentAgreed) {
-        newErrors.consentAgreed =
-          "Bạn cần đồng ý chia sẻ dữ liệu ẩn danh để gửi khảo sát";
-      }
-    }
-
+    if (!formData.tripPurpose)
+      newErrors.tripPurpose = "Vui lòng chọn mục đích chính của chuyến đi";
+    if (!formData.stayDuration)
+      newErrors.stayDuration = "Vui lòng chọn số ngày lưu trú";
+    if (!formData.originProvince)
+      newErrors.originProvince =
+        "Vui lòng chọn tỉnh/thành hoặc quốc gia bạn đến từ";
+    if (Object.values(formData.experienceRatings).every((v) => v === 0))
+      newErrors.experienceRatings =
+        'Vui lòng đánh giá ít nhất 1 hạng mục hoặc bấm "Chưa sử dụng"';
+    if (formData.overallSatisfaction === 0)
+      newErrors.overallSatisfaction = "Vui lòng chọn mức độ hài lòng tổng thể";
+    if (formData.npsScore === null)
+      newErrors.npsScore = "Vui lòng chấm điểm mức độ sẵn sàng giới thiệu (0–10)";
+    const cleanEmail = formData.recipientEmail?.trim() ?? "";
+    if (cleanEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail))
+      newErrors.recipientEmail = "Địa chỉ email nhận thư tri ân chưa đúng định dạng";
+    if (!formData.consentAgreed)
+      newErrors.consentAgreed =
+        "Bạn cần đồng ý chia sẻ dữ liệu ẩn danh để gửi khảo sát";
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  // Chuyển sang bước tiếp theo
-  const handleNext = () => {
-    if (!validateStep(currentStep)) {
-      // Cuộn nhẹ lên câu hỏi có lỗi
-      const firstErrorKey = Object.keys(errors)[0];
-      if (firstErrorKey) {
-        const el = document.getElementById(firstErrorKey);
-        el?.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
-      return;
-    }
-
-    setDirection("next");
-    startTransition(() => {
-      setCurrentStep((prev) => Math.min(4, prev + 1));
-    });
-    window.scrollTo({ top: 380, behavior: "smooth" });
-  };
-
-  // Quay lại bước trước
-  const handleBack = () => {
-    setDirection("prev");
-    startTransition(() => {
-      setCurrentStep((prev) => Math.max(1, prev - 1));
-    });
-    window.scrollTo({ top: 380, behavior: "smooth" });
+    return newErrors;
   };
 
   // Gửi toàn bộ khảo sát
   const handleSubmitSurvey = async (e: React.FormEvent) => {
     e.preventDefault();
-    for (const step of [1, 2, 3, 4])
-      if (!validateStep(step)) {
-        setCurrentStep(step);
-        return;
-      }
+    const found = validateForm();
+    const firstErrorKey = Object.keys(found)[0];
+    if (firstErrorKey) {
+      document
+        .getElementById(firstErrorKey)
+        ?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
 
     setIsSubmitting(true);
     try {
       const res = await submitFullSurvey(formData, itineraryId ?? undefined);
       clearSurveyDraft();
+      setAppreciationResult(res.appreciation);
       setIsCompleted(true);
       window.scrollTo({ top: 360, behavior: "smooth" });
       setToast({
@@ -267,7 +215,6 @@ export default function SurveyPage() {
   const handleResetDraft = () => {
     clearSurveyDraft();
     setFormData(INITIAL_FULL_SURVEY_DATA);
-    setCurrentStep(1);
     setHasDraftNotice(false);
     setErrors({});
   };
@@ -293,7 +240,7 @@ export default function SurveyPage() {
                 Bạn muốn góp ý nhanh?
               </h2>
               <p className="mt-1 text-sm text-slate-600">
-                Chọn bản 5 câu hoặc tiếp tục khảo sát đầy đủ bên dưới. Hãy chia
+                Chọn bản 5 câu hoặc trả lời 7 câu hỏi chính bên dưới. Hãy chia
                 sẻ theo trải nghiệm thực tế của bạn.
               </p>
             </div>
@@ -358,439 +305,236 @@ export default function SurveyPage() {
             <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 p-5 sm:p-8 md:p-10 relative overflow-hidden">
               {isCompleted ? (
                 /* Màn hình sau khi gửi thành công */
-                <SurveyThankYou formData={formData} />
+                <SurveyThankYou
+                  formData={formData}
+                  appreciation={appreciationResult}
+                />
               ) : (
                 <form
                   onSubmit={handleSubmitSurvey}
                   className="space-y-6 sm:space-y-8"
                 >
-                  {/* Thanh tiến độ Stepper 4 bước */}
-                  <SurveyStepper
-                    currentStep={currentStep}
-                    onStepClick={(step) => {
-                      if (step < currentStep) {
-                        setDirection("prev");
-                        setCurrentStep(step);
-                      }
-                    }}
-                  />
+                  <div className="space-y-5">
+                    {/* 1. Mục đích chuyến đi */}
+                    <QuestionCard
+                      id="tripPurpose"
+                      title="1. Mục đích chính chuyến đi Đà Nẵng của bạn?"
+                      required
+                      error={errors.tripPurpose}
+                    >
+                      <ChoiceCards
+                        name="tripPurpose"
+                        options={TRIP_PURPOSE_OPTIONS}
+                        selectedValue={formData.tripPurpose}
+                        onChange={(val) => updateField("tripPurpose", val)}
+                        columns={2}
+                      />
+                    </QuestionCard>
 
-                  {/* NỘI DUNG 4 BƯỚC VỚI ANIMATION SLIDE */}
-                  <div className="min-h-[460px]">
-                    <AnimatePresence mode="wait" custom={direction}>
-                      {/* BƯỚC 1: CHUYẾN ĐI CỦA BẠN */}
-                      {currentStep === 1 && (
-                        <SurveyStepCard
-                          key="step-1"
-                          direction={direction}
-                          stepKey={1}
-                        >
-                          <div className="space-y-5">
-                            {/* 1.1 Mục đích chuyến đi */}
-                            <QuestionCard
-                              id="tripPurpose"
-                              title="1. Mục đích chính chuyến đi Đà Nẵng của bạn là gì?"
-                              required
-                              error={errors.tripPurpose}
-                            >
-                              <ChoiceCards
-                                name="tripPurpose"
-                                options={TRIP_PURPOSE_OPTIONS}
-                                selectedValue={formData.tripPurpose}
-                                onChange={(val) =>
-                                  updateField("tripPurpose", val)
-                                }
-                                columns={2}
-                              />
-                            </QuestionCard>
+                    {/* 2. Số ngày lưu trú */}
+                    <QuestionCard
+                      id="stayDuration"
+                      title="2. Bạn lưu trú tại Đà Nẵng bao lâu?"
+                      required
+                      error={errors.stayDuration}
+                    >
+                      <ChoiceCards
+                        name="stayDuration"
+                        options={DURATION_OPTIONS}
+                        selectedValue={formData.stayDuration}
+                        onChange={(val) => updateField("stayDuration", val)}
+                        columns={2}
+                      />
+                    </QuestionCard>
 
-                            {/* 1.2 Số ngày lưu trú */}
-                            <QuestionCard
-                              id="stayDuration"
-                              title="2. Bạn dự định hoặc đã lưu trú tại Đà Nẵng trong bao lâu?"
-                              required
-                              error={errors.stayDuration}
-                            >
-                              <ChoiceCards
-                                name="stayDuration"
-                                options={DURATION_OPTIONS}
-                                selectedValue={formData.stayDuration}
-                                onChange={(val) =>
-                                  updateField("stayDuration", val)
-                                }
-                                columns={2}
-                              />
-                            </QuestionCard>
+                    {/* 3. Đến từ đâu */}
+                    <QuestionCard
+                      id="originProvince"
+                      title="3. Bạn đến từ tỉnh/thành phố hoặc quốc gia nào?"
+                      required
+                      error={errors.originProvince}
+                    >
+                      <ProvinceSelect
+                        value={formData.originProvince}
+                        onChange={(val) => updateField("originProvince", val)}
+                      />
+                    </QuestionCard>
 
-                            {/* 1.3 Đi cùng ai */}
-                            <QuestionCard
-                              id="travelCompanion"
-                              title="3. Bạn đến Đà Nẵng cùng với ai?"
-                              required
-                              error={errors.travelCompanion}
-                            >
-                              <ChoiceCards
-                                name="travelCompanion"
-                                options={TRAVEL_COMPANION_OPTIONS}
-                                selectedValue={formData.travelCompanion}
-                                onChange={(val) =>
-                                  updateField("travelCompanion", val)
-                                }
-                                columns={2}
-                              />
-                            </QuestionCard>
+                    {/* 4. Đánh giá nhanh dịch vụ */}
+                    <QuestionCard
+                      id="experienceRatings"
+                      title="4. Bạn đánh giá các dịch vụ chính thế nào?"
+                      description='Chấm 1–5 sao, hoặc chọn "Chưa sử dụng"'
+                      required
+                      error={errors.experienceRatings}
+                    >
+                      <RatingMatrix
+                        values={formData.experienceRatings}
+                        onChange={(catId, score) =>
+                          updateField("experienceRatings", {
+                            ...formData.experienceRatings,
+                            [catId]: score,
+                          })
+                        }
+                      />
+                    </QuestionCard>
 
-                            {/* 1.4 Đến từ đâu */}
-                            <QuestionCard
-                              id="originProvince"
-                              title="4. Bạn đến từ tỉnh/thành phố hoặc quốc gia nào?"
-                              description="Giúp thống kê luồng du khách nội địa và quốc tế tới Đà Nẵng"
-                              required
-                              error={errors.originProvince}
-                            >
-                              <ProvinceSelect
-                                value={formData.originProvince}
-                                onChange={(val) =>
-                                  updateField("originProvince", val)
-                                }
-                              />
-                            </QuestionCard>
-
-                            {/* 1.5 Lần đầu hay quay lại */}
-                            <QuestionCard
-                              id="visitFrequency"
-                              title="5. Đây là lần thứ mấy bạn đến với Đà Nẵng?"
-                              required
-                              error={errors.visitFrequency}
-                            >
-                              <ChoiceCards
-                                name="visitFrequency"
-                                options={VISIT_FREQUENCY_OPTIONS}
-                                selectedValue={formData.visitFrequency}
-                                onChange={(val) =>
-                                  updateField("visitFrequency", val)
-                                }
-                                columns={1}
-                              />
-                            </QuestionCard>
-
-                            {/* 1.6 Kênh thông tin biết đến */}
-                            <QuestionCard
-                              id="informationChannels"
-                              title="6. Bạn biết đến và lên kế hoạch du lịch Đà Nẵng qua những kênh nào?"
-                              description="Có thể chọn nhiều kênh bạn đã tham khảo"
-                            >
-                              <ChipSelect
-                                name="informationChannels"
-                                options={INFORMATION_CHANNELS}
-                                selectedValues={formData.informationChannels}
-                                onChange={(vals) =>
-                                  updateField("informationChannels", vals)
-                                }
-                              />
-                            </QuestionCard>
-                          </div>
-                        </SurveyStepCard>
-                      )}
-
-                      {/* BƯỚC 2: CHI TIÊU DU LỊCH */}
-                      {currentStep === 2 && (
-                        <SurveyStepCard
-                          key="step-2"
-                          direction={direction}
-                          stepKey={2}
-                        >
-                          <div className="space-y-6">
-                            {/* 2.1 Thanh trượt chi tiêu mỗi người mỗi ngày */}
-                            <QuestionCard
-                              id="dailyBudget"
-                              title="1. Ước tính tổng chi tiêu trung bình của mỗi người trong 1 ngày?"
-                              description="Bao gồm chi phí ăn uống, lưu trú, vé tham quan và di chuyển nội thành (không tính vé máy bay/tàu hỏa)"
-                              required
-                            >
-                              <BudgetSlider
-                                value={formData.dailyBudget}
-                                onChange={(val) =>
-                                  updateField("dailyBudget", val)
-                                }
-                              />
-                            </QuestionCard>
-
-                            {/* 2.2 Khoản chi lớn nhất */}
-                            <QuestionCard
-                              id="topExpenses"
-                              title="2. Khoản nào chiếm ngân sách lớn nhất trong chuyến đi của bạn?"
-                              description="Chọn các khoản chiếm tỷ trọng chi tiêu nhiều nhất (chọn 1–3 mục)"
-                              required
-                              error={errors.topExpenses}
-                            >
-                              <ChipSelect
-                                name="topExpenses"
-                                options={EXPENSE_CATEGORIES}
-                                selectedValues={formData.topExpenses}
-                                onChange={(vals) =>
-                                  updateField("topExpenses", vals)
-                                }
-                                maxSelect={3}
-                              />
-                            </QuestionCard>
-                          </div>
-                        </SurveyStepCard>
-                      )}
-
-                      {/* BƯỚC 3: ĐÁNH GIÁ TRẢI NGHIỆM */}
-                      {currentStep === 3 && (
-                        <SurveyStepCard
-                          key="step-3"
-                          direction={direction}
-                          stepKey={3}
-                        >
-                          <div className="space-y-4">
-                            <div className="p-4 rounded-2xl bg-teal-50/60 border border-teal-200/60 text-xs text-teal-900 leading-relaxed">
-                              <p className="font-bold mb-1">
-                                ⭐ Đánh giá chi tiết 8 hạng mục dịch vụ du lịch
-                                Đà Nẵng
-                              </p>
-                              Chấm từ 1 đến 5 sao theo mức độ hài lòng thực tế
-                              của bạn. Nếu chưa sử dụng dịch vụ nào trong chuyến
-                              đi, bạn hãy chọn nút &quot;Chưa sử dụng&quot;.
-                            </div>
-
-                            <QuestionCard
-                              id="experienceRatings"
-                              title="Chất lượng các dịch vụ tại Đà Nẵng theo đánh giá của bạn:"
-                              required
-                              error={errors.experienceRatings}
-                            >
-                              <RatingMatrix
-                                values={formData.experienceRatings}
-                                onChange={(catId, score) => {
-                                  updateField("experienceRatings", {
-                                    ...formData.experienceRatings,
-                                    [catId]: score,
-                                  });
-                                }}
-                              />
-                            </QuestionCard>
-                          </div>
-                        </SurveyStepCard>
-                      )}
-
-                      {/* BƯỚC 4: TỔNG THỂ & GÓP Ý */}
-                      {currentStep === 4 && (
-                        <SurveyStepCard
-                          key="step-4"
-                          direction={direction}
-                          stepKey={4}
-                        >
-                          <div className="space-y-6">
-                            {/* 4.1 Hài lòng tổng thể */}
-                            <QuestionCard
-                              id="overallSatisfaction"
-                              title="1. Mức độ hài lòng tổng thể của bạn về chuyến đi Đà Nẵng?"
-                              required
-                              error={errors.overallSatisfaction}
-                            >
-                              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
-                                {OVERALL_SATISFACTION_OPTIONS.map((opt) => {
-                                  const isSelected =
-                                    formData.overallSatisfaction === opt.score;
-                                  return (
-                                    <button
-                                      key={opt.score}
-                                      type="button"
-                                      onClick={() =>
-                                        updateField(
-                                          "overallSatisfaction",
-                                          opt.score,
-                                        )
-                                      }
-                                      className={`p-3.5 rounded-2xl border text-center transition-all cursor-pointer flex flex-col items-center gap-1.5 ${
-                                        isSelected
-                                          ? `bg-teal-50 border-teal-500 ring-2 ${opt.ring} shadow-sm scale-102`
-                                          : "bg-white border-slate-200 hover:border-teal-300 hover:bg-slate-50"
-                                      }`}
-                                    >
-                                      <span className="text-3xl sm:text-4xl">
-                                        {opt.emoji}
-                                      </span>
-                                      <span className="text-xs font-bold text-slate-800">
-                                        {opt.label}
-                                      </span>
-                                    </button>
-                                  );
-                                })}
-                              </div>
-                            </QuestionCard>
-
-                            {/* 4.2 Thang đo NPS 0–10 */}
-                            <QuestionCard
-                              id="npsScore"
-                              title="2. Bạn có sẵn lòng giới thiệu du lịch Đà Nẵng cho bạn bè, người thân?"
-                              description="Thang điểm từ 0 (Hoàn toàn không) đến 10 (Chắc chắn sẽ giới thiệu)"
-                              required
-                              error={errors.npsScore}
-                            >
-                              <NpsScale
-                                value={formData.npsScore}
-                                onChange={(score) =>
-                                  updateField("npsScore", score)
-                                }
-                              />
-                            </QuestionCard>
-
-                            {/* 4.3 Những vấn đề đã gặp */}
-                            <QuestionCard
-                              id="issuesFaced"
-                              title="3. Bạn có gặp bất kỳ trở ngại hay vấn đề nào trong chuyến đi?"
-                              description="Chọn những vấn đề bạn đã gặp phải để chính quyền thành phố kịp thời xử lý"
-                            >
-                              <ChipSelect
-                                name="issuesFaced"
-                                options={ISSUE_CHIPS}
-                                selectedValues={formData.issuesFaced}
-                                onChange={(vals) =>
-                                  updateField("issuesFaced", vals)
-                                }
-                              />
-                            </QuestionCard>
-
-                            {/* 4.4 Góp ý tự do */}
-                            <QuestionCard
-                              id="feedbackText"
-                              title="4. Ý kiến đóng góp hoặc đề xuất cải thiện của bạn cho Đà Nẵng:"
-                              description="Chia sẻ thêm bất cứ điều gì bạn mong muốn Đà Nẵng làm tốt hơn trong tương lai"
-                            >
-                              <TextAreaWithCounter
-                                value={formData.feedbackText}
-                                onChange={(val) =>
-                                  updateField("feedbackText", val)
-                                }
-                                maxLength={500}
-                              />
-                            </QuestionCard>
-
-                            {/* 4.5 Phần tùy chọn: Nhóm tuổi & Đánh giá ứng dụng DaNangGo */}
-                            <div className="pt-4 border-t border-slate-100 space-y-5">
-                              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-600 font-bold text-xs">
-                                <Sparkles className="w-3.5 h-3.5 text-teal-600" />
-                                Phần khảo sát thêm (Tùy chọn)
-                              </span>
-
-                              {/* Nhóm tuổi */}
-                              <QuestionCard
-                                id="ageGroup"
-                                title="Nhóm tuổi của bạn:"
-                              >
-                                <ChoiceCards
-                                  name="ageGroup"
-                                  options={AGE_GROUP_OPTIONS}
-                                  selectedValue={formData.ageGroup || ""}
-                                  onChange={(val) =>
-                                    updateField("ageGroup", val)
-                                  }
-                                  columns={3}
-                                />
-                              </QuestionCard>
-
-                              {/* Đánh giá ứng dụng DaNangGo */}
-                              <QuestionCard
-                                id="mostUsefulFeature"
-                                title="Tính năng nào của DaNangGo hỗ trợ bạn tốt nhất?"
-                              >
-                                <ChoiceCards
-                                  name="mostUsefulFeature"
-                                  options={DANANGGO_FEATURE_OPTIONS}
-                                  selectedValue={
-                                    formData.mostUsefulFeature || ""
-                                  }
-                                  onChange={(val) =>
-                                    updateField("mostUsefulFeature", val)
-                                  }
-                                  columns={2}
-                                />
-                              </QuestionCard>
-
-                              <QuestionCard
-                                id="itineraryAccuracy"
-                                title="Lịch trình gợi ý của DaNangGo có sát với thực tế di chuyển không?"
-                              >
-                                <ChoiceCards
-                                  name="itineraryAccuracy"
-                                  options={DANANGGO_ACCURACY_OPTIONS}
-                                  selectedValue={
-                                    formData.itineraryAccuracy || ""
-                                  }
-                                  onChange={(val) =>
-                                    updateField("itineraryAccuracy", val)
-                                  }
-                                  columns={1}
-                                />
-                              </QuestionCard>
-                            </div>
-
-                            {/* 4.6 Hộp đồng ý ẩn danh (Bắt buộc) */}
-                            <ConsentCheckbox
-                              checked={formData.consentAgreed}
-                              onChange={(val) =>
-                                updateField("consentAgreed", val)
+                    {/* 5. Hài lòng tổng thể */}
+                    <QuestionCard
+                      id="overallSatisfaction"
+                      title="5. Mức độ hài lòng tổng thể về chuyến đi?"
+                      required
+                      error={errors.overallSatisfaction}
+                    >
+                      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+                        {OVERALL_SATISFACTION_OPTIONS.map((opt) => {
+                          const isSelected =
+                            formData.overallSatisfaction === opt.score;
+                          return (
+                            <button
+                              key={opt.score}
+                              type="button"
+                              onClick={() =>
+                                updateField("overallSatisfaction", opt.score)
                               }
-                              error={errors.consentAgreed}
+                              className={`p-3.5 rounded-2xl border text-center transition-all cursor-pointer flex flex-col items-center gap-1.5 ${
+                                isSelected
+                                  ? `bg-teal-50 border-teal-500 ring-2 ${opt.ring} shadow-sm scale-102`
+                                  : "bg-white border-slate-200 hover:border-teal-300 hover:bg-slate-50"
+                              }`}
+                            >
+                              <span className="text-3xl sm:text-4xl">
+                                {opt.emoji}
+                              </span>
+                              <span className="text-xs font-bold text-slate-800">
+                                {opt.label}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </QuestionCard>
+
+                    {/* 6. NPS 0–10 */}
+                    <QuestionCard
+                      id="npsScore"
+                      title="6. Bạn có sẵn lòng giới thiệu Đà Nẵng cho người thân, bạn bè?"
+                      description="0 = Hoàn toàn không, 10 = Chắc chắn sẽ giới thiệu"
+                      required
+                      error={errors.npsScore}
+                    >
+                      <NpsScale
+                        value={formData.npsScore}
+                        onChange={(score) => updateField("npsScore", score)}
+                      />
+                    </QuestionCard>
+
+                    {/* 7. Góp ý (tùy chọn) */}
+                    <QuestionCard
+                      id="feedbackText"
+                      title="7. Góp ý thêm của bạn (không bắt buộc)"
+                    >
+                      <TextAreaWithCounter
+                        value={formData.feedbackText}
+                        onChange={(val) => updateField("feedbackText", val)}
+                        maxLength={500}
+                      />
+                    </QuestionCard>
+
+                    {/* Khung nhận Thư Tri Ân Du Khách Đà Nẵng & Chứng nhận điện tử qua Email */}
+                    <div
+                      id="recipientEmail"
+                      className="rounded-2xl border border-teal-200 bg-gradient-to-br from-teal-50/70 via-cyan-50/40 to-amber-50/50 p-4 sm:p-5 space-y-3"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-teal-600 text-white flex items-center justify-center shrink-0">
+                          <Award className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-bold text-slate-900">
+                            Nhận Thư Tri Ân & Chứng nhận Du khách Đà Nẵng qua Email (Tùy chọn)
+                          </h3>
+                          <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">
+                            Hệ thống sẽ tự động gửi ngay{" "}
+                            <strong>Chứng nhận Đại sứ Du lịch Văn minh Đà Nẵng</strong>{" "}
+                            kèm <strong>Mã quà tặng tri ân</strong> về email của bạn sau khi gửi khảo sát.
+                            Email được băm ẩn danh và tách biệt hoàn toàn với câu trả lời thống kê.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-700 mb-1">
+                            Tên hiển thị trên chứng nhận
+                          </label>
+                          <input
+                            type="text"
+                            maxLength={120}
+                            value={formData.recipientName ?? ""}
+                            onChange={(e) =>
+                              updateField("recipientName", e.target.value)
+                            }
+                            placeholder="VD: Nguyễn Văn A"
+                            className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl focus:border-teal-500 focus:outline-hidden"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-700 mb-1">
+                            Email nhận thư tri ân & quà tặng
+                          </label>
+                          <div className="relative">
+                            <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                            <input
+                              type="email"
+                              maxLength={160}
+                              value={formData.recipientEmail ?? ""}
+                              onChange={(e) =>
+                                updateField("recipientEmail", e.target.value)
+                              }
+                              placeholder="ban@example.com"
+                              className="w-full pl-9 pr-3.5 py-2.5 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl focus:border-teal-500 focus:outline-hidden"
                             />
                           </div>
-                        </SurveyStepCard>
+                        </div>
+                      </div>
+
+                      {errors.recipientEmail && (
+                        <p role="alert" className="text-xs font-semibold text-rose-600">
+                          {errors.recipientEmail}
+                        </p>
                       )}
-                    </AnimatePresence>
+                    </div>
+
+                    <ConsentCheckbox
+                      checked={formData.consentAgreed}
+                      onChange={(val) => updateField("consentAgreed", val)}
+                      error={errors.consentAgreed}
+                    />
                   </div>
 
-                  {/* NÚT ĐIỀU HƯỚNG QUAY LẠI / TIẾP TỤC / GỬI KHẢO SÁT */}
-                  {/* Trên mobile: dính đáy màn hình (sticky bottom) với safe-area */}
-                  <div className="sticky sm:static bottom-0 inset-x-0 -mx-5 sm:mx-0 -mb-5 sm:mb-0 p-4 sm:p-0 bg-white/95 sm:bg-transparent backdrop-blur-md sm:backdrop-blur-none border-t sm:border-t-0 border-slate-200/80 z-20 flex items-center justify-between gap-3 pt-4 sm:pt-6">
-                    {currentStep > 1 ? (
-                      <button
-                        type="button"
-                        onClick={handleBack}
-                        disabled={isSubmitting}
-                        className="px-4 sm:px-5 py-3 rounded-2xl border border-slate-200 text-slate-700 font-bold text-xs sm:text-sm hover:bg-slate-50 transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-40"
-                      >
-                        <ArrowLeft className="w-4 h-4" />
-                        Quay lại
-                      </button>
-                    ) : (
-                      <span className="text-[11px] text-slate-400 hidden sm:inline-flex items-center gap-1">
-                        <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                        Dữ liệu được bảo vệ an toàn
-                      </span>
-                    )}
-
-                    {currentStep < 4 ? (
-                      <button
-                        type="button"
-                        onClick={handleNext}
-                        className="ml-auto px-6 sm:px-8 py-3 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-xs sm:text-sm shadow-lg shadow-teal-600/25 transition-all flex items-center gap-2 cursor-pointer hover:gap-3"
-                      >
-                        Tiếp tục
-                        <ArrowRight className="w-4 h-4" />
-                      </button>
-                    ) : (
-                      <button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="ml-auto px-7 sm:px-9 py-3 rounded-2xl bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 text-white font-extrabold text-xs sm:text-sm shadow-xl shadow-teal-600/30 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
-                      >
-                        {isSubmitting ? (
-                          <>
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                            Đang gửi khảo sát...
-                          </>
-                        ) : (
-                          <>
-                            <Send className="w-4 h-4" />
-                            Gửi khảo sát
-                          </>
-                        )}
-                      </button>
-                    )}
+                  <div className="flex items-center justify-between gap-3 pt-2">
+                    <span className="text-[11px] text-slate-400 hidden sm:inline-flex items-center gap-1">
+                      <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                      Dữ liệu được bảo vệ an toàn
+                    </span>
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="ml-auto px-7 sm:px-9 py-3 rounded-2xl bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 text-white font-extrabold text-xs sm:text-sm shadow-xl shadow-teal-600/30 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Đang gửi khảo sát...
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-4 h-4" />
+                          Gửi khảo sát
+                        </>
+                      )}
+                    </button>
                   </div>
                 </form>
               )}

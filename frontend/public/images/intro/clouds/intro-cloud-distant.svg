@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" fill="none" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <radialGradient id="introDistantCloudA" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFF8E9" stop-opacity="0.68" />
+      <stop offset="42%" stop-color="#F5EFE0" stop-opacity="0.34" />
+      <stop offset="72%" stop-color="#F5EFE0" stop-opacity="0.1" />
+      <stop offset="100%" stop-color="#FFF8E9" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="introDistantCloudB" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFF8E9" stop-opacity="0.64" />
+      <stop offset="46%" stop-color="#C9AB78" stop-opacity="0.22" />
+      <stop offset="75%" stop-color="#FFF8E9" stop-opacity="0.06" />
+      <stop offset="100%" stop-color="#FFF8E9" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="introDistantCloudC" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFF8E9" stop-opacity="0.54" />
+      <stop offset="48%" stop-color="#69A5A3" stop-opacity="0.16" />
+      <stop offset="76%" stop-color="#102832" stop-opacity="0.04" />
+      <stop offset="100%" stop-color="#102832" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <g>
+    <ellipse cx="560" cy="440" rx="800" ry="290" fill="url(#introDistantCloudA)" />
+    <ellipse cx="1380" cy="410" rx="860" ry="310" fill="url(#introDistantCloudB)" />
+    <ellipse cx="960" cy="740" rx="980" ry="340" fill="url(#introDistantCloudC)" />
+  </g>
+</svg>

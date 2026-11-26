@@ -35,8 +35,8 @@ export default function HeartButton({ placeId, variant = 'heart', showLabel = fa
     <span className="relative inline-flex items-center gap-1">
       <motion.button
         type="button"
-        whileHover={blocked || pending || reducedMotion ? undefined : { scale: 1.06 }}
-        whileTap={blocked || pending || reducedMotion ? undefined : { scale: 0.9 }}
+        whileHover={blocked || pending || reducedMotion ? undefined : { scale: 1.07 }}
+        whileTap={blocked || pending || reducedMotion ? undefined : { scale: 0.94 }}
         transition={SPRING.snappy}
         aria-label={!valid ? 'Địa điểm chưa liên kết dữ liệu để lưu' : isAuthenticated && !ready ? 'Đang chờ trạng thái yêu thích' : saved ? 'Bỏ lưu địa điểm yêu thích' : 'Lưu địa điểm yêu thích'}
         aria-description={placeName ? `Địa điểm: ${placeName}` : undefined}
@@ -52,12 +52,16 @@ export default function HeartButton({ placeId, variant = 'heart', showLabel = fa
             void toggle(placeId);
           }
         }}
-        className={`relative inline-flex items-center justify-center gap-2 shadow-md transition-colors duration-200 disabled:cursor-wait disabled:opacity-70 ${
+        className={`relative inline-flex items-center justify-center gap-2 transition-all duration-250 disabled:cursor-wait disabled:opacity-70 ${
           showLabel
-            ? `rounded-2xl border px-4 py-2 text-xs font-semibold sm:text-sm ${
-                saved ? 'border-red-300 bg-red-50 text-red-600' : 'border-gray-200 bg-white text-gray-700 hover:border-teal-300'
+            ? `rounded-[6px] border px-4 py-2 text-xs font-semibold sm:text-sm ${
+                saved ? 'border-rose-300 bg-rose-50 text-rose-600' : 'border-[#DEDAD2] bg-white text-[#202B30] hover:border-[#C9B580]'
               }`
-            : 'rounded-full bg-white/95 hover:bg-white p-2'
+            : `rounded-full w-9 h-9 backdrop-blur-md border shadow-[0_4px_14px_rgba(16,40,50,0.18)] ${
+                saved
+                  ? 'bg-white border-rose-200/90 text-rose-500'
+                  : 'bg-[#102832]/55 hover:bg-[#102832]/80 border-white/25 hover:border-[#E6D9B7]/75 text-[#F8F8F4]'
+              }`
         }`}
       >
         {/* Micro-burst 240ms khi lưu thành công */}
@@ -70,7 +74,7 @@ export default function HeartButton({ placeId, variant = 'heart', showLabel = fa
               exit={{ opacity: 0 }}
               transition={{ duration: 0.24, ease: 'easeOut' }}
               onAnimationComplete={() => setBurstKey(0)}
-              className="pointer-events-none absolute inset-0 rounded-full border-2 border-rose-400"
+              className="pointer-events-none absolute inset-0 rounded-full border border-[#E6D9B7]"
               aria-hidden="true"
             />
           )}
@@ -78,15 +82,21 @@ export default function HeartButton({ placeId, variant = 'heart', showLabel = fa
 
         <motion.span
           key={saved ? 'saved' : 'unsaved'}
-          initial={reducedMotion ? false : { scale: saved ? 0.75 : 0.9 }}
+          initial={reducedMotion ? false : { scale: saved ? 0.78 : 0.92 }}
           animate={{ scale: 1 }}
           transition={SPRING.snappy}
           className="inline-flex"
         >
           <Icon
-            size={showLabel ? 16 : 20}
-            strokeWidth={2}
-            className={`transition-colors duration-200 ${saved ? 'fill-red-500 text-red-500' : 'text-gray-600'}`}
+            size={showLabel ? 16 : 17}
+            strokeWidth={1.75}
+            className={`transition-colors duration-200 ${
+              saved
+                ? 'fill-rose-500 text-rose-500'
+                : showLabel
+                ? 'text-[#4E5E63]'
+                : 'text-[#F8F8F4]'
+            }`}
           />
         </motion.span>
         {showLabel && <span>{pending ? 'Đang cập nhật…' : saved ? 'Đã lưu địa điểm' : 'Lưu địa điểm'}</span>}

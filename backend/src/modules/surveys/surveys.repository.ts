@@ -19,7 +19,19 @@ export async function seedSurveyCatalog() {
         .query(
           "SELECT survey_id FROM dbo.surveys WITH(UPDLOCK,HOLDLOCK) WHERE survey_code=@code",
         );
-      if (existing.recordset.length) continue;
+      if (existing.recordset.length) {
+        // Đồng bộ cờ bắt buộc cho bộ câu hỏi hệ thống đã có (form rút gọn).
+        // Chỉ đổi is_required, không đổi cấu trúc nên an toàn với phản hồi cũ.
+        for (const q of questions)
+          await new sql.Request(tx)
+            .input("id", sql.Int, existing.recordset[0].survey_id)
+            .input("code", sql.VarChar(80), q.code)
+            .input("required", sql.Bit, q.required)
+            .query(
+              "UPDATE dbo.survey_questions SET is_required=@required WHERE survey_id=@id AND question_code=@code AND is_required<>@required",
+            );
+        continue;
+      }
       const created = await new sql.Request(tx)
         .input("code", sql.VarChar(80), `${type}_V1`)
         .input(

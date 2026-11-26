@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import {
   motion,
+  AnimatePresence,
   useScroll,
   useSpring,
   useReducedMotion,
@@ -34,40 +35,99 @@ export function GlobalScrollProgress() {
     return null;
   }
 
+  const isHomePage = pathname === "/";
+
   return (
     <motion.div
       aria-hidden="true"
-      className="fixed top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-teal-400 via-cyan-400 to-[#00B8A9] z-[60] origin-left pointer-events-none"
+      className={`fixed top-0 left-0 right-0 h-[2px] z-[60] origin-left pointer-events-none ${
+        isHomePage
+          ? "bg-[#E87B39]"
+          : "bg-[#216B70]"
+      }`}
       style={{ scaleX }}
     />
   );
 }
 
 // ── 2. SMOOTH PAGE TRANSITION WRAPPER ────────────────────────────────────────
+// Route depth helper: shallow routes (1 level) slide up, deep routes fade
+function getRouteDepth(pathname: string) {
+  return pathname.split("/").filter(Boolean).length;
+}
+
 export function PageTransition({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const reducedMotion = useReducedMotion();
+  const depth = getRouteDepth(pathname);
 
   if (reducedMotion) {
     return <>{children}</>;
   }
 
+  // Cinematic page transition: fade-in only (no exit fade to prevent white flash).
+  // Using mode="sync" so old and new page momentarily coexist, eliminating body bg flash.
+  const variants = {
+    initial: depth > 1
+      ? { opacity: 0, y: 10, scale: 0.996 }
+      : { opacity: 0, y: 6 },
+    animate: { opacity: 1, y: 0, scale: 1 },
+    // No exit — old page is replaced instantly; only new page animates in.
+    // This eliminates the white-flash gap between pages.
+  };
+
   return (
-    <motion.div
-      key={pathname}
-      initial={{ opacity: 0.92, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{
-        duration: DURATION.normal,
-        ease: EASING.standard,
-      }}
-    >
-      {children}
-    </motion.div>
+    <AnimatePresence mode="sync" initial={false}>
+      <motion.div
+        key={pathname}
+        variants={variants}
+        initial="initial"
+        animate="animate"
+        transition={{
+          duration: DURATION.normal,
+          ease: EASING.entrance,
+        }}
+        style={{ minHeight: "1px" }}
+      >
+        {children}
+      </motion.div>
+    </AnimatePresence>
   );
 }
 
-// ── 3. MAGNETIC INTERACTION WRAPPER (Dành riêng cho CTA chính trên Desktop) ───
+// ── 2b. PAGE LOAD BAR (Teal gradient chạy khi route thay đổi) ───────────────
+export function PageLoadBar() {
+  const pathname = usePathname();
+  const reducedMotion = useReducedMotion();
+  const [visible, setVisible] = useState(false);
+  const [key, setKey] = useState(0);
+  const isFirstMount = useRef(true);
+
+  useEffect(() => {
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
+      return;
+    }
+    if (reducedMotion) return;
+    setKey((k) => k + 1);
+    setVisible(true);
+    const timer = setTimeout(() => setVisible(false), 700);
+    return () => clearTimeout(timer);
+  }, [pathname, reducedMotion]);
+
+  if (!visible || reducedMotion) return null;
+
+  return (
+    <div
+      key={key}
+      aria-hidden="true"
+      className="page-transition-bar"
+      style={{ zIndex: 9999 }}
+    />
+  );
+}
+
+// ── 3. SMOOTH PAGE TRANSITION WRAPPER ────────────────────────────────────────
 interface MagneticProps {
   children: React.ReactNode;
   className?: string;

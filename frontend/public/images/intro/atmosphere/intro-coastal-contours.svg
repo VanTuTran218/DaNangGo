@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" fill="none" preserveAspectRatio="xMidYMid slice">
+  <g stroke="#C9AB78" stroke-width="0.75" stroke-linecap="round">
+    <path d="M-120 260 C260 165 540 340 940 235 C1340 130 1580 285 2040 175" stroke-opacity="0.16" />
+    <path d="M-120 340 C310 240 610 415 990 310 C1370 205 1620 355 2040 250" stroke-opacity="0.11" />
+    <path d="M-80 760 C320 650 680 830 1080 710 C1480 590 1680 735 2000 640" stroke-opacity="0.14" />
+    <circle cx="960" cy="540" r="390" stroke-opacity="0.11" stroke-dasharray="3 9" />
+    <circle cx="960" cy="540" r="540" stroke-opacity="0.08" />
+  </g>
+</svg>

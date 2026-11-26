@@ -91,7 +91,7 @@ export function PlanPlace({ place }: { place: ChatPlaceCard }) {
             Chỉ đường
           </Link>
         </div>
-        <MenuItems place={place} />
+        <MenuItems place={place} theme="dark" />
         <StayFacts place={place} />
       </div>
     </div>
@@ -372,7 +372,7 @@ export default function ItineraryCard({
           </ul>
         </div>
       )}
-      <TripPreferencesSummary plan={plan} />
+      <TripPreferencesSummary plan={plan} theme="dark" />
       <DayTabs
         plan={plan}
         messageId={messageId}

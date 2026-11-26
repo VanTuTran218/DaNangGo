@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 420" fill="none" preserveAspectRatio="none">
+  <defs>
+    <linearGradient id="distantMistBase" x1="960" y1="0" x2="960" y2="420" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#F8F8F4" stop-opacity="0" />
+      <stop offset="32%" stop-color="#F8F8F4" stop-opacity="0.22" />
+      <stop offset="68%" stop-color="#F1EFE7" stop-opacity="0.68" />
+      <stop offset="100%" stop-color="#F8F8F4" stop-opacity="0.98" />
+    </linearGradient>
+    <radialGradient id="distantBankA" cx="28%" cy="58%" r="42%" fx="28%" fy="58%">
+      <stop offset="0%" stop-color="#F8F8F4" stop-opacity="0.72" />
+      <stop offset="55%" stop-color="#F1EFE7" stop-opacity="0.34" />
+      <stop offset="100%" stop-color="#F8F8F4" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="distantBankB" cx="74%" cy="52%" r="46%" fx="74%" fy="52%">
+      <stop offset="0%" stop-color="#F8F8F4" stop-opacity="0.68" />
+      <stop offset="58%" stop-color="#BCD3D1" stop-opacity="0.26" />
+      <stop offset="100%" stop-color="#F8F8F4" stop-opacity="0" />
+    </radialGradient>
+    <filter id="mistFeatherA" x="-15%" y="-25%" width="130%" height="150%">
+      <feGaussianBlur stdDeviation="24" />
+    </filter>
+  </defs>
+  <g filter="url(#mistFeatherA)">
+    <ellipse cx="520" cy="245" rx="680" ry="135" fill="url(#distantBankA)" />
+    <ellipse cx="1410" cy="228" rx="740" ry="145" fill="url(#distantBankB)" />
+    <path d="M-120 420 L-120 210 C140 140 390 250 680 185 C970 120 1240 225 1540 165 C1720 130 1890 175 2040 155 L2040 420 Z" fill="url(#distantMistBase)" />
+  </g>
+</svg>

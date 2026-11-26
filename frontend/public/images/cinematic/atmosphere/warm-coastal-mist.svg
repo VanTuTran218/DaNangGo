@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 500" fill="none" preserveAspectRatio="none">
+  <defs>
+    <radialGradient id="mistCloudLeft" cx="35%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFF9EF" stop-opacity="0.65" />
+      <stop offset="52%" stop-color="#F8F2E8" stop-opacity="0.28" />
+      <stop offset="100%" stop-color="#F8F2E8" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="mistCloudRight" cx="68%" cy="45%" r="48%">
+      <stop offset="0%" stop-color="#FFF9EF" stop-opacity="0.58" />
+      <stop offset="48%" stop-color="#EAB47D" stop-opacity="0.16" />
+      <stop offset="100%" stop-color="#F8F2E8" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <ellipse cx="520" cy="250" rx="620" ry="150" fill="url(#mistCloudLeft)" />
+  <ellipse cx="1120" cy="220" rx="560" ry="140" fill="url(#mistCloudRight)" />
+</svg>

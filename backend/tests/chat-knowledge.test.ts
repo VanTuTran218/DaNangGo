@@ -56,6 +56,10 @@ test("Câu hỏi thông thường vẫn đi qua truy xuất, không bị chặn 
   for (const question of ["Tôi dị ứng đậu phộng", "an chay", "không ăn hải sản", "ít cay"])
     assert.equal(dietaryConcern(question), true);
 });
+test("Mốc Mỹ Khê/Cầu Rồng đã nêu không bị yêu cầu cấp GPS lại", () => {
+  assert.equal(knowledgeReply("Tôi đang ở gần Mỹ Khê, có gì quanh đây?"), null);
+  assert.equal(knowledgeReply("Tôi đang ở gần Cầu Rồng, có gì gần đây?"), null);
+});
 test("Không tính tổng khi ngân sách của nhiều người chưa rõ phạm vi", () => {
   const brief = tripBrief("Có 3 triệu đi 1 ngày, ăn ngon, chụp ảnh, có chỗ nghỉ", []);
   assert.equal(brief.request.budget, null);

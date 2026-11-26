@@ -1,14 +1,11 @@
 'use client';
 
 /**
- * AuthHeroPanel — Cinematic Da Nang Panel (Left Side)
- * ──────────────────────────────────────────────────
- * Trải nghiệm hình ảnh cao cấp:
- * - Slideshow các địa danh biểu tượng Đà Nẵng sắc nét (Cầu Rồng, Cầu Vàng, Phố Cổ)
- * - Gradient overlay nhiều tầng chuẩn Deep Navy (#061B30) và Ocean Blue (#087E9C)
- * - Hiệu ứng Ken Burns nhẹ nhàng, tối ưu GPU transform-only
- * - Huy hiệu "ĐẶC QUYỀN HỘI VIÊN DANANGGO" viền kính mờ, chữ cam Sunset Orange
- * - Thẻ thống kê Glassmorphism 2.0 (120K+ Members, 4.9 Đánh giá, 25% Tiết kiệm) với hover lift
+ * AuthHeroPanel — Nocturnal Cinematic Showcase (Left Side)
+ * ────────────────────────────────────────────────────────
+ * - High-contrast Ivory & Champagne editorial typography (zero dark-on-dark overlap)
+ * - Ken Burns Đà Nẵng landmark slideshow (Cầu Rồng, Bà Nà Hills, Phố Cổ Hội An)
+ * - Multi-stop Deep Ocean scrim & Frosted Glass telemetry metrics
  */
 
 import { useState, useEffect } from 'react';
@@ -53,7 +50,6 @@ export default function AuthHeroPanel({ activeTab }: AuthHeroPanelProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const shouldReduceMotion = useReducedMotion();
 
-  // Tự động chuyển slide mỗi 6.5s
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % SLIDES.length);
@@ -61,16 +57,16 @@ export default function AuthHeroPanel({ activeTab }: AuthHeroPanelProps) {
     return () => clearInterval(timer);
   }, []);
 
-  const titlePrefix = activeTab === 'login'
-    ? 'Chào mừng bạn trở lại cộng đồng '
-    : 'Gia nhập cộng đồng ';
+  const headingMain =
+    activeTab === 'login' ? 'Chào mừng trở lại' : 'Gia nhập cộng đồng';
 
-  const desc = activeTab === 'login'
-    ? 'Hàng trăm điểm đến, ẩm thực và lịch trình cá nhân hóa chờ đón bạn khám phá.'
-    : 'Tích điểm mỗi lần đặt chỗ, nhận ưu đãi Hạng Bạc ngay khi đăng ký và mở khóa deal độc quyền.';
+  const desc =
+    activeTab === 'login'
+      ? 'Hàng trăm điểm đến tuyển chọn, ẩm thực bản địa và lịch trình AI cá nhân hóa đang chờ bạn khám phá.'
+      : 'Tích điểm mỗi chuyến đi, mở khóa đặc quyền Hạng Bạc và đồng bộ lịch trình thông minh trên mọi thiết bị.';
 
   return (
-    <div className="hidden lg:block relative h-full w-full overflow-hidden select-none bg-[#061B30]">
+    <div className="hidden lg:block relative h-full w-full overflow-hidden select-none bg-[#05141C]">
       {/* ── 1. CINEMATIC BACKGROUND SLIDESHOW ── */}
       <AnimatePresence initial={false}>
         <motion.div
@@ -82,17 +78,8 @@ export default function AuthHeroPanel({ activeTab }: AuthHeroPanelProps) {
           className="absolute inset-0"
         >
           <motion.div
-            animate={
-              shouldReduceMotion
-                ? {}
-                : {
-                    scale: [1, 1.05],
-                  }
-            }
-            transition={{
-              duration: 8,
-              ease: 'easeInOut',
-            }}
+            animate={shouldReduceMotion ? {} : { scale: [1, 1.06] }}
+            transition={{ duration: 8, ease: 'easeInOut' }}
             className="w-full h-full relative"
           >
             <Image
@@ -100,6 +87,7 @@ export default function AuthHeroPanel({ activeTab }: AuthHeroPanelProps) {
               alt={SLIDES[currentSlide].alt}
               fill
               priority
+              unoptimized
               sizes="(max-width: 1024px) 100vw, 50vw"
               className="object-cover object-center"
             />
@@ -107,111 +95,104 @@ export default function AuthHeroPanel({ activeTab }: AuthHeroPanelProps) {
         </motion.div>
       </AnimatePresence>
 
-      {/* ── 2. MULTI-LAYER OVERLAYS: Tối ưu tương phản, bảo đảm sắc độ ── */}
-      {/* Lớp đỉnh: Navy trong suốt */}
-      <div className="absolute inset-x-0 top-0 h-44 bg-gradient-to-b from-[#061B30]/85 via-[#061B30]/40 to-transparent pointer-events-none" />
-
-      {/* Lớp giữa: Ocean Blue tint nhẹ tạo chiều sâu biển miền Trung */}
+      {/* ── 2. MULTI-STOP NOCTURNAL SCRIM (HIGH CONTRAST FOR EVERY PHOTO) ── */}
       <div
-        className="absolute inset-0 pointer-events-none opacity-40 mix-blend-multiply"
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0"
         style={{
-          background: 'radial-gradient(ellipse at 50% 60%, rgba(8,126,156,0.3) 0%, transparent 70%)',
+          background:
+            'linear-gradient(180deg, rgba(4,16,23,0.72) 0%, rgba(5,20,28,0.34) 36%, rgba(5,19,27,0.76) 66%, rgba(4,16,23,0.96) 100%)',
         }}
       />
 
-      {/* Lớp đáy: Deep Navy (#061B30) để chữ và thẻ nổi bật */}
-      <div className="absolute inset-0 bg-gradient-to-t from-[#061B30] via-[#061B30]/75 to-transparent pointer-events-none" />
-
-      {/* ── 3. THÔNG TIN VỊ TRÍ ẢNH HIỆN TẠI (GÓC TRÊN PHẢI CỦA LEFT PANEL) ── */}
-      <div className="absolute top-4 sm:top-6 right-6 z-20">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-white/90 text-xs font-medium shadow-xs">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#11C5C6] animate-pulse" />
+      {/* ── 3. LIVE LOCATION TELEMETRY PILL (TOP RIGHT OF LEFT PANEL) ── */}
+      <div className="absolute top-6 right-6 z-20">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#06151C]/80 backdrop-blur-xl border border-[#E6D9B7]/30 text-[#FFFDF5] text-xs font-medium shadow-[0_10px_24px_rgba(2,10,15,0.45)]">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#E87B39] animate-pulse" />
           <span>{SLIDES[currentSlide].location}</span>
         </div>
       </div>
 
-      {/* ── 4. NỘI DUNG QUẢNG BÁ & ĐẶC QUYỀN HỘI VIÊN ── */}
-      <div className="relative h-full flex flex-col justify-end p-8 lg:p-10 xl:p-12 text-white z-10">
+      {/* ── 4. EDITORIAL SHOWCASE CONTENT ── */}
+      <div className="relative h-full flex flex-col justify-end p-9 xl:p-11 z-10">
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
+          key={activeTab}
+          initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: 'easeOut' }}
-          className="flex flex-col gap-5 max-w-lg"
+          transition={{ duration: 0.45, ease: 'easeOut' }}
+          className="flex flex-col gap-4 max-w-md"
         >
-          {/* Badge & Slogan */}
-          <div className="flex flex-col items-start gap-2.5">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/15 backdrop-blur-md border border-white/20 transition-colors shadow-xs">
-              <Sparkles className="w-3.5 h-3.5 text-[#FF6A00]" />
-              <span className="text-[11px] sm:text-xs font-bold tracking-widest text-[#FF6A00] uppercase">
+          {/* Eyebrow Badge */}
+          <div className="flex flex-col items-start gap-2">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#06151C]/78 backdrop-blur-xl border border-[#E6D9B7]/35 shadow-sm">
+              <Sparkles className="w-3.5 h-3.5 text-[#E87B39]" />
+              <span className="text-[10.5px] font-bold tracking-[0.18em] text-[#E6D9B7] uppercase">
                 Đặc quyền hội viên DanangGo
               </span>
             </div>
-            <span className="text-[11px] tracking-[0.2em] uppercase text-cyan-200/70 font-medium">
-              Cẩm nang du lịch số #1 Đà Nẵng
+            <span className="text-[10.5px] tracking-[0.22em] uppercase text-[#CBD9DA]/80 font-medium pl-1">
+              {SLIDES[currentSlide].tag} · ĐÀ NẴNG
             </span>
           </div>
 
-          {/* Heading */}
-          <h2 className="text-2xl sm:text-3xl xl:text-4xl font-extrabold leading-tight tracking-tight font-display text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)]">
-            {titlePrefix}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#11C5C6] via-[#27E5DD] to-[#087E9C]">
+          {/* Crisp Two-Tone Editorial Heading (Explicit Ivory + Champagne, zero dark-on-dark) */}
+          <h2 className="cinematic-condensed uppercase text-3xl xl:text-[2.65rem] font-bold leading-[1.06] tracking-[0.01em] text-[#FFFDF5] drop-shadow-[0_4px_18px_rgba(2,10,15,0.65)]">
+            {headingMain}
+            <span className="block home-serif italic font-normal normal-case text-[#E6D9B7] mt-1 tracking-normal">
               DanangGo Club
             </span>
           </h2>
 
           {/* Description */}
-          <p className="text-sm sm:text-base text-slate-200/90 leading-relaxed font-normal">
+          <p className="text-sm text-[#CBD9DA]/88 leading-relaxed font-normal">
             {desc}
           </p>
 
-          {/* ── 5. THẺ THỐNG KÊ (GLASSMORPHISM 2.0) ── */}
-          <div className="grid grid-cols-3 gap-3 pt-2">
-            {/* Thẻ 1: Members */}
-            <div className="group flex flex-col justify-between p-3.5 sm:p-4 rounded-2xl bg-white/10 hover:bg-white/15 backdrop-blur-md border border-white/20 hover:border-white/35 transition-all duration-250 hover:-translate-y-1 shadow-sm">
-              <span className="text-xl sm:text-2xl font-black tracking-tight text-white font-display">
+          {/* ── 5. FROSTED SMOKED-GLASS METRICS ── */}
+          <div className="grid grid-cols-3 gap-2.5 pt-2">
+            <div className="flex flex-col justify-between p-3.5 rounded-2xl bg-[#071821]/78 hover:bg-[#0A222E]/88 backdrop-blur-xl border border-[#E6D9B7]/22 transition-colors">
+              <span className="text-xl font-bold font-mono tracking-tight text-[#FFFDF5]">
                 <AnimatedCounter to={120} />K+
               </span>
-              <span className="text-xs text-slate-300 font-medium mt-1">
-                Members
+              <span className="text-[11px] text-[#E6D9B7]/85 font-medium mt-1">
+                Hội viên
               </span>
             </div>
 
-            {/* Thẻ 2: Đánh giá */}
-            <div className="group flex flex-col justify-between p-3.5 sm:p-4 rounded-2xl bg-white/10 hover:bg-white/15 backdrop-blur-md border border-white/20 hover:border-white/35 transition-all duration-250 hover:-translate-y-1 shadow-sm">
+            <div className="flex flex-col justify-between p-3.5 rounded-2xl bg-[#071821]/78 hover:bg-[#0A222E]/88 backdrop-blur-xl border border-[#E6D9B7]/22 transition-colors">
               <div className="flex items-center gap-1">
-                <span className="text-xl sm:text-2xl font-black tracking-tight text-white font-display">
+                <span className="text-xl font-bold font-mono tracking-tight text-[#FFFDF5]">
                   <AnimatedCounter to={4.9} decimals={1} />
                 </span>
-                <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400 shrink-0" />
+                <Star className="w-3.5 h-3.5 text-[#E87B39] fill-[#E87B39] shrink-0" />
               </div>
-              <span className="text-xs text-slate-300 font-medium mt-1">
+              <span className="text-[11px] text-[#E6D9B7]/85 font-medium mt-1">
                 Đánh giá
               </span>
             </div>
 
-            {/* Thẻ 3: Tiết kiệm */}
-            <div className="group flex flex-col justify-between p-3.5 sm:p-4 rounded-2xl bg-white/10 hover:bg-white/15 backdrop-blur-md border border-white/20 hover:border-white/35 transition-all duration-250 hover:-translate-y-1 shadow-sm">
-              <span className="text-xl sm:text-2xl font-black tracking-tight text-white font-display">
+            <div className="flex flex-col justify-between p-3.5 rounded-2xl bg-[#071821]/78 hover:bg-[#0A222E]/88 backdrop-blur-xl border border-[#E6D9B7]/22 transition-colors">
+              <span className="text-xl font-bold font-mono tracking-tight text-[#FFFDF5]">
                 <AnimatedCounter to={25} />%
               </span>
-              <span className="text-xs text-slate-300 font-medium mt-1 leading-tight">
+              <span className="text-[11px] text-[#E6D9B7]/85 font-medium mt-1">
                 Tiết kiệm
               </span>
             </div>
           </div>
 
-          {/* ── Slide Indicators ── */}
-          <div className="flex items-center gap-1.5 pt-1">
-            {SLIDES.map((_, idx) => (
+          {/* ── SLIDE INDICATORS ── */}
+          <div className="flex items-center gap-2 pt-2">
+            {SLIDES.map((slide, idx) => (
               <button
-                key={idx}
+                key={slide.location}
                 type="button"
                 onClick={() => setCurrentSlide(idx)}
-                aria-label={`Chuyển tới ảnh ${idx + 1}`}
-                className={`h-1 rounded-full transition-all duration-300 ${
+                aria-label={`Chuyển tới ảnh ${slide.location}`}
+                className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
                   currentSlide === idx
-                    ? 'w-6 bg-[#11C5C6]'
-                    : 'w-2 bg-white/30 hover:bg-white/50'
+                    ? 'w-8 bg-[#E6D9B7]'
+                    : 'w-2 bg-[#FFFDF5]/30 hover:bg-[#FFFDF5]/60'
                 }`}
               />
             ))}

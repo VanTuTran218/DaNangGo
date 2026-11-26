@@ -4,6 +4,7 @@ import { comparePlaces, comparisonNames, resolvePlaceName } from "../src/modules
 import { editTravelPlan, attachPlanCosts, updateEditedPlanPreferences, isPlanEdit } from "../src/modules/chat/chat.plan-edit";
 import { placeCard } from "../src/modules/chat/chat.advisor";
 import { readAdvisorTurn, writeAdvisorTurn } from "../src/modules/chat/chat.advisor-state";
+import { comparisonConclusion } from "../src/modules/chat/chat.advanced";
 import { itineraryDraft } from "../src/modules/chat/chat.saved-plan";
 import type { ChatTravelPlan } from "../src/modules/chat/chat.types";
 import type { PlaceSearchRow } from "../src/modules/chat/chat.repository";
@@ -37,6 +38,14 @@ test("Bảng so sánh không bịa giá, điểm đánh giá hoặc giờ nhận
   assert.equal(table.rows.find(row => row.label === "Giá trong catalog")?.values[1], "Chưa có dữ liệu");
   assert.ok(table.rows.find(row => row.label === "Đánh giá trong hệ thống")?.values.every(value => value === "Chưa có đánh giá"));
   assert.ok(!JSON.stringify(table).includes("5/5"));
+});
+test("So sánh tiếp nối dùng giá và số đánh giá khi hai trường cùng có dữ liệu", () => {
+  const affordable = { ...row(10, "Chỗ ở A", 400000, "ACCOMMODATION"), priceText: "Từ 400.000đ/đêm", reviewCount: 6 };
+  const premium = { ...row(11, "Chỗ ở B", 700000, "ACCOMMODATION"), priceText: "Từ 700.000đ/đêm", reviewCount: 12 };
+  assert.match(comparisonConclusion("Nơi nào rẻ hơn?", [affordable, premium])!, /Chỗ ở A.*thấp hơn/);
+  assert.match(comparisonConclusion("Nơi nào có nhiều đánh giá hơn?", [affordable, premium])!, /12 đánh giá cho Chỗ ở B/);
+  assert.equal(comparisonConclusion("Nơi nào rẻ hơn?", [affordable, row(12, "Không rõ giá", null, "ACCOMMODATION")]), null);
+  assert.equal(comparisonConclusion("Nơi nào rẻ hơn?", [affordable, row(13, "Quán ăn", 50000, "RESTAURANT")]), null);
 });
 test("Bỏ một mục tính lại vé và giữ nguyên ngày khác, bản gốc, dự phòng", () => {
   const original = fixture(), before = structuredClone(original);

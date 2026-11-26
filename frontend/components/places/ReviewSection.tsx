@@ -202,12 +202,12 @@ export default function ReviewSection({
   return (
     <section
       id="danh-gia"
-      className="mt-10 rounded-3xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8"
+      className="mb-8 rounded-[16px] border border-[#E5DAC8] bg-[#FFFDF9] p-6 sm:p-8 shadow-[0_14px_38px_rgba(16,40,50,0.05)]"
     >
-      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-gray-100 pb-6">
+      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-[#E8DDCF] pb-6">
         <div className="flex min-w-0 items-center gap-4">
           {imageUrl ? (
-            <div className="relative h-16 w-20 shrink-0 overflow-hidden rounded-xl bg-slate-200 sm:h-20 sm:w-28">
+            <div className="relative h-16 w-20 shrink-0 overflow-hidden rounded-[10px] border border-[#E5DAC8] bg-[#091E27] sm:h-20 sm:w-28">
               <Image
                 src={imageUrl}
                 alt={`Hình ảnh ${placeName}`}
@@ -218,27 +218,32 @@ export default function ReviewSection({
               />
             </div>
           ) : (
-            <div className="relative flex h-16 w-20 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-400 sm:h-20 sm:w-28">
+            <div className="relative flex h-16 w-20 shrink-0 items-center justify-center rounded-[10px] bg-[#F6EFE2] text-[#738086] sm:h-20 sm:w-28">
               <span className="text-xs">Không có ảnh</span>
             </div>
           )}
           <div>
-            <h2 className="text-2xl font-bold text-[#0f2942]">Đánh giá</h2>
-            <p className="mt-1 text-sm text-gray-500">
-              Chia sẻ trải nghiệm tại{" "}
-              <span className="font-medium text-gray-700">{placeName}</span>.
+            <p className="text-[10.5px] font-semibold uppercase tracking-[0.2em] text-[#216B70] mb-1">
+              Trải nghiệm thực tế
+            </p>
+            <h2 className="home-serif text-2xl sm:text-[26px] font-semibold text-[#102832]">
+              Đánh giá
+            </h2>
+            <p className="mt-0.5 text-xs sm:text-sm text-[#4F5D63]">
+              Chia sẻ cảm nhận tại{" "}
+              <span className="font-semibold text-[#102832]">{placeName}</span>.
             </p>
           </div>
         </div>
         <div
-          className="flex items-center gap-2"
+          className="inline-flex items-center gap-2 rounded-full bg-[#F7F2E8] border border-[#E5DAC8] px-4 py-2"
           aria-label={`Điểm trung bình ${Number(data?.avg_rating ?? 0).toFixed(1)} trên 5`}
         >
-          <Star size={22} className="fill-amber-400 text-amber-400" />
-          <span className="text-2xl font-bold text-[#0f2942]">
+          <Star size={19} className="fill-[#E87B39] text-[#E87B39]" />
+          <span className="home-serif text-2xl font-semibold text-[#102832]">
             {Number(data?.avg_rating ?? 0).toFixed(1)}
           </span>
-          <span className="text-sm text-gray-500">
+          <span className="text-xs sm:text-sm text-[#4F5D63]">
             ({data?.review_count ?? 0} đánh giá)
           </span>
         </div>
@@ -246,11 +251,11 @@ export default function ReviewSection({
 
       <div className="grid gap-6 pt-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(300px,0.85fr)]">
         <div>
-          <h3 className="mb-4 font-semibold text-gray-900">
-            Nhận xét
+          <h3 className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-[#216B70]">
+            Nhận xét từ du khách
           </h3>
           {loading ? (
-            <p className="text-sm text-gray-500">Đang tải đánh giá...</p>
+            <p className="text-sm text-[#738086]">Đang tải đánh giá...</p>
           ) : null}
           {loadError ? (
             <p role="alert" className="text-sm text-red-600">
@@ -268,19 +273,19 @@ export default function ReviewSection({
           !loadError &&
           data?.reviews.length === 0 &&
           !ownApprovedReview ? (
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-[#738086]">
               Chưa có đánh giá nào.
             </p>
           ) : null}
-          <div className="space-y-3">
+          <div className="space-y-3.5">
             {ownApprovedReview ? (
-              <article className="rounded-2xl border border-teal-200 bg-teal-50/50 p-4 shadow-sm">
-                <p className="font-semibold text-gray-900">{user?.name ?? "Bạn"} · Đánh giá của bạn</p>
-                <time className="mt-1 block text-xs text-gray-500" dateTime={ownApprovedReview.created_at}>{new Date(ownApprovedReview.created_at).toLocaleDateString("vi-VN")}</time>
-                <p className="mt-2 text-amber-500" aria-label={`${ownApprovedReview.rating} trên 5 sao`}>{"★".repeat(ownApprovedReview.rating)}{"☆".repeat(5 - ownApprovedReview.rating)}</p>
-                <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-gray-700">{ownApprovedReview.comment}</p>
+              <article className="rounded-[12px] border border-[#C9B580] bg-[#F7F2E8] p-4 sm:p-5">
+                <p className="font-semibold text-[#102832]">{user?.name ?? "Bạn"} · Đánh giá của bạn</p>
+                <time className="mt-1 block text-xs text-[#738086]" dateTime={ownApprovedReview.created_at}>{new Date(ownApprovedReview.created_at).toLocaleDateString("vi-VN")}</time>
+                <p className="mt-2 text-[#E87B39]" aria-label={`${ownApprovedReview.rating} trên 5 sao`}>{"★".repeat(ownApprovedReview.rating)}{"☆".repeat(5 - ownApprovedReview.rating)}</p>
+                <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-[#202B30]">{ownApprovedReview.comment}</p>
                 <ReviewPhotoGrid images={ownApprovedReview.images ?? []} />
-                {ownApprovedReview.partner_reply && <div className="mt-3 rounded-xl border-l-2 border-teal-500 bg-white p-3 text-sm"><p className="font-semibold text-teal-800">Phản hồi từ cơ sở</p><p className="mt-1 whitespace-pre-wrap">{ownApprovedReview.partner_reply}</p></div>}
+                {ownApprovedReview.partner_reply && <div className="mt-3 rounded-[8px] border-l-2 border-[#216B70] bg-white p-3 text-sm"><p className="font-semibold text-[#216B70]">Phản hồi từ cơ sở</p><p className="mt-1 whitespace-pre-wrap">{ownApprovedReview.partner_reply}</p></div>}
               </article>
             ) : null}
             {data?.reviews
@@ -290,33 +295,38 @@ export default function ReviewSection({
               .map((review: PlaceReview) => (
                 <article
                   key={review.review_id}
-                  className="rounded-2xl border border-slate-100 bg-gradient-to-br from-white to-slate-50/80 p-4 shadow-sm transition hover:border-teal-100"
+                  className="rounded-[12px] border border-[#E5DAC8] bg-[#F7F2E8]/65 p-4 sm:p-5 transition-colors hover:border-[#C9B580]"
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="font-semibold text-gray-900">
-                      {review.reviewer_name}
-                    </p>
+                    <div className="flex items-center gap-2.5">
+                      <span className="w-8 h-8 rounded-full bg-[#091E27] text-[#E6D9B7] text-xs font-semibold flex items-center justify-center shrink-0">
+                        {(review.reviewer_name || "K").trim().charAt(0).toUpperCase()}
+                      </span>
+                      <p className="font-semibold text-sm text-[#102832]">
+                        {review.reviewer_name}
+                      </p>
+                    </div>
                     <time
-                      className="text-xs text-gray-500"
+                      className="text-xs text-[#6E7D82]"
                       dateTime={review.created_at}
                     >
                       {new Date(review.created_at).toLocaleDateString("vi-VN")}
                     </time>
                   </div>
                   <p
-                    className="mt-1 text-sm text-amber-500"
+                    className="mt-2 text-sm text-[#E87B39] tracking-wide"
                     aria-label={`${review.rating} trên 5 sao`}
                   >
                     {"★".repeat(review.rating)}
                     {"☆".repeat(5 - review.rating)}
                   </p>
                   {review.comment ? (
-                    <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-gray-700">
+                    <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-[#2C3B40]">
                       {review.comment}
                     </p>
                   ) : null}
                   <ReviewPhotoGrid images={review.images ?? []} />
-                  {review.partner_reply && <div className="mt-3 rounded-xl border-l-2 border-teal-500 bg-teal-50 p-3 text-sm"><p className="font-semibold text-teal-800">Phản hồi từ cơ sở</p><p className="mt-1 whitespace-pre-wrap text-slate-700">{review.partner_reply}</p></div>}
+                  {review.partner_reply && <div className="mt-3 rounded-[8px] border-l-2 border-[#216B70] bg-[#FFFDF9] p-3 text-sm"><p className="font-semibold text-[#216B70]">Phản hồi từ cơ sở</p><p className="mt-1 whitespace-pre-wrap text-[#202B30]">{review.partner_reply}</p></div>}
                 </article>
               ))}
           </div>
@@ -326,18 +336,18 @@ export default function ReviewSection({
                 type="button"
                 disabled={page <= 1 || loading}
                 onClick={() => setPage((value) => value - 1)}
-                className="rounded-lg border px-3 py-2 text-sm disabled:opacity-40"
+                className="rounded-full border border-[#E5DAC8] bg-white px-4 py-1.5 text-xs font-semibold text-[#102832] hover:border-[#C9B580] disabled:opacity-40 cursor-pointer"
               >
                 Trước
               </button>
-              <span className="text-sm text-gray-500">
+              <span className="text-xs font-medium text-[#4F5D63]">
                 Trang {page}/{data.pagination.total_pages}
               </span>
               <button
                 type="button"
                 disabled={page >= data.pagination.total_pages || loading}
                 onClick={() => setPage((value) => value + 1)}
-                className="rounded-lg border px-3 py-2 text-sm disabled:opacity-40"
+                className="rounded-full border border-[#E5DAC8] bg-white px-4 py-1.5 text-xs font-semibold text-[#102832] hover:border-[#C9B580] disabled:opacity-40 cursor-pointer"
               >
                 Tiếp
               </button>
@@ -345,10 +355,10 @@ export default function ReviewSection({
           ) : null}
         </div>
 
-        <div className="rounded-2xl border border-slate-100 bg-gradient-to-b from-slate-50 to-white p-5 shadow-sm sm:p-6">
-          <h3 className="font-semibold text-gray-900">Viết đánh giá</h3>
+        <div className="rounded-[14px] border border-[#E5DAC8] bg-[#F7F2E8]/80 p-5 sm:p-6 self-start">
+          <h3 className="home-serif text-lg font-semibold text-[#102832]">Viết đánh giá</h3>
           {!authLoading && user?.role === "USER" ? (
-            <p className="mt-1 text-xs leading-5 text-gray-500">
+            <p className="mt-1 text-xs leading-5 text-[#4F5D63]">
               Bạn có thể gửi nhiều đánh giá, kể cả cho cùng địa điểm. Mỗi địa
               điểm cần cách nhau đúng 7 ngày giữa các lần gửi.
             </p>
@@ -357,7 +367,7 @@ export default function ReviewSection({
             <>
               <p
                 role="status"
-                className="mt-3 rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-sm text-emerald-800"
+                className="mt-3 rounded-[8px] border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800"
               >
                 {notice}
               </p>
@@ -370,34 +380,39 @@ export default function ReviewSection({
           {error ? (
             <p
               role="alert"
-              className="mt-3 rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-700"
+              className="mt-3 rounded-[8px] border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
             >
               {error}
             </p>
           ) : null}
           {authLoading ? (
-            <p className="mt-3 text-sm text-gray-500">
+            <p className="mt-3 text-sm text-[#738086]">
               Đang kiểm tra đăng nhập...
             </p>
           ) : null}
           {!authLoading && !user ? (
-            <Link
-              href={`/dang-nhap?redirect=${encodeURIComponent(`/places/${placeId}#danh-gia`)}`}
-              className="mt-4 inline-flex rounded-xl bg-[#0f2942] px-4 py-3 text-sm font-semibold text-white hover:bg-[#1a3f5c]"
-            >
-              Đăng nhập để đánh giá
-            </Link>
+            <div className="mt-4 space-y-3">
+              <p className="text-xs leading-relaxed text-[#4F5D63]">
+                Đăng nhập tài khoản du khách để chia sẻ cảm nhận và đính kèm hình ảnh thực tế.
+              </p>
+              <Link
+                href={`/dang-nhap?redirect=${encodeURIComponent(`/places/${placeId}#danh-gia`)}`}
+                className="inline-flex w-full items-center justify-center rounded-full bg-[#091E27] px-5 py-3 text-xs font-semibold uppercase tracking-[0.12em] text-[#FFFDF5] hover:bg-[#216B70] transition-colors"
+              >
+                Đăng nhập để đánh giá
+              </Link>
+            </div>
           ) : null}
           {!authLoading && user && user.role !== "USER" ? (
-            <p className="mt-3 text-sm text-gray-500">
+            <p className="mt-3 text-sm text-[#4F5D63]">
               Chỉ tài khoản khách du lịch mới có thể gửi đánh giá.
             </p>
           ) : null}
           {!authLoading && user?.role === "USER" && myReview && myReview.status !== "APPROVED" ? (
-            <article className="mt-4 rounded-2xl border border-teal-100 bg-white p-4 shadow-sm">
-              <p className="text-sm font-semibold text-gray-700">{myReview.status === "PENDING" ? "Đánh giá cũ chưa được chuyển trạng thái" : "Đang ẩn"}</p>
-              <p className="mt-2 text-amber-500">{"★".repeat(myReview.rating)}{"☆".repeat(5 - myReview.rating)}</p>
-              <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-gray-700">{myReview.comment}</p>
+            <article className="mt-4 rounded-[4px] border border-[#DEDAD2] bg-white p-4">
+              <p className="text-sm font-semibold text-[#102832]">{myReview.status === "PENDING" ? "Đánh giá cũ chưa được chuyển trạng thái" : "Đang ẩn"}</p>
+              <p className="mt-2 text-[#E87B39]">{"★".repeat(myReview.rating)}{"☆".repeat(5 - myReview.rating)}</p>
+              <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-[#202B30]">{myReview.comment}</p>
               <ReviewPhotoGrid images={myReview.images ?? []} />
               {waiting ? (
                 <p className="mt-3 text-xs text-amber-700">
@@ -409,7 +424,7 @@ export default function ReviewSection({
               ) : null}
             </article>
           ) : !authLoading && user?.role === "USER" && waiting && !loadError ? (
-            <p role="status" className="mt-4 rounded-xl border border-amber-100 bg-amber-50 p-3 text-sm text-amber-900">
+            <p role="status" className="mt-4 rounded-[2px] border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
               Bạn cần chờ đủ 7 ngày kể từ lần đánh giá trước. Có thể đánh giá lại sau{" "}
               <time dateTime={new Date(nextReviewAt).toISOString()}>
                 {new Date(nextReviewAt).toLocaleString("vi-VN")}
@@ -418,12 +433,12 @@ export default function ReviewSection({
           ) : !authLoading && user?.role === "USER" && !loading && !loadError ? (
             <form onSubmit={submit} className="mt-4 space-y-4">
               <fieldset>
-                <legend className="mb-2 text-sm text-gray-600">Số sao</legend>
+                <legend className="mb-2 text-sm text-[#4F5D63]">Số sao</legend>
                 <div className="flex gap-1">
                   {[1, 2, 3, 4, 5].map((value) => (
                     <label
                       key={value}
-                      className="cursor-pointer rounded p-1 focus-within:outline focus-within:outline-2 focus-within:outline-amber-500"
+                      className="cursor-pointer rounded p-1 focus-within:outline focus-within:outline-2 focus-within:outline-[#E87B39]"
                     >
                       <input
                         type="radio"
@@ -439,8 +454,8 @@ export default function ReviewSection({
                         aria-hidden="true"
                         className={
                           value <= rating
-                            ? "fill-amber-400 text-amber-400"
-                            : "text-gray-300"
+                            ? "fill-[#E87B39] text-[#E87B39]"
+                            : "text-[#DEDAD2]"
                         }
                       />
                     </label>
@@ -449,7 +464,7 @@ export default function ReviewSection({
               </fieldset>
               <div>
                 <label
-                  className="mb-2 block text-sm text-gray-600"
+                  className="mb-2 block text-sm text-[#4F5D63]"
                   htmlFor="review-comment"
                 >
                   Nội dung đánh giá
@@ -461,16 +476,16 @@ export default function ReviewSection({
                   maxLength={1000}
                   rows={4}
                   required
-                  className="w-full resize-y rounded-xl border border-gray-200 bg-white p-3 text-sm outline-none focus:border-teal-500"
+                  className="w-full resize-y rounded-[2px] border border-[#DEDAD2] bg-white p-3 text-sm outline-none focus:border-[#216B70]"
                   placeholder="Chia sẻ trải nghiệm của bạn..."
                 />
-                <p className="text-right text-xs text-gray-400">
+                <p className="text-right text-xs text-[#738086]">
                   {comment.length}/1000
                 </p>
               </div>
               <div>
                 <div className="flex flex-wrap items-center gap-3">
-                  <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:border-teal-300 hover:bg-teal-50">
+                  <label className="inline-flex cursor-pointer items-center gap-2 rounded-[2px] border border-[#DEDAD2] bg-white px-3 py-2 text-sm font-medium text-[#102832] hover:border-[#216B70] hover:bg-[#F1EFE7]">
                     <ImagePlus size={17} aria-hidden="true" /> Chọn ảnh
                     <input
                       type="file"
@@ -481,7 +496,7 @@ export default function ReviewSection({
                       className="sr-only"
                     />
                   </label>
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-[#738086]">
                     Tối đa 5 ảnh, mỗi ảnh không quá 5 MB
                   </span>
                 </div>
@@ -490,7 +505,7 @@ export default function ReviewSection({
                     {selectedImages.map(({ file, url }) => (
                       <div
                         key={url}
-                        className="relative aspect-square overflow-hidden rounded-xl bg-slate-100"
+                        className="relative aspect-square overflow-hidden rounded-[2px] bg-[#E7E2D6]"
                       >
                         <Image
                           src={url}
@@ -517,7 +532,7 @@ export default function ReviewSection({
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full rounded-xl bg-teal-600 px-4 py-3 text-sm font-semibold text-white hover:bg-teal-700 disabled:opacity-60"
+                className="w-full rounded-full bg-[#091E27] px-5 py-3 text-xs font-semibold uppercase tracking-[0.12em] text-[#FFFDF5] hover:bg-[#216B70] transition-colors disabled:opacity-60 cursor-pointer"
               >
                 {submitting ? "Đang gửi..." : "Gửi đánh giá"}
               </button>

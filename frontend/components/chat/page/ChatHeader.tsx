@@ -1,4 +1,4 @@
-import { Menu, PanelRightClose, PanelRightOpen, RotateCcw } from "lucide-react";
+import { Compass, Menu, PanelRightClose, PanelRightOpen, RotateCcw } from "lucide-react";
 import { useReducedMotion } from "framer-motion";
 import ProfileMemory from "../ProfileMemory";
 import BotLogo from "../BotLogo";
@@ -7,6 +7,7 @@ import styles from "./ChatPage.module.css";
 export default function ChatHeader({
   loading,
   status,
+  hasPlan = false,
   onReset,
   onOpenSidebar,
   onOpenSummary,
@@ -15,6 +16,7 @@ export default function ChatHeader({
 }: {
   loading: boolean;
   status: string;
+  hasPlan?: boolean;
   onReset: () => void;
   onOpenSidebar: () => void;
   onOpenSummary: () => void;
@@ -30,10 +32,10 @@ export default function ChatHeader({
         className={`${styles.headerButton} ${styles.compactOnly}`}
         aria-label="Mở lối tắt trò chuyện"
       >
-        <Menu size={19} />
+        <Menu size={18} />
       </button>
       <div className={styles.headerAvatar}>
-        <BotLogo size={42} animated={!reduce} />
+        <BotLogo size={38} animated={!reduce} />
         <span className={styles.onlineBadge} />
       </div>
       <div className={styles.headerTitle}>
@@ -46,44 +48,43 @@ export default function ChatHeader({
           ) : (
             <>
               <i />
-              Trợ lý du lịch Đà Nẵng · Trực tuyến 24/7
+              Trực tuyến 24/7 · Dữ liệu Đà Nẵng
             </>
           )}
         </p>
       </div>
       <div className={styles.headerActions}>
-        <ProfileMemory />
+        <ProfileMemory theme="dark" />
         <button
           type="button"
           className={styles.headerButton}
           onClick={onReset}
           aria-label="Cuộc trò chuyện mới"
-          title="Cuộc trò chuyện mới"
+          title="Cuộc trò chuyện mới (⌘K)"
         >
-          <RotateCcw size={17} />
+          <RotateCcw size={16} />
         </button>
         <button
           type="button"
-          className={`${styles.headerButton} ${styles.desktopOnly}`}
+          className={`${styles.planTogglePill} ${styles.desktopOnly}`}
+          data-active={panelVisible}
           onClick={onTogglePanel}
           aria-label={
-            panelVisible ? "Thu gọn chuyến đi của bạn" : "Mở chuyến đi của bạn"
+            panelVisible ? "Thu gọn hành trình của bạn" : "Mở hành trình của bạn"
           }
           aria-expanded={panelVisible}
         >
-          {panelVisible ? (
-            <PanelRightClose size={18} />
-          ) : (
-            <PanelRightOpen size={18} />
-          )}
+          <Compass size={14} />
+          <span>{hasPlan ? "Lịch trình" : "Hành trình"}</span>
+          {panelVisible ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}
         </button>
         <button
           type="button"
           className={`${styles.headerButton} ${styles.compactOnly}`}
           onClick={onOpenSummary}
-          aria-label="Mở chuyến đi của bạn"
+          aria-label="Mở hành trình của bạn"
         >
-          <PanelRightOpen size={18} />
+          <PanelRightOpen size={17} />
         </button>
       </div>
     </header>

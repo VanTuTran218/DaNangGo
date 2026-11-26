@@ -1,33 +1,24 @@
 'use client';
 
-/**
- * RegisterForm — Biểu mẫu đăng ký DanangGo cao cấp
- * ───────────────────────────────────────────────
- * - Thiết kế chuẩn Modern Coastal Luxury & Glassmorphism 2.0
- * - Phân nhóm thông tin trực quan: Thông tin cá nhân, Phân loại tài khoản, Thiết lập bảo mật, Điều khoản
- * - Đồng bộ chiều cao input/select 50px, border-radius 12px, font Be Vietnam Pro
- * - Cuộn tự nhiên, nút Đăng ký luôn có đủ khoảng trống ở cuối
- * - Giữ nguyên 100% các field gửi lên backend, validation nghiệp vụ và bước OTP
- */
-
 import { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   User,
   Mail,
   Phone,
-  Building,
-  Briefcase,
-  ChevronDown,
+  Building2,
+  Compass,
+  BedDouble,
+  UtensilsCrossed,
+  Ticket,
   Check,
   AlertCircle,
   Sparkles,
+  ArrowRight,
 } from 'lucide-react';
 import PasswordField from './PasswordField';
 import PasswordStrength from './PasswordStrength';
 import { register } from '@/lib/api/auth';
-import { useAuth } from '@/contexts/AuthContext';
 import VerifyEmailStep from './VerifyEmailStep';
 
 interface RegisterFormProps {
@@ -35,12 +26,13 @@ interface RegisterFormProps {
   redirectTo: string;
 }
 
-export default function RegisterForm({ onSwitchToLogin, redirectTo }: RegisterFormProps) {
-  const router = useRouter();
-  const { login: setAuthUser } = useAuth();
-  const searchParams = useSearchParams();
-  const intent = searchParams.get('intent');
+const SERVICE_OPTIONS: { value: 'STAY' | 'TABLE' | 'TICKET'; label: string; icon: typeof BedDouble }[] = [
+  { value: 'STAY', label: 'Lưu trú', icon: BedDouble },
+  { value: 'TABLE', label: 'Ẩm thực', icon: UtensilsCrossed },
+  { value: 'TICKET', label: 'Vé tham quan', icon: Ticket },
+];
 
+export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -54,10 +46,8 @@ export default function RegisterForm({ onSwitchToLogin, redirectTo }: RegisterFo
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
   const [isLoading, setIsLoading] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
   const [shakeKey, setShakeKey] = useState(0);
 
-  // Bước xác thực email (null = chưa vào bước xác thực)
   const [verifyData, setVerifyData] = useState<{ email: string; maskedEmail: string } | null>(null);
 
   const validate = () => {
@@ -152,16 +142,6 @@ export default function RegisterForm({ onSwitchToLogin, redirectTo }: RegisterFo
     validate();
   };
 
-  const handleVerifySuccess = (verifiedEmail: string) => {
-    onSwitchToLogin(verifiedEmail);
-  };
-
-  const handleBackToRegister = () => {
-    setVerifyData(null);
-    setErrors({});
-  };
-
-  // Nếu đang ở bước xác thực OTP
   if (verifyData) {
     return (
       <AnimatePresence mode="wait">
@@ -169,8 +149,11 @@ export default function RegisterForm({ onSwitchToLogin, redirectTo }: RegisterFo
           key="verify"
           email={verifyData.email}
           maskedEmail={verifyData.maskedEmail}
-          onSuccess={handleVerifySuccess}
-          onBack={handleBackToRegister}
+          onSuccess={(verifiedEmail) => onSwitchToLogin(verifiedEmail)}
+          onBack={() => {
+            setVerifyData(null);
+            setErrors({});
+          }}
         />
       </AnimatePresence>
     );
@@ -181,28 +164,26 @@ export default function RegisterForm({ onSwitchToLogin, redirectTo }: RegisterFo
       onSubmit={handleSubmit}
       animate={shakeKey > 0 ? { x: [0, -8, 8, -6, 6, 0] } : {}}
       transition={{ duration: 0.4 }}
-      className="flex flex-col gap-5 w-full max-w-md mx-auto py-1"
+      className="flex flex-col gap-4 w-full py-1"
     >
-      {/* ── BANNER LỢI ÍCH ── */}
-      <div className="bg-gradient-to-r from-teal-50 to-cyan-50/60 border border-teal-200/60 rounded-xl p-3 sm:p-3.5 flex items-center gap-3 shadow-xs">
-        <div className="w-8 h-8 rounded-lg bg-teal-100/80 text-teal-700 flex items-center justify-center shrink-0">
-          <Sparkles className="w-4 h-4 text-[#087E9C]" />
-        </div>
-        <p className="text-xs sm:text-sm text-teal-900 font-medium leading-snug">
-          Đăng ký miễn phí để nhận ưu đãi Hạng Bạc và lưu lịch trình thông minh.
+      {/* ── BANNER ĐẶC QUYỀN ── */}
+      <div className="bg-[#0A2330]/85 border border-[#E6D9B7]/22 rounded-xl px-3.5 py-2.5 flex items-center gap-2.5">
+        <Sparkles className="w-4 h-4 text-[#E87B39] shrink-0" />
+        <p className="text-xs text-[#CBD9DA] leading-snug">
+          Miễn phí đăng ký · Nhận ngay ưu đãi <strong className="text-[#E6D9B7]">Hạng Bạc</strong> &amp; lưu lịch trình AI.
         </p>
       </div>
 
       {/* ── NHÓM 1: THÔNG TIN CÁ NHÂN ── */}
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3.5">
         {/* Họ và tên */}
         <div className="flex flex-col gap-1.5 w-full">
-          <label htmlFor="name" className="text-sm font-medium text-slate-700">
-            Họ và tên <span className="text-rose-500">*</span>
+          <label htmlFor="name" className="text-xs font-semibold uppercase tracking-[0.12em] text-[#E6D9B7]/90">
+            Họ và tên <span className="text-[#E87B39]">*</span>
           </label>
-          <div className="relative flex items-center">
-            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-              <User className="w-5 h-5" />
+          <div className="relative flex items-center group">
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#94B0B3] group-focus-within:text-[#E6D9B7] transition-colors">
+              <User className="w-[17px] h-[17px]" />
             </div>
             <input
               id="name"
@@ -212,170 +193,190 @@ export default function RegisterForm({ onSwitchToLogin, redirectTo }: RegisterFo
               onChange={(e) => setName(e.target.value)}
               onBlur={() => handleBlur('name')}
               placeholder="Nguyễn Văn A"
-              className={`block w-full pl-11 pr-4 h-[50px] bg-slate-50/50 hover:bg-white focus:bg-white border ${
+              className={`auth-dark-input block w-full pl-10 pr-4 h-[46px] bg-[#0A202B]/90 hover:bg-[#0D2835] focus:bg-[#0D2835] border ${
                 touched.name && errors.name
-                  ? 'border-rose-400 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/15'
-                  : 'border-slate-200 hover:border-slate-300 focus:border-[#11C5C6] focus:ring-4 focus:ring-[#11C5C6]/15'
-              } rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none transition-all duration-200 text-sm`}
+                  ? 'border-rose-400/75 focus:border-rose-400'
+                  : 'border-[#E6D9B7]/20 hover:border-[#E6D9B7]/40 focus:border-[#E6D9B7]/75'
+              } rounded-xl text-[#FFFDF5] placeholder:text-[#94B0B3]/55 focus:outline-none transition-all text-sm`}
             />
           </div>
           {touched.name && errors.name && (
-            <p role="alert" className="text-xs text-rose-500 mt-0.5 flex items-center gap-1 font-medium">
-              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+            <p role="alert" className="text-xs text-rose-300 flex items-center gap-1.5 font-medium">
+              <AlertCircle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
               <span>{errors.name}</span>
             </p>
           )}
         </div>
 
-        {/* Email */}
-        <div className="flex flex-col gap-1.5 w-full">
-          <label htmlFor="reg-email" className="text-sm font-medium text-slate-700">
-            Email <span className="text-rose-500">*</span>
-          </label>
-          <div className="relative flex items-center">
-            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-              <Mail className="w-5 h-5" />
+        {/* Email + Số điện thoại */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="reg-email" className="text-xs font-semibold uppercase tracking-[0.12em] text-[#E6D9B7]/90">
+              Email <span className="text-[#E87B39]">*</span>
+            </label>
+            <div className="relative flex items-center group">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#94B0B3] group-focus-within:text-[#E6D9B7] transition-colors">
+                <Mail className="w-4 h-4" />
+              </div>
+              <input
+                id="reg-email"
+                type="email"
+                required
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onBlur={() => handleBlur('email')}
+                placeholder="nhap@email.com"
+                className={`auth-dark-input block w-full pl-9 pr-3 h-[46px] bg-[#0A202B]/90 hover:bg-[#0D2835] focus:bg-[#0D2835] border ${
+                  touched.email && errors.email
+                    ? 'border-rose-400/75 focus:border-rose-400'
+                    : 'border-[#E6D9B7]/20 hover:border-[#E6D9B7]/40 focus:border-[#E6D9B7]/75'
+                } rounded-xl text-[#FFFDF5] placeholder:text-[#94B0B3]/55 focus:outline-none transition-all text-sm`}
+              />
             </div>
-            <input
-              id="reg-email"
-              type="email"
-              required
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              onBlur={() => handleBlur('email')}
-              placeholder="nhap@email.com"
-              className={`block w-full pl-11 pr-4 h-[50px] bg-slate-50/50 hover:bg-white focus:bg-white border ${
-                touched.email && errors.email
-                  ? 'border-rose-400 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/15'
-                  : 'border-slate-200 hover:border-slate-300 focus:border-[#11C5C6] focus:ring-4 focus:ring-[#11C5C6]/15'
-              } rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none transition-all duration-200 text-sm`}
-            />
+            {touched.email && errors.email && (
+              <p role="alert" className="text-xs text-rose-300 flex items-center gap-1 font-medium">
+                <AlertCircle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                <span>{errors.email}</span>
+              </p>
+            )}
           </div>
-          {touched.email && errors.email && (
-            <p role="alert" className="text-xs text-rose-500 mt-0.5 flex items-center gap-1 font-medium">
-              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-              <span>{errors.email}</span>
-            </p>
-          )}
-        </div>
 
-        {/* Số điện thoại */}
-        <div className="flex flex-col gap-1.5 w-full">
-          <label htmlFor="reg-phone" className="text-sm font-medium text-slate-700 flex items-center justify-between">
-            <span>Số điện thoại <span className="text-slate-400 font-normal">(không bắt buộc)</span></span>
-          </label>
-          <div className="relative flex items-center">
-            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-              <Phone className="w-5 h-5" />
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="reg-phone" className="text-xs font-semibold uppercase tracking-[0.12em] text-[#E6D9B7]/90">
+              SĐT <span className="normal-case font-normal text-[#94B0B3]">(tuỳ chọn)</span>
+            </label>
+            <div className="relative flex items-center group">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#94B0B3] group-focus-within:text-[#E6D9B7] transition-colors">
+                <Phone className="w-4 h-4" />
+              </div>
+              <input
+                id="reg-phone"
+                type="tel"
+                autoComplete="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                onBlur={() => handleBlur('phone')}
+                placeholder="09xxxxxxxx"
+                className={`auth-dark-input block w-full pl-9 pr-3 h-[46px] bg-[#0A202B]/90 hover:bg-[#0D2835] focus:bg-[#0D2835] border ${
+                  touched.phone && errors.phone
+                    ? 'border-rose-400/75 focus:border-rose-400'
+                    : 'border-[#E6D9B7]/20 hover:border-[#E6D9B7]/40 focus:border-[#E6D9B7]/75'
+                } rounded-xl text-[#FFFDF5] placeholder:text-[#94B0B3]/55 focus:outline-none transition-all text-sm`}
+              />
             </div>
-            <input
-              id="reg-phone"
-              type="tel"
-              autoComplete="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              onBlur={() => handleBlur('phone')}
-              placeholder="09xxxxxxxx"
-              className={`block w-full pl-11 pr-4 h-[50px] bg-slate-50/50 hover:bg-white focus:bg-white border ${
-                touched.phone && errors.phone
-                  ? 'border-rose-400 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/15'
-                  : 'border-slate-200 hover:border-slate-300 focus:border-[#11C5C6] focus:ring-4 focus:ring-[#11C5C6]/15'
-              } rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none transition-all duration-200 text-sm`}
-            />
+            {touched.phone && errors.phone && (
+              <p role="alert" className="text-xs text-rose-300 flex items-center gap-1 font-medium">
+                <AlertCircle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                <span>{errors.phone}</span>
+              </p>
+            )}
           </div>
-          {touched.phone && errors.phone && (
-            <p role="alert" className="text-xs text-rose-500 mt-0.5 flex items-center gap-1 font-medium">
-              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-              <span>{errors.phone}</span>
-            </p>
-          )}
         </div>
       </div>
 
-      {/* ── NHÓM 2: PHÂN LOẠI TÀI KHOẢN (USER / PARTNER) ── */}
-      <div className="flex flex-col gap-3 pt-1">
-        <div className="flex flex-col gap-1.5 w-full">
-          <label htmlFor="reg-role" className="text-sm font-medium text-slate-700">
-            Loại tài khoản <span className="text-rose-500">*</span>
-          </label>
-          <div className="relative flex items-center">
-            <select
-              id="reg-role"
-              value={role}
-              onChange={(e) => setRole(e.target.value as 'USER' | 'PARTNER')}
-              className="block w-full px-4 pr-10 h-[50px] bg-slate-50/50 hover:bg-white focus:bg-white border border-slate-200 hover:border-slate-300 focus:border-[#11C5C6] focus:ring-4 focus:ring-[#11C5C6]/15 rounded-xl text-slate-900 focus:outline-none transition-all duration-200 text-sm font-medium appearance-none cursor-pointer"
-            >
-              <option value="USER">Khách du lịch (Cá nhân)</option>
-              <option value="PARTNER">Đối tác kinh doanh (Cơ sở lưu trú / Ẩm thực / Điểm tham quan)</option>
-            </select>
-            <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-400">
-              <ChevronDown className="w-4 h-4" />
-            </div>
-          </div>
+      {/* ── NHÓM 2: LOẠI TÀI KHOẢN (VISUAL CARDS) ── */}
+      <div className="flex flex-col gap-2.5">
+        <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#E6D9B7]/90">
+          Loại tài khoản <span className="text-[#E87B39]">*</span>
+        </span>
+        <div className="grid grid-cols-2 gap-2.5" role="radiogroup" aria-label="Loại tài khoản">
+          {[
+            { value: 'USER' as const, title: 'Khách du lịch', hint: 'Khám phá & lịch trình', icon: Compass },
+            { value: 'PARTNER' as const, title: 'Đối tác', hint: 'Khách sạn · Ẩm thực', icon: Building2 },
+          ].map((opt) => {
+            const active = role === opt.value;
+            const Icon = opt.icon;
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                onClick={() => setRole(opt.value)}
+                className={`flex items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left transition-all cursor-pointer ${
+                  active
+                    ? 'border-[#E6D9B7]/70 bg-[#102E3D]/95 shadow-[0_8px_20px_rgba(2,10,15,0.4)]'
+                    : 'border-[#E6D9B7]/16 bg-[#0A202B]/75 hover:border-[#E6D9B7]/40'
+                }`}
+              >
+                <span
+                  className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border transition-colors ${
+                    active
+                      ? 'bg-[#E87B39] border-[#E87B39] text-[#FFFDF5]'
+                      : 'bg-[#06151C] border-[#E6D9B7]/18 text-[#E6D9B7]'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                </span>
+                <div className="min-w-0">
+                  <span className="block text-xs font-bold text-[#FFFDF5] truncate">{opt.title}</span>
+                  <span className="block text-[10px] text-[#94B0B3] truncate">{opt.hint}</span>
+                </div>
+              </button>
+            );
+          })}
         </div>
 
         {/* Các trường mở rộng cho ĐỐI TÁC */}
         <AnimatePresence>
           {role === 'PARTNER' && (
             <motion.div
-              initial={{ opacity: 0, height: 0, y: -6 }}
-              animate={{ opacity: 1, height: 'auto', y: 0 }}
-              exit={{ opacity: 0, height: 0, y: -6 }}
-              transition={{ duration: 0.25 }}
-              className="flex flex-col gap-3.5 p-4 bg-teal-50/40 border border-teal-200/60 rounded-xl"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.24 }}
+              className="overflow-hidden"
             >
-              {/* Tên doanh nghiệp/cơ sở */}
-              <div className="flex flex-col gap-1.5 w-full">
-                <label htmlFor="partner-business" className="text-sm font-medium text-slate-700">
-                  Tên doanh nghiệp / Cơ sở <span className="text-rose-500">*</span>
-                </label>
-                <div className="relative flex items-center">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                    <Building className="w-5 h-5" />
-                  </div>
+              <div className="flex flex-col gap-3 p-3.5 bg-[#09212D]/90 border border-[#2DD4BF]/28 rounded-xl mt-1">
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="partner-business" className="text-xs font-semibold uppercase tracking-[0.12em] text-[#E6D9B7]">
+                    Tên doanh nghiệp / Cơ sở <span className="text-[#E87B39]">*</span>
+                  </label>
                   <input
                     id="partner-business"
                     value={businessName}
                     onChange={(e) => setBusinessName(e.target.value)}
                     onBlur={() => handleBlur('businessName')}
                     placeholder="VD: Khách sạn Sông Hàn, Nhà hàng Biển Đông"
-                    className={`block w-full pl-11 pr-4 h-[50px] bg-white border ${
+                    className={`auth-dark-input block w-full px-3.5 h-[44px] bg-[#06151C]/90 border ${
                       touched.businessName && errors.businessName
-                        ? 'border-rose-400 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/15'
-                        : 'border-slate-200 hover:border-slate-300 focus:border-[#11C5C6] focus:ring-4 focus:ring-[#11C5C6]/15'
-                    } rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none transition-all duration-200 text-sm`}
+                        ? 'border-rose-400/75'
+                        : 'border-[#E6D9B7]/22 focus:border-[#E6D9B7]/75'
+                    } rounded-xl text-[#FFFDF5] placeholder:text-[#94B0B3]/55 focus:outline-none text-sm`}
                   />
+                  {touched.businessName && errors.businessName && (
+                    <p role="alert" className="text-xs text-rose-300 flex items-center gap-1 font-medium">
+                      <AlertCircle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                      <span>{errors.businessName}</span>
+                    </p>
+                  )}
                 </div>
-                {touched.businessName && errors.businessName && (
-                  <p role="alert" className="text-xs text-rose-500 mt-0.5 flex items-center gap-1 font-medium">
-                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                    <span>{errors.businessName}</span>
-                  </p>
-                )}
-              </div>
 
-              {/* Loại dịch vụ */}
-              <div className="flex flex-col gap-1.5 w-full">
-                <label htmlFor="partner-service" className="text-sm font-medium text-slate-700">
-                  Loại dịch vụ <span className="text-rose-500">*</span>
-                </label>
-                <div className="relative flex items-center">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                    <Briefcase className="w-5 h-5" />
-                  </div>
-                  <select
-                    id="partner-service"
-                    value={serviceType}
-                    onChange={(e) => setServiceType(e.target.value as 'STAY' | 'TABLE' | 'TICKET')}
-                    className="block w-full pl-11 pr-10 h-[50px] bg-white border border-slate-200 hover:border-slate-300 focus:border-[#11C5C6] focus:ring-4 focus:ring-[#11C5C6]/15 rounded-xl text-slate-900 focus:outline-none transition-all duration-200 text-sm font-medium appearance-none cursor-pointer"
-                  >
-                    <option value="STAY">Lưu trú (Khách sạn, Resort, Homestay)</option>
-                    <option value="TABLE">Ẩm thực (Nhà hàng, Quán ăn, Cafe)</option>
-                    <option value="TICKET">Vé tham quan & Trải nghiệm du lịch</option>
-                  </select>
-                  <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-400">
-                    <ChevronDown className="w-4 h-4" />
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#E6D9B7]">
+                    Loại dịch vụ <span className="text-[#E87B39]">*</span>
+                  </span>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {SERVICE_OPTIONS.map((svc) => {
+                      const active = serviceType === svc.value;
+                      const Icon = svc.icon;
+                      return (
+                        <button
+                          key={svc.value}
+                          type="button"
+                          onClick={() => setServiceType(svc.value)}
+                          className={`flex flex-col items-center justify-center gap-1 py-2 px-1.5 rounded-xl border text-[11px] font-semibold transition-all cursor-pointer ${
+                            active
+                              ? 'bg-[#E6D9B7] border-[#E6D9B7] text-[#06151C]'
+                              : 'bg-[#06151C]/80 border-[#E6D9B7]/18 text-[#CBD9DA] hover:border-[#E6D9B7]/45'
+                          }`}
+                        >
+                          <Icon className="w-3.5 h-3.5" />
+                          <span className="truncate max-w-full">{svc.label}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -384,8 +385,8 @@ export default function RegisterForm({ onSwitchToLogin, redirectTo }: RegisterFo
         </AnimatePresence>
       </div>
 
-      {/* ── NHÓM 3: THIẾT LẬP BẢO MẬT (MẬT KHẨU) ── */}
-      <div className="flex flex-col gap-4 pt-1">
+      {/* ── NHÓM 3: MẬT KHẨU ── */}
+      <div className="flex flex-col gap-3.5">
         <div className="flex flex-col w-full">
           <PasswordField
             id="reg-password"
@@ -414,10 +415,16 @@ export default function RegisterForm({ onSwitchToLogin, redirectTo }: RegisterFo
         />
       </div>
 
-      {/* ── NHÓM 4: ĐIỀU KHOẢN VÀ CHÍNH SÁCH ── */}
-      <div className="pt-1">
-        <label className="flex items-start gap-3 cursor-pointer group select-none">
-          <div className="relative flex items-center justify-center w-5 h-5 mt-0.5 rounded-md border border-slate-300 group-hover:border-[#11C5C6] transition-colors bg-white shadow-xs shrink-0">
+      {/* ── ĐIỀU KHOẢN ── */}
+      <div>
+        <label className="flex items-start gap-2.5 cursor-pointer group select-none">
+          <div
+            className={`relative flex items-center justify-center w-[18px] h-[18px] mt-0.5 rounded-[5px] border transition-colors shrink-0 ${
+              agreedToTerms
+                ? 'bg-[#E6D9B7] border-[#E6D9B7]'
+                : 'border-[#E6D9B7]/30 bg-[#0A202B] group-hover:border-[#E6D9B7]/65'
+            }`}
+          >
             <input
               type="checkbox"
               checked={agreedToTerms}
@@ -425,19 +432,19 @@ export default function RegisterForm({ onSwitchToLogin, redirectTo }: RegisterFo
               className="peer sr-only"
             />
             <Check
-              className={`w-3.5 h-3.5 text-[#087E9C] transition-transform duration-200 ${
+              className={`w-3 h-3 text-[#06151C] transition-transform duration-150 ${
                 agreedToTerms ? 'scale-100 opacity-100' : 'scale-0 opacity-0'
               }`}
               strokeWidth={3}
             />
           </div>
-          <span className="text-xs sm:text-sm text-slate-600 leading-normal">
+          <span className="text-xs text-[#CBD9DA] leading-relaxed">
             Tôi đồng ý với{' '}
             <a
               href="/dieu-khoan"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#087E9C] hover:text-[#11C5C6] font-semibold underline underline-offset-2 transition-colors"
+              className="text-[#E6D9B7] hover:text-[#FFFDF5] font-semibold underline underline-offset-2"
             >
               Điều khoản dịch vụ
             </a>{' '}
@@ -446,15 +453,15 @@ export default function RegisterForm({ onSwitchToLogin, redirectTo }: RegisterFo
               href="/chinh-sach"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#087E9C] hover:text-[#11C5C6] font-semibold underline underline-offset-2 transition-colors"
+              className="text-[#E6D9B7] hover:text-[#FFFDF5] font-semibold underline underline-offset-2"
             >
               Chính sách bảo mật
             </a>
           </span>
         </label>
         {touched.agreedToTerms && errors.agreedToTerms && (
-          <p role="alert" className="text-xs text-rose-500 mt-1 flex items-center gap-1 font-medium pl-8">
-            <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+          <p role="alert" className="text-xs text-rose-300 mt-1 flex items-center gap-1.5 font-medium pl-7">
+            <AlertCircle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
             <span>{errors.agreedToTerms}</span>
           </p>
         )}
@@ -468,17 +475,17 @@ export default function RegisterForm({ onSwitchToLogin, redirectTo }: RegisterFo
             initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
-            className="p-3.5 bg-rose-50 border border-rose-200 rounded-xl flex flex-col gap-1.5 text-rose-700 text-xs sm:text-sm"
+            className="p-3 bg-[#311417]/90 border border-rose-400/40 rounded-xl flex flex-col gap-1.5 text-rose-200 text-xs sm:text-sm"
           >
             <div className="flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 text-rose-500 shrink-0" />
+              <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
               <p className="font-medium">{errors.general}</p>
             </div>
             {errors.generalCode === 'EMAIL_ALREADY_EXISTS' && (
               <button
                 type="button"
                 onClick={() => onSwitchToLogin(email.trim())}
-                className="text-xs text-[#087E9C] hover:text-[#11C5C6] font-semibold underline underline-offset-2 text-left cursor-pointer pl-6"
+                className="text-xs text-[#E6D9B7] hover:text-[#FFFDF5] font-semibold underline underline-offset-2 text-left cursor-pointer pl-6"
               >
                 Đăng nhập với email này ngay →
               </button>
@@ -487,39 +494,30 @@ export default function RegisterForm({ onSwitchToLogin, redirectTo }: RegisterFo
         )}
       </AnimatePresence>
 
-      {/* ── NÚT ĐĂNG KÝ TÀI KHOẢN (CTA) ── */}
-      <div className="pt-2">
-        <button
-          type="submit"
-          disabled={isLoading || isSuccess || (Object.keys(touched).length > 0 && !isFormValid)}
-          className="group relative w-full h-[52px] px-6 text-white font-bold text-sm tracking-wide rounded-xl shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2.5 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 overflow-hidden cursor-pointer"
-          style={{
-            background: 'linear-gradient(135deg, #FF6A00 0%, #FF8533 50%, #FF6A00 100%)',
-          }}
-        >
-          {/* Shimmer ánh sáng quét ngang khi hover */}
-          <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full duration-1000 bg-gradient-to-r from-transparent via-white/25 to-transparent pointer-events-none transition-transform" />
-
-          {isLoading ? (
-            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-          ) : isSuccess ? (
-            <span className="flex items-center gap-2">
-              <Check className="w-5 h-5" strokeWidth={3} />
-              <span>ĐĂNG KÝ THÀNH CÔNG</span>
-            </span>
-          ) : (
-            <span>ĐĂNG KÝ TÀI KHOẢN</span>
-          )}
-        </button>
-      </div>
+      {/* ── NÚT ĐĂNG KÝ ── */}
+      <button
+        type="submit"
+        disabled={isLoading || (Object.keys(touched).length > 0 && !isFormValid)}
+        className="group relative w-full h-[50px] px-6 text-[#FFFDF5] font-bold text-xs sm:text-sm uppercase tracking-[0.14em] rounded-xl bg-gradient-to-r from-[#E87B39] via-[#DC6C2B] to-[#CC5E20] border border-[#FFFDF5]/20 shadow-[0_14px_30px_rgba(232,123,57,0.38),inset_0_1px_0_rgba(255,253,245,0.28)] hover:brightness-108 active:scale-[0.985] transition-all duration-200 flex items-center justify-center gap-2.5 disabled:opacity-55 disabled:cursor-not-allowed overflow-hidden cursor-pointer mt-1"
+      >
+        <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full duration-1000 bg-gradient-to-r from-transparent via-white/25 to-transparent pointer-events-none transition-transform" />
+        {isLoading ? (
+          <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+        ) : (
+          <>
+            <span>Đăng ký tài khoản</span>
+            <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
+          </>
+        )}
+      </button>
 
       {/* ── CHUYỂN SANG ĐĂNG NHẬP ── */}
-      <p className="text-center text-xs sm:text-sm text-slate-600 mt-2 pb-6 sm:pb-8">
+      <p className="text-center text-xs sm:text-[13px] text-[#94B0B3] pb-4">
         Đã có tài khoản?{' '}
         <button
           type="button"
           onClick={() => onSwitchToLogin()}
-          className="text-[#087E9C] hover:text-[#11C5C6] font-bold hover:underline focus:outline-none transition-colors cursor-pointer"
+          className="text-[#E6D9B7] hover:text-[#FFFDF5] font-bold hover:underline focus:outline-none transition-colors cursor-pointer"
         >
           Đăng nhập ngay
         </button>

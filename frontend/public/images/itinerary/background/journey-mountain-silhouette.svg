@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 900" fill="none" preserveAspectRatio="xMidYMax slice">
+  <defs>
+    <linearGradient id="sontra-ridge-far" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#216B70" stop-opacity="0.09" />
+      <stop offset="50%" stop-color="#C9AB78" stop-opacity="0.13" />
+      <stop offset="100%" stop-color="#102832" stop-opacity="0.08" />
+    </linearGradient>
+    <linearGradient id="bana-ridge-mid" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#C9AB78" stop-opacity="0.16" />
+      <stop offset="65%" stop-color="#E8DFD0" stop-opacity="0.42" />
+      <stop offset="100%" stop-color="#F8F3E9" stop-opacity="0.95" />
+    </linearGradient>
+    <linearGradient id="coastal-horizon-mist" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFDF6" stop-opacity="0" />
+      <stop offset="55%" stop-color="#F8F3E9" stop-opacity="0.65" />
+      <stop offset="100%" stop-color="#F8F3E9" stop-opacity="1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Far Ba Na Mountain Range Silhouette -->
+  <path
+    d="M-60 620 C140 530, 290 360, 480 390 C650 415, 780 270, 980 295 C1190 320, 1340 430, 1520 375 C1690 320, 1820 420, 1980 470 L1980 900 L-60 900 Z"
+    fill="url(#sontra-ridge-far)"
+  />
+
+  <!-- Mid Son Tra Peninsula & Marble Mountains Coastal Ridge -->
+  <path
+    d="M-40 690 C180 610, 390 485, 620 520 C850 555, 1040 420, 1270 455 C1480 485, 1690 570, 1960 540 L1960 900 L-40 900 Z"
+    fill="url(#bana-ridge-mid)"
+  />
+
+  <!-- Delicate Golden Ridge Rim Light -->
+  <path
+    d="M-60 620 C140 530, 290 360, 480 390 C650 415, 780 270, 980 295 C1190 320, 1340 430, 1520 375 C1690 320, 1820 420, 1980 470"
+    stroke="#C9AB78"
+    stroke-width="1.2"
+    stroke-opacity="0.32"
+    fill="none"
+  />
+  <path
+    d="M-40 690 C180 610, 390 485, 620 520 C850 555, 1040 420, 1270 455 C1480 485, 1690 570, 1960 540"
+    stroke="#216B70"
+    stroke-width="0.9"
+    stroke-opacity="0.2"
+    fill="none"
+  />
+
+  <!-- Bottom Horizon Soft Blend -->
+  <rect x="0" y="540" width="1920" height="360" fill="url(#coastal-horizon-mist)" />
+</svg>

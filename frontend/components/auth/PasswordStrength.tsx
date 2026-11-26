@@ -1,13 +1,5 @@
 'use client';
 
-/**
- * PasswordStrength — Thanh đánh giá độ mạnh mật khẩu trực quan
- * ─────────────────────────────────────────────────────────────
- * - 4 phân đoạn mượt mà tương ứng với 4 cấp độ: Yếu / Trung bình / Khá / Mạnh
- * - Màu sắc hài hòa theo hệ màu thương hiệu: Đỏ hồng → Hổ phách → Xanh ngọc → Xanh lá
- * - Giữ nguyên 100% logic tính điểm (score) và nhãn (label)
- */
-
 import { useMemo } from 'react';
 
 export default function PasswordStrength({ password }: { password: string }) {
@@ -33,19 +25,19 @@ export default function PasswordStrength({ password }: { password: string }) {
   if (!password) return null;
 
   const segmentColors = [
-    'bg-slate-200',
-    'bg-rose-500',    // Yếu
-    'bg-amber-500',   // Trung bình
-    'bg-cyan-500',    // Khá
-    'bg-emerald-500', // Mạnh
+    'bg-[#E6D9B7]/15',
+    'bg-rose-400',
+    'bg-[#E87B39]',
+    'bg-[#E6D9B7]',
+    'bg-[#2DD4BF]',
   ];
 
   const textColors = [
-    'text-slate-400',
-    'text-rose-600',
-    'text-amber-600',
-    'text-cyan-600',
-    'text-emerald-600',
+    'text-[#94B0B3]',
+    'text-rose-300',
+    'text-[#F5B281]',
+    'text-[#E6D9B7]',
+    'text-[#2DD4BF]',
   ];
 
   return (
@@ -56,7 +48,7 @@ export default function PasswordStrength({ password }: { password: string }) {
           return (
             <div
               key={i}
-              className="flex-1 rounded-full bg-slate-200/80 overflow-hidden"
+              className="flex-1 rounded-full bg-[#E6D9B7]/12 overflow-hidden"
             >
               <div
                 className={`h-full transition-all duration-300 rounded-full ${
@@ -69,7 +61,7 @@ export default function PasswordStrength({ password }: { password: string }) {
         })}
       </div>
       <div className="flex items-center justify-between text-[11px]">
-        <span className="text-slate-400">Độ mạnh mật khẩu</span>
+        <span className="text-[#94B0B3]">Độ mạnh mật khẩu</span>
         <span className={`font-semibold ${textColors[score]}`}>{label}</span>
       </div>
     </div>

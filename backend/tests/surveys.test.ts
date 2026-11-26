@@ -14,6 +14,11 @@ import {
   surveysRouter,
   adminSurveysRouter,
 } from "../src/modules/surveys/surveys.routes";
+import {
+  buildSurveyAppreciationEmail,
+  buildPostTripSurveyInviteEmail,
+} from "../src/utils/emailTemplates";
+import { hashNormalizedEmail } from "../src/modules/surveys/surveys.mailer";
 const questions: StoredQuestion[] = [
   {
     question_id: 1,
@@ -155,8 +160,72 @@ test("API kiểm tra schema trước khi đụng SQL; vùng admin cần đăng n
       assert.equal(r.status, 400);
     }
     assert.equal((await fetch(base + "/public/not-a-number")).status, 400);
+    assert.equal(
+      (await fetch(base + "/public/certificate/INVALID-CODE")).status,
+      400,
+    );
+    assert.equal((await fetch(base + "/admin/automation-stats")).status, 401);
+    assert.equal(
+      (
+        await fetch(base + "/admin/dispatch-trip-invites", {
+          method: "POST",
+        })
+      ).status,
+      401,
+    );
   } finally {
     server.close();
     server.closeAllConnections();
   }
+});
+
+test("Schema nhận recipient_email/recipient_name hợp lệ, từ chối email sai định dạng, và tạo đúng mẫu Thư Tri Ân + Lời Mời Sau Chuyến Đi", () => {
+  const withEmail = submissionSchema.safeParse({
+    ...input(),
+    metadata: {
+      request_id: randomUUID(),
+      consent_agreed: true,
+      recipient_email: "dukhach@example.com",
+      recipient_name: "Nguyễn Văn A",
+    },
+  });
+  assert.equal(withEmail.success, true);
+
+  const badEmail = submissionSchema.safeParse({
+    ...input(),
+    metadata: {
+      request_id: randomUUID(),
+      consent_agreed: true,
+      recipient_email: "not-an-email",
+    },
+  });
+  assert.equal(badEmail.success, false);
+
+  assert.equal(
+    hashNormalizedEmail("  DuKhach@Example.com "),
+    hashNormalizedEmail("dukhach@example.com"),
+  );
+
+  const appreciationMail = buildSurveyAppreciationEmail({
+    recipientName: "Nguyễn Văn A",
+    certificateCode: "DNG-2026-0042-ABCD",
+    originLabel: "Hà Nội",
+    stayDurationLabel: "3 – 4 ngày",
+    satisfactionScore: 5,
+    npsScore: 10,
+    rewardCode: "TRIAN-DNG-123456",
+  });
+  assert.ok(appreciationMail.subject.includes("DNG-2026-0042-ABCD"));
+  assert.ok(appreciationMail.html.includes("Đại Sứ Du Lịch Văn Minh Đà Nẵng"));
+  assert.ok(appreciationMail.html.includes("TRIAN-DNG-123456"));
+
+  const inviteMail = buildPostTripSurveyInviteEmail({
+    userName: "Trần Thị B",
+    itineraryId: 99,
+    itineraryTitle: "Lịch trình Đà Nẵng 3N2Đ",
+    startDate: "2026-11-10",
+    dayCount: 3,
+  });
+  assert.ok(inviteMail.html.includes("/khao-sat?itineraryId=99"));
+  assert.ok(inviteMail.subject.includes("Lịch trình Đà Nẵng 3N2Đ"));
 });

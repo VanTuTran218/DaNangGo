@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 420" fill="none" preserveAspectRatio="none">
+  <defs>
+    <linearGradient id="midMountainGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F8F2E8" stop-opacity="0.35" />
+      <stop offset="50%" stop-color="#EADCC9" stop-opacity="0.84" />
+      <stop offset="100%" stop-color="#F8F2E8" stop-opacity="0.96" />
+    </linearGradient>
+    <linearGradient id="midDuneGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#EFE4D4" stop-opacity="0.72" />
+      <stop offset="100%" stop-color="#F8F2E8" stop-opacity="1" />
+    </linearGradient>
+  </defs>
+  <!-- Midground coastal ridge profile -->
+  <path
+    d="M 0 285 C 290 250, 610 278, 920 218 C 1185 166, 1390 184, 1600 148 L 1600 420 L 0 420 Z"
+    fill="url(#midMountainGrad)"
+  />
+  <!-- Foreground soft coastal sand slope -->
+  <path
+    d="M 0 330 C 340 302, 720 342, 1120 284 C 1340 252, 1485 258, 1600 240 L 1600 420 L 0 420 Z"
+    fill="url(#midDuneGrad)"
+  />
+</svg>

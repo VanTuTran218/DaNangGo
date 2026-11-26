@@ -2,26 +2,34 @@
 
 import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
-import { motion, useScroll, useTransform, type TargetAndTransition } from "framer-motion";
+import {
+  motion,
+  useScroll,
+  useTransform,
+  type MotionValue,
+  type TargetAndTransition,
+} from "framer-motion";
 import { HERO_SLIDES, FADE_MS } from "./hero-data";
-import { DURATION, EASING } from "@/lib/motion-tokens";
+import { EASING } from "@/lib/motion-tokens";
 
 // ── HẰNG SỐ LỚP PHỦ ĐỈNH (HEADER SCRIM OVERLAY CHO NAVBAR TRONG SUỐT) ──
-export const SCRIM_HEIGHT_DESKTOP = 180; // Chiều cao phủ đỉnh desktop (px)
-export const SCRIM_HEIGHT_MOBILE = 140;  // Chiều cao phủ đỉnh mobile (px)
-export const SCRIM_OPACITY = 0.68;       // Độ đậm 68% ở mép trên (chuẩn 65–70%)
+export const SCRIM_HEIGHT_DESKTOP = 180;
+export const SCRIM_HEIGHT_MOBILE = 140;
+export const SCRIM_OPACITY = 0.72;
 
-// ── HẰNG SỐ LỚP PHỦ NGANG VÀ ĐÁY HERO (GIỮ ẢNH TRONG TRẺO, RÕ CHỮ) ──
-export const OVERLAY_LEFT = "rgba(7, 26, 46, 0.55)";   // Phía trái ~55% đủ đọc chữ trắng
-export const OVERLAY_MID = "rgba(7, 26, 46, 0.20)";    // Giữa ~20% làm sáng chủ thể ảnh
-export const OVERLAY_RIGHT = "rgba(7, 26, 46, 0.10)";  // Phải ~10% khoáng đạt
-export const OVERLAY_BOTTOM = "rgba(7, 26, 46, 0.52)"; // Đáy ~52% cho ô tìm kiếm và hashtag
+// ── HẰNG SỐ LỚP PHỦ NGANG VÀ ĐÁY HERO (ADAPTIVE EDITORIAL SCRIM) ──
+export const OVERLAY_LEFT = "rgba(16, 40, 50, 0.72)";
+export const OVERLAY_MID = "rgba(16, 40, 50, 0.30)";
+export const OVERLAY_RIGHT = "rgba(16, 40, 50, 0.04)";
+export const OVERLAY_BOTTOM = "rgba(16, 40, 50, 0.56)";
 
 interface HeroCarouselBackgroundProps {
   activeIndex: number;
   reducedMotion: boolean;
   onFirstLoaded: () => void;
   onSlideLoaded: (index: number) => void;
+  mouseX?: MotionValue<number>;
+  mouseY?: MotionValue<number>;
 }
 
 export default function HeroCarouselBackground({
@@ -29,6 +37,7 @@ export default function HeroCarouselBackground({
   reducedMotion,
   onFirstLoaded,
   onSlideLoaded,
+  mouseX,
 }: HeroCarouselBackgroundProps) {
   const [prevIndex, setPrevIndex] = useState<number | null>(null);
   const [firstLoaded, setFirstLoaded] = useState(false);
@@ -47,7 +56,7 @@ export default function HeroCarouselBackground({
     }
   };
 
-  // Subtle Parallax theo C3: dịch chuyển nhẹ 22px trong Hero Section (chỉ trên Desktop, tắt khi Reduced Motion)
+  // Scroll-Synchronized Hero Transformation (Phần 09 & 18)
   const containerRef = useRef<HTMLDivElement>(null);
   const [isDesktop, setIsDesktop] = useState(false);
 
@@ -64,67 +73,81 @@ export default function HeroCarouselBackground({
     target: containerRef,
     offset: ["start start", "end start"],
   });
+
+  // Main Landscape Parallax + Subtle Dolly-in on scroll
   const parallaxY = useTransform(
     scrollYProgress,
-    [0, 1],
-    reducedMotion || !isDesktop ? [0, 0] : [0, 22]
+    [0, 0.25, 0.5, 0.75, 1],
+    reducedMotion || !isDesktop ? [0, 0, 0, 0, 0] : [0, 14, 32, 52, 72]
   );
 
-  // C1. Hero Image Reveal: bắt đầu từ scale(1.05) -> chuyển mượt về scale(1) trong 1.5s với easing cinematic
-  const getHeroRevealInitial = (isActive: boolean) => {
-    if (reducedMotion || !isActive) return { scale: 1 };
-    return { scale: 1.05 };
-  };
+  const scrollScale = useTransform(
+    scrollYProgress,
+    [0, 0.5, 1],
+    reducedMotion || !isDesktop ? [1, 1, 1] : [1, 1.03, 1.06]
+  );
 
   return (
     <div
       ref={containerRef}
-      className="absolute inset-0 overflow-hidden pointer-events-none z-0 select-none"
+      className="absolute inset-0 overflow-hidden pointer-events-none z-0 select-none bg-[#102832]"
       aria-hidden="true"
     >
-      {/* ── TẦNG z-0: Các ảnh Carousel chồng lên nhau ── */}
+      {/* ── LAYER 01: Crisp High-Definition Landscape Photography (1.05 -> 1.00 opening camera movement) ── */}
       {HERO_SLIDES.map((slide, index) => {
         const isActive = activeIndex === index;
         const isPrev = prevIndex === index && !isActive;
         const zIndex = isActive ? 2 : isPrev ? 1 : 0;
 
         const animateProps: TargetAndTransition = { opacity: isActive ? 1 : 0 };
-        const initialProps: TargetAndTransition = { opacity: index === 0 ? 1 : 0 };
+        const initialProps: TargetAndTransition = {
+          opacity: index === 0 ? 1 : 0,
+        };
 
         return (
           <motion.div
             key={slide.id}
-            className="absolute inset-0"
-            style={{ zIndex, willChange: "opacity", y: parallaxY }}
+            className="absolute -inset-3 sm:-inset-4"
+            style={{
+              zIndex,
+              willChange: "opacity, transform",
+              y: parallaxY,
+              scale: scrollScale,
+              x: mouseX,
+            }}
             initial={initialProps}
             animate={animateProps}
             transition={{ duration: FADE_MS / 1000, ease: EASING.standard }}
           >
+            {/* Opening Camera Pull-back: scale 1.05 -> 1.00 over 2.2s (Phần 18.1) */}
             <motion.div
               className="relative w-full h-full"
-              key={`kb-${index}-${isActive}`}
-              initial={getHeroRevealInitial(isActive)}
-              animate={{ scale: 1 }}
-              transition={{ duration: DURATION.cinematic, ease: EASING.entrance }}
+              initial={{ scale: reducedMotion ? 1.0 : 1.05 }}
+              animate={{
+                scale: reducedMotion ? 1.0 : isActive ? 1.0 : 1.025,
+              }}
+              transition={{
+                duration: isActive ? 2.2 : FADE_MS / 1000,
+                ease: isActive ? [0.22, 1, 0.36, 1] : EASING.standard,
+              }}
               style={{
                 willChange: "transform",
                 backfaceVisibility: "hidden",
               }}
             >
-              {/* Nền màu ấm hiển thị khi ảnh tải */}
               <div
                 className="absolute inset-0"
-                style={{ backgroundColor: index === 1 ? "#2d1b00" : "#071a2e" }}
+                style={{ backgroundColor: "#102832" }}
               />
               <Image
                 src={slide.image}
                 alt={slide.alt}
                 fill
-                priority
-                loading="eager"
-                quality={90}
+                priority={index === 0}
+                loading={index === 0 ? "eager" : "lazy"}
+                quality={92}
                 sizes="100vw"
-                className="object-cover object-center"
+                className="object-cover"
                 style={{
                   objectPosition: slide.objectPosition,
                 }}
@@ -135,28 +158,20 @@ export default function HeroCarouselBackground({
         );
       })}
 
-      {/* ── TẦNG z-10: Lớp phủ ngang và đáy CỐ ĐỊNH giống nhau cho cả 3 slide ── */}
+      {/* ── LAYER 02: Directional Editorial Contrast Scrim (Focused on left copy zone, leaving right landscape crystal-clear — Phần 09.3) ── */}
       <div
         className="absolute inset-0 z-10 pointer-events-none"
         style={{
-          background: `linear-gradient(to right, ${OVERLAY_LEFT} 0%, ${OVERLAY_MID} 50%, ${OVERLAY_RIGHT} 100%)`,
+          background:
+            "linear-gradient(180deg, rgba(16,40,50,0.52) 0%, rgba(16,40,50,0.08) 28%, rgba(16,40,50,0.12) 64%, rgba(16,40,50,0.64) 100%)",
         }}
         aria-hidden="true"
       />
       <div
-        className="absolute inset-x-0 bottom-0 h-56 z-10 pointer-events-none"
+        className="absolute inset-0 z-10 pointer-events-none"
         style={{
-          background: `linear-gradient(to top, ${OVERLAY_BOTTOM} 0%, rgba(7, 26, 46, 0) 100%)`,
-        }}
-        aria-hidden="true"
-      />
-
-      {/* ── TẦNG z-15: LỚP PHỦ TỐI Ở ĐỈNH HERO (HEADER SCRIM GRADIENT CỐ ĐỊNH) ── */}
-      {/* Giúp chữ trắng của navbar luôn đạt tương phản WCAG AA >= 4.5:1 trên cả 3 slide */}
-      <div
-        className="absolute inset-x-0 top-0 h-[140px] sm:h-[180px] z-15 pointer-events-none select-none"
-        style={{
-          background: `linear-gradient(to bottom, rgba(7, 26, 46, ${SCRIM_OPACITY}) 0%, rgba(7, 26, 46, ${SCRIM_OPACITY * 0.45}) 55%, rgba(7, 26, 46, 0) 100%)`,
+          background:
+            "linear-gradient(92deg, rgba(16,40,50,0.72) 0%, rgba(16,40,50,0.40) 42%, rgba(16,40,50,0.06) 72%, rgba(16,40,50,0) 100%)",
         }}
         aria-hidden="true"
       />

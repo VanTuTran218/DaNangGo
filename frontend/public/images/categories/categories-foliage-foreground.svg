@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" fill="none" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="foliageSilhouetteLeft" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#07161C" stop-opacity="0.55" />
+      <stop offset="65%" stop-color="#102832" stop-opacity="0.25" />
+      <stop offset="100%" stop-color="#102832" stop-opacity="0" />
+    </linearGradient>
+    <linearGradient id="foliageSilhouetteRight" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#07161C" stop-opacity="0.52" />
+      <stop offset="65%" stop-color="#102832" stop-opacity="0.22" />
+      <stop offset="100%" stop-color="#102832" stop-opacity="0" />
+    </linearGradient>
+    <filter id="foliageSoftBlur" x="-10%" y="-10%" width="120%" height="120%">
+      <feGaussianBlur stdDeviation="6" />
+    </filter>
+  </defs>
+  <!-- Subtle organic tropical coastal palm & frond silhouettes at upper corners -->
+  <g filter="url(#foliageSoftBlur)">
+    <path d="M-40 -20 C60 15 155 68 230 145 C145 110 55 88 -40 82 Z" fill="url(#foliageSilhouetteLeft)" />
+    <path d="M-30 45 C85 82 180 142 255 230 C155 182 58 148 -30 135 Z" fill="url(#foliageSilhouetteLeft)" />
+    <path d="M1640 -20 C1540 18 1445 72 1370 152 C1455 115 1545 92 1640 85 Z" fill="url(#foliageSilhouetteRight)" />
+    <path d="M1630 55 C1515 92 1420 155 1345 242 C1445 192 1542 158 1630 145 Z" fill="url(#foliageSilhouetteRight)" />
+  </g>
+</svg>

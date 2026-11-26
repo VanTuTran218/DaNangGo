@@ -6,12 +6,13 @@ import {
   resolveChatRequest,
   tripBrief,
 } from "../src/modules/chat/chat.intent";
-import { buildTravelPlan } from "../src/modules/chat/chat.advisor";
+import { buildTravelPlan, pickAcrossDistricts } from "../src/modules/chat/chat.advisor";
 import {
   searchPlacesForChat,
   type PlaceSearchRow,
 } from "../src/modules/chat/chat.repository";
 import { processUserMessage } from "../src/modules/chat/chat.service";
+import { clearWeatherCache } from "../src/modules/weather/weather.service";
 import {
   readAdvisorTurn,
   writeAdvisorTurn,
@@ -40,6 +41,19 @@ const makePlace = (
   roomCapacity: type === "ACCOMMODATION" ? 2 : null,
 });
 
+test("Gợi ý toàn thành phố ưu tiên nhiều quận và bổ sung theo thứ hạng", () => {
+  const rows = [
+    makePlace(1, "ATTRACTION", 0, "A"),
+    makePlace(2, "ATTRACTION", 0, "B"),
+    { ...makePlace(3, "ATTRACTION", 0, "C"), districtName: null },
+    { ...makePlace(4, "ATTRACTION", 0, "D"), districtName: "Sơn Trà" },
+    { ...makePlace(5, "ATTRACTION", 0, "E"), districtName: "Ngũ Hành Sơn" },
+  ];
+  assert.deepEqual(pickAcrossDistricts(rows, 3).map((row) => row.placeId), [1, 4, 5]);
+  assert.deepEqual(pickAcrossDistricts(rows.slice(0, 4), 3).map((row) => row.placeId), [1, 4, 2]);
+  assert.deepEqual(pickAcrossDistricts([], 3), []);
+});
+
 test("Không nhận nhầm chữ “tham quan” và “Đà Nẵng” thành quán ăn", () => {
   for (const query of [
     "Gợi ý các điểm tham quan miễn phí ở Đà Nẵng.",
@@ -49,12 +63,15 @@ test("Không nhận nhầm chữ “tham quan” và “Đà Nẵng” thành qu
   ]) {
     assert.equal(ruleIntent(query).category, "sight", query);
   }
+  assert.deepEqual(ruleIntent("Địa điểm nào phù hợp check-in?").keywords, []);
   assert.equal(
     ruleIntent("Gợi ý các điểm tham quan miễn phí ở Đà Nẵng.").budget,
     0,
   );
   assert.equal(ruleIntent("Quán hải sản gần biển Mỹ Khê").category, "food");
   assert.equal(ruleIntent("Khách sạn gần biển Mỹ Khê").category, "stay");
+  assert.deepEqual(ruleIntent("Tìm quán bánh bèo, nậm, lọc").tastes, []);
+  assert.ok(ruleIntent("Tìm món béo ngậy").tastes.includes("Béo"));
   assert.equal(ruleIntent("Viết code Python").category, "off_topic");
 });
 
@@ -200,6 +217,10 @@ test("Điểm cần cả ngày không bị nhét vào buổi chiều; không gh�
     stays: [],
   });
   assert.equal(centralFirst.days[0]?.periods[2]?.items[0]?.place, undefined);
+});
+
+test("Ý muốn nghỉ ở khách sạn được hiểu là yêu cầu lập lịch", () => {
+  assert.equal(resolveChatRequest("Tôi muốn có thời gian nghỉ ở khách sạn.", []).trip, true);
 });
 
 test("So tiền cả nhóm và đổi khách sạn thực sự, giữ trạng thái trong AI turn", () => {
@@ -357,11 +378,12 @@ test("API chat trả đúng tham quan miễn phí và lịch trình ngay cả kh
     });
     assert.equal(seven.message.travelPlan, undefined);
     assert.match(seven.message.content, /1 đến 3 ngày/);
+    clearWeatherCache();
     const weather = await processUserMessage({
       guestId: "weather-test",
       message: "Thời tiết Đà Nẵng hôm nay thế nào?",
-    });
-    assert.match(weather.message.content, /chưa tích hợp dữ liệu thời tiết/);
+    }, undefined, { weatherFetcher: async () => { throw new Error("test weather outage"); } });
+    assert.match(weather.message.content, /chưa lấy được dữ liệu thời tiết trực tiếp từ nhà cung cấp/);
     const noResults = await processUserMessage({
       guestId: "advisor-test-empty",
       message: "Điểm tham quan dưới 1 đồng mỗi người",

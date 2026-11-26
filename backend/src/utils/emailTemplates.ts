@@ -358,3 +358,183 @@ export function buildPartnerRejectionEmail(data: PartnerNotificationData): { sub
   const text = `[DaNangGo] Kết quả xét duyệt đối tác\n\nXin chào ${data.userName},\n\nHồ sơ đối tác "${data.businessName}" chưa được chấp thuận.${reasonText}\nBạn có thể cập nhật lại hồ sơ tại ${partnerProfileUrl} hoặc liên hệ support@dananggo.vn để biết thêm chi tiết.\n\n© ${new Date().getFullYear()} DaNangGo`;
   return { subject, html, text };
 }
+
+export interface SurveyAppreciationEmailData {
+  recipientName: string;
+  certificateCode: string;
+  originLabel?: string | null;
+  stayDurationLabel?: string | null;
+  satisfactionScore?: number | null;
+  npsScore?: number | null;
+  rewardCode: string;
+  issuedDate?: string;
+}
+
+/**
+ * Thư Tri Ân Du Khách Đà Nẵng + Chứng nhận điện tử + Mã quà tặng ưu đãi chuyến sau
+ */
+export function buildSurveyAppreciationEmail(
+  data: SurveyAppreciationEmailData,
+): { subject: string; html: string; text: string } {
+  const safeName = escapeHtml(data.recipientName || 'Bạn du khách thân mến');
+  const safeCert = escapeHtml(data.certificateCode);
+  const safeReward = escapeHtml(data.rewardCode);
+  const safeOrigin = data.originLabel ? escapeHtml(data.originLabel) : null;
+  const safeDuration = data.stayDurationLabel ? escapeHtml(data.stayDurationLabel) : null;
+  const issuedDate = escapeHtml(
+    data.issuedDate || new Date().toLocaleDateString('vi-VN'),
+  );
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3001';
+  const plannerUrl = `${frontendUrl}/lich-trinh/tao-moi`;
+  const subject = `[DaNangGo] Thư tri ân & Chứng nhận Du khách Đà Nẵng (${data.certificateCode})`;
+
+  const personalLine = [
+    safeOrigin ? `đến từ <strong>${safeOrigin}</strong>` : '',
+    safeDuration ? `với hành trình <strong>${safeDuration}</strong>` : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  const scoreBadges = [
+    data.satisfactionScore
+      ? `<span style="display:inline-block;background:#f0fdfa;border:1px solid #99f6e4;color:#0f766e;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:700;margin:4px;">⭐ Hài lòng: ${data.satisfactionScore}/5</span>`
+      : '',
+    data.npsScore != null
+      ? `<span style="display:inline-block;background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:700;margin:4px;">💙 Mức sẵn lòng giới thiệu: ${data.npsScore}/10</span>`
+      : '',
+  ]
+    .filter(Boolean)
+    .join('');
+
+  const html = `<!DOCTYPE html>
+<html lang="vi">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${subject}</title></head>
+<body style="margin:0;padding:0;background:#f0fdfa;font-family:'Segoe UI',Roboto,Arial,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f0fdfa;padding:32px 16px"><tr><td align="center">
+<table width="100%" style="max-width:600px;background:#ffffff;border-radius:24px;overflow:hidden;box-shadow:0 8px 30px rgba(13,148,136,0.12)">
+  <!-- HEADER -->
+  <tr><td style="background:linear-gradient(135deg,#0f2942 0%,#0d9488 60%,#0891b2 100%);padding:36px 40px;text-align:center">
+    <p style="margin:0 0 6px;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#99f6e4;font-weight:700">THƯ TRI ÂN DU KHÁCH ĐÀ NẴNG</p>
+    <h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:800;letter-spacing:-0.5px">Cảm ơn bạn đã đến với Đà Nẵng! 🌊</h1>
+    <p style="margin:8px 0 0;color:rgba(255,255,255,0.85);font-size:14px">DaNangGo — Cẩm nang du lịch thông minh thành phố Đà Nẵng</p>
+  </td></tr>
+
+  <!-- BODY -->
+  <tr><td style="padding:36px 40px 28px">
+    <p style="margin:0 0 12px;font-size:18px;font-weight:700;color:#0f172a">Thân gửi <span style="color:#0d9488">${safeName}</span>,</p>
+    <p style="margin:0 0 20px;font-size:15px;color:#475569;line-height:1.7">
+      DaNangGo trân trọng cảm ơn bạn ${personalLine ? `${personalLine} ` : ''}đã dành thời gian chia sẻ cảm nhận thực tế về chuyến đi Đà Nẵng.
+      Mỗi ý kiến đóng góp của bạn đều được tổng hợp ẩn danh để giúp thành phố nâng cao chất lượng dịch vụ lưu trú, ẩm thực và điểm tham quan.
+    </p>
+
+    ${scoreBadges ? `<div style="text-align:center;margin-bottom:24px">${scoreBadges}</div>` : ''}
+
+    <!-- CERTIFICATE CARD -->
+    <div style="background:linear-gradient(135deg,#fffbeb 0%,#f0fdfa 60%,#ecfeff 100%);border:2px solid #0d9488;border-radius:20px;padding:24px;text-align:center;margin-bottom:24px">
+      <p style="margin:0 0 6px;font-size:11px;font-weight:800;letter-spacing:1.8px;color:#0f766e;text-transform:uppercase">🏅 CHỨNG NHẬN ĐIỆN TỬ</p>
+      <h2 style="margin:0 0 8px;font-size:20px;font-weight:800;color:#0f2942">Đại Sứ Du Lịch Văn Minh Đà Nẵng</h2>
+      <p style="margin:0 0 14px;font-size:14px;color:#334155">Trao tặng: <strong style="color:#0d9488;font-size:16px">${safeName}</strong></p>
+      <div style="display:inline-block;background:#ffffff;border:1px dashed #0d9488;border-radius:12px;padding:8px 18px;font-family:'Courier New',monospace;font-size:14px;font-weight:800;color:#0f2942">
+        Mã chứng nhận: ${safeCert}
+      </div>
+      <p style="margin:10px 0 0;font-size:12px;color:#64748b">Ngày cấp: ${issuedDate} &bull; Xác thực bởi DaNangGo</p>
+    </div>
+
+    <!-- GIFT / VOUCHER BOX -->
+    <div style="background:#fff7ed;border:1px solid #fed7aa;border-left:4px solid #f97316;border-radius:12px;padding:18px 20px;margin-bottom:26px">
+      <p style="margin:0 0 6px;font-size:12px;font-weight:800;color:#c2410c;text-transform:uppercase;letter-spacing:0.8px">🎁 Quà tri ân dành riêng cho chuyến đi tiếp theo</p>
+      <p style="margin:0 0 10px;font-size:14px;color:#7c2d12;line-height:1.6">
+        Sử dụng mã ưu đãi bên dưới khi nâng cấp gói thành viên VIP hoặc trải nghiệm đối tác liên kết trên DaNangGo:
+      </p>
+      <div style="background:#ffffff;border:1px solid #fdba74;border-radius:10px;padding:10px 14px;display:inline-block;font-family:'Courier New',monospace;font-size:16px;font-weight:800;color:#ea580c;letter-spacing:1px">
+        ${safeReward}
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-bottom:20px">
+      <a href="${plannerUrl}" style="display:inline-block;background:linear-gradient(135deg,#0d9488,#0891b2);color:#ffffff;font-weight:700;font-size:14px;padding:14px 28px;border-radius:999px;text-decoration:none">
+        Lên lịch trình cho chuyến đi Đà Nẵng tiếp theo →
+      </a>
+    </div>
+
+    <p style="margin:0;font-size:12px;color:#64748b;line-height:1.6;text-align:center">
+      🔒 Quyền riêng tư: Nội dung câu trả lời khảo sát của bạn được lưu trữ hoàn toàn ẩn danh phục vụ thống kê.
+    </p>
+  </td></tr>
+
+  <!-- FOOTER -->
+  <tr><td style="background:#f8fafc;padding:20px 40px;border-top:1px solid #e2e8f0;text-align:center">
+    <p style="margin:0 0 4px;font-size:12px;color:#94a3b8">Hẹn gặp lại bạn tại thành phố biển Đà Nẵng xinh đẹp!</p>
+    <p style="margin:0;font-size:12px;color:#94a3b8">© ${new Date().getFullYear()} DaNangGo — Đà Nẵng, Việt Nam</p>
+  </td></tr>
+</table>
+</td></tr></table>
+</body></html>`;
+
+  const text = `[DaNangGo] THƯ TRI ÂN DU KHÁCH ĐÀ NẴNG\n\nThân gửi ${data.recipientName},\n\nCảm ơn bạn đã dành thời gian chia sẻ trải nghiệm du lịch Đà Nẵng cùng DaNangGo.\n\n- Danh hiệu: Đại Sứ Du Lịch Văn Minh Đà Nẵng\n- Mã chứng nhận điện tử: ${data.certificateCode}\n- Mã quà tặng tri ân chuyến tiếp theo: ${data.rewardCode}\n\nLên lịch trình mới tại: ${plannerUrl}\n\nHẹn gặp lại bạn tại Đà Nẵng!\n© ${new Date().getFullYear()} DaNangGo`;
+
+  return { subject, html, text };
+}
+
+export interface PostTripSurveyInviteEmailData {
+  userName: string;
+  itineraryId: number;
+  itineraryTitle: string;
+  startDate: string;
+  dayCount: number;
+}
+
+/**
+ * Email tự động mời khảo sát sau khi du khách kết thúc lịch trình tại Đà Nẵng
+ */
+export function buildPostTripSurveyInviteEmail(
+  data: PostTripSurveyInviteEmailData,
+): { subject: string; html: string; text: string } {
+  const safeName = escapeHtml(data.userName || 'Bạn du khách');
+  const safeTitle = escapeHtml(data.itineraryTitle);
+  const safeStart = escapeHtml(data.startDate);
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3001';
+  const surveyUrl = `${frontendUrl}/khao-sat?itineraryId=${encodeURIComponent(String(data.itineraryId))}`;
+  const subject = `[DaNangGo] Chuyến đi "${data.itineraryTitle}" của bạn thế nào? Nhận chứng nhận & quà tri ân Đà Nẵng`;
+
+  const html = `<!DOCTYPE html>
+<html lang="vi">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${subject}</title></head>
+<body style="margin:0;padding:0;background:#f0fdfa;font-family:'Segoe UI',Roboto,Arial,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f0fdfa;padding:32px 16px"><tr><td align="center">
+<table width="100%" style="max-width:560px;background:#ffffff;border-radius:22px;overflow:hidden;box-shadow:0 6px 24px rgba(13,148,136,0.10)">
+  <tr><td style="background:linear-gradient(135deg,#0f766e 0%,#0891b2 100%);padding:32px 36px;text-align:center">
+    <p style="margin:0 0 6px;font-size:11px;letter-spacing:1.8px;text-transform:uppercase;color:#99f6e4;font-weight:700">LỜI MỜI CHIA SẺ TRẢI NGHIỆM</p>
+    <h1 style="margin:0;color:#ffffff;font-size:23px;font-weight:800">Chuyến đi Đà Nẵng của bạn thế nào? 🌴</h1>
+  </td></tr>
+  <tr><td style="padding:32px 36px">
+    <p style="margin:0 0 12px;font-size:17px;font-weight:700;color:#0f172a">Xin chào ${safeName},</p>
+    <p style="margin:0 0 18px;font-size:14px;color:#475569;line-height:1.7">
+      Hành trình <strong>${safeTitle}</strong> (${data.dayCount} ngày, khởi hành ${safeStart}) của bạn tại Đà Nẵng vừa khép lại.
+      Hy vọng bạn đã có thật nhiều kỷ niệm đáng nhớ cùng biển Mỹ Khê, Sơn Trà và ẩm thực miền Trung!
+    </p>
+    <div style="background:#f0fdfa;border:1px solid #99f6e4;border-radius:14px;padding:16px 18px;margin-bottom:22px">
+      <p style="margin:0;font-size:13px;color:#0f766e;line-height:1.6">
+        ✨ Chỉ mất <strong>1–2 phút (7 câu hỏi ngắn)</strong> để chia sẻ cảm nhận của bạn. Ngay sau khi gửi, hệ thống sẽ tự động gửi tặng bạn <strong>Chứng nhận Đại sứ Du lịch Đà Nẵng</strong> và <strong>Mã quà tri ân</strong> qua email!
+      </p>
+    </div>
+    <div style="text-align:center;margin-bottom:20px">
+      <a href="${surveyUrl}" style="display:inline-block;background:#0d9488;color:#ffffff;font-weight:700;font-size:14px;padding:13px 26px;border-radius:999px;text-decoration:none">
+        Chia sẻ cảm nhận & Nhận thư tri ân →
+      </a>
+    </div>
+    <p style="margin:0;font-size:12px;color:#94a3b8;text-align:center">
+      Khảo sát hoàn toàn ẩn danh trong thống kê và chỉ gửi 1 lần cho mỗi lịch trình.
+    </p>
+  </td></tr>
+  <tr><td style="background:#f8fafc;padding:18px 36px;border-top:1px solid #e2e8f0;text-align:center">
+    <p style="margin:0;font-size:12px;color:#94a3b8">© ${new Date().getFullYear()} DaNangGo — Đà Nẵng, Việt Nam</p>
+  </td></tr>
+</table>
+</td></tr></table>
+</body></html>`;
+
+  const text = `[DaNangGo] Chuyến đi "${data.itineraryTitle}" của bạn thế nào?\n\nXin chào ${data.userName},\n\nHành trình ${data.itineraryTitle} (${data.dayCount} ngày, từ ${data.startDate}) vừa kết thúc. Mời bạn dành 1-2 phút chia sẻ cảm nhận và nhận ngay Chứng nhận Du khách Đà Nẵng + Mã quà tri ân tại:\n${surveyUrl}\n\n© ${new Date().getFullYear()} DaNangGo`;
+
+  return { subject, html, text };
+}

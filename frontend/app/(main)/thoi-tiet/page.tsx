@@ -1,21 +1,27 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
   AlertTriangle,
+  ArrowRight,
   Calendar,
   CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
   Cloud,
   CloudDrizzle,
   CloudLightning,
+  CloudMoon,
   CloudRain,
   CloudSun,
   Compass,
   Droplets,
   Info,
   MapPin,
+  Moon,
   RefreshCw,
+  ShieldCheck,
   Sparkles,
   Sun,
   Thermometer,
@@ -38,7 +44,7 @@ import type {
 
 function formatNumber(val: number | null | undefined, suffix = ""): string {
   if (val === null || val === undefined || Number.isNaN(val)) {
-    return "Chưa có dữ liệu";
+    return "Chưa có";
   }
   return `${Math.round(val * 10) / 10}${suffix}`;
 }
@@ -67,40 +73,106 @@ function getVietnamHour(): number {
   const str = new Date().toLocaleString("en-US", {
     timeZone: "Asia/Ho_Chi_Minh",
     hour: "2-digit",
-    hour12: false,
+    hourCycle: "h23",
   });
-  return Number(str) || 12;
+  return Number(str);
+}
+
+function isNightHour(hour: number): boolean {
+  return hour < 6 || hour >= 18;
 }
 
 function WeatherCodeIcon({
   code,
+  isNight = false,
   className = "w-6 h-6",
 }: {
   code: number | null;
+  isNight?: boolean;
   className?: string;
 }) {
   if (code === null || code === undefined) {
-    return <Cloud className={`${className} text-white/80`} />;
+    return <Cloud className={`${className} text-[#CBD5E1]`} />;
   }
   if (code === 0 || code === 1) {
-    return <Sun className={`${className} text-amber-300`} />;
+    if (isNight) return <Moon className={`${className} text-[#E6D9B7]`} />;
+    return <Sun className={`${className} text-[#FBBF24]`} />;
   }
   if (code === 2) {
-    return <CloudSun className={`${className} text-amber-200`} />;
+    if (isNight) return <CloudMoon className={`${className} text-[#E6D9B7]`} />;
+    return <CloudSun className={`${className} text-[#FCD34D]`} />;
   }
   if (code === 3 || code === 45 || code === 48) {
-    return <Cloud className={`${className} text-slate-200`} />;
+    return <Cloud className={`${className} text-[#CBD5E1]`} />;
   }
   if (code >= 51 && code <= 57) {
-    return <CloudDrizzle className={`${className} text-sky-200`} />;
+    return <CloudDrizzle className={`${className} text-[#7DD3FC]`} />;
   }
   if ((code >= 61 && code <= 67) || (code >= 80 && code <= 82)) {
-    return <CloudRain className={`${className} text-sky-300`} />;
+    return <CloudRain className={`${className} text-[#38BDF8]`} />;
   }
   if (code >= 95) {
-    return <CloudLightning className={`${className} text-indigo-200`} />;
+    return <CloudLightning className={`${className} text-[#A5B4FC]`} />;
   }
-  return <CloudSun className={`${className} text-teal-200`} />;
+  return <Cloud className={`${className} text-[#5EEAD4]`} />;
+}
+
+function getTravelReadiness(
+  weather: NormalizedWeatherResponse,
+  rainProb: number | null,
+): { badge: string; title: string; advice: string; tone: "rain" | "hot" | "good" } {
+  const code = weather.current?.weatherCode ?? weather.daily[0]?.weatherCode ?? null;
+  const temp = weather.current?.temperature ?? weather.daily[0]?.tempMax ?? null;
+  const wind = weather.current?.windSpeed ?? null;
+
+  const isStorm = code !== null && code >= 95;
+  const isRainy =
+    (code !== null && ((code >= 51 && code <= 67) || (code >= 80 && code <= 82))) ||
+    (rainProb !== null && rainProb >= 55);
+
+  if (isStorm) {
+    return {
+      badge: "Cần thận trọng",
+      title: "Hạn chế hoạt động ngoài trời & ven biển",
+      advice:
+        "Có dấu hiệu mưa giông. Nên ưu tiên bảo tàng, quán cà phê hoặc ẩm thực trong nhà và kiểm tra đường trước khi di chuyển.",
+      tone: "rain",
+    };
+  }
+  if (isRainy) {
+    return {
+      badge: "Chuẩn bị che mưa",
+      title: "Mang theo ô gọn hoặc áo mưa nhẹ",
+      advice:
+        "Khả năng mưa cao trong khung giờ tới. Phù hợp kết hợp ẩm thực đặc sản, Bảo tàng Chăm hoặc dạo phố ngắn giữa các đợt tạnh.",
+      tone: "rain",
+    };
+  }
+  if (temp !== null && temp >= 33) {
+    return {
+      badge: "Nắng ấm cao",
+      title: "Bổ sung nước & chống nắng khi ra ngoài",
+      advice:
+        "Nhiệt độ ngoài trời cao. Nên tham quan Bà Nà Hills, biển Mỹ Khê vào sáng sớm hoặc chiều muộn sau 16:00.",
+      tone: "hot",
+    };
+  }
+  if (wind !== null && wind >= 30) {
+    return {
+      badge: "Gió biển khá mạnh",
+      title: "Chú ý gió khi di chuyển ven biển & Sơn Trà",
+      advice:
+        "Gió ven biển đang thổi mạnh; thích hợp dạo ngắm cảnh nhưng nên mặc thêm áo khoác mỏng vào buổi tối.",
+      tone: "good",
+    };
+  }
+  return {
+    badge: "Thuận lợi khám phá",
+    title: "Thời tiết đẹp cho hành trình ngoài trời",
+    advice:
+      "Điều kiện dễ chịu để tắm biển Mỹ Khê, chạy cung đường bán đảo Sơn Trà và ngắm Cầu Rồng về đêm.",
+    tone: "good",
+  };
 }
 
 const PERIOD_LABEL: Record<WeatherHourlyItem["period"], string> = {
@@ -121,6 +193,10 @@ const ATMOSPHERE_OPTIONS: { key: "auto" | WeatherAtmosphere; label: string }[] =
 
 export default function WeatherPage() {
   useNavbarHero();
+
+  const hourlyScrollRef = useRef<HTMLDivElement | null>(null);
+  const currentHourCardRef = useRef<HTMLDivElement | null>(null);
+  const stationScrollRef = useRef<HTMLDivElement | null>(null);
 
   const [places, setPlaces] = useState<WeatherPlacePreset[]>([]);
   const [selectedPlace, setSelectedPlace] = useState<string>("Đà Nẵng");
@@ -162,13 +238,13 @@ export default function WeatherPage() {
         setError(
           err instanceof Error
             ? err.message
-            : "Không tải được dữ liệu thời tiết. Vui lòng thử lại."
+            : "Không tải được dữ liệu thời tiết. Vui lòng thử lại.",
         );
       } finally {
         setLoading(false);
       }
     },
-    []
+    [],
   );
 
   useEffect(() => {
@@ -181,6 +257,19 @@ export default function WeatherPage() {
     if (!target) return weather.hourly.slice(0, 24);
     return weather.hourly.filter((h) => h.date === target);
   }, [weather, selectedDate]);
+
+  // Auto-scroll hourly strip to highlight current hour ("Bây giờ") when viewing today
+  useEffect(() => {
+    const container = hourlyScrollRef.current;
+    const currentCard = currentHourCardRef.current;
+    if (!container) return;
+    if (currentCard) {
+      const targetLeft = Math.max(0, currentCard.offsetLeft - 36);
+      container.scrollTo({ left: targetLeft, behavior: "smooth" });
+    } else {
+      container.scrollTo({ left: 0, behavior: "smooth" });
+    }
+  }, [selectedDate, weather?.location.name]);
 
   const selectedDaily: WeatherDailyItem | undefined = useMemo(() => {
     if (!weather) return undefined;
@@ -203,128 +292,191 @@ export default function WeatherPage() {
   }, [weather]);
 
   const effectiveRainProb = useMemo(() => {
-    if (weather?.current?.precipitationProbability !== null && weather?.current?.precipitationProbability !== undefined) {
+    if (
+      weather?.current?.precipitationProbability !== null &&
+      weather?.current?.precipitationProbability !== undefined
+    ) {
       return weather.current.precipitationProbability;
     }
     const vnHour = getVietnamHour();
     const todayDate = weather?.daily[0]?.date;
-    const matchHour = weather?.hourly.find((h) => h.date === todayDate && h.hour === vnHour);
-    if (matchHour?.precipitationProbability !== null && matchHour?.precipitationProbability !== undefined) {
+    const matchHour = weather?.hourly.find(
+      (h) => h.date === todayDate && h.hour === vnHour,
+    );
+    if (
+      matchHour?.precipitationProbability !== null &&
+      matchHour?.precipitationProbability !== undefined
+    ) {
       return matchHour.precipitationProbability;
     }
     return weather?.daily[0]?.precipitationProbabilityMax ?? null;
   }, [weather]);
 
   const vnHour = getVietnamHour();
-  const isNight = vnHour >= 19 || vnHour < 5;
+  const current = weather?.current;
+  const isNight =
+    current?.isDay == null
+      ? isNightHour(current ? Number(current.time.slice(11, 13)) : vnHour)
+      : !current.isDay;
   const activeAtmosphere: WeatherAtmosphere =
     previewMode !== "auto"
       ? previewMode
-      : resolveAtmosphere(weather?.current?.weatherCode ?? todayDaily?.weatherCode, isNight);
+      : resolveAtmosphere(
+          weather?.current?.weatherCode ?? todayDaily?.weatherCode,
+          isNight,
+        );
+
+  const readiness = weather
+    ? getTravelReadiness(weather, effectiveRainProb)
+    : null;
 
   const handleSelectPreset = (preset: WeatherPlacePreset) => {
     setSelectedPlace(preset.name);
     setSelectedPlaceId(preset.placeId);
   };
 
+  const scrollHourly = (delta: number) => {
+    hourlyScrollRef.current?.scrollBy({ left: delta, behavior: "smooth" });
+  };
+
+  const scrollStations = (delta: number) => {
+    stationScrollRef.current?.scrollBy({ left: delta, behavior: "smooth" });
+  };
+
   return (
-    <div className="min-h-screen relative text-white flex flex-col">
+    <div
+      data-navbar-overlay="true"
+      className="relative flex min-h-screen flex-col text-[#FFFDF5]"
+    >
       <WeatherBackdrop atmosphere={activeAtmosphere} />
 
-      <main className="flex-1 pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto w-full">
-        {/* Top Utility Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-xs font-medium text-white/95">
-            <Compass className="w-3.5 h-3.5" />
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 pt-24 pb-16 sm:px-6 lg:px-8">
+        {/* Observatory Top Command Bar */}
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+          <div className="inline-flex items-center gap-2.5 rounded-full border border-[#E6D9B7]/26 bg-[#061822]/75 px-3.5 py-1.5 text-xs font-semibold text-[#E6D9B7] backdrop-blur-xl">
+            <span className="h-2 w-2 rounded-full bg-[#2DD4BF] shadow-[0_0_8px_#2DD4BF]" />
+            <Compass className="h-3.5 w-3.5 text-[#E87B39]" />
             <span>Giờ Việt Nam (UTC+7) · Dự báo 7 ngày</span>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            {/* Effect Preview Switcher */}
-            <div className="inline-flex items-center gap-1 rounded-full bg-black/20 backdrop-blur-md border border-white/15 p-1">
-              {ATMOSPHERE_OPTIONS.map((opt) => (
-                <button
-                  key={opt.key}
-                  type="button"
-                  onClick={() => setPreviewMode(opt.key)}
-                  className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${
-                    previewMode === opt.key
-                      ? "bg-white text-slate-900 shadow-sm"
-                      : "text-white/80 hover:text-white"
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
+            {/* Atmosphere Preview Switcher */}
+            <div className="inline-flex items-center gap-0.5 rounded-full border border-[#E6D9B7]/22 bg-[#061822]/75 p-1 backdrop-blur-xl">
+              {ATMOSPHERE_OPTIONS.map((opt) => {
+                const isSelected = previewMode === opt.key;
+                return (
+                  <button
+                    key={opt.key}
+                    type="button"
+                    onClick={() => setPreviewMode(opt.key)}
+                    className={`rounded-full px-3 py-1 text-xs font-semibold transition-all cursor-pointer ${
+                      isSelected
+                        ? "bg-[#E6D9B7] text-[#05141C] shadow-sm"
+                        : "text-[#B4CED4] hover:text-[#FFFDF5]"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
             </div>
 
             <button
               type="button"
               onClick={() => void loadWeather(selectedPlace, selectedPlaceId)}
               disabled={loading}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-white text-xs font-semibold hover:bg-white/25 transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-full border border-[#E6D9B7]/26 bg-[#061822]/78 px-3.5 py-1.5 text-xs font-semibold text-[#FFFDF5] backdrop-blur-xl transition-colors hover:border-[#2DD4BF]/55 hover:bg-[#092331]/90 disabled:opacity-50 cursor-pointer"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
+              <RefreshCw className={`h-3.5 w-3.5 text-[#2DD4BF] ${loading ? "animate-spin" : ""}`} />
               Làm mới
             </button>
           </div>
         </div>
 
-        {/* Location Selector Pills */}
+        {/* Station Selector Ribbon */}
         {places.length > 0 && (
-          <div className="mb-8 flex flex-wrap justify-center gap-2">
-            {places.map((preset) => {
-              const isActive =
-                preset.placeId !== null
-                  ? preset.placeId === selectedPlaceId
-                  : selectedPlaceId === null && preset.name === selectedPlace;
-              return (
-                <button
-                  key={`${preset.placeId ?? "city"}-${preset.name}`}
-                  type="button"
-                  onClick={() => handleSelectPreset(preset)}
-                  className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all backdrop-blur-md border ${
-                    isActive
-                      ? "bg-white text-slate-900 border-white shadow-md"
-                      : "bg-white/12 text-white/90 border-white/20 hover:bg-white/20"
-                  }`}
-                >
-                  <MapPin className="w-3.5 h-3.5" />
-                  {preset.name}
-                </button>
-              );
-            })}
+          <div className="mb-6 flex items-center gap-1.5 rounded-2xl border border-[#E6D9B7]/18 bg-[#061822]/64 p-2 backdrop-blur-xl">
+            <div
+              ref={stationScrollRef}
+              className="hide-scrollbar flex flex-1 items-center gap-1.5 overflow-x-auto pb-0.5"
+            >
+              {places.map((preset) => {
+                const isActive =
+                  preset.placeId !== null
+                    ? preset.placeId === selectedPlaceId
+                    : selectedPlaceId === null && preset.name === selectedPlace;
+                return (
+                  <button
+                    key={`${preset.placeId ?? "city"}-${preset.name}`}
+                    type="button"
+                    onClick={() => handleSelectPreset(preset)}
+                    className={`inline-flex shrink-0 items-center gap-1.5 rounded-xl border px-3.5 py-2 text-xs font-semibold transition-all cursor-pointer ${
+                      isActive
+                        ? "border-[#E87B39]/80 bg-gradient-to-r from-[#E87B39] to-[#D46525] text-[#FFFDF5] shadow-[0_6px_18px_rgba(232,123,57,0.32)]"
+                        : "border-transparent bg-white/[0.04] text-[#C6DCE1] hover:border-[#E6D9B7]/26 hover:bg-white/[0.08] hover:text-[#FFFDF5]"
+                    }`}
+                  >
+                    <MapPin
+                      className={`h-3.5 w-3.5 ${
+                        isActive ? "text-[#FFFDF5]" : "text-[#2DD4BF]"
+                      }`}
+                    />
+                    {preset.name}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="hidden shrink-0 items-center gap-1 border-l border-[#E6D9B7]/14 pl-2 sm:flex">
+              <button
+                type="button"
+                aria-label="Cuộn danh sách địa điểm sang trái"
+                onClick={() => scrollStations(-260)}
+                className="flex h-8 w-8 items-center justify-center rounded-xl border border-[#E6D9B7]/18 bg-white/[0.04] text-[#D6E6EA] transition-colors hover:border-[#2DD4BF]/50 hover:bg-[#2DD4BF]/12 hover:text-[#FFFDF5] cursor-pointer"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                aria-label="Cuộn danh sách địa điểm sang phải"
+                onClick={() => scrollStations(260)}
+                className="flex h-8 w-8 items-center justify-center rounded-xl border border-[#E6D9B7]/18 bg-white/[0.04] text-[#D6E6EA] transition-colors hover:border-[#2DD4BF]/50 hover:bg-[#2DD4BF]/12 hover:text-[#FFFDF5] cursor-pointer"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         )}
 
         {/* Loading Skeleton */}
         {loading && !weather && (
-          <div className="space-y-6 animate-pulse">
-            <div className="h-52 rounded-3xl bg-white/15 backdrop-blur-md" />
-            <div className="h-40 rounded-3xl bg-white/15 backdrop-blur-md" />
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <div className="h-80 rounded-3xl bg-white/15 backdrop-blur-md" />
-              <div className="h-80 rounded-3xl bg-white/15 backdrop-blur-md" />
+          <div className="space-y-5 animate-pulse">
+            <div className="h-64 rounded-[28px] border border-[#E6D9B7]/16 bg-[#061822]/65 backdrop-blur-xl" />
+            <div className="h-44 rounded-[24px] border border-[#E6D9B7]/16 bg-[#061822]/65 backdrop-blur-xl" />
+            <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
+              <div className="h-80 rounded-[24px] bg-[#061822]/65 lg:col-span-7" />
+              <div className="h-80 rounded-[24px] bg-[#061822]/65 lg:col-span-5" />
             </div>
           </div>
         )}
 
         {/* Error State */}
         {error && !loading && (
-          <div className="rounded-3xl border border-rose-300/40 bg-rose-950/60 backdrop-blur-md p-6 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div className="mb-6 flex flex-col justify-between gap-4 rounded-3xl border border-rose-300/35 bg-rose-950/70 p-6 text-white backdrop-blur-xl sm:flex-row sm:items-center">
             <div className="flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 text-rose-300 shrink-0 mt-0.5" />
+              <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-rose-300" />
               <div>
-                <h2 className="font-bold text-base">Không tải được dữ liệu thời tiết</h2>
-                <p className="text-sm text-rose-100 mt-1">{error}</p>
+                <h2 className="text-base font-bold">
+                  Không tải được dữ liệu thời tiết
+                </h2>
+                <p className="mt-1 text-sm text-rose-100">{error}</p>
               </div>
             </div>
             <button
               type="button"
               onClick={() => void loadWeather(selectedPlace, selectedPlaceId)}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white text-rose-900 text-sm font-bold hover:bg-rose-50 transition-colors shrink-0"
+              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-rose-950 transition-colors hover:bg-rose-50 cursor-pointer"
             >
-              <RefreshCw className="w-4 h-4" />
+              <RefreshCw className="h-4 w-4" />
               Thử lại
             </button>
           </div>
@@ -332,64 +484,187 @@ export default function WeatherPage() {
 
         {weather && (
           <div className="space-y-5">
-            {/* Apple Weather Style Centered Hero */}
-            <section className="text-center py-4 sm:py-6">
-              <p className="text-sm uppercase tracking-widest text-white/80 font-semibold">
-                {weather.location.scope === "PLACE"
-                  ? "Tọa độ điểm du lịch"
-                  : "Mốc trung tâm thành phố"}
-              </p>
-              <h1 className="text-2xl sm:text-4xl font-bold tracking-tight mt-1 drop-shadow-sm">
-                {weather.location.name}
-              </h1>
+            {/* Hero Telemetry Observatory Stage */}
+            <section className="relative overflow-hidden rounded-[28px] border border-[#E6D9B7]/24 bg-[#061822]/68 p-6 sm:p-8 shadow-[0_28px_80px_rgba(0,0,0,0.42)] backdrop-blur-2xl">
+              {/* Leica architectural corner hairlines */}
+              <div className="pointer-events-none absolute top-4 left-4 h-3.5 w-3.5 rounded-tl-[4px] border-t border-l border-[#E6D9B7]/42" />
+              <div className="pointer-events-none absolute top-4 right-4 h-3.5 w-3.5 rounded-tr-[4px] border-t border-r border-[#E6D9B7]/42" />
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-[radial-gradient(ellipse_at_top_left,rgba(45,212,191,0.12),transparent_60%)]" />
 
-              {weather.current ? (
-                <>
-                  <div className="mt-2 flex items-center justify-center gap-4">
-                    <WeatherCodeIcon
-                      code={weather.current.weatherCode}
-                      className="w-14 h-14 sm:w-16 sm:h-16 drop-shadow"
-                    />
-                    <span className="text-7xl sm:text-8xl font-extralight tracking-tighter leading-none drop-shadow-sm">
-                      {weather.current.temperature !== null
-                        ? `${Math.round(weather.current.temperature)}°`
-                        : "—"}
+              <div className="relative grid grid-cols-1 gap-7 lg:grid-cols-12 lg:items-center">
+                {/* Left: Monumental Live Reading */}
+                <div className="lg:col-span-7">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-[#E6D9B7]/28 bg-[#E6D9B7]/10 px-3 py-1 text-[10.5px] font-semibold uppercase tracking-[0.2em] text-[#E6D9B7]">
+                      {weather.location.scope === "PLACE"
+                        ? "Tọa độ điểm du lịch"
+                        : "Mốc trung tâm thành phố"}
+                    </span>
+                    <span className="rounded-full border border-[#2DD4BF]/25 bg-[#2DD4BF]/10 px-2.5 py-1 font-mono text-[10.5px] text-[#5EEAD4]">
+                      {weather.location.latitude.toFixed(4)}° N ·{" "}
+                      {weather.location.longitude.toFixed(4)}° E
                     </span>
                   </div>
-                  <p className="text-lg sm:text-xl font-medium text-white/95 mt-2">
-                    {weather.current.description}
-                  </p>
-                  <div className="flex items-center justify-center gap-4 text-sm font-medium text-white/85 mt-1">
-                    {todayDaily && (
-                      <span>
-                        C: {todayDaily.tempMax !== null ? `${Math.round(todayDaily.tempMax)}°` : "—"} · T:{" "}
-                        {todayDaily.tempMin !== null ? `${Math.round(todayDaily.tempMin)}°` : "—"}
-                      </span>
-                    )}
-                    {weather.current.apparentTemperature !== null && (
-                      <span>
-                        Cảm giác như {Math.round(weather.current.apparentTemperature)}°
-                      </span>
-                    )}
-                  </div>
-                </>
-              ) : (
-                <p className="text-white/80 mt-4">
-                  Hiện chưa có dữ liệu thời tiết hiện tại từ nhà cung cấp.
-                </p>
-              )}
 
-              <p className="text-xs text-white/65 mt-3">
-                {weather.location.areaLabel} · Cập nhật lúc {formatViDateTime(weather.fetchedAt)}
-              </p>
+                  <h1 className="cinematic-condensed mt-3 text-3xl font-bold uppercase tracking-tight text-[#FFFDF5] sm:text-4xl lg:text-[46px] leading-[1.06]">
+                    {weather.location.name}
+                  </h1>
+
+                  {weather.current ? (
+                    <div className="mt-5 flex flex-wrap items-center gap-5 sm:gap-7">
+                      <div className="flex items-center gap-4">
+                        <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-[#E6D9B7]/22 bg-[#041118]/75 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] sm:h-20 sm:w-20">
+                          <WeatherCodeIcon
+                            code={weather.current.weatherCode}
+                            isNight={isNight}
+                            className="h-10 w-10 sm:h-12 sm:w-12"
+                          />
+                        </div>
+                        <span className="text-7xl font-extralight leading-none tracking-tighter text-[#FFFDF5] tabular-nums sm:text-[84px]">
+                          {weather.current.temperature !== null
+                            ? `${Math.round(weather.current.temperature)}°`
+                            : "—"}
+                        </span>
+                      </div>
+
+                      <div className="space-y-2">
+                        <p className="text-xl font-bold text-[#FFFDF5] sm:text-2xl">
+                          {weather.current.description}
+                        </p>
+                        <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
+                          {todayDaily && (
+                            <span className="rounded-full border border-white/14 bg-white/[0.06] px-3 py-1 text-[#E4F0F2]">
+                              Cao{" "}
+                              <b className="text-[#F0B47C]">
+                                {todayDaily.tempMax !== null
+                                  ? `${Math.round(todayDaily.tempMax)}°`
+                                  : "—"}
+                              </b>{" "}
+                              · Thấp{" "}
+                              <b className="text-[#7DD3FC]">
+                                {todayDaily.tempMin !== null
+                                  ? `${Math.round(todayDaily.tempMin)}°`
+                                  : "—"}
+                              </b>
+                            </span>
+                          )}
+                          {weather.current.apparentTemperature !== null && (
+                            <span className="rounded-full border border-[#E6D9B7]/22 bg-[#E6D9B7]/10 px-3 py-1 text-[#E6D9B7]">
+                              Cảm giác như{" "}
+                              {Math.round(weather.current.apparentTemperature)}°
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="mt-4 text-sm text-[#B4CED4]">
+                      Hiện chưa có dữ liệu thời tiết hiện tại từ nhà cung cấp.
+                    </p>
+                  )}
+
+                  <p className="mt-5 text-xs text-[#9AB6BF]">
+                    {weather.location.areaLabel} · Cập nhật lúc{" "}
+                    <span className="font-semibold text-[#D6E6EA]">
+                      {formatViDateTime(weather.fetchedAt)}
+                    </span>
+                  </p>
+                </div>
+
+                {/* Right: Travel Readiness + Quick Readout Grid */}
+                <div className="space-y-3 lg:col-span-5">
+                  {readiness && (
+                    <div
+                      className={`rounded-2xl border p-4 backdrop-blur-xl ${
+                        readiness.tone === "rain"
+                          ? "border-sky-300/30 bg-[#072030]/82"
+                          : readiness.tone === "hot"
+                            ? "border-[#E87B39]/38 bg-[#22160E]/75"
+                            : "border-[#2DD4BF]/32 bg-[#072329]/80"
+                      }`}
+                    >
+                      <div className="mb-1.5 flex items-center gap-2">
+                        <ShieldCheck
+                          className={`h-4 w-4 ${
+                            readiness.tone === "rain"
+                              ? "text-[#7DD3FC]"
+                              : readiness.tone === "hot"
+                                ? "text-[#F0B47C]"
+                                : "text-[#5EEAD4]"
+                          }`}
+                        />
+                        <span className="text-[10.5px] font-bold uppercase tracking-[0.18em] text-[#E6D9B7]">
+                          {readiness.badge}
+                        </span>
+                      </div>
+                      <p className="text-sm font-bold text-[#FFFDF5]">
+                        {readiness.title}
+                      </p>
+                      <p className="mt-1 text-xs leading-relaxed text-[#B4CED4]">
+                        {readiness.advice}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Quick-glance 4-stat telemetry bar */}
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <div className="rounded-xl border border-[#E6D9B7]/14 bg-[#041118]/75 px-3.5 py-2.5">
+                      <span className="flex items-center gap-1.5 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[#8FB0BA]">
+                        <Umbrella className="h-3.5 w-3.5 text-[#7DD3FC]" />
+                        Xác suất mưa
+                      </span>
+                      <p className="mt-1 text-lg font-bold text-[#FFFDF5] tabular-nums">
+                        {effectiveRainProb !== null
+                          ? `${Math.round(effectiveRainProb)}%`
+                          : "—"}
+                      </p>
+                    </div>
+
+                    <div className="rounded-xl border border-[#E6D9B7]/14 bg-[#041118]/75 px-3.5 py-2.5">
+                      <span className="flex items-center gap-1.5 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[#8FB0BA]">
+                        <Droplets className="h-3.5 w-3.5 text-[#5EEAD4]" />
+                        Độ ẩm
+                      </span>
+                      <p className="mt-1 text-lg font-bold text-[#FFFDF5] tabular-nums">
+                        {formatNumber(weather.current?.humidity, "%")}
+                      </p>
+                    </div>
+
+                    <div className="rounded-xl border border-[#E6D9B7]/14 bg-[#041118]/75 px-3.5 py-2.5">
+                      <span className="flex items-center gap-1.5 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[#8FB0BA]">
+                        <Wind className="h-3.5 w-3.5 text-[#E6D9B7]" />
+                        Tốc độ gió
+                      </span>
+                      <p className="mt-1 text-lg font-bold text-[#FFFDF5] tabular-nums">
+                        {weather.current?.windSpeed !== null &&
+                        weather.current?.windSpeed !== undefined
+                          ? `${Math.round(weather.current.windSpeed)} km/h`
+                          : "—"}
+                      </p>
+                    </div>
+
+                    <div className="rounded-xl border border-[#E6D9B7]/14 bg-[#041118]/75 px-3.5 py-2.5">
+                      <span className="flex items-center gap-1.5 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[#8FB0BA]">
+                        <CloudRain className="h-3.5 w-3.5 text-[#F0B47C]" />
+                        Mưa cả ngày
+                      </span>
+                      <p className="mt-1 text-lg font-bold text-[#FFFDF5] tabular-nums">
+                        {formatNumber(todayDaily?.precipitationSum, " mm")}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </section>
 
             {/* Stale Cache Banner */}
             {weather.stale && (
-              <div className="rounded-2xl border border-amber-300/40 bg-amber-950/50 backdrop-blur-md px-4 py-3 text-amber-100 flex items-start gap-3 text-sm">
-                <AlertTriangle className="w-5 h-5 text-amber-300 shrink-0 mt-0.5" />
+              <div className="flex items-start gap-3 rounded-2xl border border-amber-300/35 bg-amber-950/55 px-4 py-3 text-sm text-amber-100 backdrop-blur-xl">
+                <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-300" />
                 <div>
-                  <span className="font-semibold">Đang hiển thị dữ liệu cache cũ: </span>
+                  <span className="font-semibold">
+                    Đang hiển thị dữ liệu cache cũ:{" "}
+                  </span>
                   {weather.staleReason ??
                     `Dữ liệu được lấy lúc ${formatViDateTime(weather.fetchedAt)}.`}
                 </div>
@@ -398,32 +673,39 @@ export default function WeatherPage() {
 
             {/* 3-State Alert Banner */}
             {weather.alerts.state === "ACTIVE" && (
-              <div className="rounded-3xl border border-rose-300/40 bg-rose-950/60 backdrop-blur-md p-5 text-white">
+              <div className="rounded-3xl border border-rose-300/40 bg-rose-950/65 p-5 text-white backdrop-blur-xl">
                 <div className="flex items-start gap-3">
-                  <AlertTriangle className="w-5 h-5 text-rose-300 shrink-0 mt-0.5" />
+                  <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-rose-300" />
                   <div className="flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-bold text-base">Cảnh báo thời tiết nguy hiểm</span>
-                      <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-rose-500/40">
+                      <span className="text-base font-bold">
+                        Cảnh báo thời tiết nguy hiểm
+                      </span>
+                      <span className="rounded-full bg-rose-500/40 px-2.5 py-0.5 text-xs font-semibold">
                         {weather.alerts.scope}
                       </span>
                     </div>
-                    <p className="text-sm text-rose-100 mt-1">{weather.alerts.message}</p>
+                    <p className="mt-1 text-sm text-rose-100">
+                      {weather.alerts.message}
+                    </p>
                     <div className="mt-3 space-y-2">
                       {weather.alerts.items.map((item) => (
                         <div
                           key={item.id}
-                          className="rounded-2xl bg-black/25 border border-white/10 p-3 text-sm"
+                          className="rounded-2xl border border-white/10 bg-black/25 p-3 text-sm"
                         >
                           <p className="font-semibold">
                             {item.event} — {item.area}
                           </p>
-                          <p className="text-xs text-rose-200 mt-0.5">
+                          <p className="mt-0.5 text-xs text-rose-200">
                             Hiệu lực: {formatViDateTime(item.effectiveFrom)} →{" "}
-                            {formatViDateTime(item.effectiveTo)} · Nguồn: {item.source}
+                            {formatViDateTime(item.effectiveTo)} · Nguồn:{" "}
+                            {item.source}
                           </p>
                           {item.description && (
-                            <p className="text-white/90 mt-1">{item.description}</p>
+                            <p className="mt-1 text-white/90">
+                              {item.description}
+                            </p>
                           )}
                         </div>
                       ))}
@@ -434,8 +716,8 @@ export default function WeatherPage() {
             )}
 
             {weather.alerts.state === "NONE" && (
-              <div className="rounded-2xl border border-emerald-300/30 bg-emerald-950/35 backdrop-blur-md px-4 py-3 text-emerald-100 flex items-center gap-3 text-xs sm:text-sm">
-                <CheckCircle2 className="w-4 h-4 text-emerald-300 shrink-0" />
+              <div className="flex items-center gap-3 rounded-2xl border border-[#2DD4BF]/30 bg-[#062024]/75 px-4 py-3 text-xs text-[#CCFBF1] backdrop-blur-xl sm:text-sm">
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-[#2DD4BF]" />
                 <span>
                   {weather.alerts.message} (Nguồn: {weather.alerts.source})
                 </span>
@@ -443,67 +725,130 @@ export default function WeatherPage() {
             )}
 
             {weather.alerts.state === "UNAVAILABLE" && (
-              <div className="rounded-2xl border border-white/15 bg-black/20 backdrop-blur-md px-4 py-3 text-white/85 flex items-start gap-3 text-xs sm:text-sm">
-                <Info className="w-4 h-4 text-sky-200 shrink-0 mt-0.5" />
+              <div className="flex items-start gap-3 rounded-2xl border border-[#E6D9B7]/18 bg-[#061822]/72 px-4 py-3 text-xs text-[#C6DCE1] backdrop-blur-xl sm:text-sm">
+                <Info className="mt-0.5 h-4 w-4 shrink-0 text-[#7DD3FC]" />
                 <div>
-                  <span className="font-semibold text-white">Cảnh báo thiên tai: </span>
+                  <span className="font-semibold text-[#FFFDF5]">
+                    Cảnh báo thiên tai:{" "}
+                  </span>
                   {weather.alerts.message}
                 </div>
               </div>
             )}
 
-            {/* Hourly Forecast Frosted Strip */}
-            <section className="rounded-3xl bg-white/12 backdrop-blur-xl border border-white/20 p-4 sm:p-5 shadow-lg">
-              <div className="flex flex-wrap items-center justify-between gap-2 pb-3 mb-3 border-b border-white/15">
-                <h2 className="text-xs font-bold uppercase tracking-wider text-white/80">
-                  Dự báo theo giờ{" "}
-                  {selectedDaily ? `· ${selectedDaily.dayLabel}` : ""}
-                </h2>
-                {selectedDaily && (
-                  <span className="text-xs text-white/75">
-                    Tổng mưa ngày: {formatNumber(selectedDaily.precipitationSum, " mm")} · Gió tối đa:{" "}
-                    {formatNumber(selectedDaily.windSpeedMax, " km/h")}
-                  </span>
-                )}
+            {/* Hourly Forecast Frosted Observatory Strip */}
+            <section className="rounded-[24px] border border-[#E6D9B7]/20 bg-[#061822]/74 p-4 sm:p-5 shadow-[0_20px_50px_rgba(0,0,0,0.34)] backdrop-blur-2xl">
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-[#E6D9B7]/14 pb-3">
+                <div>
+                  <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-[#E6D9B7]">
+                    Dự báo theo giờ{" "}
+                    {selectedDaily ? `· ${selectedDaily.dayLabel}` : ""}
+                  </h2>
+                  {selectedDaily && (
+                    <p className="mt-1 text-xs text-[#9AB6BF]">
+                      Tổng mưa ngày:{" "}
+                      <b className="text-[#FFFDF5]">
+                        {formatNumber(selectedDaily.precipitationSum, " mm")}
+                      </b>{" "}
+                      · Gió tối đa:{" "}
+                      <b className="text-[#FFFDF5]">
+                        {formatNumber(selectedDaily.windSpeedMax, " km/h")}
+                      </b>
+                    </p>
+                  )}
+                </div>
+
+                {/* Desktop horizontal scroll controls */}
+                <div className="hidden items-center gap-1.5 sm:flex">
+                  <button
+                    type="button"
+                    aria-label="Cuộn sang trái"
+                    onClick={() => scrollHourly(-320)}
+                    className="flex h-8 w-8 items-center justify-center rounded-full border border-[#E6D9B7]/22 bg-white/[0.04] text-[#D6E6EA] transition-colors hover:border-[#2DD4BF]/50 hover:bg-[#2DD4BF]/12 hover:text-[#FFFDF5] cursor-pointer"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Cuộn sang phải"
+                    onClick={() => scrollHourly(320)}
+                    className="flex h-8 w-8 items-center justify-center rounded-full border border-[#E6D9B7]/22 bg-white/[0.04] text-[#D6E6EA] transition-colors hover:border-[#2DD4BF]/50 hover:bg-[#2DD4BF]/12 hover:text-[#FFFDF5] cursor-pointer"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
 
               {hourlyForSelectedDate.length === 0 ? (
-                <p className="text-sm text-white/75 py-6 text-center">
+                <p className="py-6 text-center text-sm text-[#9AB6BF]">
                   Không có dữ liệu theo giờ cho ngày đã chọn.
                 </p>
               ) : (
-                <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-1">
+                <div
+                  ref={hourlyScrollRef}
+                  className="hide-scrollbar flex gap-2.5 overflow-x-auto pb-1"
+                >
                   {hourlyForSelectedDate.map((h) => {
                     const isCurrentHour =
                       h.date === weather.daily[0]?.date && h.hour === vnHour;
+                    const rainChance =
+                      h.precipitationProbability !== null
+                        ? Math.round(h.precipitationProbability)
+                        : 0;
                     return (
                       <div
                         key={h.time}
-                        className={`min-w-[82px] shrink-0 rounded-2xl px-3 py-3 flex flex-col items-center text-center transition-colors ${
+                        ref={isCurrentHour ? currentHourCardRef : undefined}
+                        className={`flex min-w-[88px] shrink-0 flex-col items-center rounded-2xl border px-3 py-3.5 text-center transition-all ${
                           isCurrentHour
-                            ? "bg-white/25 border border-white/40"
-                            : "bg-white/5 hover:bg-white/15"
+                            ? "border-[#E87B39]/80 bg-[#E87B39]/18 shadow-[0_10px_24px_rgba(232,123,57,0.22)]"
+                            : "border-white/[0.08] bg-[#041118]/72 hover:border-[#E6D9B7]/30 hover:bg-[#09202D]/85"
                         }`}
                       >
-                        <span className="text-xs font-semibold text-white/90">
+                        <span
+                          className={`text-xs font-bold ${
+                            isCurrentHour ? "text-[#F0B47C]" : "text-[#FFFDF5]"
+                          }`}
+                        >
                           {isCurrentHour ? "Bây giờ" : h.hourLabel}
                         </span>
-                        <span className="text-[10px] text-white/65 mt-0.5">
+                        <span className="mt-0.5 text-[10.5px] font-medium text-[#8FB0BA]">
                           {PERIOD_LABEL[h.period]}
                         </span>
+
                         <div className="my-2.5">
-                          <WeatherCodeIcon code={h.weatherCode} className="w-7 h-7" />
+                          <WeatherCodeIcon
+                            code={h.weatherCode}
+                            isNight={
+                              h.isDay == null ? isNightHour(h.hour) : !h.isDay
+                            }
+                            className="h-7 w-7"
+                          />
                         </div>
-                        {h.precipitationProbability !== null &&
-                        h.precipitationProbability > 0 ? (
-                          <span className="text-[11px] font-bold text-sky-200 mb-1">
-                            {Math.round(h.precipitationProbability)}%
+
+                        {/* Visual Rain Probability Bar */}
+                        <div className="mb-1.5 w-full space-y-1">
+                          <span
+                            className={`block text-[11px] font-bold tabular-nums ${
+                              rainChance > 0
+                                ? "text-[#7DD3FC]"
+                                : "text-transparent"
+                            }`}
+                          >
+                            {rainChance}%
                           </span>
-                        ) : (
-                          <span className="text-[11px] text-transparent mb-1">0%</span>
-                        )}
-                        <span className="text-base font-bold">
-                          {h.temperature !== null ? `${Math.round(h.temperature)}°` : "—"}
+                          <div className="mx-auto h-1 w-10 overflow-hidden rounded-full bg-white/[0.08]">
+                            <div
+                              className="h-full rounded-full bg-gradient-to-r from-[#38BDF8] to-[#2DD4BF]"
+                              style={{ width: `${rainChance}%` }}
+                            />
+                          </div>
+                        </div>
+
+                        <span className="text-base font-extrabold text-[#FFFDF5] tabular-nums">
+                          {h.temperature !== null
+                            ? `${Math.round(h.temperature)}°`
+                            : "—"}
                         </span>
                       </div>
                     );
@@ -512,19 +857,21 @@ export default function WeatherPage() {
               )}
             </section>
 
-            {/* 2-Column Bento Grid: 7-Day Forecast + Detailed Metrics */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-              {/* Left: 7-Day Forecast List with Temperature Range Bar */}
-              <section className="lg:col-span-7 rounded-3xl bg-white/12 backdrop-blur-xl border border-white/20 p-4 sm:p-5 shadow-lg">
-                <div className="flex items-center justify-between pb-3 mb-2 border-b border-white/15">
-                  <h2 className="text-xs font-bold uppercase tracking-wider text-white/80 flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
+            {/* 2-Column Bento Observatory: 7-Day Forecast + Detailed Telemetry */}
+            <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
+              {/* Left: 7-Day Forecast */}
+              <section className="rounded-[24px] border border-[#E6D9B7]/20 bg-[#061822]/76 p-4 sm:p-5 shadow-[0_20px_50px_rgba(0,0,0,0.34)] backdrop-blur-2xl lg:col-span-7">
+                <div className="mb-3 flex items-center justify-between border-b border-[#E6D9B7]/14 pb-3">
+                  <h2 className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-[#E6D9B7]">
+                    <Calendar className="h-4 w-4 text-[#E87B39]" />
                     Dự báo {weather.daily.length} ngày tới
                   </h2>
-                  <span className="text-xs text-white/70">Bấm chọn ngày</span>
+                  <span className="text-xs text-[#8FB0BA]">
+                    Bấm chọn ngày để xem theo giờ
+                  </span>
                 </div>
 
-                <div className="divide-y divide-white/10">
+                <div className="space-y-1.5">
                   {weather.daily.map((day) => {
                     const isSelected = day.date === selectedDaily?.date;
                     const minVal = day.tempMin ?? tempBounds.min;
@@ -532,11 +879,11 @@ export default function WeatherPage() {
                     const span = tempBounds.max - tempBounds.min;
                     const leftPct = Math.max(
                       0,
-                      Math.min(100, ((minVal - tempBounds.min) / span) * 100)
+                      Math.min(100, ((minVal - tempBounds.min) / span) * 100),
                     );
                     const widthPct = Math.max(
-                      8,
-                      Math.min(100 - leftPct, ((maxVal - minVal) / span) * 100)
+                      10,
+                      Math.min(100 - leftPct, ((maxVal - minVal) / span) * 100),
                     );
 
                     return (
@@ -544,40 +891,52 @@ export default function WeatherPage() {
                         key={day.date}
                         type="button"
                         onClick={() => setSelectedDate(day.date)}
-                        className={`w-full flex items-center gap-3 px-2.5 py-3 rounded-xl transition-colors text-left ${
-                          isSelected ? "bg-white/20" : "hover:bg-white/10"
+                        className={`flex w-full items-center gap-3 rounded-2xl border px-3 py-3 text-left transition-all cursor-pointer ${
+                          isSelected
+                            ? "border-[#E87B39]/65 bg-[#E87B39]/14 shadow-[0_6px_20px_rgba(232,123,57,0.16)]"
+                            : "border-transparent bg-white/[0.02] hover:border-[#E6D9B7]/20 hover:bg-white/[0.06]"
                         }`}
                       >
-                        <div className="w-24 sm:w-28 shrink-0">
-                          <div className="text-sm font-bold truncate">
+                        <div className="w-24 shrink-0 sm:w-28">
+                          <div className="truncate text-sm font-bold text-[#FFFDF5]">
                             {day.dayLabel.split("(")[0]?.trim()}
                           </div>
-                          <div className="text-[11px] text-white/65">
+                          <div className="text-[11px] font-medium text-[#8FB0BA]">
                             {formatShortDate(day.date)}
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2 w-20 shrink-0">
-                          <WeatherCodeIcon code={day.weatherCode} className="w-6 h-6 shrink-0" />
-                          <span className="text-xs font-semibold text-sky-200">
+                        <div className="flex w-20 shrink-0 items-center gap-2">
+                          <WeatherCodeIcon
+                            code={day.weatherCode}
+                            className="h-6 w-6 shrink-0"
+                          />
+                          <span className="text-xs font-bold text-[#7DD3FC] tabular-nums">
                             {day.precipitationProbabilityMax !== null
                               ? `${Math.round(day.precipitationProbabilityMax)}%`
                               : "—"}
                           </span>
                         </div>
 
-                        <div className="flex-1 flex items-center gap-2.5 min-w-0">
-                          <span className="text-sm font-medium text-white/75 w-8 text-right shrink-0">
-                            {day.tempMin !== null ? `${Math.round(day.tempMin)}°` : "—"}
+                        <div className="flex min-w-0 flex-1 items-center gap-2.5">
+                          <span className="w-8 shrink-0 text-right text-sm font-semibold text-[#9AB6BF] tabular-nums">
+                            {day.tempMin !== null
+                              ? `${Math.round(day.tempMin)}°`
+                              : "—"}
                           </span>
-                          <div className="flex-1 h-1.5 rounded-full bg-black/25 overflow-hidden relative">
+                          <div className="relative h-2 flex-1 overflow-hidden rounded-full bg-[#041017]/90">
                             <div
-                              className="absolute top-0 bottom-0 rounded-full bg-gradient-to-r from-cyan-300 via-amber-300 to-orange-400"
-                              style={{ left: `${leftPct}%`, width: `${widthPct}%` }}
+                              className="absolute top-0 bottom-0 rounded-full bg-gradient-to-r from-[#38BDF8] via-[#E6D9B7] to-[#E87B39]"
+                              style={{
+                                left: `${leftPct}%`,
+                                width: `${widthPct}%`,
+                              }}
                             />
                           </div>
-                          <span className="text-sm font-bold w-8 shrink-0">
-                            {day.tempMax !== null ? `${Math.round(day.tempMax)}°` : "—"}
+                          <span className="w-8 shrink-0 text-sm font-extrabold text-[#FFFDF5] tabular-nums">
+                            {day.tempMax !== null
+                              ? `${Math.round(day.tempMax)}°`
+                              : "—"}
                           </span>
                         </div>
                       </button>
@@ -586,101 +945,136 @@ export default function WeatherPage() {
                 </div>
               </section>
 
-              {/* Right: Bento Metric Tiles + Ask Gô */}
-              <section className="lg:col-span-5 grid grid-cols-2 gap-3.5 content-start">
-                <div className="rounded-3xl bg-white/12 backdrop-blur-xl border border-white/20 p-4">
-                  <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-white/75">
-                    <Umbrella className="w-3.5 h-3.5" />
+              {/* Right: Detailed Atmospheric Telemetry + Ask Gô */}
+              <section className="grid grid-cols-2 content-start gap-3.5 lg:col-span-5">
+                {/* Rain Probability Tile */}
+                <div className="rounded-2xl border border-[#E6D9B7]/18 bg-[#061822]/78 p-4 backdrop-blur-2xl">
+                  <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-[#E6D9B7]/85">
+                    <Umbrella className="h-3.5 w-3.5 text-[#7DD3FC]" />
                     Khả năng mưa
                   </div>
-                  <div className="text-3xl font-bold mt-2">
-                    {effectiveRainProb !== null ? `${Math.round(effectiveRainProb)}%` : "Chưa có"}
+                  <div className="mt-2 text-3xl font-extrabold text-[#FFFDF5] tabular-nums">
+                    {effectiveRainProb !== null
+                      ? `${Math.round(effectiveRainProb)}%`
+                      : "—"}
                   </div>
-                  <p className="text-xs text-white/70 mt-1">
-                    {weather.current?.precipitationProbability === null && effectiveRainProb !== null
+                  <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-white/[0.08]">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-[#38BDF8] to-[#2DD4BF]"
+                      style={{
+                        width: `${Math.min(100, Math.max(0, effectiveRainProb ?? 0))}%`,
+                      }}
+                    />
+                  </div>
+                  <p className="mt-2 text-[11.5px] text-[#8FB0BA]">
+                    {weather.current?.precipitationProbability === null &&
+                    effectiveRainProb !== null
                       ? "Theo khung giờ hiện tại"
                       : "Xác suất có mưa"}
                   </p>
                 </div>
 
-                <div className="rounded-3xl bg-white/12 backdrop-blur-xl border border-white/20 p-4">
-                  <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-white/75">
-                    <CloudRain className="w-3.5 h-3.5" />
+                {/* Rainfall Tile */}
+                <div className="rounded-2xl border border-[#E6D9B7]/18 bg-[#061822]/78 p-4 backdrop-blur-2xl">
+                  <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-[#E6D9B7]/85">
+                    <CloudRain className="h-3.5 w-3.5 text-[#38BDF8]" />
                     Lượng mưa
                   </div>
-                  <div className="text-3xl font-bold mt-2">
+                  <div className="mt-2 text-3xl font-extrabold text-[#FFFDF5] tabular-nums">
                     {formatNumber(weather.current?.precipitation, " mm")}
                   </div>
-                  <p className="text-xs text-white/70 mt-1">
-                    Cả ngày: {formatNumber(todayDaily?.precipitationSum, " mm")}
+                  <p className="mt-3 text-[11.5px] text-[#9AB6BF]">
+                    Cả ngày:{" "}
+                    <b className="text-[#FFFDF5]">
+                      {formatNumber(todayDaily?.precipitationSum, " mm")}
+                    </b>
                   </p>
                 </div>
 
-                <div className="rounded-3xl bg-white/12 backdrop-blur-xl border border-white/20 p-4">
-                  <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-white/75">
-                    <Wind className="w-3.5 h-3.5" />
+                {/* Wind Tile */}
+                <div className="rounded-2xl border border-[#E6D9B7]/18 bg-[#061822]/78 p-4 backdrop-blur-2xl">
+                  <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-[#E6D9B7]/85">
+                    <Wind className="h-3.5 w-3.5 text-[#5EEAD4]" />
                     Gió
                   </div>
-                  <div className="text-3xl font-bold mt-2">
-                    {weather.current?.windSpeed !== null && weather.current?.windSpeed !== undefined
+                  <div className="mt-2 text-3xl font-extrabold text-[#FFFDF5] tabular-nums">
+                    {weather.current?.windSpeed !== null &&
+                    weather.current?.windSpeed !== undefined
                       ? `${Math.round(weather.current.windSpeed)} km/h`
                       : "—"}
                   </div>
-                  <p className="text-xs text-white/70 mt-1">
-                    Gió giật: {formatNumber(weather.current?.windGusts, " km/h")}
+                  <p className="mt-3 text-[11.5px] text-[#9AB6BF]">
+                    Gió giật:{" "}
+                    <b className="text-[#FFFDF5]">
+                      {formatNumber(weather.current?.windGusts, " km/h")}
+                    </b>
                   </p>
                 </div>
 
-                <div className="rounded-3xl bg-white/12 backdrop-blur-xl border border-white/20 p-4">
-                  <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-white/75">
-                    <Droplets className="w-3.5 h-3.5" />
+                {/* Humidity Tile */}
+                <div className="rounded-2xl border border-[#E6D9B7]/18 bg-[#061822]/78 p-4 backdrop-blur-2xl">
+                  <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-[#E6D9B7]/85">
+                    <Droplets className="h-3.5 w-3.5 text-[#2DD4BF]" />
                     Độ ẩm
                   </div>
-                  <div className="text-3xl font-bold mt-2">
+                  <div className="mt-2 text-3xl font-extrabold text-[#FFFDF5] tabular-nums">
                     {formatNumber(weather.current?.humidity, "%")}
                   </div>
-                  <p className="text-xs text-white/70 mt-1 flex items-center gap-1">
-                    <Thermometer className="w-3 h-3" />
+                  <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-white/[0.08]">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-[#2DD4BF] to-[#E6D9B7]"
+                      style={{
+                        width: `${Math.min(100, Math.max(0, weather.current?.humidity ?? 0))}%`,
+                      }}
+                    />
+                  </div>
+                  <p className="mt-2 flex items-center gap-1 text-[11.5px] text-[#8FB0BA]">
+                    <Thermometer className="h-3 w-3 text-[#F0B47C]" />
                     Cảm giác:{" "}
-                    {weather.current?.apparentTemperature !== null &&
-                    weather.current?.apparentTemperature !== undefined
-                      ? `${Math.round(weather.current.apparentTemperature)}°C`
-                      : "—"}
+                    <b className="text-[#FFFDF5]">
+                      {weather.current?.apparentTemperature !== null &&
+                      weather.current?.apparentTemperature !== undefined
+                        ? `${Math.round(weather.current.apparentTemperature)}°C`
+                        : "—"}
+                    </b>
                   </p>
                 </div>
 
-                {/* Ask Gô Weather Card */}
-                <div className="col-span-2 rounded-3xl bg-white/15 backdrop-blur-xl border border-white/25 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                {/* Ask Gô Weather Concierge Card */}
+                <div className="col-span-2 flex flex-col justify-between gap-4 rounded-2xl border border-[#E87B39]/35 bg-gradient-to-br from-[#0A2230]/92 via-[#091D29]/92 to-[#171B20]/90 p-5 shadow-[0_16px_38px_rgba(0,0,0,0.34)] backdrop-blur-2xl sm:flex-row sm:items-center">
                   <div>
-                    <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-amber-200">
-                      <Sparkles className="w-3.5 h-3.5" />
+                    <div className="inline-flex items-center gap-1.5 text-[10.5px] font-bold uppercase tracking-[0.18em] text-[#E6D9B7]">
+                      <Sparkles className="h-3.5 w-3.5 text-[#E87B39]" />
                       Trợ lý du lịch Gô
                     </div>
-                    <p className="text-sm font-medium text-white mt-1">
-                      Cần đổi lịch trình sang điểm trong nhà hoặc hỏi mang gì khi đi Đà Nẵng?
+                    <p className="mt-1.5 text-sm font-semibold leading-snug text-[#FFFDF5]">
+                      Cần đổi lịch trình sang điểm trong nhà hoặc hỏi mang gì khi
+                      đi Đà Nẵng?
                     </p>
                   </div>
                   <Link
                     href="/chat"
-                    className="inline-flex items-center justify-center px-4 py-2.5 rounded-xl bg-white text-slate-900 text-sm font-bold hover:bg-teal-50 transition-colors shrink-0 shadow-sm"
+                    className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-[#E87B39] to-[#D46525] px-4 py-2.5 text-sm font-bold text-[#FFFDF5] shadow-[0_10px_24px_rgba(232,123,57,0.32)] transition-all hover:brightness-110"
                   >
-                    Hỏi trợ lý Gô →
+                    Hỏi trợ lý Gô
+                    <ArrowRight className="h-4 w-4" />
                   </Link>
                 </div>
               </section>
             </div>
 
             {/* Attribution & Metadata */}
-            <div className="text-center text-xs text-white/70 pt-3">
+            <div className="pt-3 text-center text-xs text-[#9AB6BF]">
               <a
                 href={weather.source.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="underline hover:text-white transition-colors"
+                className="underline decoration-[#E6D9B7]/40 transition-colors hover:text-[#FFFDF5]"
               >
                 {weather.source.attribution}
               </a>{" "}
-              ({weather.source.license}) · Tọa độ: {weather.location.latitude.toFixed(4)},{" "}
+              ({weather.source.license}) · Tọa độ:{" "}
+              {weather.location.latitude.toFixed(4)},{" "}
               {weather.location.longitude.toFixed(4)}
               {weather.providerUpdatedAt
                 ? ` · Nguồn cập nhật: ${formatViDateTime(weather.providerUpdatedAt)}`

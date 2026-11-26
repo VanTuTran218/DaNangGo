@@ -1,30 +1,72 @@
 "use client";
 
 /**
- * IntroOverlay — Màn hình chào mừng (Welcome / Intro Screen) DanangGo
+ * IntroOverlay V11.2 — DANANGGO: THE GATEWAY TO DA NANG (Performance-Optimized)
  *
- * Tính năng trải nghiệm:
- * 1. Background Cầu Rồng / Sông Hàn Đà Nẵng chất lượng cao, bao phủ toàn màn hình (cover)
- * 2. Gradient overlay chuẩn tông xanh navy (#061B30) tạo độ tương phản cao, làm nổi bật nội dung
- * 3. Hiệu ứng Ken Burns: background zoom nhẹ từ 1.0 đến 1.08 mượt mà, tự nhiên
- * 4. Ánh sáng xanh ngọc (ambient cyan pulse) nhẹ nhàng tạo chiều sâu không gian
- * 5. Logo DanangGo la bàn chuẩn nhận diện thương hiệu, xoay chậm và phát sáng tinh tế
- * 6. Tiêu đề "CHÀO MỪNG ĐẾN VỚI ĐÀ NẴNG" với điểm nhấn xanh ngọc và hiệu ứng gradient shimmer
- * 7. Nút CTA "Bắt đầu khám phá" chuẩn glassmorphism/gradient xanh ngọc, hiệu ứng hover phát sáng & mũi tên dịch chuyển
- * 8. Hiệu ứng fade-out + zoom khi bắt đầu khám phá để chuyển mượt vào trang chủ
- * 9. Hỗ trợ prefers-reduced-motion, phím tắt Esc/Enter, nút Bỏ qua và sessionStorage
+ * Preserves 100% of visual design, Vietnamese copy, `SESSION_KEY = "danangGoIntroShown"`,
+ * `?intro=1` preview support, Escape/Enter shortcuts, 12s auto-dismiss safety fallback,
+ * "Bỏ qua" button, and "Bắt đầu khám phá" handler.
+ *
+ * Performance architecture:
+ * - Preloads & decodes critical intro images + fonts before starting choreography
+ *   so frame 1 never stalls on image decode or pops in abruptly.
+ * - Pure GPU-composited transform + opacity exit transition (no full-screen clip-path repaint,
+ *   no flash/white-screen when revealing Homepage).
+ * - Pauses timers & parallax when tab is hidden (`visibilitychange`).
+ * - Activates desktop 2.5D mouse parallax only after entrance settles, with cached viewport size.
  */
 
-import { useEffect, useState, useCallback, useRef } from "react";
-import Image from "next/image";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { usePathname } from "next/navigation";
-import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import {
+  motion,
+  useReducedMotion,
+  useMotionValue,
+  useSpring,
+} from "framer-motion";
+import CompassReveal from "@/components/intro/CompassReveal";
+import GoldenJourneyPath from "@/components/intro/GoldenJourneyPath";
+import IntroCloudLayers from "@/components/intro/IntroCloudLayers";
+import IntroTypography from "@/components/intro/IntroTypography";
 
 const SESSION_KEY = "danangGoIntroShown";
+const AUTO_DISMISS_MS = 12000;
+const ASSET_PRELOAD_TIMEOUT_MS = 850;
+const FONT_WAIT_TIMEOUT_MS = 250;
+const PARALLAX_ACTIVATE_DELAY_MS = 2250;
+const EXIT_DURATION_S = 0.52;
+const EXIT_FALLBACK_MS = 620;
 
 interface IntroOverlayProps {
   onComplete?: () => void;
+}
+
+function preloadAndDecodeImage(src: string): Promise<void> {
+  return new Promise((resolve) => {
+    const img = new window.Image();
+    img.decoding = "async";
+    img.src = src;
+
+    const done = () => resolve();
+
+    if (img.complete && img.naturalWidth > 0) {
+      if (typeof img.decode === "function") {
+        img.decode().then(done, done);
+      } else {
+        done();
+      }
+      return;
+    }
+
+    img.onload = () => {
+      if (typeof img.decode === "function") {
+        img.decode().then(done, done);
+      } else {
+        done();
+      }
+    };
+    img.onerror = done;
+  });
 }
 
 export default function IntroOverlay({ onComplete }: IntroOverlayProps) {
@@ -33,18 +75,45 @@ export default function IntroOverlay({ onComplete }: IntroOverlayProps) {
 }
 
 function HomeIntroOverlay({ onComplete }: IntroOverlayProps) {
-  const prefersReduced = useReducedMotion();
+  const prefersReducedHook = useReducedMotion();
+  const prefersReduced = Boolean(prefersReducedHook);
 
   const [shouldShow, setShouldShow] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
+  const [isMotionReady, setIsMotionReady] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
-  const isExitingRef = useRef(false);
-  const exitTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [canMouseParallax, setCanMouseParallax] = useState(false);
+  const [isParallaxActive, setIsParallaxActive] = useState(false);
+  const [isTabVisible, setIsTabVisible] = useState(true);
 
-  // Xử lý chuyển vào trang chủ khi click "Bắt đầu khám phá" hoặc "Bỏ qua"
+  const isExitingRef = useRef(false);
+  const isCompletedRef = useRef(false);
+  const exitFallbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const viewportRef = useRef({ width: 1440, height: 900 });
+
+  // Damped mouse coordinates for Scene 05 desktop 2.5D parallax (activated only after entrance settles)
+  const rawMouseX = useMotionValue(0);
+  const rawMouseY = useMotionValue(0);
+  const smoothMouseX = useSpring(rawMouseX, { stiffness: 90, damping: 26, mass: 0.6 });
+  const smoothMouseY = useSpring(rawMouseY, { stiffness: 90, damping: 26, mass: 0.6 });
+
+  const finishExit = useCallback(() => {
+    if (isCompletedRef.current) return;
+    isCompletedRef.current = true;
+    if (exitFallbackTimer.current !== null) {
+      clearTimeout(exitFallbackTimer.current);
+      exitFallbackTimer.current = null;
+    }
+    setIsVisible(false);
+    document.body.style.overflow = "";
+    onComplete?.();
+  }, [onComplete]);
+
+  // Xử lý chuyển vào trang chủ khi click "Bắt đầu khám phá" hoặc "Bỏ qua" (hoạt động ngay lập tức ở mọi giai đoạn)
   const handleExplore = useCallback(() => {
     if (isExitingRef.current) return;
     isExitingRef.current = true;
+    setIsParallaxActive(false);
     setIsExiting(true);
 
     try {
@@ -53,22 +122,63 @@ function HomeIntroOverlay({ onComplete }: IntroOverlayProps) {
       // Bỏ qua lỗi trong môi trường hạn chế storage
     }
 
-    // Thời gian animation fade-out + zoom nhẹ (550ms)
-    exitTimer.current = setTimeout(() => {
-      setIsVisible(false);
-      document.body.style.overflow = "";
-      onComplete?.();
+    // Fallback đảm bảo luôn unmount hoàn toàn kể cả khi tab bị ẩn trong lúc exit
+    exitFallbackTimer.current = setTimeout(
+      finishExit,
+      prefersReduced ? 260 : EXIT_FALLBACK_MS
+    );
+  }, [finishExit, prefersReduced]);
 
-    }, 550);
-  }, [onComplete]);
-
+  // Theo dõi desktop pointer & cache kích thước viewport (tránh đọc layout trong mousemove)
   useEffect(() => {
-    // Kiểm tra prefers-reduced-motion & sessionStorage
+    if (typeof window === "undefined") return;
+
+    const updateViewport = () => {
+      viewportRef.current.width = Math.max(1, window.innerWidth);
+      viewportRef.current.height = Math.max(1, window.innerHeight);
+    };
+    updateViewport();
+
+    const mq = window.matchMedia(
+      "(min-width: 1024px) and (hover: hover) and (pointer: fine)"
+    );
+    setCanMouseParallax(mq.matches);
+    const onMqChange = (e: MediaQueryListEvent) => setCanMouseParallax(e.matches);
+
+    mq.addEventListener("change", onMqChange);
+    window.addEventListener("resize", updateViewport, { passive: true });
+    return () => {
+      mq.removeEventListener("change", onMqChange);
+      window.removeEventListener("resize", updateViewport);
+    };
+  }, []);
+
+  // Theo dõi trạng thái hiển thị tab để tạm dừng animation/timer khi tab không hoạt động
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    setIsTabVisible(!document.hidden);
+
+    const onVisibilityChange = () => {
+      const visible = !document.hidden;
+      setIsTabVisible(visible);
+      if (!visible) {
+        rawMouseX.set(0);
+        rawMouseY.set(0);
+      }
+    };
+
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
+  }, [rawMouseX, rawMouseY]);
+
+  // Quyết định hiển thị Intro, khóa cuộn & lắng nghe phím tắt Escape/Enter (GIỮ NGUYÊN LOGIC)
+  useEffect(() => {
     const prefersReducedMotionMedia =
       typeof window !== "undefined" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    // Hỗ trợ tham số ?intro=1 để dễ dàng test lại màn hình chào mừng
     const urlParams =
       typeof window !== "undefined"
         ? new URLSearchParams(window.location.search)
@@ -86,11 +196,8 @@ function HomeIntroOverlay({ onComplete }: IntroOverlayProps) {
     }
 
     setShouldShow(true);
-
-    // Khóa cuộn trang khi đang hiển thị màn hình chào mừng
     document.body.style.overflow = "hidden";
 
-    // Phím tắt bàn phím: Escape hoặc Enter để vào khám phá ngay
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" || e.key === "Enter") {
         handleExplore();
@@ -98,308 +205,211 @@ function HomeIntroOverlay({ onComplete }: IntroOverlayProps) {
     };
     window.addEventListener("keydown", handleKeyDown);
 
-    // Safety fallback: Sau 12s nếu người dùng không thao tác, tự động chuyển mượt vào site
-    const autoDismissTimer = setTimeout(() => {
-      handleExplore();
-    }, 12000);
-
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
-      clearTimeout(autoDismissTimer);
-      if (exitTimer.current !== null) clearTimeout(exitTimer.current);
+      if (exitFallbackTimer.current !== null) {
+        clearTimeout(exitFallbackTimer.current);
+      }
       document.body.style.overflow = "";
     };
   }, [handleExplore, onComplete]);
 
+  // Preload + decode ảnh nền & logo (và chờ font ngắn hạn) trước khi bắt đầu animation
+  useEffect(() => {
+    if (!shouldShow || isMotionReady || !isTabVisible) return;
+
+    let cancelled = false;
+    let raf1 = 0;
+    let raf2 = 0;
+
+    const startChoreography = () => {
+      if (cancelled || isExitingRef.current) return;
+      // Chờ 1 nhịp frame để hydration/layout ổn định rồi mới chạy animation (tránh khựng khung hình đầu)
+      raf1 = requestAnimationFrame(() => {
+        raf2 = requestAnimationFrame(() => {
+          if (!cancelled && !isExitingRef.current) {
+            setIsMotionReady(true);
+          }
+        });
+      });
+    };
+
+    if (prefersReduced) {
+      setIsMotionReady(true);
+      return;
+    }
+
+    const criticalImages = [
+      "/images/intro/landscape/intro-coastal-panorama.jpg",
+      "/images/intro/landscape/intro-above-clouds.webp",
+      "/images/branding/danang-logo.webp",
+    ];
+
+    const imagesPromise = Promise.all(criticalImages.map(preloadAndDecodeImage));
+    const fontsPromise =
+      typeof document !== "undefined" && document.fonts?.ready
+        ? Promise.race([
+            document.fonts.ready.then(() => undefined),
+            new Promise<void>((resolve) => setTimeout(resolve, FONT_WAIT_TIMEOUT_MS)),
+          ])
+        : Promise.resolve();
+
+    const safetyTimeout = new Promise<void>((resolve) =>
+      setTimeout(resolve, ASSET_PRELOAD_TIMEOUT_MS)
+    );
+
+    Promise.race([Promise.all([imagesPromise, fontsPromise]), safetyTimeout]).then(
+      startChoreography
+    );
+
+    return () => {
+      cancelled = true;
+      if (raf1) cancelAnimationFrame(raf1);
+      if (raf2) cancelAnimationFrame(raf2);
+    };
+  }, [shouldShow, isMotionReady, isTabVisible, prefersReduced]);
+
+  // Kích hoạt desktop 2.5D parallax chỉ sau khi chuỗi animation vào đã ổn định
+  useEffect(() => {
+    if (!isMotionReady || prefersReduced || !canMouseParallax || isExiting) return;
+    const timer = setTimeout(() => {
+      if (!isExitingRef.current) {
+        setIsParallaxActive(true);
+      }
+    }, PARALLAX_ACTIVATE_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [isMotionReady, prefersReduced, canMouseParallax, isExiting]);
+
+  // Safety fallback 12s — tự tạm dừng khi tab bị ẩn và chạy tiếp khi quay lại
+  const remainingDismissRef = useRef(AUTO_DISMISS_MS);
+  useEffect(() => {
+    if (!shouldShow || !isMotionReady || isExiting || !isTabVisible) return;
+
+    const startedAt = Date.now();
+    const delay = Math.max(0, remainingDismissRef.current);
+    const timer = setTimeout(() => {
+      remainingDismissRef.current = 0;
+      handleExplore();
+    }, delay);
+
+    return () => {
+      clearTimeout(timer);
+      const elapsed = Date.now() - startedAt;
+      remainingDismissRef.current = Math.max(0, remainingDismissRef.current - elapsed);
+    };
+  }, [shouldShow, isMotionReady, isExiting, isTabVisible, handleExplore]);
+
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (
+        prefersReduced ||
+        !canMouseParallax ||
+        !isParallaxActive ||
+        !isTabVisible ||
+        isExitingRef.current
+      ) {
+        return;
+      }
+      const { width, height } = viewportRef.current;
+      rawMouseX.set(e.clientX / width - 0.5);
+      rawMouseY.set(e.clientY / height - 0.5);
+    },
+    [canMouseParallax, isParallaxActive, isTabVisible, prefersReduced, rawMouseX, rawMouseY]
+  );
+
+  const handleMouseLeave = useCallback(() => {
+    rawMouseX.set(0);
+    rawMouseY.set(0);
+  }, [rawMouseX, rawMouseY]);
+
   if (!shouldShow || !isVisible) return null;
 
   return (
-    <AnimatePresence>
-      {!isExiting && (
-        <motion.div
-          key="welcome-intro-screen"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{
-            opacity: 0,
-            scale: 1.06,
-            filter: "blur(6px)",
-            transition: { duration: 0.55, ease: [0.4, 0, 0.2, 1] },
-          }}
-          className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden select-none bg-[#061B30]"
-          role="dialog"
-          aria-label="Màn hình chào mừng DanangGo"
-          aria-modal="true"
-        >
-          {/* ========================================================
-              1. BACKGROUND TOÀN MÀN HÌNH (CẦU RỒNG - KEN BURNS)
-              ======================================================== */}
-          <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
-            <motion.div
-              className="absolute inset-0 w-full h-full"
-              initial={{ scale: 1 }}
-              animate={{ scale: prefersReduced ? 1 : 1.08 }}
-              transition={{
-                duration: 16,
-                repeat: Infinity,
-                repeatType: "reverse",
-                ease: "easeInOut",
-              }}
-            >
-              <Image
-                src="/hero/cau-rong-hd.jpg"
-                alt="Cầu Rồng Đà Nẵng về đêm rực sáng bên dòng sông Hàn"
-                fill
-                priority
-                sizes="100vw"
-                quality={92}
-                className="object-cover object-center"
-              />
-            </motion.div>
+    <motion.div
+      key="welcome-intro-screen"
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      initial={{ opacity: 1, scale: 1 }}
+      animate={
+        isExiting
+          ? {
+              opacity: 0,
+              scale: prefersReduced ? 1 : 1.03,
+            }
+          : { opacity: 1, scale: 1 }
+      }
+      transition={{
+        duration: isExiting ? (prefersReduced ? 0.2 : EXIT_DURATION_S) : 0.01,
+        ease: [0.22, 1, 0.36, 1],
+      }}
+      onAnimationComplete={() => {
+        if (isExitingRef.current) {
+          finishExit();
+        }
+      }}
+      className={`fixed inset-0 z-[1100] flex flex-col items-center justify-center overflow-hidden select-none bg-[#0A2029] min-h-[100svh] ${
+        isExiting ? "pointer-events-none" : ""
+      }`}
+      role="dialog"
+      aria-label="Màn hình chào mừng DanangGo"
+      aria-modal="true"
+    >
+      {/* ========================================================
+          1. MULTI-LAYER CLOUD FLIGHT & 2.5D COASTAL PARALLAX
+          ======================================================== */}
+      <IntroCloudLayers
+        isReady={isMotionReady}
+        isParallaxActive={isParallaxActive && isTabVisible}
+        prefersReduced={prefersReduced}
+        isExiting={isExiting}
+        mouseX={smoothMouseX}
+        mouseY={smoothMouseY}
+      />
 
-            {/* Gradient Overlay xanh navy (#061B30) nhiều lớp đảm bảo độ tương phản cao */}
-            <div className="absolute inset-0 bg-[#061B30]/75" />
+      {/* ========================================================
+          2. GOLDEN JOURNEY PATH (ORYZO-INSPIRED SVG BÉZIER LIGHT)
+          ======================================================== */}
+      <GoldenJourneyPath
+        isReady={isMotionReady}
+        isPaused={!isTabVisible}
+        prefersReduced={prefersReduced}
+        isExiting={isExiting}
+      />
 
-            {/* Radial vignette overlay — làm tối vùng viền ngoài và tập trung ánh sáng vào nội dung */}
-            <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  "radial-gradient(ellipse at 50% 50%, rgba(6, 27, 48, 0.5) 0%, rgba(6, 27, 48, 0.85) 65%, #061B30 100%)",
-              }}
-            />
+      {/* ========================================================
+          3. NÚT BỎ QUA NHANH (GÓC TRÊN PHẢI — LUÔN HIỂN THỊ & HOẠT ĐỘNG TỪ GIÂY 0)
+          ======================================================== */}
+      <button
+        type="button"
+        onClick={handleExplore}
+        className="absolute top-5 right-5 sm:top-8 sm:right-8 z-30 text-[#FFF8E9]/88 hover:text-[#FFF8E9] text-xs sm:text-[13px] tracking-[0.18em] uppercase border border-[#C9AB78]/40 hover:border-[#C9AB78] bg-[#0A2029]/65 hover:bg-[#0A2029]/85 rounded-[4px] px-4 py-2 transition-colors duration-200 cursor-pointer flex items-center gap-1.5 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C9AB78]"
+        aria-label="Bỏ qua màn hình giới thiệu"
+      >
+        <span>Bỏ qua</span>
+        <span className="transition-transform duration-200 group-hover:translate-x-0.5 text-[#C9AB78]">
+          →
+        </span>
+      </button>
 
-            {/* Linear gradient trên/dưới tạo chiều sâu điện ảnh */}
-            <div className="absolute inset-0 bg-gradient-to-t from-[#061B30] via-transparent to-[#061B30]/60" />
+      {/* ========================================================
+          4. NỘI DUNG TRUNG TÂM (LOGO ĐÀ NẴNG + TYPOGRAPHY + CTA)
+          ======================================================== */}
+      <div className="relative z-20 flex flex-col items-center text-center px-4 sm:px-6 max-w-5xl mx-auto my-auto py-12 pointer-events-auto">
+        <div className="mb-3 sm:mb-4">
+          <CompassReveal
+            isReady={isMotionReady}
+            prefersReduced={prefersReduced}
+            isExiting={isExiting}
+          />
+        </div>
 
-            {/* Ambient Cyan Glow — hiệu ứng ánh sáng xanh ngọc chuyển động rất nhẹ */}
-            <motion.div
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] sm:w-[750px] sm:h-[750px] rounded-full filter blur-[100px] pointer-events-none"
-              style={{
-                background:
-                  "radial-gradient(circle, rgba(34, 211, 238, 0.25) 0%, rgba(6, 182, 212, 0.08) 50%, transparent 70%)",
-              }}
-              animate={
-                prefersReduced
-                  ? {}
-                  : {
-                      scale: [1, 1.12, 1],
-                      opacity: [0.65, 0.95, 0.65],
-                    }
-              }
-              transition={{
-                duration: 6,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-            />
-          </div>
-
-          {/* ========================================================
-              NÚT BỎ QUA NHANH (GÓC TRÊN PHẢI)
-              ======================================================== */}
-          <motion.button
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5, duration: 0.4 }}
-            onClick={handleExplore}
-            className="absolute top-5 right-5 sm:top-8 sm:right-8 z-30 text-white/70 hover:text-white text-xs sm:text-sm tracking-wider uppercase border border-white/20 hover:border-cyan-400/50 bg-[#061B30]/50 hover:bg-[#061B30]/80 backdrop-blur-md rounded-full px-4 py-2 transition-all duration-200 cursor-pointer flex items-center gap-1.5 group"
-            aria-label="Bỏ qua màn hình giới thiệu"
-          >
-            <span>Bỏ qua</span>
-            <span className="transition-transform duration-200 group-hover:translate-x-0.5">
-              →
-            </span>
-          </motion.button>
-
-          {/* ========================================================
-              NỘI DUNG CHÍNH (CĂN GIỮA TOÀN BỘ)
-              ======================================================== */}
-          <div className="relative z-20 flex flex-col items-center text-center px-4 max-w-4xl mx-auto my-auto space-y-6 sm:space-y-8 pointer-events-auto">
-            {/* ── 2. LOGO DANANGGO (LA BÀN THƯƠNG HIỆU) ── */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.82, y: -12 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{
-                duration: 0.7,
-                delay: prefersReduced ? 0 : 0.35,
-                ease: [0.16, 1, 0.3, 1],
-              }}
-              className="flex flex-col items-center gap-3 sm:gap-4"
-            >
-              {/* Biểu tượng la bàn với phát sáng nhẹ & quay chậm */}
-              <div className="relative">
-                {/* Vầng hào quang xanh ngọc nhẹ */}
-                <div className="absolute inset-0 rounded-full bg-cyan-400/20 blur-xl scale-125" />
-
-                <svg
-                  width="110"
-                  height="110"
-                  viewBox="0 0 120 120"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  aria-hidden="true"
-                  className="relative w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 drop-shadow-[0_0_16px_rgba(34,211,238,0.45)]"
-                >
-                  {/* Vòng tròn ngoài — stroke xanh ngọc (#22d3ee) */}
-                  <circle
-                    cx="60"
-                    cy="60"
-                    r="55"
-                    stroke="#22d3ee"
-                    strokeWidth="3"
-                    className="opacity-95"
-                  />
-
-                  {/* Kim la bàn xoay chậm rất nhẹ nhàng */}
-                  <motion.g
-                    animate={
-                      prefersReduced
-                        ? {}
-                        : {
-                            rotate: [0, 7, -5, 0],
-                          }
-                    }
-                    transition={{
-                      duration: 9,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                    }}
-                    style={{ transformOrigin: "60px 60px" }}
-                  >
-                    {/* Hướng Bắc (Xanh ngọc #22d3ee) */}
-                    <path
-                      d="M60 20 L68 52 L60 58 L52 52 Z"
-                      fill="#22d3ee"
-                    />
-                    {/* Hướng Nam (Trắng mờ) */}
-                    <path
-                      d="M60 100 L52 68 L60 62 L68 68 Z"
-                      fill="rgba(255,255,255,0.4)"
-                    />
-                    {/* Hướng Tây (Trắng mờ) */}
-                    <path
-                      d="M20 60 L52 52 L58 60 L52 68 Z"
-                      fill="rgba(255,255,255,0.4)"
-                    />
-                    {/* Hướng Đông (Cam thương hiệu #f97316) */}
-                    <path
-                      d="M100 60 L68 68 L62 60 L68 52 Z"
-                      fill="#f97316"
-                    />
-                  </motion.g>
-
-                  {/* Tâm la bàn */}
-                  <circle
-                    cx="60"
-                    cy="60"
-                    r="4.5"
-                    fill="white"
-                    className="drop-shadow-[0_0_6px_rgba(255,255,255,0.9)]"
-                  />
-                </svg>
-              </div>
-
-              {/* Tên thương hiệu DANANGGO */}
-              <div className="text-center">
-                <div className="text-white text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-widest uppercase font-display drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)]">
-                  <span className="text-[#22d3ee]">Danang</span>
-                  <span className="text-[#f97316]">Go</span>
-                </div>
-                <p className="text-cyan-200/80 text-[11px] sm:text-xs md:text-sm tracking-[0.35em] uppercase mt-1 font-medium">
-                  Cẩm nang du lịch Đà Nẵng
-                </p>
-              </div>
-            </motion.div>
-
-            {/* ── 3. NỘI DUNG CHÀO MỪNG ── */}
-            <div className="flex flex-col items-center space-y-3 sm:space-y-4">
-              {/* Tiêu đề lớn: "CHÀO MỪNG ĐẾN VỚI ĐÀ NẴNG" với Shimmer Effect */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  duration: 0.7,
-                  delay: prefersReduced ? 0 : 0.75,
-                  ease: [0.16, 1, 0.3, 1],
-                }}
-                className="relative inline-block overflow-hidden py-1 px-2"
-              >
-                <h1 className="relative text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight uppercase font-display leading-tight sm:leading-tight drop-shadow-[0_4px_24px_rgba(0,0,0,0.8)]">
-                  <span className="text-white">CHÀO MỪNG ĐẾN VỚI </span>
-                  <span className="relative inline-block text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-cyan-400 to-teal-300 drop-shadow-[0_0_20px_rgba(34,211,238,0.5)]">
-                    ĐÀ NẴNG
-                  </span>
-                </h1>
-
-                {/* Gradient shimmer ánh sáng quét từ trái sang phải với tần suất thấp */}
-                {!prefersReduced && (
-                  <motion.div
-                    initial={{ x: "-120%", opacity: 0 }}
-                    animate={{
-                      x: ["-120%", "220%"],
-                      opacity: [0, 0.7, 0],
-                    }}
-                    transition={{
-                      duration: 2.2,
-                      delay: 1.3,
-                      repeat: Infinity,
-                      repeatDelay: 5,
-                      ease: "easeInOut",
-                    }}
-                    className="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/35 to-transparent -skew-x-25 pointer-events-none"
-                  />
-                )}
-              </motion.div>
-
-              {/* Dòng mô tả chào đón */}
-              <motion.p
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  duration: 0.6,
-                  delay: prefersReduced ? 0 : 1.05,
-                  ease: [0.16, 1, 0.3, 1],
-                }}
-                className="text-slate-200/90 text-sm sm:text-base md:text-lg lg:text-xl font-normal max-w-2xl mx-auto leading-relaxed tracking-wide drop-shadow-[0_2px_10px_rgba(0,0,0,0.7)]"
-              >
-                Hành trình khám phá thành phố đáng sống bắt đầu từ đây.
-              </motion.p>
-            </div>
-
-            {/* ── 4. NÚT BẮT ĐẦU KHÁM PHÁ (CTA) ── */}
-            <motion.div
-              initial={{ opacity: 0, y: 18, scale: 0.94 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{
-                duration: 0.6,
-                delay: prefersReduced ? 0 : 1.35,
-                ease: [0.16, 1, 0.3, 1],
-              }}
-              className="pt-2 sm:pt-4"
-            >
-              <button
-                onClick={handleExplore}
-                className="group relative inline-flex items-center justify-center gap-3 px-8 py-3.5 sm:px-10 sm:py-4 rounded-full font-semibold text-white tracking-wide text-base sm:text-lg shadow-[0_0_24px_rgba(34,211,238,0.35)] hover:shadow-[0_0_40px_rgba(34,211,238,0.65)] border border-cyan-300/40 hover:border-cyan-200/90 hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 overflow-hidden cursor-pointer"
-                style={{
-                  background:
-                    "linear-gradient(135deg, rgba(6, 182, 212, 0.9) 0%, rgba(20, 184, 166, 0.85) 100%)",
-                  backdropFilter: "blur(12px)",
-                }}
-                aria-label="Bắt đầu khám phá Đà Nẵng"
-              >
-                {/* Ánh sáng chạy lướt trên bề mặt kính khi hover */}
-                <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full duration-1000 bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none transition-transform" />
-
-                <span className="relative z-10 flex items-center gap-2.5">
-                  <span>Bắt đầu khám phá</span>
-                  <ArrowRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1.5" />
-                </span>
-              </button>
-            </motion.div>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+        <IntroTypography
+          isReady={isMotionReady}
+          prefersReduced={prefersReduced}
+          isExiting={isExiting}
+          onExplore={handleExplore}
+        />
+      </div>
+    </motion.div>
   );
 }

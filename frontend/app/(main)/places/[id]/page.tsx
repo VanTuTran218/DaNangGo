@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -109,6 +109,21 @@ export default function PlaceDetailPage() {
   const handleOpenDirections = () => {
     setIsDirectionsOpen(true);
   };
+
+  const handleReviewSummaryChange = useCallback(
+    (summary: { avg_rating: number; review_count: number }) => {
+      setPlace((current) =>
+        current
+          ? {
+              ...current,
+              avg_rating: summary.avg_rating,
+              review_count: summary.review_count,
+            }
+          : current,
+      );
+    },
+    [],
+  );
 
   // ─────────────────────────────────────────────────────────────────────────
   // GIAO DIỆN SKELETON KHI ĐANG TẢI (DỊU MẮT, KHÔNG CHỚP TRẮNG)
@@ -489,6 +504,7 @@ export default function PlaceDetailPage() {
               placeId={String(place.place_id)}
               placeName={place.name}
               imageUrl={galleryImages[0] || place.cover_image || ''}
+              onSummaryChange={handleReviewSummaryChange}
             />
 
             <AiReviewSummary key={place.place_id} placeId={place.place_id} />

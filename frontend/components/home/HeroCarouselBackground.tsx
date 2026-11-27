@@ -144,14 +144,15 @@ export default function HeroCarouselBackground({
                 alt={slide.alt}
                 fill
                 priority={index === 0}
-                loading={index === 0 ? "eager" : "lazy"}
-                quality={92}
+                loading="eager"
+                quality={90}
                 sizes="100vw"
                 className="object-cover"
                 style={{
                   objectPosition: slide.objectPosition,
                 }}
                 onLoad={() => handleImageLoad(index)}
+                onError={() => handleImageLoad(index)}
               />
             </motion.div>
           </motion.div>

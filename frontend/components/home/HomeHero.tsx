@@ -21,11 +21,11 @@ export default function HomeHero() {
   const router = useRouter();
   const heroSectionRef = useRef<HTMLElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [firstLoaded, setFirstLoaded] = useState(false);
+  const [firstLoaded, setFirstLoaded] = useState(true);
   const [slidesLoaded, setSlidesLoaded] = useState<boolean[]>([
-    false,
-    false,
-    false,
+    true,
+    true,
+    true,
   ]);
   const [isTabHidden, setIsTabHidden] = useState(false);
   const [isHoverPaused, setIsHoverPaused] = useState(false);

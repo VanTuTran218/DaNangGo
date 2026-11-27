@@ -1,7 +1,7 @@
 export const INTERVAL_MS = 4500; // 4.5 giây tự động chuyển slide mượt mà
 export const FADE_MS = 1200;     // 1.2 giây crossfade điện ảnh mượt mà giữa các ảnh nền
 export const KEN_BURNS_MS = INTERVAL_MS + FADE_MS; // 5700ms chuyển động zoom nhẹ liên tục
-export const SHOW_INDICATORS = false;
+export const SHOW_INDICATORS = true;
 
 export interface HeroSlideData {
   id: number;
@@ -21,8 +21,7 @@ export interface HeroSlideData {
 export const HERO_SLIDES: HeroSlideData[] = [
   {
     id: 1,
-    image:
-      "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?q=90&w=2560&auto=format&fit=crop",
+    image: "/hero/cau-vang-ba-na-hd.jpg",
     alt: "Cầu Vàng trên Bà Nà Hills, Đà Nẵng",
     locationName: "Cầu Vàng Bà Nà Hills",
     metaTag: "22°C · Đỉnh núi mây phủ",
@@ -37,8 +36,7 @@ export const HERO_SLIDES: HeroSlideData[] = [
   },
   {
     id: 2,
-    image:
-      "https://images.unsplash.com/photo-1733041449281-9f5c8cd67780?q=90&w=2560&auto=format&fit=crop",
+    image: "/hero/pho-co-hoi-an-hd.jpg",
     alt: "Phố cổ Hội An về đêm với thuyền đèn lồng trên sông Hoài",
     locationName: "Phố Cổ Hội An",
     metaTag: "25°C · Đêm đèn lồng",
@@ -53,8 +51,7 @@ export const HERO_SLIDES: HeroSlideData[] = [
   },
   {
     id: 3,
-    image:
-      "https://images.unsplash.com/photo-1701396173275-835886dd72ce?q=90&w=2560&auto=format&fit=crop",
+    image: "/hero/cau-rong-hd.jpg",
     alt: "Cầu Rồng Đà Nẵng rực sáng về đêm bên sông Hàn",
     locationName: "Cầu Rồng Sông Hàn",
     metaTag: "27°C · Phun lửa T7 & CN",

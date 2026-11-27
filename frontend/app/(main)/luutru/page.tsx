@@ -182,6 +182,7 @@ export default function LuuTruPage() {
   const [amenitiesList, setAmenitiesList] =
     useState<MasterCategoryItem[]>(DEFAULT_AMENITIES);
   const [filterDistrictId, setFilterDistrictId] = useState<number>(0);
+  const [filterAccType, setFilterAccType] = useState<string>("");
   const [filterRating, setFilterRating] = useState<number>(0);
   const [filterCapacity, setFilterCapacity] = useState<number>(0);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000000]);
@@ -193,6 +194,7 @@ export default function LuuTruPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [liveHotels, setLiveHotels] = useState<HotelData[]>([]);
+  const [hasLoadedLive, setHasLoadedLive] = useState(false);
 
   const [aiBudget, setAiBudget] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
@@ -282,6 +284,7 @@ export default function LuuTruPage() {
     getPlaces(
       {
         type: "ACCOMMODATION",
+        accommodation_type: filterAccType ? (filterAccType as "HOTEL" | "HOMESTAY" | "RESORT" | "HOSTEL" | "APARTMENT") : undefined,
         district_id: filterDistrictId > 0 ? filterDistrictId : undefined,
         min_rating: filterRating > 0 ? filterRating : undefined,
         min_price: priceRange[0] > 0 ? priceRange[0] : undefined,
@@ -350,6 +353,7 @@ export default function LuuTruPage() {
           };
         });
         setLiveHotels(live);
+        setHasLoadedLive(true);
       })
       .catch((e: unknown) => {
         if (e instanceof Error && e.name === "AbortError") return;
@@ -366,6 +370,7 @@ export default function LuuTruPage() {
       controller.abort();
     };
   }, [
+    filterAccType,
     filterDistrictId,
     filterRating,
     filterCapacity,
@@ -391,6 +396,7 @@ export default function LuuTruPage() {
 
   const clearFilters = () => {
     applyFilter(() => {
+      setFilterAccType("");
       setFilterDistrictId(0);
       setFilterRating(0);
       setFilterCapacity(0);
@@ -400,7 +406,7 @@ export default function LuuTruPage() {
     });
   };
 
-  // Gộp dữ liệu từ API (SQL Server) + mẫu HOTELS không trùng tên
+  // Gộp dữ liệu từ API (SQL Server) + fallback HOTELS khi offline
   const selectedDistrictName =
     districts.find((d) => d.id === filterDistrictId)?.name || "";
   const selectedAmenityNames = amenitiesList
@@ -408,6 +414,17 @@ export default function LuuTruPage() {
     .map((a) => a.name);
 
   const combinedHotels = useMemo(() => {
+    if (hasLoadedLive) {
+      let list = [...liveHotels];
+      if (sortBy === "price_asc")
+        list = [...list].sort((a, b) => a.pricePerNight - b.pricePerNight);
+      else if (sortBy === "price_desc")
+        list = [...list].sort((a, b) => b.pricePerNight - a.pricePerNight);
+      else if (sortBy === "rating")
+        list = [...list].sort((a, b) => b.rating - a.rating);
+      return list;
+    }
+
     const liveNameSet = new Set(
       liveHotels.map((h) => h.name.trim().toLowerCase())
     );
@@ -477,6 +494,7 @@ export default function LuuTruPage() {
 
     return list;
   }, [
+    hasLoadedLive,
     liveHotels,
     selectedDistrictName,
     filterRating,
@@ -743,6 +761,38 @@ export default function LuuTruPage() {
             aria-hidden="true"
             className="pointer-events-none absolute bottom-3 right-3 w-2.5 h-2.5 border-b border-r border-[#E6D9B7]/45 rounded-br-[3px]"
           />
+
+          {/* Row 0: Loại hình lưu trú (Tất cả, Khách sạn, Homestay, Resort, Hostel, Căn hộ) */}
+          <div className="relative z-10 pb-4 mb-4 border-b border-[#E6D9B7]/14 flex flex-wrap items-center gap-2">
+            <span className="text-[10.5px] font-mono uppercase tracking-[0.18em] text-[#E6D9B7]/74 mr-1">
+              Loại hình:
+            </span>
+            {[
+              { value: "", label: "Tất cả" },
+              { value: "HOMESTAY", label: "Homestay" },
+              { value: "HOTEL", label: "Khách sạn" },
+              { value: "RESORT", label: "Resort" },
+              { value: "APARTMENT", label: "Căn hộ" },
+              { value: "HOSTEL", label: "Hostel" },
+            ].map((typeOpt) => {
+              const isActive = filterAccType === typeOpt.value;
+              return (
+                <button
+                  key={typeOpt.value || "ALL"}
+                  type="button"
+                  aria-pressed={isActive}
+                  onClick={() => applyFilter(() => setFilterAccType(typeOpt.value))}
+                  className={`relative text-xs px-3.5 py-1.5 rounded-full font-semibold transition-all duration-200 border cursor-pointer ${
+                    isActive
+                      ? "bg-gradient-to-b from-[#FFFDF5] to-[#F3E7CE] text-[#102832] border-[#FFF8E9]"
+                      : "bg-[#FFF8E9]/[0.07] text-[#DCE8E8] border-[#E6D9B7]/22 hover:border-[#E6D9B7]/52 hover:text-[#FFFDF5]"
+                  }`}
+                >
+                  {typeOpt.label}
+                </button>
+              );
+            })}
+          </div>
 
           {/* Row 1: 4 Dark-Glass Selects + Upgraded Dark Champagne Price Slider */}
           <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-5">

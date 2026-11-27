@@ -840,16 +840,7 @@ function AmThucContent() {
               item.description || "Quán ăn ngon nổi tiếng tại Đà Nẵng.",
           }));
 
-          const liveIds = new Set(livePlaces.map((p) => p.id));
-          const liveNames = new Set(
-            livePlaces.map((p) => removeVietnameseTones(p.name))
-          );
-          const additionalMock = FOOD_PLACES.filter(
-            (p) =>
-              !liveIds.has(p.id) &&
-              !liveNames.has(removeVietnameseTones(p.name))
-          );
-          setFoodPlaces([...livePlaces, ...additionalMock]);
+          setFoodPlaces(livePlaces);
         }
       } catch (err) {
         console.warn("API /api/places chưa kết nối, dùng dữ liệu fallback:", err);

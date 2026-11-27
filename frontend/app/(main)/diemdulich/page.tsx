@@ -427,16 +427,8 @@ function DiemDuLichContent() {
             };
           });
 
-          const liveIds = new Set(liveAttractions.map((a) => a.id));
-          const liveNameKeys = new Set(
-            liveAttractions.map((a) => removeVietnameseTones(a.name))
-          );
-          const additionalMock = INITIAL_ATTRACTIONS.filter(
-            (a) =>
-              !liveIds.has(a.id) &&
-              !liveNameKeys.has(removeVietnameseTones(a.name))
-          );
-          setItems([...liveAttractions, ...additionalMock]);
+          setItems(liveAttractions);
+          setHasMore(false);
         }
       } catch (err) {
         console.warn(

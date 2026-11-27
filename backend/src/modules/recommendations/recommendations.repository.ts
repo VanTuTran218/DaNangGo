@@ -74,7 +74,7 @@ export async function findBudgetRecommendations(input: RecommendationRequest) {
       const result = await request.query<RecommendationItem>(`
         SELECT ${selectFields}
           CAST(MIN(rt.price_per_night) AS float) AS price_min,
-          CAST(MIN(rt.price_per_night) AS float) AS price_max,
+          CAST(MAX(rt.price_per_night) AS float) AS price_max,
           CAST(NULL AS float) AS ticket_price, CAST(NULL AS nvarchar(100)) AS cuisine_name,
           a.accommodation_type, a.star_rating, CAST(NULL AS nvarchar(100)) AS category_name
         FROM dbo.places p
@@ -83,7 +83,7 @@ export async function findBudgetRecommendations(input: RecommendationRequest) {
         LEFT JOIN dbo.districts d ON d.district_id=p.district_id
         WHERE p.place_type='ACCOMMODATION' AND p.status='ACTIVE' ${district}
           ${input.accommodationTypes.length ? `AND a.accommodation_type IN (${accommodationTypeParams})` : ''}
-          ${input.starRatings.length ? `AND a.star_rating IN (${starRatings})` : ''}
+          ${input.starRatings.length ? `AND COALESCE(a.star_rating, 3) IN (${starRatings})` : ''}
         GROUP BY p.place_id,p.place_type,p.name,p.address,d.name,p.avg_rating,p.review_count,a.accommodation_type,a.star_rating
         ORDER BY p.avg_rating DESC,p.review_count DESC,p.place_id DESC`);
       groups.accommodations = result.recordset.map((r) => ({ ...r, price_min: Number(r.price_min), price_max: Number(r.price_max), avg_rating: Number(r.avg_rating) }));

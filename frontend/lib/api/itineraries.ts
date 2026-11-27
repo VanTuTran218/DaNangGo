@@ -8,7 +8,7 @@ import type {
 } from '@/types/itinerary';
 
 function getItineraryApiUrl(endpoint: string): string {
-  const base = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000').replace(/\/$/, '');
+  const base = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '');
   const prefix = base.endsWith('/api') ? base : `${base}/api`;
   return `${prefix}${endpoint}`;
 }

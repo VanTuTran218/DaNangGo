@@ -385,13 +385,22 @@ export async function updateReviewStatusTx(
   }
 }
 
-export async function editReviewComment(reviewId: number, comment: string): Promise<boolean> {
-  const result = await getPool().request()
+export async function editReviewComment(
+  reviewId: number,
+  comment: string,
+  moderatorId: number,
+): Promise<boolean> {
+  const result = await getPool()
+    .request()
     .input("review_id", sql.Int, reviewId)
-    .input("comment", sql.NVarChar(1000), comment).query(`
-      UPDATE reviews SET comment = @comment, updated_at = SYSDATETIME()
-      WHERE review_id = @review_id
-    `);
+    .input("comment", sql.NVarChar(1000), comment)
+    .input("moderator_id", sql.Int, moderatorId).query(`
+    UPDATE reviews SET comment = @comment,
+        moderated_by = @moderator_id,
+        moderated_at = SYSDATETIME(),
+        updated_at = SYSDATETIME()
+    WHERE review_id = @review_id
+  `);
   return result.rowsAffected[0] > 0;
 }
 

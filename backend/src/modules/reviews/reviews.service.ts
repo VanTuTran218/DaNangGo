@@ -29,6 +29,10 @@ const reviewSchema = z.object({
     .max(5, "Điểm đánh giá phải từ 1 đến 5."),
   comment: z
     .string()
+    .refine(
+      (value) => !/<\s*script(?=$|[\s>/])/i.test(value),
+      "Nội dung đánh giá không được chứa thẻ script.",
+    )
     .transform((value) =>
       value
         .replace(/<[^>]*>/g, "")
@@ -187,10 +191,14 @@ export async function removeReview(reviewId: number) {
   if (!deleted) throw new ReviewError(404, "Không tìm thấy đánh giá.");
 }
 
-export async function editReview(reviewId: number, body: unknown) {
+export async function editReview(
+  reviewId: number,
+  body: unknown,
+  moderatorId: number,
+) {
   const input = reviewSchema.pick({ comment: true }).safeParse(body);
   if (!input.success)
     throw new ReviewError(400, input.error.issues[0]?.message ?? "Dữ liệu đánh giá không hợp lệ.");
-  if (!(await editReviewComment(reviewId, input.data.comment)))
+  if (!(await editReviewComment(reviewId, input.data.comment, moderatorId)))
     throw new ReviewError(404, "Không tìm thấy đánh giá.");
 }

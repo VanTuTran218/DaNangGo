@@ -14,7 +14,7 @@ test('user routes have no edit/delete methods; admin can edit', () => {
 });
 
 test('admin edit validates comment before touching the database', async () => {
-  await assert.rejects(editReview(1, { comment: '  ' }), (error: unknown) =>
+  await assert.rejects(editReview(1, { comment: '  ' }, 9), (error: unknown) =>
     error instanceof ReviewError && error.status === 400);
 });
 
@@ -85,8 +85,9 @@ test('cooldown blocks duplicate submissions and keeps a ledger after successful 
     assert.equal(await updateReviewStatusTx(42, 'APPROVED', 1), true);
     assert.ok(queries.some(query => query.includes('UPDATE places')));
 
-    assert.equal(await editReviewComment(42, 'Đã chỉnh'), true);
-    assert.ok(queries.some(query => query.includes('UPDATE reviews SET comment')));
+    assert.equal(await editReviewComment(42, 'Đã chỉnh', 9), true);
+    assert.ok(queries.some(query => query.includes('moderated_by = @moderator_id')));
+    assert.ok(queries.some(query => query.includes('moderated_at = SYSDATETIME()')));
     assert.ok(!queries.some(query => query.includes('SET rating =')));
 
     queries.length = 0;

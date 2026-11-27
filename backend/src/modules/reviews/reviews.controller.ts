@@ -248,7 +248,7 @@ export async function adminEdit(req: Request, res: Response) {
   const reviewId = getReviewId(req, res);
   if (reviewId === null) return;
   try {
-    await service.editReview(reviewId, req.body);
+    await service.editReview(reviewId, req.body, res.locals.authUserId!);
     res.json({ success: true, message: "Đã chỉnh sửa đánh giá." });
   } catch (error) {
     handleError(res, error);

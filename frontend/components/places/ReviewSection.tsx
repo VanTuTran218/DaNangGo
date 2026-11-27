@@ -25,10 +25,12 @@ export default function ReviewSection({
   placeId,
   placeName,
   imageUrl = '',
+  onSummaryChange,
 }: {
   placeId: string;
   placeName: string;
   imageUrl?: string;
+  onSummaryChange?: (summary: { avg_rating: number; review_count: number }) => void;
 }) {
   const { user, loading: authLoading } = useAuth();
   const [data, setData] = useState<PlaceReviewsResponse | null>(null);
@@ -68,6 +70,10 @@ export default function ReviewSection({
         user?.role === "USER" ? getReviewEligibility(placeId) : Promise.resolve({ retry_after_ms: 0 }),
       ]);
       setData(placeReviews);
+      onSummaryChange?.({
+        avg_rating: placeReviews.avg_rating,
+        review_count: placeReviews.review_count,
+      });
       const ownReview =
         myReviews.find((review) => String(review.place_id) === placeId) ?? null;
       setMyReview(ownReview);
@@ -83,7 +89,7 @@ export default function ReviewSection({
     } finally {
       setLoading(false);
     }
-  }, [placeId, page, user?.id, user?.role]);
+  }, [placeId, page, user?.id, user?.role, onSummaryChange]);
 
   useEffect(() => {
     void loadReviews();
@@ -423,14 +429,16 @@ export default function ReviewSection({
                 </p>
               ) : null}
             </article>
-          ) : !authLoading && user?.role === "USER" && waiting && !loadError ? (
+          ) : null}
+          {!authLoading && user?.role === "USER" && waiting && !loadError && !(myReview && myReview.status !== "APPROVED") ? (
             <p role="status" className="mt-4 rounded-[2px] border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
               Bạn cần chờ đủ 7 ngày kể từ lần đánh giá trước. Có thể đánh giá lại sau{" "}
               <time dateTime={new Date(nextReviewAt).toISOString()}>
                 {new Date(nextReviewAt).toLocaleString("vi-VN")}
               </time>.
             </p>
-          ) : !authLoading && user?.role === "USER" && !loading && !loadError ? (
+          ) : null}
+          {!authLoading && user?.role === "USER" && !waiting && !loading && !loadError ? (
             <form onSubmit={submit} className="mt-4 space-y-4">
               <fieldset>
                 <legend className="mb-2 text-sm text-[#4F5D63]">Số sao</legend>

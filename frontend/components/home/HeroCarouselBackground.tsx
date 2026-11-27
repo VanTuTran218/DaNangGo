@@ -143,9 +143,10 @@ export default function HeroCarouselBackground({
                 src={slide.image}
                 alt={slide.alt}
                 fill
+                unoptimized
                 priority={index === 0}
                 loading="eager"
-                quality={90}
+                quality={92}
                 sizes="100vw"
                 className="object-cover"
                 style={{

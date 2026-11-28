@@ -184,7 +184,7 @@ export function getAdminExportCsvUrl(params?: {
   if (params?.startDate) query.set('startDate', params.startDate);
   if (params?.endDate) query.set('endDate', params.endDate);
 
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
   const qs = query.toString() ? `?${query.toString()}` : '';
   return `${baseUrl.replace(/\/$/, '')}/api/admin/subscriptions/export-csv${qs}`;
 }

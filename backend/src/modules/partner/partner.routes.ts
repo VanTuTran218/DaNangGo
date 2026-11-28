@@ -36,12 +36,26 @@ router.put('/profile', async (req: Request, res: Response) => {
     const userId = res.locals.authUserId as number;
     const { businessName, serviceType, taxCode, address, phone } = req.body;
 
+    if (phone !== undefined && phone !== null && String(phone).trim() !== '') {
+      const cleanedPhone = String(phone).trim().replace(/\s+/g, '');
+      if (!/^\d{10}$/.test(cleanedPhone)) {
+        return badRequest(res, 'Số điện thoại liên hệ không hợp lệ (chỉ gồm 10 chữ số).');
+      }
+    }
+
+    if (taxCode !== undefined && taxCode !== null && String(taxCode).trim() !== '') {
+      const cleanedTax = String(taxCode).trim().replace(/\s+/g, '');
+      if (!/^\d+$/.test(cleanedTax)) {
+        return badRequest(res, 'Mã số thuế không hợp lệ (chỉ gồm chữ số).');
+      }
+    }
+
     const updated = await service.updatePartnerProfile(userId, {
       businessName,
       serviceType,
-      taxCode,
+      taxCode: taxCode !== undefined ? String(taxCode).trim() : undefined,
       address,
-      contactPhone: phone,
+      contactPhone: phone !== undefined ? String(phone).trim() : undefined,
     });
 
     return ok(res, updated, 'Cập nhật hồ sơ đối tác thành công');

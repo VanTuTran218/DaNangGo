@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useAsyncData } from '@/hooks/useAsyncData';
 import {
   adminConfirmPayment,
@@ -59,6 +59,8 @@ export default function AdminSubscriptionRevenuePage() {
   const [confirmingSub, setConfirmingSub] = useState<PartnerSubscriptionItem | null>(null);
   const [rejectingSub, setRejectingSub] = useState<PartnerSubscriptionItem | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [exportingCsv, setExportingCsv] = useState(false);
+  const exportingCsvRef = useRef(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   // Revenue stats async data
@@ -284,6 +286,37 @@ export default function AdminSubscriptionRevenuePage() {
   });
   const statsAuthError = Boolean(errorStats && /đăng nhập|phiên.*hết hạn|phiên.*không hợp lệ/i.test(errorStats));
 
+  const handleExportCsv = async () => {
+    if (exportingCsvRef.current || exportingCsv) return;
+    exportingCsvRef.current = true;
+    setExportingCsv(true);
+    try {
+      const response = await fetch(exportUrl, {
+        method: 'GET',
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error('Không thể xuất báo cáo CSV.');
+      }
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = `doanh-thu-goi-dananggo-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (err: any) {
+      showToast(err?.message || 'Không thể xuất báo cáo CSV.', 'error');
+    } finally {
+      setTimeout(() => {
+        exportingCsvRef.current = false;
+        setExportingCsv(false);
+      }, 1200);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Page Title */}
@@ -299,15 +332,24 @@ export default function AdminSubscriptionRevenuePage() {
         </div>
 
         <div className="flex items-center gap-2 self-start">
-          <a
-            href={exportUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white border border-gray-200 text-gray-700 text-xs font-bold rounded-xl hover:bg-gray-50 shadow-xs"
+          <button
+            type="button"
+            disabled={exportingCsv}
+            onClick={handleExportCsv}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white border border-gray-200 text-gray-700 text-xs font-bold rounded-xl hover:bg-gray-50 shadow-xs disabled:opacity-60 disabled:cursor-not-allowed transition-all cursor-pointer"
           >
-            <Download className="w-3.5 h-3.5 text-teal-600" />
-            Xuất file CSV
-          </a>
+            {exportingCsv ? (
+              <>
+                <RefreshCw className="w-3.5 h-3.5 text-teal-600 animate-spin" />
+                <span>Đang xuất...</span>
+              </>
+            ) : (
+              <>
+                <Download className="w-3.5 h-3.5 text-teal-600" />
+                <span>Xuất báo cáo CSV</span>
+              </>
+            )}
+          </button>
           <button
             onClick={() => {
               reloadStats();

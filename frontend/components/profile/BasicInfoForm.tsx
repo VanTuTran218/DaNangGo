@@ -28,11 +28,20 @@ export default function BasicInfoForm({ user }: { user: User }) {
     formData.phone !== (user.phone || "") ||
     formData.birthday !== (user.birthday || "");
 
+  const now = new Date();
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSaving(true);
     setError("");
     setSaved(false);
+
+    if (formData.birthday && formData.birthday > todayStr) {
+      setError("Ngày sinh không được lớn hơn ngày hiện tại");
+      return;
+    }
+
+    setIsSaving(true);
     try {
       const updatedUser = await updateMyProfile({
         name: formData.name,
@@ -60,8 +69,8 @@ export default function BasicInfoForm({ user }: { user: User }) {
   return (
     <div className="bg-white rounded-xl border border-gray-100 p-6 md:p-8">
       <h3 className="font-bold text-gray-800 text-lg mb-6">Thông tin cá nhân</h3>
-      <form onSubmit={handleSubmit} className="space-y-5">
-        {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+      <form onSubmit={handleSubmit} noValidate className="space-y-5">
+        {error && <p role="alert" className="text-sm font-medium text-red-600">{error}</p>}
         {saved && <p role="status" className="text-sm text-teal-700">Đã lưu thông tin vào tài khoản.</p>}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div className="space-y-1.5">
@@ -84,9 +93,24 @@ export default function BasicInfoForm({ user }: { user: User }) {
           </div>
           <div className="space-y-1.5">
             <label htmlFor="profile-birthday" className="text-sm font-medium text-gray-700">Ngày sinh</label>
-            <input id="profile-birthday" type="date" value={formData.birthday}
-              onChange={(e) => setFormData({ ...formData, birthday: e.target.value })}
-              className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-colors" />
+            <input id="profile-birthday" type="date" max={todayStr} value={formData.birthday}
+              onChange={(e) => {
+                const val = e.target.value;
+                setFormData({ ...formData, birthday: val });
+                if (val && val > todayStr) {
+                  setError("Ngày sinh không được lớn hơn ngày hiện tại");
+                } else if (error === "Ngày sinh không được lớn hơn ngày hiện tại") {
+                  setError("");
+                }
+              }}
+              className={`w-full px-4 py-2.5 rounded-lg border focus:outline-none transition-colors ${
+                formData.birthday && formData.birthday > todayStr
+                  ? "border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500 bg-red-50/20"
+                  : "border-gray-200 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
+              }`} />
+            {formData.birthday && formData.birthday > todayStr && (
+              <p className="text-xs text-red-600 font-medium">Ngày sinh không được lớn hơn ngày hiện tại</p>
+            )}
           </div>
         </div>
         <div className="flex justify-end pt-4">

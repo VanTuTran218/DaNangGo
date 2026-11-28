@@ -43,7 +43,9 @@ export async function updatePartnerProfile(
     const res = await apiPut<PartnerProfile>('/api/partner/profile', data);
     if (res.data) return res.data;
   } catch (error) {
-    // Fallback
+    if (error instanceof ApiError) {
+      throw error;
+    }
   }
   Object.assign(mockPartnerProfile, data);
   return { ...mockPartnerProfile };

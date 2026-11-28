@@ -370,6 +370,9 @@ export default function BanDoDuLichPage() {
   const [userPosition, setUserPosition] = useState<Coordinates | null>(null);
   const [isLocating, setIsLocating] = useState(false);
   const [gpsError, setGpsError] = useState<string | null>(null);
+  const [gpsPermissionBlocked, setGpsPermissionBlocked] = useState(false);
+  const [gpsBlockedModalOpen, setGpsBlockedModalOpen] = useState(false);
+  const [gpsAttemptTick, setGpsAttemptTick] = useState(0);
   const [mapLayer, setMapLayer] = useState<MapLayer>('street');
   const [darkMap, setDarkMap] = useState(true);
   const [layersOpen, setLayersOpen] = useState(false);
@@ -431,29 +434,54 @@ export default function BanDoDuLichPage() {
 
   const activeTravelOption = effectiveTravelOptions.find(o => o.mode === selectedMode) ?? effectiveTravelOptions[0] ?? null;
 
-  const locateUser = useCallback(() => {
+  const locateUser = useCallback(async () => {
+    setGpsAttemptTick(t => t + 1);
     setGpsError(null);
     if (!navigator.geolocation) {
       setGpsError('Trình duyệt không hỗ trợ định vị. Đang dùng tâm Đà Nẵng.');
       return;
     }
+
+    // Kiểm tra trước trạng thái quyền GPS nếu trình duyệt hỗ trợ Permissions API
+    if (navigator.permissions && typeof navigator.permissions.query === 'function') {
+      try {
+        const permStatus = await navigator.permissions.query({ name: 'geolocation' });
+        if (permStatus.state === 'denied') {
+          setGpsPermissionBlocked(true);
+          setGpsBlockedModalOpen(true);
+          setGpsError(
+            'Quyền truy cập vị trí GPS đang bị chặn. Vui lòng bấm vào biểu tượng ổ khóa trên thanh địa chỉ trình duyệt để cấp lại quyền Vị trí (Location) rồi thử lại.',
+          );
+          return;
+        }
+      } catch {
+        // Bỏ qua nếu trình duyệt không hỗ trợ query quyền geolocation
+      }
+    }
+
     setIsLocating(true);
     navigator.geolocation.getCurrentPosition(
       position => {
         if (!mounted.current) return;
+        setGpsPermissionBlocked(false);
+        setGpsBlockedModalOpen(false);
         setUserPosition([position.coords.latitude, position.coords.longitude]);
         setIsLocating(false);
       },
       error => {
         if (!mounted.current) return;
+        if (error.code === 1) {
+          setGpsPermissionBlocked(true);
+          setGpsBlockedModalOpen(true);
+        }
         const message = error.code === 1
-          ? 'Bạn chưa cho phép định vị. Hãy cấp quyền vị trí cho trang web rồi thử lại.'
+          ? 'Quyền truy cập vị trí GPS đang bị chặn. Vui lòng bấm vào biểu tượng ổ khóa trên thanh địa chỉ trình duyệt để cấp lại quyền Vị trí (Location) rồi thử lại.'
           : error.code === 3 ? 'Định vị quá thời gian chờ. Vui lòng thử lại.'
             : 'Chưa lấy được vị trí GPS. Kiểm tra dịch vụ vị trí rồi thử lại.';
         setGpsError(message);
         setIsLocating(false);
       },
-      { enableHighAccuracy: true, timeout: 10_000, maximumAge: 30_000 },
+      { enableHighAccuracy: true, timeout: 10_000, maximumAge: 0 },
     );
   }, []);
 
@@ -1061,10 +1089,31 @@ export default function BanDoDuLichPage() {
             {/* GPS STATUS & 5-MODE OSRM ROUTE PANEL */}
             <div className="absolute top-16 left-4 right-16 z-30 flex max-w-sm flex-col gap-2">
               {(isLocating || gpsError) && (
-                <div role="status" className="rounded-2xl bg-[#06151C]/92 backdrop-blur-xl border border-[#E6D9B7]/28 p-3.5 text-xs text-[#FFFDF5] shadow-[0_18px_40px_rgba(2,10,15,0.6)]">
-                  {isLocating ? 'Đang lấy vị trí GPS của bạn…' : gpsError}
+                <motion.div
+                  key={`gps-status-${gpsAttemptTick}`}
+                  initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  role="alert"
+                  className={`rounded-2xl backdrop-blur-xl border p-3.5 text-xs text-[#FFFDF5] shadow-[0_18px_40px_rgba(2,10,15,0.6)] ${
+                    gpsPermissionBlocked
+                      ? 'bg-[#2A1412]/95 border-[#E87B39]/60'
+                      : 'bg-[#06151C]/92 border-[#E6D9B7]/28'
+                  }`}
+                >
+                  <p className="leading-relaxed">
+                    {isLocating ? 'Đang lấy vị trí GPS của bạn…' : gpsError}
+                  </p>
                   {gpsError && (
-                    <div className="mt-2.5 flex gap-3">
+                    <div className="mt-2.5 flex items-center gap-3">
+                      {gpsPermissionBlocked && (
+                        <button
+                          type="button"
+                          onClick={() => setGpsBlockedModalOpen(true)}
+                          className="font-bold text-[#F5B281] hover:underline cursor-pointer"
+                        >
+                          Xem hướng dẫn mở khóa GPS
+                        </button>
+                      )}
                       <button type="button" onClick={locateUser} className="font-bold text-[#E6D9B7] hover:underline cursor-pointer">
                         Thử lại
                       </button>
@@ -1073,8 +1122,62 @@ export default function BanDoDuLichPage() {
                       </button>
                     </div>
                   )}
-                </div>
+                </motion.div>
               )}
+
+              {/* Hộp thoại hướng dẫn cấp lại quyền GPS khi trình duyệt đang ở trạng thái Chặn (Block) */}
+              <AnimatePresence>
+                {gpsBlockedModalOpen && (
+                  <motion.div
+                    key={`gps-modal-${gpsAttemptTick}`}
+                    role="alertdialog"
+                    aria-labelledby="gps-blocked-title"
+                    aria-describedby="gps-blocked-desc"
+                    initial={{ opacity: 0, y: 10, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                    className="rounded-2xl bg-[#071922]/96 backdrop-blur-2xl border border-[#E87B39]/60 p-4 text-xs text-[#FFFDF5] shadow-[0_24px_56px_rgba(2,10,15,0.8)]"
+                  >
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <p id="gps-blocked-title" className="font-bold text-sm text-[#F5B281]">
+                        Quyền định vị GPS đang bị chặn
+                      </p>
+                      <button
+                        type="button"
+                        aria-label="Đóng hướng dẫn GPS"
+                        onClick={() => setGpsBlockedModalOpen(false)}
+                        className="text-[#94B0B3] hover:text-[#FFFDF5] cursor-pointer"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                    <p id="gps-blocked-desc" className="text-[#CBD9DA] leading-relaxed mb-2.5">
+                      Trình duyệt của bạn đang chặn quyền truy cập vị trí cho trang này. Để bật lại:
+                    </p>
+                    <ol className="list-decimal list-inside space-y-1 text-[#FFFDF5]/90 mb-3 leading-relaxed">
+                      <li>Bấm vào <strong>biểu tượng ổ khóa (🔒)</strong> hoặc thanh tùy chỉnh bên trái thanh địa chỉ trình duyệt.</li>
+                      <li>Tại mục <strong>Vị trí (Location)</strong>, chuyển từ <em>Chặn (Block)</em> sang <strong>Cho phép (Allow)</strong>.</li>
+                      <li>Bấm nút <strong>Thử lại</strong> bên dưới để định vị.</li>
+                    </ol>
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setGpsBlockedModalOpen(false)}
+                        className="px-3 py-1.5 rounded-xl border border-[#E6D9B7]/25 text-[#CBD9DA] hover:text-[#FFFDF5] font-semibold cursor-pointer"
+                      >
+                        Đã hiểu
+                      </button>
+                      <button
+                        type="button"
+                        onClick={locateUser}
+                        className="px-3.5 py-1.5 rounded-xl bg-[#E87B39] hover:bg-[#D96B29] text-[#FFFDF5] font-bold cursor-pointer"
+                      >
+                        Thử lại
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {routeTarget && (
                 <div

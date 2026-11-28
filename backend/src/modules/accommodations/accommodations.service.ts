@@ -41,7 +41,15 @@ const baseSchema = z.object({
   districtId: z.coerce.number().int().min(1, "Quận là bắt buộc."),
   latitude: z.coerce.number().min(-90).max(90).nullish(),
   longitude: z.coerce.number().min(-180).max(180).nullish(),
-  phone: z.string().trim().max(20).nullish(),
+  phone: z
+    .string()
+    .trim()
+    .max(20, "Số điện thoại tối đa 20 ký tự.")
+    .refine(
+      (v) => v === "" || /^\d{8,15}$/.test(v.replace(/\s+/g, "")),
+      "Số điện thoại cơ sở không hợp lệ (chỉ chấp nhận chữ số)",
+    )
+    .nullish(),
   website: z.string().trim().max(255).nullish(),
   bookingUrl: httpUrl.nullish(),
   accommodationType: z.enum(["HOTEL", "HOMESTAY", "RESORT", "HOSTEL", "APARTMENT"]),

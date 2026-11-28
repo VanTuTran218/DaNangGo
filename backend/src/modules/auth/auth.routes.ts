@@ -98,7 +98,11 @@ const changePasswordSchema = z.object({
 const profileBirthday = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Ngày sinh không hợp lệ.').refine((value) => {
   const date = new Date(`${value}T00:00:00.000Z`);
   return !Number.isNaN(date.valueOf()) && date.toISOString().slice(0, 10) === value;
-}, 'Ngày sinh không hợp lệ.');
+}, 'Ngày sinh không hợp lệ.').refine((value) => {
+  const now = new Date();
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  return value <= today;
+}, 'Ngày sinh không được lớn hơn ngày hiện tại');
 const updateProfileSchema = z.object({
   name: z.string().trim().min(2, 'Há» tÃªn pháº£i cÃ³ Ã­t nháº¥t 2 kÃ½ tá»±.').max(50, 'Há» tÃªn tá»‘i Ä‘a 50 kÃ½ tá»±.'),
   phone: z.string().trim().max(30, 'Sá»‘ Ä‘iá»‡n thoáº¡i khÃ´ng há»£p lá»‡.').nullable(),

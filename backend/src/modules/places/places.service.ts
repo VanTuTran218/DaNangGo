@@ -300,6 +300,13 @@ export async function createPlaceCommon(
     throw new Error('URL đặt chỗ (booking_url) phải bắt đầu bằng http:// hoặc https://');
   }
 
+  if (data.phone && data.phone.trim() !== '') {
+    const cleanedPhone = data.phone.trim().replace(/\s+/g, '');
+    if (!/^\d{8,15}$/.test(cleanedPhone)) {
+      throw new Error('Số điện thoại cơ sở không hợp lệ (chỉ chấp nhận chữ số)');
+    }
+  }
+
   // 2. Thực thi ghi dữ liệu vào bảng places
   const executor = runner ?? getPool();
   const request = executor.request();

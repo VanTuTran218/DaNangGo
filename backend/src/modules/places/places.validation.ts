@@ -349,6 +349,13 @@ export function validatePlaceId(param: unknown): ValidationResult<number> {
 export const ALLOWED_PLACE_STATUSES = ['ACTIVE', 'HIDDEN', 'PENDING', 'LOCKED'] as const;
 export type ValidPlaceStatus = (typeof ALLOWED_PLACE_STATUSES)[number];
 
+export const PLACE_PHONE_REGEX = /^\d{8,15}$/;
+
+export function isValidPlacePhone(phone: string): boolean {
+  const cleaned = String(phone).trim().replace(/\s+/g, '');
+  return PLACE_PHONE_REGEX.test(cleaned);
+}
+
 /**
  * Validate body khi cập nhật trạng thái địa điểm
  * PATCH /api/places/:id/status

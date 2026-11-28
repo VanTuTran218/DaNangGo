@@ -150,6 +150,13 @@ export default function PlaceForm({
       errs.priceMax = 'Giá tối đa phải lớn hơn hoặc bằng giá tối thiểu.';
     }
 
+    if (phone.trim()) {
+      const cleanedPhone = phone.trim().replace(/\s+/g, '');
+      if (!/^\d{8,15}$/.test(cleanedPhone)) {
+        errs.phone = 'Số điện thoại cơ sở không hợp lệ (chỉ chấp nhận chữ số)';
+      }
+    }
+
     if (bookingUrl.trim()) {
       const url = bookingUrl.trim();
       if (!url.startsWith('http://') && !url.startsWith('https://')) {
@@ -169,6 +176,21 @@ export default function PlaceForm({
     }
 
     setErrors(errs);
+    const priorityOrder = ['bookingUrl', 'phone', 'website', 'priceMin', 'priceMax', 'name', 'address', 'districtId', 'images'];
+    const firstKey = priorityOrder.find((k) => Boolean(errs[k])) || Object.keys(errs)[0];
+    if (firstKey && typeof document !== 'undefined') {
+      requestAnimationFrame(() => {
+        const el = document.getElementById(`place-field-${firstKey}`);
+        if (el) {
+          const top = Math.max(0, el.getBoundingClientRect().top + window.scrollY - 160);
+          window.scrollTo({ top, behavior: 'smooth' });
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          if (typeof (el as HTMLElement).focus === 'function') {
+            (el as HTMLElement).focus({ preventScroll: true });
+          }
+        }
+      });
+    }
     return Object.keys(errs).length === 0;
   };
 
@@ -352,6 +374,7 @@ export default function PlaceForm({
                 </label>
                 <div className="relative">
                   <input
+                    id="place-field-name"
                     type="text"
                     value={name}
                     onChange={(e) => {
@@ -394,6 +417,7 @@ export default function PlaceForm({
                     <div className="h-11 bg-slate-100 rounded-2xl animate-pulse" />
                   ) : (
                     <select
+                      id="place-field-districtId"
                       value={districtId ?? ''}
                       onChange={(e) => setDistrictId(Number(e.target.value))}
                       className="w-full px-4 py-3 text-sm bg-slate-50 border border-slate-300 rounded-2xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/25 focus:border-teal-500 transition-all font-medium text-slate-800"
@@ -446,6 +470,7 @@ export default function PlaceForm({
                   )}
                 </label>
                 <input
+                  id="place-field-address"
                   type="text"
                   value={address}
                   onChange={(e) => {
@@ -514,6 +539,7 @@ export default function PlaceForm({
                       ₫
                     </span>
                     <input
+                      id="place-field-priceMin"
                       type="number"
                       step="5000"
                       min="0"
@@ -552,6 +578,7 @@ export default function PlaceForm({
                       ₫
                     </span>
                     <input
+                      id="place-field-priceMax"
                       type="number"
                       step="10000"
                       min="0"
@@ -618,12 +645,36 @@ export default function PlaceForm({
                     Số điện thoại liên hệ
                   </label>
                   <input
+                    id="place-field-phone"
                     type="tel"
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setPhone(val);
+                      if (errors.phone) {
+                        setErrors((prev) => {
+                          const next = { ...prev };
+                          delete next.phone;
+                          return next;
+                        });
+                      }
+                    }}
                     placeholder="VD: 0905 123 456"
-                    className="w-full px-4 py-3 text-sm bg-slate-50 border border-slate-300 rounded-2xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/25 focus:border-teal-500 transition-all font-mono"
+                    className={`w-full px-4 py-3 text-sm bg-slate-50 border rounded-2xl focus:bg-white focus:outline-none transition-all font-mono ${
+                      errors.phone
+                        ? 'border-rose-400 ring-2 ring-rose-400/20 bg-rose-50/20'
+                        : 'border-slate-300 focus:ring-2 focus:ring-teal-500/25 focus:border-teal-500'
+                    }`}
                   />
+                  {errors.phone && (
+                    <motion.p
+                      initial={{ x: -4 }}
+                      animate={{ x: [-4, 4, -2, 2, 0] }}
+                      className="text-xs text-rose-500 font-medium mt-1.5 flex items-center gap-1"
+                    >
+                      <AlertCircle className="w-3.5 h-3.5" /> {errors.phone}
+                    </motion.p>
+                  )}
                 </div>
 
                 {/* Website */}
@@ -632,9 +683,19 @@ export default function PlaceForm({
                     Trang web nhà hàng (Website)
                   </label>
                   <input
-                    type="url"
+                    id="place-field-website"
+                    type="text"
                     value={website}
-                    onChange={(e) => setWebsite(e.target.value)}
+                    onChange={(e) => {
+                      setWebsite(e.target.value);
+                      if (errors.website) {
+                        setErrors((prev) => {
+                          const next = { ...prev };
+                          delete next.website;
+                          return next;
+                        });
+                      }
+                    }}
                     placeholder="https://nhahangdanang.vn"
                     className="w-full px-4 py-3 text-sm bg-slate-50 border border-slate-300 rounded-2xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/25 focus:border-teal-500 transition-all font-mono text-xs"
                   />
@@ -655,7 +716,8 @@ export default function PlaceForm({
                   </span>
                 </label>
                 <input
-                  type="url"
+                  id="place-field-bookingUrl"
+                  type="text"
                   value={bookingUrl}
                   onChange={(e) => handleBookingUrlChange(e.target.value)}
                   placeholder="https://pasgo.vn/dat-cho/..., hoặc https://order.pos365.vn/..."
@@ -684,11 +746,13 @@ export default function PlaceForm({
             title="4. Hình ảnh quảng bá cơ sở"
             description="Ảnh bìa chính và các hình ảnh không gian quán thu hút khách"
           >
-            <ImageUploader
-              images={images}
-              onChange={setImages}
-              error={errors.images}
-            />
+            <div id="place-field-images" tabIndex={-1}>
+              <ImageUploader
+                images={images}
+                onChange={setImages}
+                error={errors.images}
+              />
+            </div>
           </FormSection>
 
           {/* SECTION 5: Vị trí bản đồ */}

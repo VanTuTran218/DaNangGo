@@ -28,6 +28,7 @@ export default function PartnerProfilePage() {
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [saving, setSaving] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<{ phone?: string; taxCode?: string }>({});
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   useEffect(() => {
@@ -38,6 +39,7 @@ export default function PartnerProfilePage() {
       setAddress(profile.address);
       setPhone(profile.phone);
       setEmail(profile.email);
+      setFieldErrors({});
     }
   }, [profile]);
 
@@ -48,6 +50,31 @@ export default function PartnerProfilePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const nextErrors: { phone?: string; taxCode?: string } = {};
+    const cleanedPhone = phone.trim().replace(/\s+/g, '');
+    const cleanedTaxCode = taxCode.trim().replace(/\s+/g, '');
+
+    if (!/^\d{10}$/.test(cleanedPhone)) {
+      nextErrors.phone = 'Số điện thoại liên hệ không hợp lệ (chỉ gồm 10 chữ số).';
+    }
+    if (!/^\d+$/.test(cleanedTaxCode)) {
+      nextErrors.taxCode = 'Mã số thuế không hợp lệ (chỉ gồm chữ số).';
+    }
+
+    setFieldErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) {
+      showToast(nextErrors.phone || nextErrors.taxCode || 'Vui lòng kiểm tra lại thông tin.', 'error');
+      const firstErrorId = nextErrors.taxCode ? 'partner-tax-code' : 'partner-phone';
+      if (typeof document !== 'undefined') {
+        const el = document.getElementById(firstErrorId);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          (el as HTMLElement).focus({ preventScroll: true });
+        }
+      }
+      return;
+    }
+
     setSaving(true);
     try {
       await updatePartnerProfile({
@@ -262,10 +289,25 @@ export default function PartnerProfilePage() {
                     type="text"
                     required
                     value={taxCode}
-                    onChange={(e) => setTaxCode(e.target.value)}
-                    className="w-full h-11 pl-10 pr-4 text-sm text-[#14233B] bg-[#F6FAFA]/60 border border-[#E2ECEC] rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/25 focus:border-[#14B8A6] transition-all font-medium"
+                    onChange={(e) => {
+                      setTaxCode(e.target.value);
+                      if (fieldErrors.taxCode) {
+                        setFieldErrors((prev) => ({ ...prev, taxCode: undefined }));
+                      }
+                    }}
+                    className={`w-full h-11 pl-10 pr-4 text-sm text-[#14233B] bg-[#F6FAFA]/60 border rounded-xl focus:bg-white focus:outline-none transition-all font-medium ${
+                      fieldErrors.taxCode
+                        ? 'border-rose-400 ring-2 ring-rose-400/20 bg-rose-50/30'
+                        : 'border-[#E2ECEC] focus:ring-2 focus:ring-[#14B8A6]/25 focus:border-[#14B8A6]'
+                    }`}
                   />
                 </div>
+                {fieldErrors.taxCode && (
+                  <p role="alert" className="text-xs text-rose-600 font-semibold mt-1.5 flex items-center gap-1">
+                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                    <span>{fieldErrors.taxCode}</span>
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -319,10 +361,25 @@ export default function PartnerProfilePage() {
                     type="text"
                     required
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="w-full h-11 pl-10 pr-4 text-sm text-[#14233B] bg-[#F6FAFA]/60 border border-[#E2ECEC] rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/25 focus:border-[#14B8A6] transition-all font-medium"
+                    onChange={(e) => {
+                      setPhone(e.target.value);
+                      if (fieldErrors.phone) {
+                        setFieldErrors((prev) => ({ ...prev, phone: undefined }));
+                      }
+                    }}
+                    className={`w-full h-11 pl-10 pr-4 text-sm text-[#14233B] bg-[#F6FAFA]/60 border rounded-xl focus:bg-white focus:outline-none transition-all font-medium ${
+                      fieldErrors.phone
+                        ? 'border-rose-400 ring-2 ring-rose-400/20 bg-rose-50/30'
+                        : 'border-[#E2ECEC] focus:ring-2 focus:ring-[#14B8A6]/25 focus:border-[#14B8A6]'
+                    }`}
                   />
                 </div>
+                {fieldErrors.phone && (
+                  <p role="alert" className="text-xs text-rose-600 font-semibold mt-1.5 flex items-center gap-1">
+                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                    <span>{fieldErrors.phone}</span>
+                  </p>
+                )}
               </div>
 
               <div>

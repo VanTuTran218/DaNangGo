@@ -73,6 +73,13 @@ export const validateCreateRestaurant = (
     }
   }
 
+  if (body['phone'] !== undefined && body['phone'] !== null && String(body['phone']).trim() !== '') {
+    const cleanedPhone = String(body['phone']).trim().replace(/\s+/g, '');
+    if (!/^\d{8,15}$/.test(cleanedPhone)) {
+      return 'Số điện thoại cơ sở không hợp lệ (chỉ chấp nhận chữ số)';
+    }
+  }
+
   return null;
 };
 
@@ -97,6 +104,13 @@ export const validateUpdateRestaurant = (
     const url = String(body['booking_url']).trim();
     if (!url.startsWith('http://') && !url.startsWith('https://')) {
       return 'booking_url phải bắt đầu bằng http:// hoặc https://';
+    }
+  }
+
+  if (body['phone'] !== undefined && body['phone'] !== null && String(body['phone']).trim() !== '') {
+    const cleanedPhone = String(body['phone']).trim().replace(/\s+/g, '');
+    if (!/^\d{8,15}$/.test(cleanedPhone)) {
+      return 'Số điện thoại cơ sở không hợp lệ (chỉ chấp nhận chữ số)';
     }
   }
 

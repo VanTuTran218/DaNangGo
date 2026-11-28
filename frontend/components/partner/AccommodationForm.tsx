@@ -77,7 +77,11 @@ export default function AccommodationForm({ initialData, onSuccess }: Accommodat
   const [website, setWebsite] = useState(initialData?.website ?? '');
   const [bookingUrl, setBookingUrl] = useState(initialData?.bookingUrl ?? '');
   const [amenityIds, setAmenityIds] = useState<number[]>(initialData?.amenityIds ?? [1, 4]);
-  const [images, setImages] = useState<string[]>(initialData?.images ?? []);
+  const [images, setImages] = useState<string[]>(
+    initialData?.images && initialData.images.length > 0
+      ? initialData.images
+      : ['https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80']
+  );
   const [lat, setLat] = useState(initialData?.lat ?? 16.0544);
   const [lng, setLng] = useState(initialData?.lng ?? 108.2022);
   const [rooms, setRooms] = useState<RoomInput[]>([
@@ -110,6 +114,12 @@ export default function AccommodationForm({ initialData, onSuccess }: Accommodat
     if (!districtId) e.districtId = 'Vui lòng chọn quận/huyện.';
     if (checkInTime && !TIME_RE.test(checkInTime)) e.checkInTime = 'Giờ phải có dạng HH:mm.';
     if (checkOutTime && !TIME_RE.test(checkOutTime)) e.checkOutTime = 'Giờ phải có dạng HH:mm.';
+    if (phone.trim()) {
+      const cleanedPhone = phone.trim().replace(/\s+/g, '');
+      if (!/^\d{8,15}$/.test(cleanedPhone)) {
+        e.phone = 'Số điện thoại cơ sở không hợp lệ (chỉ chấp nhận chữ số)';
+      }
+    }
     if (bookingUrl && !/^https?:\/\//i.test(bookingUrl))
       e.bookingUrl = 'Link phải bắt đầu bằng http:// hoặc https://';
     if (images.length === 0) e.images = 'Vui lòng thêm ít nhất 1 ảnh.';
@@ -121,6 +131,21 @@ export default function AccommodationForm({ initialData, onSuccess }: Accommodat
       });
     }
     setErrors(e);
+    const priorityOrder = ['bookingUrl', 'phone', 'checkInTime', 'checkOutTime', 'name', 'address', 'districtId', 'images'];
+    const firstKey = priorityOrder.find((k) => Boolean(e[k])) || Object.keys(e)[0];
+    if (firstKey && typeof document !== 'undefined') {
+      requestAnimationFrame(() => {
+        const el = document.getElementById(`acc-field-${firstKey}`);
+        if (el) {
+          const top = Math.max(0, el.getBoundingClientRect().top + window.scrollY - 160);
+          window.scrollTo({ top, behavior: 'smooth' });
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          if (typeof (el as HTMLElement).focus === 'function') {
+            (el as HTMLElement).focus({ preventScroll: true });
+          }
+        }
+      });
+    }
     return Object.keys(e).length === 0;
   };
 
@@ -202,6 +227,7 @@ export default function AccommodationForm({ initialData, onSuccess }: Accommodat
                   Tên cơ sở <span className="text-rose-500">*</span>
                 </label>
                 <input
+                  id="acc-field-name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   maxLength={200}
@@ -251,6 +277,7 @@ export default function AccommodationForm({ initialData, onSuccess }: Accommodat
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1.5">Giờ nhận phòng</label>
                   <input
+                    id="acc-field-checkInTime"
                     type="time"
                     value={checkInTime}
                     onChange={(e) => setCheckInTime(e.target.value)}
@@ -261,6 +288,7 @@ export default function AccommodationForm({ initialData, onSuccess }: Accommodat
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1.5">Giờ trả phòng</label>
                   <input
+                    id="acc-field-checkOutTime"
                     type="time"
                     value={checkOutTime}
                     onChange={(e) => setCheckOutTime(e.target.value)}
@@ -296,6 +324,7 @@ export default function AccommodationForm({ initialData, onSuccess }: Accommodat
                     Quận / Huyện <span className="text-rose-500">*</span>
                   </label>
                   <select
+                    id="acc-field-districtId"
                     value={districtId ?? ''}
                     onChange={(e) => setDistrictId(Number(e.target.value) || undefined)}
                     className={inputCls(!!errors.districtId)}
@@ -314,6 +343,7 @@ export default function AccommodationForm({ initialData, onSuccess }: Accommodat
                     Địa chỉ <span className="text-rose-500">*</span>
                   </label>
                   <input
+                    id="acc-field-address"
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
                     maxLength={255}
@@ -389,6 +419,7 @@ export default function AccommodationForm({ initialData, onSuccess }: Accommodat
                       <label className="col-span-2 font-semibold text-slate-600">
                         Tên phòng
                         <input
+                          id={`acc-field-room-${idx}`}
                           value={room.name}
                           onChange={(e) => updateRoomAt(idx, { name: e.target.value })}
                           maxLength={100}
@@ -451,7 +482,9 @@ export default function AccommodationForm({ initialData, onSuccess }: Accommodat
             title="Hình ảnh"
             description="Ảnh đầu tiên là ảnh bìa"
           >
-            <ImageUploader images={images} onChange={setImages} error={errors.images} />
+            <div id="acc-field-images" tabIndex={-1}>
+              <ImageUploader images={images} onChange={setImages} error={errors.images} />
+            </div>
           </FormSection>
 
           <FormSection
@@ -460,15 +493,29 @@ export default function AccommodationForm({ initialData, onSuccess }: Accommodat
             description="Hotline, website và link đặt phòng"
           >
             <div className="space-y-4">
+              <div>
+                <input
+                  id="acc-field-phone"
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => {
+                    setPhone(e.target.value);
+                    if (errors.phone) {
+                      setErrors((prev) => {
+                        const next = { ...prev };
+                        delete next.phone;
+                        return next;
+                      });
+                    }
+                  }}
+                  maxLength={20}
+                  placeholder="Số điện thoại lễ tân"
+                  className={inputCls(!!errors.phone)}
+                />
+                <FieldError msg={errors.phone} />
+              </div>
               <input
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                maxLength={20}
-                placeholder="Số điện thoại lễ tân"
-                className={inputCls()}
-              />
-              <input
+                id="acc-field-website"
                 value={website}
                 onChange={(e) => setWebsite(e.target.value)}
                 maxLength={255}
@@ -477,8 +524,18 @@ export default function AccommodationForm({ initialData, onSuccess }: Accommodat
               />
               <div>
                 <input
+                  id="acc-field-bookingUrl"
                   value={bookingUrl}
-                  onChange={(e) => setBookingUrl(e.target.value)}
+                  onChange={(e) => {
+                    setBookingUrl(e.target.value);
+                    if (errors.bookingUrl) {
+                      setErrors((prev) => {
+                        const next = { ...prev };
+                        delete next.bookingUrl;
+                        return next;
+                      });
+                    }
+                  }}
                   maxLength={255}
                   placeholder="Link đặt phòng (https://...)"
                   className={inputCls(!!errors.bookingUrl)}

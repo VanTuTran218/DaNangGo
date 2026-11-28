@@ -4,11 +4,12 @@ import Link from 'next/link';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Controller, useForm, type FieldPath } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CalendarDays, Eye, Save, Send } from 'lucide-react';
+import { CalendarDays, Eye, Save, Send, Upload } from 'lucide-react';
 import type { Event, EventAction } from '@/types/event';
 import { canChangeStatus, EVENT_TYPES, STATUS_LABELS, TICKET_TYPES } from '@/types/event';
 import { draftSchema, eventSchema, formatEventDate, isHttpUrl, toEvent, toFormValues, type ChangeValues, type EventFormValues } from '@/lib/events/schema';
 import { changeEventStatus, createEvent, eventFieldErrors, updateEvent } from '@/services/events';
+import { uploadMediaImage } from '@/lib/api/uploads';
 import PlaceSelect from './PlaceSelect';
 import StatusChangeModal from './StatusChangeModal';
 import EventPreviewModal from './EventPreviewModal';
@@ -34,6 +35,8 @@ export default function EventForm({ initialData }: { initialData?: Event }) {
   const [preview, setPreview] = useState<Event | null>(null);
   const [action, setAction] = useState<EventAction | null>(null);
   const [modalDirty, setModalDirty] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
+  const coverInputRef = useRef<HTMLInputElement>(null);
   const status = saved?.status ?? 'DRAFT';
   const editing = !!saved?.id;
   const { register, control, watch, getValues, getFieldState, setValue, setError, clearErrors, reset, handleSubmit, formState } = useForm<EventFormValues>({
@@ -156,7 +159,50 @@ export default function EventForm({ initialData }: { initialData?: Event }) {
               {Object.entries(EVENT_TYPES).map(([key, label]) => <option key={key} value={key}>{label}</option>)}
             </select>
           </Field>
-          {textField('imageUrl', 'Ảnh bìa (URL) *', 'url', 'https://…')}
+          <Field id="imageUrl" label="Ảnh bìa sự kiện *" error={errorFor('imageUrl')} hint="Chọn ảnh từ máy tính (JPG, PNG, WEBP tối đa 5MB) hoặc dán đường dẫn URL trực tuyến.">
+            <div className="flex flex-col sm:flex-row gap-2.5">
+              <input
+                id="imageUrl"
+                type="url"
+                {...register('imageUrl')}
+                className={inputClass}
+                placeholder="https://… hoặc tải ảnh từ máy tính"
+                aria-invalid={!!errorFor('imageUrl')}
+                aria-describedby={errorFor('imageUrl') ? 'imageUrl-error imageUrl-hint' : 'imageUrl-hint'}
+              />
+              <input
+                ref={coverInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  setUploadingCover(true);
+                  try {
+                    const url = await uploadMediaImage(file);
+                    setValue('imageUrl', url, { shouldDirty: true, shouldValidate: true });
+                    clearErrors('imageUrl');
+                    setToast({ kind: 'success', message: 'Đã tải ảnh bìa lên thành công.' });
+                  } catch (err) {
+                    setToast({ kind: 'error', message: err instanceof Error ? err.message : 'Không thể tải ảnh bìa lên.' });
+                  } finally {
+                    setUploadingCover(false);
+                    if (coverInputRef.current) coverInputRef.current.value = '';
+                  }
+                }}
+              />
+              <button
+                type="button"
+                disabled={disabled || uploadingCover}
+                onClick={() => coverInputRef.current?.click()}
+                className={`${buttonClass} shrink-0`}
+              >
+                {uploadingCover ? <Spinner /> : <Upload className="size-4" />}
+                <span>{uploadingCover ? 'Đang tải...' : 'Chọn ảnh từ máy'}</span>
+              </button>
+            </div>
+          </Field>
           {isHttpUrl(imageUrl) && <EventImage url={imageUrl} />}
         </Section>
 

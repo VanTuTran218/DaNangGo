@@ -81,9 +81,9 @@ function CreatePlaceContent() {
         breadcrumbs={[
           { label: 'Partner', href: '/partner' },
           { label: 'Cơ sở của tôi', href: '/partner/co-so' },
-          { label: placeType === 'luutru' ? 'Thêm nơi lưu trú mới' : 'Thêm quán ăn mới' },
+          { label: placeType === 'luutru' ? 'Thêm nơi lưu trú mới' : 'Thêm cơ sở ẩm thực mới' },
         ]}
-        title={placeType === 'luutru' ? 'Đăng ký cơ sở Lưu trú mới' : 'Thêm cơ sở Ẩm thực mới'}
+        title={placeType === 'luutru' ? 'Thêm cơ sở Lưu trú mới' : 'Thêm cơ sở Ẩm thực mới'}
         description={
           placeType === 'luutru'
             ? 'Điền đầy đủ các thông tin chi tiết của khách sạn, homestay, resort để đăng tải hiển thị trên DaNangGo.'

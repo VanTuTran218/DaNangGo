@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, Image as ImageIcon, AlertCircle } from 'lucide-react';
+import { Plus, Trash2, Image as ImageIcon, AlertCircle, Upload, Loader2 } from 'lucide-react';
 import Image from 'next/image';
+import { uploadMediaImage } from '@/lib/api/uploads';
 
 interface ImageUploaderProps {
   images: string[];
@@ -14,6 +15,9 @@ interface ImageUploaderProps {
 export default function ImageUploader({ images, onChange, error }: ImageUploaderProps) {
   const [urlInput, setUrlInput] = useState('');
   const [inputError, setInputError] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleAdd = () => {
     const trimmed = urlInput.trim();
@@ -35,16 +39,111 @@ export default function ImageUploader({ images, onChange, error }: ImageUploader
     setInputError('');
   };
 
+  const handleUploadFiles = async (fileList: FileList | null) => {
+    if (!fileList || fileList.length === 0) return;
+    setInputError('');
+    setUploading(true);
+
+    try {
+      const files = Array.from(fileList);
+      const uploadedUrls: string[] = [];
+
+      for (const file of files) {
+        const url = await uploadMediaImage(file);
+        if (!images.includes(url) && !uploadedUrls.includes(url)) {
+          uploadedUrls.push(url);
+        }
+      }
+
+      if (uploadedUrls.length > 0) {
+        onChange([...images, ...uploadedUrls]);
+      }
+    } catch (err) {
+      setInputError(err instanceof Error ? err.message : 'Không thể tải ảnh lên máy chủ.');
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
   const handleRemove = (index: number) => {
     onChange(images.filter((_, i) => i !== index));
   };
 
   return (
     <div className="space-y-4">
-      {/* Input thêm URL ảnh */}
+      {/* Vùng tải file trực tiếp từ máy tính */}
+      <div
+        onDragOver={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setDragActive(true);
+        }}
+        onDragLeave={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setDragActive(false);
+        }}
+        onDrop={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setDragActive(false);
+          void handleUploadFiles(e.dataTransfer.files);
+        }}
+        className={`p-4 rounded-2xl border-2 border-dashed transition-all flex flex-col sm:flex-row items-center justify-between gap-3 ${
+          dragActive
+            ? 'border-teal-500 bg-teal-50/70'
+            : 'border-slate-300 bg-slate-50/80 hover:border-teal-400'
+        }`}
+      >
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          multiple
+          onChange={(e) => void handleUploadFiles(e.target.files)}
+          className="hidden"
+        />
+        <div className="flex items-center gap-3 text-center sm:text-left">
+          <div className="w-10 h-10 rounded-xl bg-teal-100/80 text-teal-700 flex items-center justify-center shrink-0 mx-auto sm:mx-0">
+            {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Upload className="w-5 h-5" />}
+          </div>
+          <div>
+            <p className="text-xs font-bold text-slate-800">
+              Tải ảnh trực tiếp từ máy tính (hoặc kéo thả vào đây)
+            </p>
+            <p className="text-[11px] text-slate-500 mt-0.5">
+              Hỗ trợ JPG, PNG, WEBP (tối đa 5MB/ảnh). Có thể chọn nhiều ảnh cùng lúc.
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          disabled={uploading}
+          onClick={() => fileInputRef.current?.click()}
+          className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-teal-600 hover:bg-teal-700 disabled:opacity-60 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-teal-600/20 active:scale-95 shrink-0 cursor-pointer"
+        >
+          {uploading ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Đang tải lên...</span>
+            </>
+          ) : (
+            <>
+              <Upload className="w-4 h-4" />
+              <span>Chọn ảnh từ máy</span>
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* Hoặc dán URL trực tuyến */}
       <div>
         <label className="block text-xs font-bold text-slate-700 mb-1.5">
-          Đường dẫn ảnh trực tuyến (Image URL) *
+          Hoặc dán đường dẫn ảnh trực tuyến (Image URL)
         </label>
         <div className="flex items-center gap-2">
           <div className="relative flex-1">
@@ -69,9 +168,9 @@ export default function ImageUploader({ images, onChange, error }: ImageUploader
           <button
             type="button"
             onClick={handleAdd}
-            className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-teal-600/20 active:scale-95 shrink-0"
+            className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold transition-all active:scale-95 shrink-0"
           >
-            <Plus className="w-4 h-4" /> Thêm ảnh
+            <Plus className="w-4 h-4" /> Thêm link
           </button>
         </div>
         {inputError && (
@@ -102,7 +201,7 @@ export default function ImageUploader({ images, onChange, error }: ImageUploader
                 transition={{ duration: 0.2 }}
                 className="relative group h-28 rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 shadow-xs"
               >
-                <Image src={url} alt={`Ảnh quán ${idx + 1}`} fill className="object-cover" />
+                <Image src={url} alt={`Ảnh quán ${idx + 1}`} fill unoptimized className="object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-2">
                   <button
                     type="button"

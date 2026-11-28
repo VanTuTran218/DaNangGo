@@ -115,3 +115,74 @@ export async function getPlaceById(userId: number, placeId: number) {
   if (!row) return null;
   return mapPartnerPlace(row);
 }
+
+/** Lấy thống kê tổng quan cho đối tác đang đăng nhập */
+export async function getDashboardStats(userId: number) {
+  const profile = await repo.findPartnerProfileByUserId(userId);
+  if (!profile) {
+    return { totalPlaces: 0, totalViews: 0, totalBookings: 0, avgRating: 0 };
+  }
+  return repo.getPartnerDashboardStatsByPartnerId(profile.partner_id);
+}
+
+/** Lấy thống kê lượt đặt 7 ngày qua cho đối tác đang đăng nhập */
+export async function getDailyBookings(userId: number) {
+  const profile = await repo.findPartnerProfileByUserId(userId);
+  if (!profile) {
+    const days: { date: string; count: number }[] = [];
+    const now = new Date();
+    for (let offset = 6; offset >= 0; offset -= 1) {
+      const d = new Date(now);
+      d.setDate(now.getDate() - offset);
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      days.push({ date: `${dd}/${mm}`, count: 0 });
+    }
+    return days;
+  }
+  return repo.getPartnerDailyBookingsByPartnerId(profile.partner_id);
+}
+
+/** Lấy danh sách đơn đặt chỗ của các cơ sở thuộc đối tác đang đăng nhập */
+export async function getBookings(userId: number, statusFilter?: string | null, search?: string | null) {
+  const profile = await repo.findPartnerProfileByUserId(userId);
+  if (!profile) return [];
+  const rows = await repo.findBookingsByPartnerId(profile.partner_id, statusFilter, search);
+  return rows.map((row) => {
+    const dateVal = row.visit_date || row.created_at;
+    const yyyy = dateVal.getFullYear();
+    const mm = String(dateVal.getMonth() + 1).padStart(2, '0');
+    const dd = String(dateVal.getDate()).padStart(2, '0');
+    const upperMethod = String(row.payment_method || '').toUpperCase();
+    const paymentMethod = upperMethod.includes('CASH') ? 'CASH' : 'TRANSFER';
+    const upperStatus = String(row.status || 'PENDING').toUpperCase();
+    const status =
+      upperStatus === 'CONFIRMED' || upperStatus === 'COMPLETED' || upperStatus === 'CANCELLED'
+        ? upperStatus
+        : 'PENDING';
+
+    return {
+      id: String(row.booking_id),
+      bookingCode: `DNG-${String(row.booking_id).padStart(6, '0')}`,
+      placeId: String(row.place_id),
+      placeName: row.place_name,
+      customerName: row.contact_name,
+      customerPhone: row.contact_phone,
+      customerEmail: row.user_email || '',
+      date: `${yyyy}-${mm}-${dd}`,
+      numGuests: Number(row.num_guests ?? 1),
+      totalPrice: Number(row.total_amount ?? 0),
+      paymentMethod,
+      status,
+      createdAt: row.created_at.toISOString(),
+    };
+  });
+}
+
+/** Cập nhật trạng thái đơn đặt chỗ thuộc cơ sở của đối tác */
+export async function updateBookingStatus(userId: number, bookingId: number, status: string) {
+  const profile = await repo.findPartnerProfileByUserId(userId);
+  if (!profile) return false;
+  return repo.updateBookingStatusByPartner(profile.partner_id, bookingId, userId, status);
+}
+

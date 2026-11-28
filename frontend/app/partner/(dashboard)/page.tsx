@@ -80,7 +80,7 @@ export default function PartnerDashboardPage() {
     },
     {
       title: 'Đánh giá trung bình',
-      value: `${stats?.avgRating ?? 5.0} ⭐`,
+      value: `${stats?.avgRating ?? 0} ⭐`,
       icon: Star,
       iconStyle: 'bg-amber-50 text-[#FF8A24] border-amber-200/80',
       accentBar: 'bg-[#FF8A24]',

@@ -167,7 +167,7 @@ export default function PlacesTable({
                 <div className="flex items-start gap-3.5">
                   <div className="relative w-16 h-16 rounded-2xl overflow-hidden bg-[#F6FAFA] shrink-0 border border-[#E2ECEC]">
                     {place.images && place.images[0] ? (
-                      <Image src={place.images[0]} alt={place.name} fill className="object-cover" />
+                      <Image src={place.images[0]} alt={place.name} fill unoptimized className="object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-[#008F89] font-bold text-xs bg-[#E9F8F5]">
                         {isAcc ? <Bed className="w-5 h-5" /> : <Utensils className="w-5 h-5" />}
@@ -308,6 +308,7 @@ export default function PlacesTable({
                               src={place.images[0]}
                               alt={place.name}
                               fill
+                              unoptimized
                               className="object-cover"
                             />
                           ) : (

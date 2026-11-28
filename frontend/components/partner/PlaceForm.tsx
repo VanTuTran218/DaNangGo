@@ -809,6 +809,7 @@ export default function PlaceForm({
                   src={images[0]}
                   alt="Ảnh xem trước"
                   fill
+                  unoptimized
                   className="object-cover"
                 />
               ) : (

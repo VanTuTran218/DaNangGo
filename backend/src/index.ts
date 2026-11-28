@@ -36,6 +36,7 @@ import {
 } from './modules/events/events.routes';
 import { ensureEventsSchemaAndSeed } from './modules/events/events.repository';
 import { aiRouter } from './modules/ai/ai.routes';
+import uploadsRouter from './modules/uploads/media-upload.routes';
 import { csrfProtection } from './middleware/csrf.middleware';
 import { errorHandler } from './middleware/error-handler';
 
@@ -60,6 +61,12 @@ app.use(
 app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(cookieParser());
 app.use('/uploads/avatars', express.static(path.resolve(process.cwd(), 'uploads', 'avatars'), {
+  dotfiles: 'deny',
+  fallthrough: false,
+  immutable: true,
+  maxAge: '1y',
+}));
+app.use('/uploads/media', express.static(path.resolve(process.cwd(), 'uploads', 'media'), {
   dotfiles: 'deny',
   fallthrough: false,
   immutable: true,
@@ -100,6 +107,7 @@ app.use('/api/restaurants', restaurantRouter);
 app.use('/api/menu-items', menuItemsRouter);
 app.use('/api/attractions', attractionsRouter);
 app.use('/api/partner', partnerRouter);
+app.use('/api/uploads', uploadsRouter);
 app.use('/api', categoriesRouter);
 app.use('/api/categories', categoriesRouter);
 

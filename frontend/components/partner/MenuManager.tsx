@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   UtensilsCrossed,
@@ -22,8 +22,10 @@ import {
   Clock,
   HelpCircle,
   Image as ImageIcon,
+  Upload,
 } from 'lucide-react';
 import Image from 'next/image';
+import { uploadMediaImage } from '@/lib/api/uploads';
 import {
   MenuItem,
   CreateMenuItemInput,
@@ -455,6 +457,7 @@ export default function MenuManager({
                         src={item.image_url}
                         alt={item.name}
                         fill
+                        unoptimized
                         className="object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     ) : (
@@ -742,6 +745,8 @@ function MenuItemModal({
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const dishFileRef = useRef<HTMLInputElement>(null);
 
   // Validate form
   const validate = (): boolean => {
@@ -960,23 +965,56 @@ function MenuItemModal({
             </div>
           </div>
 
-          {/* Link hình ảnh món ăn */}
+          {/* Hình ảnh món ăn (Tải từ máy hoặc dán URL) */}
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center justify-between">
-              <span>Link hình ảnh món (URL)</span>
+              <span>Hình ảnh món ăn (Tải từ máy hoặc dán URL)</span>
               <span className="text-[11px] text-slate-400">Không bắt buộc</span>
             </label>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5">
               <input
                 type="url"
                 value={imageUrl}
                 onChange={(e) => setImageUrl(e.target.value)}
-                placeholder="https://images.unsplash.com/photo-dish..."
+                placeholder="Dán link https://... hoặc bấm Chọn ảnh"
                 className="flex-1 px-4 py-2.5 text-xs bg-slate-50 border border-slate-300 rounded-2xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/25 focus:border-teal-500"
               />
+              <input
+                ref={dishFileRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  setUploadingImage(true);
+                  try {
+                    const url = await uploadMediaImage(file);
+                    setImageUrl(url);
+                    setErrors((prev) => ({ ...prev, form: '' }));
+                  } catch (err) {
+                    setErrors((prev) => ({
+                      ...prev,
+                      form: err instanceof Error ? err.message : 'Không thể tải ảnh món ăn lên.',
+                    }));
+                  } finally {
+                    setUploadingImage(false);
+                    if (dishFileRef.current) dishFileRef.current.value = '';
+                  }
+                }}
+              />
+              <button
+                type="button"
+                disabled={uploadingImage}
+                onClick={() => dishFileRef.current?.click()}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-2xl bg-teal-50 hover:bg-teal-100 text-teal-700 border border-teal-200 text-xs font-bold transition-all shrink-0 cursor-pointer"
+              >
+                {uploadingImage ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                <span>{uploadingImage ? 'Đang tải...' : 'Chọn ảnh'}</span>
+              </button>
               {imageUrl && (
                 <div className="relative w-11 h-11 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
-                  <Image src={imageUrl} alt="Preview" fill className="object-cover" />
+                  <Image src={imageUrl} alt="Preview" fill unoptimized className="object-cover" />
                 </div>
               )}
             </div>

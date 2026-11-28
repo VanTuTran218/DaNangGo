@@ -298,3 +298,209 @@ export async function findPlaceByPartnerAndPlaceId(
     images: imgResult.recordset.map((r) => r.image_url),
   };
 }
+
+export interface PartnerDashboardStatsRow {
+  totalPlaces: number;
+  totalViews: number;
+  totalBookings: number;
+  avgRating: number;
+}
+
+export async function getPartnerDashboardStatsByPartnerId(partnerId: number): Promise<PartnerDashboardStatsRow> {
+  const pool = getPool();
+  const result = await pool
+    .request()
+    .input('partnerId', sql.Int, partnerId)
+    .query<{
+      total_places: number;
+      total_views: number;
+      total_bookings: number;
+      avg_rating: number | null;
+    }>(`
+      SELECT
+        (SELECT COUNT(*) FROM dbo.places WHERE partner_id = @partnerId) AS total_places,
+        (SELECT COALESCE(SUM(view_count), 0) FROM dbo.places WHERE partner_id = @partnerId) AS total_views,
+        (
+          SELECT COUNT(*)
+          FROM dbo.bookings b
+          INNER JOIN dbo.places p ON p.place_id = b.place_id
+          WHERE p.partner_id = @partnerId
+        ) AS total_bookings,
+        (
+          SELECT AVG(CAST(r.rating AS FLOAT))
+          FROM dbo.reviews r
+          INNER JOIN dbo.places p ON p.place_id = r.place_id
+          WHERE p.partner_id = @partnerId AND r.status = 'APPROVED'
+        ) AS avg_rating
+    `);
+
+  const row = result.recordset[0];
+  return {
+    totalPlaces: Number(row?.total_places ?? 0),
+    totalViews: Number(row?.total_views ?? 0),
+    totalBookings: Number(row?.total_bookings ?? 0),
+    avgRating: row?.avg_rating !== null && row?.avg_rating !== undefined ? Number(Number(row.avg_rating).toFixed(1)) : 0,
+  };
+}
+
+export async function getPartnerDailyBookingsByPartnerId(
+  partnerId: number
+): Promise<{ date: string; count: number }[]> {
+  const pool = getPool();
+  const result = await pool
+    .request()
+    .input('partnerId', sql.Int, partnerId)
+    .query<{ day_key: string; booking_count: number }>(`
+      SELECT
+        CONVERT(char(10), CAST(b.created_at AS date), 23) AS day_key,
+        COUNT(*) AS booking_count
+      FROM dbo.bookings b
+      INNER JOIN dbo.places p ON p.place_id = b.place_id
+      WHERE p.partner_id = @partnerId
+        AND b.created_at >= DATEADD(DAY, -6, CAST(GETDATE() AS date))
+      GROUP BY CAST(b.created_at AS date)
+    `);
+
+  const countMap = new Map<string, number>();
+  for (const row of result.recordset) {
+    countMap.set(row.day_key, Number(row.booking_count ?? 0));
+  }
+
+  const days: { date: string; count: number }[] = [];
+  const now = new Date();
+  for (let offset = 6; offset >= 0; offset -= 1) {
+    const d = new Date(now);
+    d.setDate(now.getDate() - offset);
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    const key = `${yyyy}-${mm}-${dd}`;
+    days.push({
+      date: `${dd}/${mm}`,
+      count: countMap.get(key) ?? 0,
+    });
+  }
+  return days;
+}
+
+export interface PartnerBookingRow {
+  booking_id: number;
+  place_id: number;
+  place_name: string;
+  contact_name: string;
+  contact_phone: string;
+  user_email: string | null;
+  total_amount: number;
+  status: string;
+  created_at: Date;
+  visit_date: Date | null;
+  num_guests: number | null;
+  payment_method: string | null;
+}
+
+export async function findBookingsByPartnerId(
+  partnerId: number,
+  statusFilter?: string | null,
+  search?: string | null
+): Promise<PartnerBookingRow[]> {
+  const pool = getPool();
+  const req = pool.request().input('partnerId', sql.Int, partnerId);
+
+  let whereClause = 'WHERE p.partner_id = @partnerId';
+  if (statusFilter && statusFilter !== 'ALL') {
+    req.input('status', sql.NVarChar(20), statusFilter);
+    whereClause += ' AND UPPER(b.status) = UPPER(@status)';
+  }
+  if (search && search.trim()) {
+    req.input('search', sql.NVarChar(120), `%${search.trim()}%`);
+    whereClause += ` AND (
+      b.contact_name LIKE @search
+      OR b.contact_phone LIKE @search
+      OR CONCAT('DNG-', RIGHT(CONCAT('000000', CAST(b.booking_id AS VARCHAR(20))), 6)) LIKE @search
+    )`;
+  }
+
+  const result = await req.query<PartnerBookingRow>(`
+    SELECT
+      b.booking_id,
+      b.place_id,
+      p.name AS place_name,
+      b.contact_name,
+      b.contact_phone,
+      u.email AS user_email,
+      b.total_amount,
+      b.status,
+      b.created_at,
+      (
+        SELECT TOP (1) COALESCE(bi.check_in, bi.visit_date)
+        FROM dbo.booking_items bi
+        WHERE bi.booking_id = b.booking_id
+        ORDER BY bi.item_id ASC
+      ) AS visit_date,
+      (
+        SELECT TOP (1) COALESCE(bi.party_size, bi.quantity, 1)
+        FROM dbo.booking_items bi
+        WHERE bi.booking_id = b.booking_id
+        ORDER BY bi.item_id ASC
+      ) AS num_guests,
+      (
+        SELECT TOP (1) pay.method
+        FROM dbo.payments pay
+        WHERE pay.booking_id = b.booking_id
+        ORDER BY pay.payment_id DESC
+      ) AS payment_method
+    FROM dbo.bookings b
+    INNER JOIN dbo.places p ON p.place_id = b.place_id
+    LEFT JOIN dbo.users u ON u.user_id = b.user_id
+    ${whereClause}
+    ORDER BY b.created_at DESC, b.booking_id DESC
+  `);
+
+  return result.recordset;
+}
+
+export async function updateBookingStatusByPartner(
+  partnerId: number,
+  bookingId: number,
+  changedByUserId: number,
+  nextStatus: string
+): Promise<boolean> {
+  const pool = getPool();
+  const check = await pool
+    .request()
+    .input('partnerId', sql.Int, partnerId)
+    .input('bookingId', sql.Int, bookingId)
+    .query<{ booking_id: number; status: string }>(`
+      SELECT b.booking_id, b.status
+      FROM dbo.bookings b
+      INNER JOIN dbo.places p ON p.place_id = b.place_id
+      WHERE b.booking_id = @bookingId AND p.partner_id = @partnerId
+    `);
+
+  const row = check.recordset[0];
+  if (!row) return false;
+
+  await pool
+    .request()
+    .input('bookingId', sql.Int, bookingId)
+    .input('nextStatus', sql.NVarChar(20), nextStatus)
+    .query(`
+      UPDATE dbo.bookings
+      SET status = @nextStatus, updated_at = GETDATE()
+      WHERE booking_id = @bookingId
+    `);
+
+  await pool
+    .request()
+    .input('bookingId', sql.Int, bookingId)
+    .input('oldStatus', sql.NVarChar(20), row.status)
+    .input('newStatus', sql.NVarChar(20), nextStatus)
+    .input('changedBy', sql.Int, changedByUserId)
+    .query(`
+      INSERT INTO dbo.booking_status_logs (booking_id, old_status, new_status, changed_by, changed_at)
+      VALUES (@bookingId, @oldStatus, @newStatus, @changedBy, GETDATE())
+    `);
+
+  return true;
+}
+

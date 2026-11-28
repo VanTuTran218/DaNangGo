@@ -26,52 +26,41 @@ import { apiRequest, apiPost, apiPut, apiPatch, ApiError } from './client';
 
 // GET /api/partner/profile
 export async function getPartnerProfile(): Promise<PartnerProfile> {
-  try {
-    const res = await apiRequest<PartnerProfile>('/api/partner/profile');
-    if (res.data) return res.data;
-  } catch (error) {
-    // Fallback sang mock nếu chưa có dữ liệu DB hoặc đang dùng tài khoản demo
+  const res = await apiRequest<PartnerProfile>('/api/partner/profile');
+  if (!res.data) {
+    throw new Error(res.message || 'Không tìm thấy hồ sơ đối tác.');
   }
-  return { ...mockPartnerProfile };
+  return res.data;
 }
 
 // PUT /api/partner/profile
 export async function updatePartnerProfile(
   data: Partial<PartnerProfile>
 ): Promise<PartnerProfile> {
-  try {
-    const res = await apiPut<PartnerProfile>('/api/partner/profile', data);
-    if (res.data) return res.data;
-  } catch (error) {
-    if (error instanceof ApiError) {
-      throw error;
-    }
+  const res = await apiPut<PartnerProfile>('/api/partner/profile', data);
+  if (!res.data) {
+    throw new Error(res.message || 'Không thể cập nhật hồ sơ đối tác.');
   }
-  Object.assign(mockPartnerProfile, data);
-  return { ...mockPartnerProfile };
+  return res.data;
 }
 
-// TODO: GET /api/partner/stats
+// GET /api/partner/stats
 export async function getPartnerDashboardStats(): Promise<PartnerDashboardStats> {
-  await delay();
-  const totalBookings = mockPartnerBookings.length;
-  const avgRating =
-    mockPartnerReviews.length > 0
-      ? mockPartnerReviews.reduce((sum, r) => sum + r.rating, 0) / mockPartnerReviews.length
-      : 5.0;
-
-  return {
-    totalPlaces: mockPartnerPlaces.length,
-    totalViews: 1420,
-    totalBookings,
-    avgRating: Number(avgRating.toFixed(1)),
-  };
+  const res = await apiRequest<PartnerDashboardStats>('/api/partner/stats');
+  return (
+    res.data ?? {
+      totalPlaces: 0,
+      totalViews: 0,
+      totalBookings: 0,
+      avgRating: 0,
+    }
+  );
 }
 
-// TODO: GET /api/partner/stats/bookings-chart
+// GET /api/partner/stats/bookings-chart
 export async function getPartnerDailyBookings(): Promise<DailyBookingStat[]> {
-  await delay();
-  return [...mockPartnerDailyBookings];
+  const res = await apiRequest<DailyBookingStat[]>('/api/partner/stats/bookings-chart');
+  return res.data ?? [];
 }
 
 // GET /api/partner/places
@@ -79,50 +68,37 @@ export async function getPartnerPlaces(params?: {
   category?: string;
   status?: string;
 }): Promise<PartnerPlace[]> {
-  try {
-    const query = new URLSearchParams();
-    if (params?.status && params.status !== 'ALL') query.set('status', params.status);
-    const url = `/api/partner/places${query.toString() ? `?${query.toString()}` : ''}`;
-    const [res, accRes] = await Promise.all([
-      apiRequest<PartnerPlace[]>(url),
-      apiRequest<{ place_id: number; price_from: number | null; accommodation_type?: string | null }[]>(
-        '/api/accommodations/mine'
-      ).catch(() => null),
-    ]);
-    if (res.data) {
-      const accMap = new Map((accRes?.data ?? []).map((a) => [String(a.place_id), a]));
-      let result = res.data.map((p) => {
-        const acc = accMap.get(String(p.placeId ?? p.id));
-        if (!acc && p.placeType !== 'ACCOMMODATION' && p.category !== 'luutru') return p;
-        return {
-          ...p,
-          category: 'luutru' as const,
-          placeType: 'ACCOMMODATION' as const,
-          accommodationType: (acc?.accommodation_type as any) || p.accommodationType || 'HOTEL',
-          cuisineName: undefined,
-          priceMin: acc ? Number(acc.price_from) || 0 : p.priceMin || 0,
-          priceMax: undefined,
-          priceUnit: 'đêm',
-        };
-      });
-      if (params?.category && params.category !== 'ALL') {
-        result = result.filter((p) => p.category === params.category);
-      }
-      return result;
+  const query = new URLSearchParams();
+  if (params?.status && params.status !== 'ALL') query.set('status', params.status);
+  const url = `/api/partner/places${query.toString() ? `?${query.toString()}` : ''}`;
+  const [res, accRes] = await Promise.all([
+    apiRequest<PartnerPlace[]>(url),
+    apiRequest<{ place_id: number; price_from: number | null; accommodation_type?: string | null }[]>(
+      '/api/accommodations/mine'
+    ).catch(() => null),
+  ]);
+  if (res.data) {
+    const accMap = new Map((accRes?.data ?? []).map((a) => [String(a.place_id), a]));
+    let result = res.data.map((p) => {
+      const acc = accMap.get(String(p.placeId ?? p.id));
+      if (!acc && p.placeType !== 'ACCOMMODATION' && p.category !== 'luutru') return p;
+      return {
+        ...p,
+        category: 'luutru' as const,
+        placeType: 'ACCOMMODATION' as const,
+        accommodationType: (acc?.accommodation_type as any) || p.accommodationType || 'HOTEL',
+        cuisineName: undefined,
+        priceMin: acc ? Number(acc.price_from) || 0 : p.priceMin || 0,
+        priceMax: undefined,
+        priceUnit: 'đêm',
+      };
+    });
+    if (params?.category && params.category !== 'ALL') {
+      result = result.filter((p) => p.category === params.category);
     }
-  } catch (error) {
-    // Fallback sang mock nếu chưa có dữ liệu DB hoặc demo
+    return result;
   }
-
-  await delay();
-  let result = [...mockPartnerPlaces];
-  if (params?.category && params.category !== 'ALL') {
-    result = result.filter((p) => p.category === params.category);
-  }
-  if (params?.status && params.status !== 'ALL') {
-    result = result.filter((p) => p.status === params.status);
-  }
-  return result;
+  return [];
 }
 
 // GET /api/partner/places/:id hoặc /api/places/:id hoặc /api/restaurants/:id
@@ -438,38 +414,32 @@ export async function updatePartnerPlace(
   throw new Error('Không tìm thấy cơ sở');
 }
 
-// TODO: GET /api/partner/bookings
+// GET /api/partner/bookings
 export async function getPartnerBookings(params?: {
   status?: BookingStatus | 'ALL';
   search?: string;
 }): Promise<PartnerBooking[]> {
-  await delay();
-  let result = [...mockPartnerBookings];
-  if (params?.status && params.status !== 'ALL') {
-    result = result.filter((b) => b.status === params.status);
-  }
-  if (params?.search) {
-    const s = params.search.toLowerCase();
-    result = result.filter(
-      (b) =>
-        b.bookingCode.toLowerCase().includes(s) ||
-        b.customerName.toLowerCase().includes(s) ||
-        b.customerPhone.includes(s)
-    );
-  }
-  return result;
+  const query = new URLSearchParams();
+  if (params?.status && params.status !== 'ALL') query.set('status', params.status);
+  if (params?.search && params.search.trim()) query.set('search', params.search.trim());
+  const url = `/api/partner/bookings${query.toString() ? `?${query.toString()}` : ''}`;
+  const res = await apiRequest<PartnerBooking[]>(url);
+  return res.data ?? [];
 }
 
-// TODO: PATCH /api/partner/bookings/:id/status
+// PATCH /api/partner/bookings/:id/status
 export async function updatePartnerBookingStatus(
   bookingId: string,
   status: BookingStatus
 ): Promise<{ success: boolean; message: string }> {
-  await delay();
-  const booking = mockPartnerBookings.find((b) => b.id === bookingId);
-  if (!booking) throw new Error('Không tìm thấy đơn đặt');
-  booking.status = status;
-  return { success: true, message: `Cập nhật đơn đặt ${booking.bookingCode} thành công.` };
+  const res = await apiPatch<{ id: string; status: BookingStatus }>(
+    `/api/partner/bookings/${encodeURIComponent(bookingId)}/status`,
+    { status }
+  );
+  return {
+    success: true,
+    message: res.message || 'Cập nhật trạng thái đơn đặt thành công.',
+  };
 }
 
 // Đánh giá thật thuộc các cơ sở của đối tác đã đăng nhập.

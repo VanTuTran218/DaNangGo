@@ -306,7 +306,7 @@ export default function PartnerPlacesPage() {
                         key={idx}
                         className="relative h-20 rounded-xl overflow-hidden bg-[#F6FAFA] border border-[#E2ECEC]"
                       >
-                        <Image src={url} alt={`Ảnh ${idx + 1}`} fill className="object-cover" />
+                        <Image src={url} alt={`Ảnh ${idx + 1}`} fill unoptimized className="object-cover" />
                       </div>
                     ))}
                   </div>

@@ -397,3 +397,25 @@ test("API chat trả đúng tham quan miễn phí và lịch trình ngay cả kh
     await closeDB();
   }
 });
+
+test("Nhận diện từ khóa lưu trú (homestay, resort, căn hộ), món ăn và điểm tham quan mới kèm tư vấn chi tiết", () => {
+  const stayHomestay = ruleIntent("Tìm homestay ở Sơn Trà dưới 500k");
+  assert.equal(stayHomestay.category, "stay");
+  assert.equal(stayHomestay.district, "Sơn Trà");
+  assert.equal(stayHomestay.budget, 500000);
+  assert.ok(stayHomestay.keywords.includes("homestay"));
+
+  const stayApartment = ruleIntent("Gợi ý căn hộ gần biển Mỹ Khê");
+  assert.equal(stayApartment.category, "stay");
+  assert.ok(stayApartment.keywords.includes("căn hộ"));
+
+  const foodNew = ruleIntent("Quán cao lầu và cà phê muối ở Hải Châu");
+  assert.equal(foodNew.category, "food");
+  assert.ok(foodNew.keywords.includes("cao lầu"));
+  assert.ok(foodNew.keywords.includes("cà phê muối"));
+
+  const sightNew = ruleIntent("Điểm tham quan Đỉnh Bàn Cờ và Đèo Hải Vân");
+  assert.equal(sightNew.category, "sight");
+  assert.ok(sightNew.keywords.includes("Đỉnh Bàn Cờ"));
+  assert.ok(sightNew.keywords.includes("Đèo Hải Vân"));
+});

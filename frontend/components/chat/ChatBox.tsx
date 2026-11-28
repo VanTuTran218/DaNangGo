@@ -40,7 +40,8 @@ const GREETED_KEY = "dananggo_chat_greeted";
 const QUICK_STARTS = [
   "🍜 Quán Mì Quảng ngon",
   "🏖️ Khách sạn gần biển Mỹ Khê",
-  "🦞 Hải sản Sơn Trà dưới 300k",
+  "🏡 Homestay Sơn Trà dưới 500k/đêm",
+  "🦞 Hải sản Sơn Trà dưới 300k/người",
   "🌉 Điểm tham quan miễn phí",
   "✨ Lên lịch 3 ngày ở Đà Nẵng",
   "🥗 Gợi ý món ăn thanh đạm ở Đà Nẵng",
@@ -355,6 +356,7 @@ function ChatExperience({ variant }: { variant: "widget" | "page" }) {
     setStatus("Gô đang tìm hiểu yêu cầu…");
     const controller = new AbortController();
     requestRef.current = controller;
+    const startedAt = performance.now();
     try {
       const res = await sendChatMessage(query, sessionId, {
         signal: controller.signal,
@@ -367,6 +369,23 @@ function ChatExperience({ variant }: { variant: "widget" | "page" }) {
           else setCandidates(event.places);
         },
       });
+      if (controller.signal.aborted) return;
+      const MIN_THINKING_MS = 1450;
+      const STEP_TWO_MS = 650;
+      const elapsedFirst = performance.now() - startedAt;
+      if (elapsedFirst < STEP_TWO_MS) {
+        await new Promise<void>((resolve) =>
+          setTimeout(resolve, STEP_TWO_MS - elapsedFirst),
+        );
+      }
+      if (controller.signal.aborted) return;
+      setStatus("Đã tra cứu dữ liệu DaNangGo, Gô đang soạn câu trả lời…");
+      const elapsedTotal = performance.now() - startedAt;
+      if (elapsedTotal < MIN_THINKING_MS) {
+        await new Promise<void>((resolve) =>
+          setTimeout(resolve, MIN_THINKING_MS - elapsedTotal),
+        );
+      }
       if (controller.signal.aborted) return;
       if (res?.sessionId && res.sessionId !== sessionId) {
         setSessionId(res.sessionId);
@@ -931,6 +950,23 @@ function ChatExperience({ variant }: { variant: "widget" | "page" }) {
   );
 }
 
+function nextStreamIndex(content: string, current: number): number {
+  let target = Math.min(content.length, current + 5);
+  if (target >= content.length) return content.length;
+  // Advance to the next whitespace so words are not split in half
+  while (target < content.length && !/\s/.test(content[target]!)) {
+    target++;
+  }
+  // Never stop inside an unclosed **bold** markdown segment
+  const slice = content.slice(0, target);
+  const boldCount = (slice.match(/\*\*/g) ?? []).length;
+  if (boldCount % 2 === 1) {
+    const closeIdx = content.indexOf("**", target);
+    if (closeIdx !== -1) return Math.min(content.length, closeIdx + 2);
+  }
+  return target;
+}
+
 function ChatText({
   content,
   animate,
@@ -953,11 +989,11 @@ function ChatText({
     const timer = setInterval(
       () =>
         setLength((value) => {
-          const next = Math.min(content.length, value + 12);
-          if (next === content.length) clearInterval(timer);
+          const next = nextStreamIndex(content, value);
+          if (next >= content.length) clearInterval(timer);
           return next;
         }),
-      20,
+      38,
     );
     return () => clearInterval(timer);
   }, [content, animate]);

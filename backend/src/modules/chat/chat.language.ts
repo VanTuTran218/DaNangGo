@@ -13,14 +13,21 @@ export function requestedNeeds(text: string): Need[] {
   const n = conversationalText(text);
   const result: Need[] = [];
   for (const [kind, pattern] of [
-    ["food", /\b(di an|an gi|an ngon|an uong|am thuc|mon (?:an|dia phuong|gi ngon)|dac san|quan (?:thit nuong|ban che|ban kem|phuc vu do an dem)|an cay|quan (?:an|hai san|ca phe|oc|lau|chay)|nha hang|hai san|mi quang|bun cha|banh xeo|com nieu|an sang|an trua|an toi|an vat|ca phe|cafe|an chay|di ung|khau vi)\b/g],
-    ["sight", /\b(tham quan|di choi|kham pha|chup (?:vai |may )?(?:tam )?(?:anh|hinh)|check in|song ao|bien|nui|diem (?:den|du lich)|ba na|cau rong|son tra|ngu hanh son|co gi (?:vui|mien phi)|nen di dau|lan dau den|diem nao|noi nao.*(?:ngam|chup|cay xanh|di dao))\b/g],
-    ["stay", /\b(khach san|homestay|resort|luu tru|cho o|noi o|cho nghi|ngu o dau|nghi o dau|phong nghi)\b/g],
+    ["food", /\b(di an|an gi|an ngon|an uong|am thuc|mon (?:an|dia phuong|gi ngon)|dac san|quan (?:thit nuong|ban che|ban kem|phuc vu do an dem)|an cay|quan (?:an|hai san|ca phe|oc|lau|chay)|nha hang|hai san|mi quang|bun cha|banh xeo|com nieu|cao lau|banh canh|be thui|com lam|ca phe muoi|tau hu|banh trang kep|lau ca|bun bo|banh beo|an sang|an trua|an toi|an vat|ca phe|cafe|an chay|di ung|khau vi)\b/g],
+    ["sight", /\b(tham quan|di choi|kham pha|chup (?:vai |may )?(?:tam )?(?:anh|hinh)|check in|song ao|bien|nui|diem (?:den|du lich)|ba na|cau rong|son tra|ngu hanh son|dinh ban co|deo hai van|suoi hoa|nui than tai|asia park|ran nam o|apec|chua linh ung|co gi (?:vui|mien phi)|nen di dau|lan dau den|diem nao|noi nao.*(?:ngam|chup|cay xanh|di dao))\b/g],
+    ["stay", /\b(khach san|homestay|resort|hostel|can ho|apartment|villa|luu tru|cho o|noi o|cho nghi|ngu o dau|nghi o dau|phong nghi)\b/g],
   ] as const) {
     for (const match of n.matchAll(pattern)) {
       const before = n.slice(Math.max(0, match.index! - 30), match.index);
       // “quán gần biển/khách sạn” uses an anchor, not a second requested service.
       if (/(?:gan|quanh|sat|view|huong|cach|tu)\s*(?:bo\s*)?$/.test(before)) continue;
+      if (
+        kind === "sight" &&
+        /^(?:son tra|ngu hanh son)$/.test(match[0]) &&
+        (/(?:o|tai|quan|khu vuc|khu)\s*$/.test(before) ||
+          /\b(?:quan|nha hang|hai san|mi quang|banh|bun|com|lau|oc|ca phe|cafe|an|khach san|homestay|resort|hostel|can ho|villa|luu tru|cho o|phong)\s*$/.test(before))
+      )
+        continue;
       if (kind === "stay" && /(?:khong can|da (?:dat|co))\s*$/.test(before)) continue;
       result.push(kind); break;
     }

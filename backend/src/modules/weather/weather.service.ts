@@ -157,7 +157,11 @@ async function resolvePlaceLocation(input: {
             SELECT TOP 1 place_id, name, address, CAST(latitude AS FLOAT) AS latitude, CAST(longitude AS FLOAT) AS longitude
             FROM dbo.places
             WHERE status = 'ACTIVE' AND (name LIKE @kw OR address LIKE @kw)
-            ORDER BY CASE WHEN latitude IS NOT NULL AND longitude IS NOT NULL THEN 0 ELSE 1 END, avg_rating DESC
+            ORDER BY
+              CASE WHEN latitude IS NOT NULL AND longitude IS NOT NULL THEN 0 ELSE 1 END,
+              CASE WHEN name LIKE @kw THEN 0 ELSE 1 END,
+              CASE WHEN place_type = 'ATTRACTION' THEN 0 ELSE 1 END,
+              avg_rating DESC
           `);
         row = res.recordset[0];
       }

@@ -17,7 +17,7 @@ export const isFreeRequest = (text: string) =>
 
 /** Match complete phrases: “tham quan” must never match “quán ăn”. */
 export function explicitCategory(message: string): Intent["category"] {
-  const n = normalize(message).replace(/-/g, " ").replace(/\b(?:gan|quanh|sat) (?:khach san|nha hang|quan an)(?: cua)?(?: (?:toi|minh))?\b/g, " ");
+  const n = normalize(message).replace(/-/g, " ").replace(/\b(?:gan|quanh|sat) (?:khach san|nha hang|quan an|homestay|resort|hostel|cho o)(?: cua)?(?: (?:toi|minh))?\b/g, " ");
   if (
     /\b(viet code|lap trinh|giai toan|chinh tri|lam bai tap|python|javascript|thuat toan|viet ham|viet script)\b/.test(
       n,
@@ -27,20 +27,20 @@ export function explicitCategory(message: string): Intent["category"] {
   const needs = requestedNeeds(message);
   if (needs.length === 1) return needs[0]!;
   if (
-    /\b(khach san|ks|hotel|homestay|homstay|resort|luu tru|cho o|noi o|dat phong|phong nghi|gia phong|phong (?:co|nay|duoi)|gio (?:nhan|tra) phong|nghi ban ngay)\b/.test(
+    /\b(khach san|ks|hotel|homestay|homstay|resort|hostel|can ho|apartment|villa|luu tru|cho o|noi o|dat phong|phong nghi|gia phong|phong (?:co|nay|duoi)|gio (?:nhan|tra) phong|nghi ban ngay)\b/.test(
       n,
     )
   )
     return "stay";
   if (
-    /\b(di an|quan an|quan hai san|quan mi|quan bun|quan banh|an uong|mon an|am thuc|an gi|an chay|thuan chay|di ung|khong cay|it cay|khong an|mi quang|hai san|banh xeo|bun cha|bun bo|cafe|ca phe|nha hang|an sang|an trua|an toi|an vat|quan ngon)\b/.test(
+    /\b(di an|quan an|quan hai san|quan mi|quan bun|quan banh|an uong|mon an|am thuc|an gi|an chay|thuan chay|di ung|khong cay|it cay|khong an|mi quang|hai san|banh xeo|bun cha|bun bo|cao lau|banh canh|be thui|com lam|ca phe muoi|tau hu|banh trang kep|lau ca|cafe|ca phe|nha hang|an sang|an trua|an toi|an vat|quan ngon)\b/.test(
       n,
     )
   )
     return "food";
   if (/\b(furama|hilton|hyatt|haian|sala)\b/.test(n)) return "stay";
   if (
-    /\b(tham quan|diem du lich|diem den|dia diem|cau rong|ba na|ngu hanh son|bien|check in|checkin|chup (anh|hinh)|vui choi|diem mien phi)\b/.test(
+    /\b(tham quan|diem du lich|diem den|dia diem|cau rong|ba na|ngu hanh son|dinh ban co|deo hai van|suoi hoa|nui than tai|asia park|ran nam o|apec|chua linh ung|bien|check in|checkin|chup (anh|hinh)|vui choi|diem mien phi)\b/.test(
       n,
     )
   )
@@ -88,18 +88,46 @@ export function ruleIntent(message: string): Intent {
     "bánh xèo",
     "bún chả cá",
     "cafe",
+    "cao lầu",
+    "bánh canh",
+    "bê thui",
+    "cơm lam",
+    "cà phê muối",
+    "tàu hũ",
+    "bánh tráng kẹp",
+    "lẩu cá",
+    "homestay",
+    "resort",
+    "hostel",
+    "căn hộ",
     "Cầu Rồng",
     "Bà Nà",
     "Mỹ Khê",
+    "Đỉnh Bàn Cờ",
+    "Đèo Hải Vân",
+    "Suối Hoa",
+    "Núi Thần Tài",
+    "Asia Park",
+    "Rạn Nam Ô",
+    "APEC",
+    "Chùa Linh Ứng",
     "Furama",
     "Hilton",
     "Hyatt",
     "HAIAN",
     "Sala",
   ].filter((k) => n.includes(normalize(k)));
-  const searchKeywords = category === "sight" && !/\b(?:banh|mi|bun|com|lau|hai san|che|kem|oc|cafe)\b/.test(n)
-    ? keywords.filter((keyword) => /^(?:Cầu Rồng|Bà Nà|Mỹ Khê|Furama|Hilton|Hyatt|HAIAN|Sala)$/i.test(keyword))
-    : keywords;
+  const stayTypePattern = /^(?:homestay|resort|hostel|căn hộ)$/i;
+  const searchKeywords =
+    category === "sight" && !/\b(?:banh|mi|bun|com|lau|hai san|che|kem|oc|cafe|cao lau|be thui|tau hu)\b/.test(n)
+      ? keywords.filter((keyword) =>
+          /^(?:Cầu Rồng|Bà Nà|Mỹ Khê|Đỉnh Bàn Cờ|Đèo Hải Vân|Suối Hoa|Núi Thần Tài|Asia Park|Rạn Nam Ô|APEC|Chùa Linh Ứng|Furama|Hilton|Hyatt|HAIAN|Sala)$/i.test(
+            keyword,
+          ),
+        )
+      : category === "stay"
+        ? keywords
+        : keywords.filter((keyword) => !stayTypePattern.test(keyword));
   // “Check-in” describes the desired experience, not a literal place name.
   // Keep only catalog names/food terms as SQL filters; common activity words
   // can otherwise accidentally match unrelated catalog text after normalization.
@@ -128,7 +156,7 @@ export function ruleIntent(message: string): Intent {
         ? null
         : /tong|cho \d+ nguoi/.test(n)
           ? "total"
-          : /moi nguoi|\/nguoi|\/ng\b/.test(n)
+          : /moi nguoi|\/nguoi|\/ng\b|\/mon\b|moi mon/.test(n)
             ? "per_person"
           : category === "stay" && /dem|phong/.test(n)
             ? "per_night"

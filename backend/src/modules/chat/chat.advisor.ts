@@ -24,6 +24,7 @@ export function placeCard(row: PlaceSearchRow, reason?: string): ChatPlaceCard {
     reviewCount: row.reviewCount,
     imageUrl: row.imageUrl,
     priceText: row.priceText,
+    ...(row.menuItems ? { menuItems: row.menuItems } : {}),
     ...(row.stayFacts ? { stayFacts: row.stayFacts } : {}),
     ...(row.distanceOriginName
       ? { distanceOriginName: row.distanceOriginName }
@@ -679,6 +680,23 @@ export function consultationText(
   const intro = free
     ? `Mình chọn ${rows.length} điểm tham quan có giá vé 0đ trong dữ liệu DaNangGo. Miễn phí vé không có nghĩa là miễn phí gửi xe hoặc các dịch vụ phát sinh.`
     : `Mình chọn ${rows.length} ${label}${cheap ? " theo hướng tiết kiệm hơn" : ""} để bạn dễ so sánh${rows.every((p) => p.districtName === rows[0]?.districtName) && rows[0]?.districtName ? ` ở ${rows[0].districtName}` : ""}.`;
+  const highlights = rows
+    .slice(0, 3)
+    .map((row) => {
+      const meta: string[] = [];
+      if (row.districtName) meta.push(row.districtName);
+      if (row.reviewCount > 0 && row.rating > 0)
+        meta.push(`★${row.rating} (${row.reviewCount} đánh giá)`);
+      if (row.priceText) meta.push(row.priceText);
+      const dishes = row.menuItems?.length
+        ? ` — món nổi bật: ${row.menuItems
+            .slice(0, 3)
+            .map((m) => m.name)
+            .join(", ")}`
+        : "";
+      return `• **${row.name}**${meta.length ? ` (${meta.join(" · ")})` : ""}${dishes}`;
+    })
+    .join("\n");
   const advice =
     category === "food"
       ? "Bạn xem giá món ở từng quán trước; tổng hóa đơn còn tùy số món và số người. Nếu có món kiêng hoặc dị ứng, bạn nên trao đổi trực tiếp với quán."
@@ -719,5 +737,5 @@ export function consultationText(
           return details.length ? [`${row.name}: ${details.join("; ")}.`] : [];
         })
       : [];
-  return [intro, advice, ...verified, question].join("\n\n");
+  return [intro, ...(highlights ? [highlights] : []), advice, ...verified, question].join("\n\n");
 }

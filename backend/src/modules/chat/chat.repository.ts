@@ -279,7 +279,7 @@ export async function searchPlacesForChat(args: {
     if (keywords.length > 0) {
       const conds = keywords.map((k, i) => {
         request.input(`kw_${i}`, sql.NVarChar(100), `%${k}%`);
-        return `(p.name COLLATE Latin1_General_CI_AI LIKE @kw_${i} OR p.description COLLATE Latin1_General_CI_AI LIKE @kw_${i} OR p.address COLLATE Latin1_General_CI_AI LIKE @kw_${i} OR EXISTS(SELECT 1 FROM dbo.menu_items mi WHERE mi.place_id=p.place_id AND mi.is_available=1 AND mi.name COLLATE Latin1_General_CI_AI LIKE @kw_${i}))`;
+        return `(p.name COLLATE Latin1_General_CI_AI LIKE @kw_${i} OR p.description COLLATE Latin1_General_CI_AI LIKE @kw_${i} OR p.address COLLATE Latin1_General_CI_AI LIKE @kw_${i} OR EXISTS(SELECT 1 FROM dbo.menu_items mi WHERE mi.place_id=p.place_id AND mi.is_available=1 AND mi.name COLLATE Latin1_General_CI_AI LIKE @kw_${i}) OR EXISTS(SELECT 1 FROM dbo.accommodations acc WHERE acc.place_id=p.place_id AND (acc.accommodation_type COLLATE Latin1_General_CI_AI LIKE @kw_${i} OR (@kw_${i} COLLATE Latin1_General_CI_AI LIKE '%can ho%' AND acc.accommodation_type='APARTMENT'))))`;
       });
       where.push(`(${conds.join(" OR ")})`);
     }
@@ -289,7 +289,7 @@ export async function searchPlacesForChat(args: {
         SELECT
           p.place_id, p.name, p.place_type, p.address, p.description, p.latitude, p.longitude, ${distanceSql} AS distance_km,
           psd.facts_json AS stay_facts_json,
-          (SELECT mi.name FROM dbo.menu_items mi WHERE mi.place_id=p.place_id AND mi.is_available=1 FOR JSON PATH) AS menu_names_json,
+          (SELECT mi.menu_item_id AS id, mi.name, CAST(mi.price AS float) AS price FROM dbo.menu_items mi WHERE mi.place_id=p.place_id AND mi.is_available=1 ORDER BY mi.menu_item_id FOR JSON PATH) AS menu_names_json,
           (SELECT TOP 1 a.visit_duration_minutes FROM dbo.attractions a WHERE a.place_id=p.place_id) AS visit_duration_minutes,
           (SELECT TOP 1 rt.capacity FROM dbo.room_types rt WHERE rt.place_id=p.place_id AND rt.status='ACTIVE' AND (@partySize IS NULL OR rt.capacity>0) ORDER BY CASE WHEN @partySize IS NULL THEN rt.price_per_night ELSE CEILING(CAST(@partySize AS decimal(18,2))/NULLIF(rt.capacity,0))*rt.price_per_night END,rt.room_type_id) AS room_capacity,
           d.name AS district_name,
@@ -355,6 +355,23 @@ export async function searchPlacesForChat(args: {
       const source = [row.name, row.description ?? "", ...names.map(item => item.name)].join(" ");
       return keywords.some(term => catalogFoodMatch(source, term));
     }).map((row) => {
+      let parsedMenuItems: ChatPlaceCard["menuItems"] | undefined;
+      if (row.place_type === "RESTAURANT" && typeof row.menu_names_json === "string") {
+        try {
+          const rawItems = JSON.parse(row.menu_names_json) as { id?: number; name?: string; price?: number | null }[];
+          if (Array.isArray(rawItems)) {
+            parsedMenuItems = rawItems
+              .filter((item): item is { id: number; name: string; price?: number | null } => typeof item?.id === "number" && typeof item?.name === "string")
+              .slice(0, 3)
+              .map((item) => {
+                const p = item.price == null ? null : Number(item.price);
+                return { id: item.id, name: item.name, price: p !== null && Number.isFinite(p) && p >= 0 ? p : null };
+              });
+          }
+        } catch {
+          parsedMenuItems = undefined;
+        }
+      }
       const priceMin = row.price_min == null ? null : Number(row.price_min);
       const priceMax = row.price_max == null ? null : Number(row.price_max);
       let priceText: string | null = null;
@@ -384,6 +401,7 @@ export async function searchPlacesForChat(args: {
         reviewCount: row.review_count,
         imageUrl: row.image_url,
         priceText,
+        ...(parsedMenuItems !== undefined ? { menuItems: parsedMenuItems } : {}),
         ...(row.place_type === "ACCOMMODATION"
           ? { stayFacts: publicStayFacts(row.stay_facts_json) }
           : {}),

@@ -16,7 +16,7 @@ export async function multiNeedReply(dialogue: Dialogue, message: string, locati
     const budget = c.budgetScope === "perPerson" && category !== "stay" || c.budgetScope === "perRoomPerNight" && category === "stay" ? c.budget : null;
     const rows = restricted ? [] : await searchPlacesForChat({ placeType: dbTypes[category], limit: 20, district: c.district,
       budget, location: /gan toi|gan day|quanh day/.test(n) ? location : undefined,
-      keywords: category === "food" ? ["Mì Quảng", "hải sản", "bánh xèo", "cà phê", "cơm niêu", "bún chả cá"].filter(word => n.includes(conversationalText(word))) : [], strictKeywords: true,
+      keywords: category === "food" ? ["Mì Quảng", "hải sản", "bánh xèo", "cà phê", "cơm niêu", "bún chả cá", "cao lầu", "bánh canh", "bún bò", "bánh tráng cuốn thịt heo", "thịt nướng", "lẩu", "ốc", "chè", "kem", "cà phê muối", "bánh tráng kẹp"].filter(word => n.includes(conversationalText(word))) : category === "stay" ? ["homestay", "resort", "hostel", "căn hộ"].filter(word => n.includes(conversationalText(word))) : [], strictKeywords: true,
     });
     const places = rows.filter(row => row.placeType === dbTypes[category] && !isExcluded(row.name, c.excludedPlaces)).slice(0, 3)
       .map(row => placeCard(row, `${labels[category]}${row.districtName ? ` · ${row.districtName}` : ""} · ${row.priceText ?? "Chưa cập nhật giá"}`));

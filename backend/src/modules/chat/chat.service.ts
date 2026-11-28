@@ -398,6 +398,7 @@ export async function processUserMessage(
   let replyContent: string = FALLBACK_MESSAGES.noResult;
   let locationNotice = "";
   let cards: ChatPlaceCard[] = [];
+  let rowById = new Map<number, PlaceSearchRow>();
   let planningIssue = false;
 
   const hasNamedMapAnchor = /\b(?:gan |dang o (?:gan )?)(?:my khe|cau rong)\b/.test(analysisText);
@@ -867,6 +868,7 @@ export async function processUserMessage(
       ? pickAcrossDistricts(eligibleRows, 3)
       : eligibleRows;
     const byId = new Map(rows.map((r) => [r.placeId, r]));
+    rowById = byId;
     onProgress?.({
       type: "candidates",
       places: rows.slice(0, 3).map((r) => toCard(r)),
@@ -932,13 +934,32 @@ export async function processUserMessage(
     cards.length &&
     intent.category !== "off_topic"
   ) {
+    // Load missing restaurant menu items before building consultationText so dishes appear in the text and cards.
+    const pendingFoodIds = cards
+      .filter((card) => card.placeType === "RESTAURANT" && !card.menuItems?.length)
+      .map((card) => card.placeId);
+    if (pendingFoodIds.length) {
+      try {
+        const menus = await chatMenus(pendingFoodIds);
+        for (const card of cards)
+          if (card.placeType === "RESTAURANT" && !card.menuItems?.length)
+            card.menuItems = menus.get(card.placeId) ?? [];
+      } catch {
+        metadataWarnings.push(
+          "Chưa tải được tên món trong menu; Gô không tự tạo món hoặc giá món.",
+        );
+      }
+    }
     // Rich, factual counselling is available even if the model is unavailable.
-    const facts = cards.map((card) => ({
-      ...card,
-      priceMin: null,
-      priceMax: null,
-      description: null,
-    }));
+    const facts = cards.map((card) => {
+      const full = rowById.get(card.placeId);
+      return {
+        ...card,
+        priceMin: full?.priceMin ?? null,
+        priceMax: full?.priceMax ?? null,
+        description: full?.description ?? null,
+      };
+    });
     replyContent = consultationText(
       facts,
       intent.category,
@@ -1017,10 +1038,10 @@ export async function processUserMessage(
     : knowledge?.intentKey === "RT_WEATHER" ? "WEATHER" : knowledge?.intentKey === "RT_EVENT" ? "EVENT" : knowledge?.intentKey.startsWith("MOVE_") ? "DIRECTIONS"
     : intent.category === "off_topic" ? "OFF_TOPIC" : request.trip || multiple && dialogue.context.budget !== null ? "ITINERARY" : "SEARCH";
   const allCards = [...cards, ...(recommendationGroups?.flatMap(group => group.places) ?? []), ...(travelPlan?.groups.flatMap(group => group.places) ?? []), ...(travelPlan?.days.flatMap(day => day.periods.flatMap(period => period.items.flatMap(item => item.place ? [item.place] : []))) ?? []), ...(advanced?.comparison?.places ?? [])];
-  const foodIds = allCards.filter(card => card.placeType === "RESTAURANT").map(card => card.placeId);
+  const foodIds = allCards.filter(card => card.placeType === "RESTAURANT" && card.menuItems === undefined).map(card => card.placeId);
   if (foodIds.length) {
-    try { const menus = await chatMenus(foodIds); for (const card of allCards) if (card.placeType === "RESTAURANT") card.menuItems = menus.get(card.placeId) ?? []; }
-    catch { metadataWarnings.push("Chưa tải được tên món trong menu; Gô không tự tạo món hoặc giá món."); }
+    try { const menus = await chatMenus(foodIds); for (const card of allCards) if (card.placeType === "RESTAURANT" && card.menuItems === undefined) card.menuItems = menus.get(card.placeId) ?? []; }
+    catch { if (!metadataWarnings.includes("Chưa tải được tên món trong menu; Gô không tự tạo món hoặc giá món.")) metadataWarnings.push("Chưa tải được tên món trong menu; Gô không tự tạo món hoặc giá món."); }
   }
   const staySources = allCards.flatMap(card => [card.stayFacts?.hours, ...(card.stayFacts?.rooms ?? []), ...(card.stayFacts?.publicRates ?? [])].flatMap(fact => fact ? [{ url: fact.sourceUrl, checkedOn: fact.checkedOn, label: card.name, scope: "Thông tin lưu trú công bố; chưa xác nhận giá hoặc phòng theo ngày" }] : []));
   const sources = [...staySources, ...(advanced?.sources ?? []), ...(weatherResult?.sources ?? [])];
